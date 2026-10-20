@@ -2,6 +2,8 @@
 
 > **In Spezifikation eingearbeitet am 20.10.2026.** Maßgeblich ist jetzt `docs/spezifikation.md`.
 > Diese Datei bleibt nur als Historie erhalten und hat keinen Vorrang mehr.
+> Teilweise überholt durch `docs/entscheidungen.md` vom 20.10.2026: Punkt 4 und 23 (Bauch und Waden),
+> Punkt 11 (Lastanzeige je Hand), Punkt 30 (Ersatz nur bei fehlendem Equipment).
 
 Stand 20.10.2026. Beantwortet alle Punkte aus dem Probelauf. (Ursprünglich: Diese Datei hatte
 Vorrang vor `docs/spezifikation.md`, den Mockups und den Prototypen, bis ihr Inhalt in die

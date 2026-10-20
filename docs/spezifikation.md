@@ -113,7 +113,9 @@ Wird der Testtag übersprungen, schätzt die App die Startstufe aus dem Level un
 | vZug (keine Stange) | band_latzug, falls BAND und ANKER vorhanden; sonst hZug, bevorzugt tischrudern |
 | Bizeps | chinup, falls Stange vorhanden; sonst tischrudern (Bizeps nur sekundär) |
 | Schulter (seitlich/hinten) | vDruck-Variante |
-| alle anderen | haben immer mindestens eine Variante ohne gekauftes Equipment |
+| alle anderen | haben meist eine Variante, die nur immer vorhandene Utensilien (TISCH, ERH) oder gar keins braucht |
+
+Gibt es auch keinen Ersatz (z. B. TISCH und ERH abgewählt: kein hZug, kein Waden-Training ohne Hanteln), **entfällt das Muster an diesem Ort**; der Equipment-Bildschirm zeigt dazu einen Hinweis wie „Für Ziehen fehlt Equipment“. Die Ersatzregeln gelten nur bei fehlendem Equipment, **nicht bei Sperren**: Blockiert eine Einschränkung alle Varianten eines Musters, fällt dessen Volumen weg (siehe Einschränkungen).
 
 ### Beispiel: Variantenleiter vertikales Ziehen
 
@@ -146,6 +148,7 @@ interface Uebung {
   lasttyp: 'KG'|'Band'|'Last'|'Zeit';
   bereich: { von: number; bis: number; einheit: 'Wdh.'|'Sek.' };
   unterstuetzend: boolean;          // z. B. klimmzug_band: Fortschritt = leichteres Band
+  anzahlGewichte?: 1|2;             // nur bei Last-Übungen mit KH/KB: eine oder zwei Hanteln (für die Lastanzeige)
   zirkelGeeignet: boolean;
   youtubeUrl: string;               // Standard: YouTube-Suche
   eigenerVideoLink?: string;        // vom Nutzer, hat Vorrang
@@ -190,8 +193,7 @@ interface Einstellungen {
 interface VarianteZustand { uebungId: string; last?: number; bandStufe?: BandStufe;
   zielWdh: number; e1rm?: number; bestErsterSatz?: number;
   seitSteigerung: number; schwerSerie: number; zuletzt?: string }
-interface MusterZustand { muster: MusterId; stufe: number; hauptvarianten: string[]; // max. 2 je Zyklus
-  letzterTest?: { datum: string; uebungId: string; ergebnis: number } }
+interface MusterZustand { muster: MusterId; stufe: number; hauptvarianten: string[] } // max. 2 je Zyklus; letzter Test steht in maxTests
 interface MuskelZustand { muskel: Muskel; letzteBelastung?: string; letzteDosis: number; letzteSchwer: boolean;
   persoenlicheGrenze: number; gleichWochen: number; leistung: { woche: string; wert: number }[] }
 interface Woche { id: string; prognose: number; einheiten: number;
@@ -204,12 +206,13 @@ interface SatzErgebnis { nr: number; wdh?: number; sek?: number; last?: number; 
 interface Position { uebungId: string; saetze: number; zielWdh: number; last?: number; bandStufe?: BandStufe;
   istMaxTest?: boolean; istErsatz?: boolean; getauschtVon?: string;
   ergebnisse: SatzErgebnis[]; feedback?: Feedback }
-interface Block { typ: 'einzeln'|'supersatz'|'zirkel'; positionen: Position[];   // Partnerübungen liegen im Supersatz-Block
+interface Block { typ: 'einzeln'|'supersatz'|'zirkel'; positionen: Position[];
   pauseSek: number; zirkelId?: string; runden?: number }
 interface Einheit { id: string; woche: string; erstelltAm: string; gestartetAm?: string; beendetAm?: string;
   status: 'geplant'|'laufend'|'abgeschlossen'|'abgebrochen';
   ortId: string; fokus: 'ganz'|'oben'|'unten'; format: 'klassisch'|'supersatz'|'mix'|'zirkel'|'test';
-  geschaetzteDauerMin: number; aufwaermen: { uebungId: string; vorgabe: string }[];
+  geschaetzteDauerMin: number;      // inklusive Bauch- und Wadensätze, kann über der Standarddauer liegen
+  aufwaermen: { uebungId: string; vorgabe: string }[];
   bloecke: Block[]; gesamtbewertung?: 1|2|3|4|5; notiz?: string }
 interface ZirkelErgebnis { zirkelId: string; ortId: string; datum: string; zeitSek: number; varianten: string[] }
 interface MaxTest { id: string; datum: string; muster: MusterId; uebungId: string; ergebnis: number; einheit: 'Wdh.'|'Sek.' }
@@ -223,7 +226,7 @@ Der Nutzer hakt pro Ort Utensilien aus dem Katalog ab und kann eigene ergänzen.
 
 - **Lastraster:** Kurzhanteln im Modus „verstellbar“: Min, Min + Schritt, Min + 2 × Schritt … bis höchstens Max; Max ist immer zusätzlich enthalten (Beispiel 2,5 bis 24 kg in 2,5er Schritten: 2,5 … 22,5, 24). Bei „feste Paare“ die Liste. Kettlebells nutzen ihre Liste. Langhantel: mögliche Lasten = Stange + alle Kombinationen der vorhandenen Scheibenpaare.
 - **Nächste Last:** die nächsthöhere Last im Raster (Langhantel: kleinste mögliche Last über der aktuellen). Bänder steigen um eine vorhandene Stufe; bei unterstützenden Übungen ist der Fortschritt das nächstleichtere Band.
-- **Lastanzeige:** Kurzhanteln „16 kg je Hand“; Kettlebell „16 kg“; Langhantel „40 kg gesamt“; Klimmzug mit Zusatzgewicht „+8 kg“; Band „Band schwer“; unterstützendes Band „Unterstützung: Band mittel“; Körpergewicht ohne Lastangabe.
+- **Lastanzeige:** Kurzhantel oder Kettlebell mit `anzahlGewichte: 2` „16 kg je Hand“, mit `anzahlGewichte: 1` „16 kg“ (z. B. Goblet Squat, einarmiges Rudern); Langhantel „40 kg gesamt“; Klimmzug mit Zusatzgewicht „+8 kg“; Band „Band schwer“; unterstützendes Band „Unterstützung: Band mittel“; Körpergewicht ohne Lastangabe.
 - **Ende der Leiter:** Gibt es keine nächste Last, gilt die Regel „Wenn die Last ausgeht“ (Progression).
 - **Mehrere Orte:** Lasten werden pro Variante gespeichert, nicht pro Ort. Fehlt am neuen Ort die gespeicherte Last, wird die nächstniedrigere vorhandene genommen und das Ziel per Kraftschätzung umgerechnet.
 
@@ -236,6 +239,7 @@ Ein Ort ist ein benanntes Profil mit einer Equipment-Auswahl, z. B. „Zuhause�
 - Der Katalog behält die Utensilien BANK und SCHRAEG. Die UI zeigt eine Zeile „Hantelbank“ mit der Auswahl „keine / flach / verstellbar“; „flach“ setzt BANK, „verstellbar“ setzt SCHRAEG.
 - Immer vorhandene Utensilien (TISCH, ERH) sind standardmäßig an und abwählbar.
 - „X Übungen an diesem Ort möglich“ = Anzahl der Katalog- und eigenen Übungen, deren Equipment-Anforderung am Ort erfüllt ist, ohne Berücksichtigung von Ausschlüssen.
+- Hat ein Muster am Ort weder Variante noch Ersatz, zeigt der Bildschirm einen Hinweis wie „Für Ziehen fehlt Equipment“.
 
 Vollständiger Startkatalog mit allen Übungen, Utensilien und Zirkeln: Übungskatalog
 
@@ -283,10 +287,10 @@ Die Standarddauer (Einstellung, z. B. 40 Min) bestimmt die Zahl der Arbeitssätz
 - Sätze = (Dauer minus 5 Min Aufwärmen) geteilt durch die mittlere Satzdauer.
 - Mittlere Satzdauer klassisch = 45 Sek. + 0,6 × Grundpause + 0,4 × Isolationspause. Die Pausen sind einstellbar (Standard 90 Sek. Grundübung, 75 Sek. Isolation, also rund 129 Sek.).
 - Satzdauer im Supersatz: zwei Sätze à 45 Sek. plus Supersatz-Pause (Standard 75 Sek.) nach dem Paar, also rund 83 Sek. pro Satz.
-- Rumpf- und Wadenübungen laufen als Partner in Supersätzen mit Oberkörperübungen und verbrauchen kein zusätzliches Zeitbudget. Sie stehen im Block der zugehörigen Oberkörperübung; der Block wird damit zum Supersatz.
-- **Echte Satzdauer** = (Einheitsdauer − Aufwärmdauer) ÷ Zahl der Arbeitssätze, gleitender Mittelwert über die letzten 5 Einheiten je Format. Sie ersetzt die Schätzung ab der 5. Einheit eines Formats.
+- **Bauch und Waden kommen zusätzlich:** Rumpf- und Wadenübungen sind eigene Übungen mit eigenen Sätzen und Pausen (nicht in den Pausen anderer Übungen). Sie werden nach dem Zeitbudget zusätzlich eingeplant und nehmen den anderen Muskeln keine Sätze weg. Die Einheit dauert dadurch etwas länger als die Standarddauer; die angezeigte geschätzte Dauer enthält sie.
+- **Echte Satzdauer** = (Einheitsdauer − Aufwärmdauer) ÷ Zahl aller Arbeitssätze (inklusive Bauch und Waden), gleitender Mittelwert über die letzten 5 Einheiten je Format. Sie ersetzt die Schätzung ab der 5. Einheit eines Formats.
 
-| Wochenprognose | Supersatz-Anteil | Arbeitssätze pro 40-Min-Einheit | Zusatz |
+| Wochenprognose | Supersatz-Anteil | Arbeitssätze pro 40-Min-Einheit (ohne Bauch und Waden) | Zusatz |
 | --- | --- | --- | --- |
 | 1 bis 2 | so viele wie möglich (alle Gegenspieler-Paare) | 25 | Vor dem Start Angebot „15 Min länger?“ (abschaltbar) |
 | 3 | 50 % | 19 |  |
@@ -318,11 +322,11 @@ Die Frage „Morgen wieder?“ ist der Schlüssel für Tage am Stück: Sie läss
 3. **„Morgen wieder trainieren?“** Vorausgefüllt mit Ja, wenn nach heute noch Einheiten geplant sind und deren Zahl mindestens halb so groß ist wie die Zahl der verbleibenden Tage nach heute. Immer Nein, wenn die letzte Einheit 72 Std. oder länger zurückliegt. Ein Tipp ändert die Antwort.
 4. **Fokus:** Bei Nein entsteht eine Ganzkörper-Einheit. Bei Ja eine Fokus-Einheit für Oberkörper (Brust, Rücken, Schultern, Bizeps, Trizeps) oder Unterkörper (Quadrizeps, Gesäß, hintere Oberschenkel, Waden); Bauch ist immer erlaubt. Gewählt wird die Gruppe, deren letzte Belastung länger zurückliegt; bei Gleichstand die mit dem größeren gewichteten Restbedarf. Ist kein Muskel dieser Gruppe erholt, wird die andere gewählt.
 5. **Bedarf pro Muskel:** Rest = Wochenziel minus erledigt. Ganzkörper: Rest ÷ n. Fokus: Rest ÷ aufgerundet(n ÷ 2) für Muskeln der Fokusgruppe, 0 für die anderen. Aufrunden, höchstens 10, und 0 für nicht erholte Muskeln.
-6. **Übungen wählen (gierig):** Kandidaten sind genau die fälligen Hauptvarianten aller Muster (siehe Hauptvarianten und Abwechslung). Für jede Kandidatenübung wird ihr Wert berechnet: Summe über ihre Muskeln von min(offener Bedarf, Beitrag pro Satz) × Gewicht. Zuschläge: Grundübung +0,3, Favorit +0,2. Abschlag −0,6, wenn sie für ihren Hauptmuskel schon in der letzten Einheit gewählt wurde. Die beste Übung wird übernommen, mit Sätzen = offener Bedarf des Hauptmuskels, aufgerundet, 2 bis 4. Wiederholen, bis das Zeitbudget voll ist oder kein Bedarf über 0,25 bleibt.
-7. **Partner:** Bauch und Waden mit offenem Bedarf werden als Supersatz-Partner zu Oberkörperübungen gelegt (je höchstens 3 Sätze). Sie stehen im Block der Oberkörperübung, der damit zum Supersatz-Block wird.
-8. **Reihenfolge und Paare:** Max-Test (falls fällig), Grundübungen, Isolationsübungen. Supersatz-Paare werden aus dieser Liste gebildet, der Reihe nach: hDruck + hZug, vDruck + vZug, Bizeps + Trizeps, Knie oder Einbein + Rumpf, Huefte + Schulter. Gepaart wird, bis der Supersatz-Anteil der Woche (Anteil der Arbeitssätze in Paaren) erreicht ist. Format der Einheit: keine Paare = klassisch, alle möglichen Paare gebildet = supersatz, sonst mix.
+6. **Übungen wählen (gierig):** Kandidaten sind genau die fälligen Hauptvarianten aller Muster außer Rumpf und Waden (siehe Hauptvarianten und Abwechslung). Für jede Kandidatenübung wird ihr Wert berechnet: Summe über ihre Muskeln von min(offener Bedarf, Beitrag pro Satz) × Gewicht. Zuschläge: Grundübung +0,3, Favorit +0,2. Abschlag −0,6, wenn sie für ihren Hauptmuskel schon in der letzten Einheit gewählt wurde. Die beste Übung wird übernommen, mit Sätzen = offener Bedarf des Hauptmuskels, aufgerundet, 2 bis 4. Wiederholen, bis das Zeitbudget voll ist oder kein Bedarf über 0,25 bleibt.
+7. **Bauch und Waden:** Haben sie offenen Bedarf und sind erholt, kommen je eine Übung mit höchstens 3 Sätzen zusätzlich zum Zeitbudget dazu (siehe Zeitbudget). Sie sind normale Übungen und laufen einzeln oder in einem Supersatz-Paar laut Schritt 8.
+8. **Reihenfolge und Paare:** Max-Test (falls fällig), Grundübungen, Isolationsübungen. Supersatz-Paare werden aus dieser Liste gebildet, der Reihe nach: hDruck + hZug, vDruck + vZug, Bizeps + Trizeps, Knie oder Einbein + Rumpf, Huefte + Schulter, Rumpf + Waden. Jede Übung steht in höchstens einem Paar; es gibt nur Zweierblöcke. Bauch wird also nie mit einer Oberkörperübung gepaart, sondern mit Beinen oder Waden oder läuft einzeln. Gepaart wird, bis der Supersatz-Anteil der Woche (Anteil der Arbeitssätze in Paaren) erreicht ist. Format der Einheit: keine Paare = klassisch, alle möglichen Paare gebildet = supersatz, sonst mix.
 9. **Zeit passt nicht:** Die App bietet vor dem Start „15 Min länger?“ nur an, wenn die Prognose 1 bis 2 ist, die Einstellung „Längere Einheiten anbieten“ an ist und nach vollem Budget noch Bedarf offen ist. Bleiben 3 oder mehr Sätze Budget frei, bietet sie einen Zirkel-Finisher (10 bis 15 Min) an oder zeigt die kürzere Dauer an.
-10. **Ruhetag empfohlen:** Hätte die erzeugte Einheit weniger als 6 Arbeitssätze, empfiehlt die App einen Ruhetag und bietet an: trotzdem trainieren, Zirkel oder Mobility (die Aufwärm-Mobility aller Muster, ca. 10 Min).
+10. **Ruhetag empfohlen:** Hätte die erzeugte Einheit weniger als 6 Arbeitssätze, empfiehlt die App einen Ruhetag und bietet an: trotzdem trainieren, Zirkel oder Mobility (die Aufwärm-Mobility aller Muster, ca. 10 Min). Mobility wird nur angezeigt (Checkliste wie beim Aufwärmen), nicht als Einheit gespeichert und erscheint nicht im Verlauf.
 11. **Fixieren:** Die Einheit wird gespeichert und ist bis zum Ende unveränderlich (Ausnahme: manueller Tausch vor dem Start innerhalb desselben Musters).
 
 ### Erholungsfenster pro Muskel
@@ -388,7 +392,7 @@ Die Planungslogik wurde als Prototyp umgesetzt und mit realistischen Wochen durc
 - **Schulter gesperrt:** Die laut Sperrtabelle (Einschränkungen) gesperrten Muster und Übungen entfallen; Übungen mit nur sekundärer Schulterbeteiligung bleiben. Das Volumen anderer Muskeln steigt nicht, das Wochenziel der Schulter wird auf 0 gesetzt.
 - **Zu optimistische Prognose:** Kostet je nach Fall bis zu etwa ein Drittel des möglichen Volumens; deshalb fragt die App nach 72 Std. Pause aktiv nach.
 
-Der Prototyp (Python) wird mit übergeben. Die sieben Fälle der Tabelle sind als automatisierte Tests nachzubauen:
+Der Prototyp (Python) wird mit übergeben. Die Satzzahlen der Tabelle zählen nur die Sätze im Zeitbudget; Bauch und Waden kommen zusätzlich dazu. Die sieben Fälle der Tabelle sind als automatisierte Tests nachzubauen:
 
 - **Test-Katalog:** die 14 Katalog-IDs `kh_bankdruecken, kh_schraegbank, kh_schulterdruecken_sitzend, klimmzug, kh_rudern_einarmig, goblet_squat, bss_kh, kh_rdl, kh_hip_thrust, kh_curls, kh_trizeps_ueberkopf, kh_seitheben, haengendes_knieheben, wadenheben` und ein Ort „Zuhause“ (KH verstellbar 2 bis 24 kg, Schritt 2, SCHRAEG, STANGE, BAND, ANKER).
 - **Toleranz:** je Muskel ±1 Satz gegenüber dem Prototyp.
@@ -434,7 +438,7 @@ Ziel und Last werden pro Variante fortgeschrieben. Das Wiederholungsziel gilt f�
 
 **12-Wochen-Tests in TypeScript:** eigener Simulator mit festem Zufallsstartwert (z. B. mulberry32) und demselben Modell wie der Prototyp. Geprüft werden Eigenschaften, keine exakten Zahlen: über 50 Startwerte im Schnitt höchstens 0,1 Lastrückschritte, in keinem Verlauf mehr als 1; erste Laststeigerung spätestens in Woche 8; kein Muster Last A, B, A innerhalb von 3 Einheiten.
 
-**Wenn die Last ausgeht** (schwerste Kurzhantel erreicht): Progression in dieser Reihenfolge über langsameres Tempo (3 Sek. absenken), Wiederholungsbereich bis 20, einseitige Variante, nächste Variante im Muster.
+**Wenn die Last ausgeht** (schwerste Kurzhantel erreicht): Progression in dieser Reihenfolge über langsameres Tempo (3 Sek. absenken), Wiederholungsbereich bis O + 5, einseitige Variante, nächste Variante im Muster.
 
 ### Musterstufe und Variantenwechsel
 
@@ -442,7 +446,8 @@ Ziel und Last werden pro Variante fortgeschrieben. Das Wiederholungsziel gilt f�
 - Die **Musterstufe** ist die Stufe (1 bis 10) der schwersten Variante des Musters, die zuletzt im Zielbereich mit „passend“ oder „zu leicht“ bewältigt wurde. Sie dient nur dazu, an einem neuen Ort die passende Variante zu wählen.
 - Wird eine bereits genutzte Variante gewählt, startet sie mit ihren letzten Werten.
 - Wird eine Variante zum ersten Mal genutzt, gilt als Ziel das untere Ende des Bereichs mit Reserve 3. Der erste Satz ist ein Kalibrierungssatz; die geschafften Wiederholungen legen Last bzw. Ziel der restlichen Sätze dieser Einheit fest.
-- Erreicht der erste Satz einer Körpergewichts- oder Bandvariante O, wechselt die nächste Einheit zur nächstschwereren Variante (oder zu Tempo bzw. Band als Zwischenstufe, falls der Sprung zu groß ist), Ziel U der neuen Variante.
+- Erreicht der erste Satz einer Körpergewichts-, Band- oder Zeitvariante O, wechselt die nächste Einheit zur nächstschwereren Variante, Ziel U der neuen Variante.
+- **Zwischenstufe:** Liegt die nächste am Ort mögliche Variante 2 oder mehr Stufen über der aktuellen, trainiert die App zuerst die aktuelle Variante mit langsamem Absenken (3 Sek.), Ziel U. Erreicht der erste Satz damit wieder O, folgt die nächste Variante. Band-Varianten sind bereits eigene Stufen der Leiter und brauchen keine Sonderregel.
 
 ### Persönliche Volumengrenze pro Muskel
 
@@ -500,7 +505,7 @@ Das Training läuft geführt Schritt für Schritt: eine Übung pro Bildschirm, S
 ### Ablauf einer Einheit
 
 1. **Startbildschirm:** Bei der ersten Einheit der Woche die Frage „Wie oft schaffst du es diese Woche?“ (vorausgefüllt). Danach drei vorausgefüllte Angaben, je mit einem Tipp änderbar: Ort, „Morgen wieder trainieren?“ und gegebenenfalls „15 Min länger?“. Erst dann wird die Einheit erzeugt und mit Format, geschätzter Dauer und Muskelgruppen angezeigt. Alternativ: unter „Einheit erstellen“ ein zweiter, schlichter Button „Stattdessen Zirkel“; er öffnet die Liste der 5 Zirkel mit Dauer und Bestzeit am gewählten Ort.
-2. **Vorschau:** Liste aller Übungen mit Sätzen, Zielwiederholungen und Last. Die Satzzahl umfasst alle Sätze inklusive Partnersätze. Pro Übung „Tauschen“: Die App zeigt nur Alternativen desselben Musters, die am Ort möglich sind, mit passender Zielvorgabe. Der Tausch wird gespeichert und fließt in den Verlauf des Musters ein.
+2. **Vorschau:** Liste aller Übungen mit Sätzen, Zielwiederholungen und Last. Die Satzzahl umfasst alle Sätze inklusive Bauch und Waden. Pro Übung „Tauschen“: Die App zeigt nur Alternativen desselben Musters, die am Ort möglich sind, mit passender Zielvorgabe. Der Tausch wird gespeichert und fließt in den Verlauf des Musters ein.
 3. **Aufwärmen (ca. 5 Min):** 2 Min allgemein (z. B. Hampelmann, Armkreisen), 2 Min Mobility für die Muster des Tages, 1 Aufwärmsatz der ersten Grundübung mit etwa 50 % Last bzw. leichterer Variante. Angezeigt als Checkliste auf einem Screen mit „Fertig“ und „Überspringen“.
 4. **Max-Test (falls geplant):** Eigener Bildschirm mit Zähler bzw. Stoppuhr.
 5. **Übungsbildschirme:** Name, YouTube-Link, Satz x von y, Zielwiederholungen, Last, Feld für geschaffte Wiederholungen, Button „Satz erledigt“. Danach startet der Pausentimer (Ton und Vibration am Ende, Pause verlängern oder überspringen möglich). Bei Supersätzen wechselt der Bildschirm zwischen den beiden Übungen in der Reihenfolge A1 Satz 1, A2 Satz 1, Pause, A1 Satz 2, A2 Satz 2, Pause usw.; Pause nur nach dem Paar, „Als Nächstes“ nach A1 ist immer A2.
@@ -537,9 +542,9 @@ Navigation unten mit 4 Tabs: Heute, Fortschritt (mit Unterreiter Verlauf), Übun
 
 | Screen | Inhalt | Besondere Zustände |
 | --- | --- | --- |
-| Heute | Nächste Einheit mit Ort und Dauer als Vorschau (`erstelleEinheit` mit den Vorschlägen aus `startfragen`, nur zur Anzeige, ohne zu speichern; Anzeige „voraussichtlich: Ganzkörper, ca. 40 Min“; nach den Startfragen wird neu erzeugt), Start-Button, Wochenfortschritt pro Muskel (erledigt von Ziel), Wochenprognose mit „ändern“, nächster Max-Test | Erster Start: Weiter zum Onboarding · Erholungswoche: Hinweisband · Ruhetag empfohlen: Hinweis plus „trotzdem trainieren“, „Zirkel“, „Mobility“ · unterbrochene Einheit: „Fortsetzen“ statt Start |
+| Heute | Nächste Einheit mit Ort und Dauer als Vorschau (`erstelleEinheit` mit den Vorschlägen aus `startfragen`, nur zur Anzeige, ohne zu speichern; Anzeige „voraussichtlich: Ganzkörper, ca. 40 Min“; nach den Startfragen wird neu erzeugt), Start-Button, Wochenfortschritt pro Muskel (erledigt von Ziel), Wochenprognose mit „ändern“, nächster Max-Test | Erster Start: Weiter zum Onboarding · Erholungswoche: Hinweisband · Ruhetag empfohlen: Hinweis plus „trotzdem trainieren“, „Zirkel“, „Mobility“ (Mobility nur als Checkliste, ohne Speichern) · unterbrochene Einheit: „Fortsetzen“ statt Start |
 | Vor dem Start | Wochenprognose (nur erste Einheit der Woche), Ort, „Morgen wieder?“, „15 Min länger?“ (nur bei Prognose 1 bis 2, Einstellung an und offenem Bedarf), Button „Einheit erstellen“, darunter schlicht „Stattdessen Zirkel“ | Alle Felder vorausgefüllt; Start mit einem Tipp möglich · Zirkel vorgeschlagen: „Doch Krafteinheit“ |
-| Vorschau | Blöcke mit Übungen, Sätzen (inklusive Partnersätze), Zielen, Last; Tausch-Button pro Übung; Aufwärmen oben | Tausch-Blatt mit Alternativen desselben Musters · Ersatz-Markierung |
+| Vorschau | Blöcke mit Übungen, Sätzen (alle, inklusive Bauch und Waden), Zielen, Last, geschätzte Dauer; Tausch-Button pro Übung; Aufwärmen oben | Tausch-Blatt mit Alternativen desselben Musters · Ersatz-Markierung |
 | Satz | Übung, YouTube-Link, Satz x von y, „Ziel 10“ mit „Bereich 8 bis 12“ bzw. „Vorgabe 9“ ab Satz 2, Last, Zähler für geschaffte Wdh., „Letztes Mal“ (aus der letzten abgeschlossenen Position derselben Übung), Hinweis zur Reserve | Max-Test: Zähler ohne Ziel · Halteübung: Stoppuhr · Supersatz: Kennzeichnung A1/A2 |
 | Pause | Timer-Ring, +30 Sek., Überspringen, „Als Nächstes“ (im Supersatz nach A1 immer A2, Pause nur nach dem Paar) | Ton und Vibration am Ende; Bildschirm bleibt an |
 | Übungsfeedback | 3 Buttons mit Definition, geschaffte Wiederholungen, Vorschau der Folge („Nächstes Mal: 16 kg, Ziel 11 im ersten Satz“) | „Zu schwer“ vorausgewählt, wenn der erste Satz das Ziel verfehlt |
@@ -552,7 +557,7 @@ Texte sind auf Deutsch, Du-Form, kurz. Zahlen mit deutschem Dezimalkomma (2,5 kg
 
 ### Einschränkungen
 
-Der Nutzer kann Körperregionen (z. B. Schulter, Knie, unterer Rücken) oder einzelne Muster sperren, optional mit Enddatum. Gesperrte Übungen tauchen weder im Plan noch beim Tauschen auf. Das ausfallende Volumen wird nicht auf andere Muskeln umgelegt.
+Der Nutzer kann Körperregionen (z. B. Schulter, Knie, unterer Rücken) oder einzelne Muster sperren, optional mit Enddatum. Gesperrte Übungen tauchen weder im Plan noch beim Tauschen auf. Das ausfallende Volumen wird nicht auf andere Muskeln umgelegt. Blockiert eine Sperre alle Varianten eines Musters, greift keine Ersatzregel; das Volumen fällt für die Dauer der Sperre weg.
 
 **Sperren nach Körperregion** (blockiert die genannten Muster bzw. Übungen; sekundäre Beteiligung führt nicht zur Sperre; Muster können zusätzlich einzeln gesperrt werden):
 

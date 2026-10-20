@@ -135,7 +135,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Bodendr%C3%BCcken+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "liegestuetz_fuesse_erhoeht",
@@ -195,7 +196,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Bankdr%C3%BCcken+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "kh_schraegbank",
@@ -226,7 +228,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Schr%C3%A4gbankdr%C3%BCcken+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "liegestuetz_band",
@@ -443,7 +446,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Schulterdr%C3%BCcken+stehend+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "kh_schulterdruecken_sitzend",
@@ -473,7 +477,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Schulterdr%C3%BCcken+sitzend+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "arnold_press",
@@ -500,7 +505,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Arnold-Press+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "kb_schulterdruecken",
@@ -527,7 +533,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kettlebell-Schulterdr%C3%BCcken+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 1
   },
   {
    "id": "pike_erhoeht",
@@ -724,7 +731,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Rudern+einarmig+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 1
   },
   {
    "id": "kh_rudern_vorgebeugt",
@@ -752,7 +760,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Rudern+vorgebeugt+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "kh_rudern_brustgestuetzt",
@@ -783,7 +792,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Brustgest%C3%BCtztes+Kurzhantel-Rudern+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "kb_rudern",
@@ -811,7 +821,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kettlebell-Rudern+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 1
   },
   {
    "id": "ringe_rudern",
@@ -1065,7 +1076,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Klimmzug+mit+Zusatzgewicht+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 1
   },
   {
    "id": "kniebeuge",
@@ -1166,7 +1178,8 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Goblet+Squat+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 1
   },
   {
    "id": "kh_kniebeuge",
@@ -1193,7 +1206,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Kniebeuge+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "pistol_assistiert",
@@ -1354,7 +1368,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Step-up+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "kh_ausfallschritt",
@@ -1381,7 +1396,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Ausfallschritt+gehend+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "bss_kh",
@@ -1413,7 +1429,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Bulgarian+Split+Squat+mit+Kurzhanteln+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "shrimp_squat",
@@ -1600,7 +1617,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Hip-Thrust+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "kh_rdl",
@@ -1627,7 +1645,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Rum%C3%A4nisches+Kreuzheben+mit+Kurzhanteln+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "kh_rdl_einbeinig",
@@ -1655,7 +1674,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Einbeiniges+Kreuzheben+mit+Kurzhantel+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 1
   },
   {
    "id": "kb_swing",
@@ -1682,7 +1702,8 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kettlebell-Swing+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 1
   },
   {
    "id": "lh_kreuzheben",
@@ -1849,7 +1870,8 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Russian+Twist+mit+Kurzhantel+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 1
   },
   {
    "id": "hollow_hold",
@@ -1970,7 +1992,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Curls+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "hammer_curls",
@@ -1995,7 +2018,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Hammer-Curls+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "konzentrationscurl",
@@ -2025,7 +2049,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Konzentrationscurl+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 1
   },
   {
    "id": "schraegbank_curls",
@@ -2053,7 +2078,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Schr%C3%A4gbank-Curls+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "lh_curls",
@@ -2132,7 +2158,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Kickback+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "bank_dips",
@@ -2186,7 +2213,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Trizepsdr%C3%BCcken+%C3%BCber+Kopf+mit+Kurzhantel+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 1
   },
   {
    "id": "kh_trizeps_liegend",
@@ -2215,7 +2243,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Liegendes+Trizepsdr%C3%BCcken+mit+Kurzhanteln+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "diamond_liegestuetz",
@@ -2315,7 +2344,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Seitheben+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "kh_reverse_flys",
@@ -2342,7 +2372,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Vorgebeugtes+Seitheben+%28hintere+Schulter%29+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   },
   {
    "id": "wadenheben",
@@ -2420,7 +2451,8 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Wadenheben+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 1
   },
   {
    "id": "hampelmann",
@@ -2609,7 +2641,8 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Thruster+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anzahlGewichte": 2
   }
  ],
  "zirkel": [

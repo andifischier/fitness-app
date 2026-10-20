@@ -9,6 +9,7 @@ Der Startkatalog umfasst 98 Übungen in 13 Mustern, 14 Utensilien und 5 feste Zi
 - **Lasttyp:** KG = Körpergewicht, Band = Bandstufe, Last = Gewicht in kg, Zeit = Sekunden. Nur „Last“ nutzt die Kraftschätzung.
 - **YouTube-Link:** Standard ist eine YouTube-Suche nach „<Übungsname> richtige Ausführung“ (in `katalog.json` vorbefüllt). Der Nutzer kann pro Übung einen festen Video-Link eintragen, der dann Vorrang hat.
 - **Stufe:** 1 bis 10 innerhalb des Musters; bestimmt die Reihenfolge beim Variantenwechsel.
+- **Anzahl Gewichte** (`anzahlGewichte` in `katalog.json`, nur Last-Übungen mit KH/KB): bestimmt die Lastanzeige („16 kg je Hand“ bzw. „16 kg“). Eine Hantel (1): kh\_rudern\_einarmig, kb\_schulterdruecken, kb\_rudern, klimmzug\_gewicht, goblet\_squat, kh\_rdl\_einbeinig, kb\_swing, kh\_russian\_twist, konzentrationscurl, kh\_trizeps\_ueberkopf, kh\_wadenheben. Alle übrigen KH-Übungen: zwei Hanteln (2).
 - **Sekundär „keine“:** Die Übung zählt nur für den Primärmuskel. Muster „Kondition“ mit Primär „Ganzkörper“ zählt nicht zum Muskelvolumen.
 
 **Ersatz, wenn ein Muster am Ort keine Variante hat** (Variante wird im Plan als Ersatz markiert):
@@ -18,7 +19,9 @@ Der Startkatalog umfasst 98 Übungen in 13 Mustern, 14 Utensilien und 5 feste Zi
 | vZug (keine Stange) | band_latzug, falls BAND und ANKER vorhanden; sonst hZug, bevorzugt tischrudern |
 | Bizeps | chinup, falls Stange vorhanden; sonst tischrudern (Bizeps nur sekundär) |
 | Schulter (seitlich/hinten) | vDruck-Variante |
-| alle anderen | haben immer mindestens eine Variante ohne gekauftes Equipment |
+| alle anderen | haben meist eine Variante, die nur immer vorhandene Utensilien (TISCH, ERH) oder gar keins braucht |
+
+Gibt es auch keinen Ersatz, entfällt das Muster an diesem Ort (Hinweis im Equipment-Bildschirm). Bei Sperren greift kein Ersatz.
 
 ## Utensilien
 

@@ -6,3 +6,13 @@ betrifft eine Entscheidung beschriebenes Verhalten, ist `docs/spezifikation.md` 
 
 | Datum | Frage | Gewählte Option | Grund |
 | --- | --- | --- | --- |
+| 20.10.2026 | Wohin kommen Bauch und Waden im Plan? | Eigene Übungen mit eigenen Sätzen und Pausen, nicht in den Pausen von Oberkörperübungen. Bauch darf mit Waden oder Beinübungen ein Supersatz-Paar bilden, nie mit Oberkörper. | Sauber ausgeführte Sätze statt Zusatz in der Pause; Paare mit Beinen oder Waden passen auch in Einheiten mit Fokus Beine. |
+| 20.10.2026 | Kosten Bauch- und Wadensätze Planzeit? | Sie kommen zusätzlich zum Zeitbudget; die Einheit darf länger als die Standarddauer dauern, die geschätzte Dauer zeigt das an. | Andere Muskeln (v. a. Arme) behalten ihr volles Volumen; die Dauer ist ohnehin nur ein Richtwert. Simulationswerte bleiben unverändert. |
+| 20.10.2026 | Dreierblock, wenn ein Paar schon besteht und Bauch dazukommt? | Zunächst „Dreierblock erlauben“; durch die Entscheidung zu Bauch und Waden überholt: Es gibt nur Zweierblöcke. | Bauch hängt nicht mehr an Oberkörper-Paaren, ein Dreierblock wird nicht mehr gebraucht. |
+| 20.10.2026 | Wird die Mobility-Einheit nach „Ruhetag empfohlen“ gespeichert? | Nur anzeigen, nicht speichern. | Einfach, kein zusätzliches Datenfeld. |
+| 20.10.2026 | Wie weit darf der Bereich wachsen, wenn die schwerste Hantel erreicht ist? | Bis Obergrenze + 5. | Passt zu jeder Übung und zur Regel „Obergrenze + 3“. |
+| 20.10.2026 | Zwischenstufe bei großem Sprung zur nächsten Variante? | Ab 2 Stufen Abstand zuerst die aktuelle Variante mit langsamem Absenken (3 Sek.), dann die nächste Variante. | Sanftere Übergänge. Band-Varianten sind bereits eigene Stufen der Leiter. |
+| 20.10.2026 | Muster ohne Variante und ohne Ersatz am Ort (z. B. Tisch abgewählt)? | Muster entfällt, Hinweis am Ort („Für Ziehen fehlt Equipment“). | Ehrlich und einfach. |
+| 20.10.2026 | Sperre blockiert alle Varianten eines Musters? | Volumen fällt weg, kein Ersatz. | Entspricht der Regel, gesperrtes Volumen nicht umzulegen; schützt die gesperrte Stelle. |
+| 20.10.2026 | Max-Tests doppelt speichern? | Nur Test-Verlauf (`maxTests`); `MusterZustand.letzterTest` entfällt. | Keine widersprüchlichen Daten möglich. |
+| 20.10.2026 | Lastanzeige bei einer oder zwei Hanteln? | „16 kg je Hand“ bei zwei Hanteln, „16 kg“ bei einer; neues Katalogfeld `anzahlGewichte`. | Jede Übung zeigt die Last eindeutig an. |
