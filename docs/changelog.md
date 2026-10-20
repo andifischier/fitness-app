@@ -29,3 +29,15 @@
   und veröffentlicht bei jedem Push auf `main` auf GitHub Pages. Test für den App-Rahmen.
   Neu: `docs/annahmen.md`; zwei Entscheidungen (leere Tabs, Icon) in `docs/entscheidungen.md`.
 - **Warum:** Arbeitspaket 0 der Spezifikation; Grundlage für alle weiteren Pakete.
+
+## Paket 1: Datenmodell und Speicher (20.10.2026)
+- **Was:** Alle Typen der Spezifikation in `src/logik/typen.ts`; alle Zahlenwerte in
+  `src/konfiguration.ts` (inklusive Standard-Einstellungen). Datenbank `fitness` (Version 1) mit
+  den 12 Tabellen der Spezifikation (`src/daten/db.ts`), Speicherschutz beim Start.
+  `katalog.json` wird beim Start mit zod geprüft (`src/daten/katalog.ts`, `schemas.ts`).
+  Backup: Export als `fitness-backup-JJJJ-MM-TT.json`, Prüfung mit Zusammenfassung und Import, der
+  alle Daten in einem Schritt ersetzt; beschädigte Dateien werden mit Meldung samt Fundstelle
+  abgelehnt (`src/daten/backup.ts`). Tests für Katalog, Konfiguration und Backup (mit
+  fake-indexeddb). Zwei Entscheidungen in `docs/entscheidungen.md`, Spezifikation (Schnittstelle
+  Backup, Tests) und `CLAUDE.md` (Testhilfe) angepasst. Noch keine sichtbare Änderung in der App.
+- **Warum:** Arbeitspaket 1 der Spezifikation; Grundlage für Planung, Progression und alle Screens.
