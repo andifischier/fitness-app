@@ -146,7 +146,8 @@ class Woche:
                 m = haupt(u)
                 if erholt[m] and bedarf[m] > 0:
                     n = min(3, bedarf[m])
-                    plan.append((u[0] + " (Partner)", n))
+                    # Bauch und Waden: eigene Saetze zusaetzlich zum Zeitbudget (Entscheidung 20.10.2026)
+                    plan.append((u[0] + " (zusaetzlich)", n))
                     dose[m] += n
         for name, _ in plan:
             for u in UEB:
@@ -174,7 +175,7 @@ def sim(name, termine, prognose, minuten=40, korrektur=None):
             w.prognose = korrektur[tag]
             w.berechne_ziel()
         plan, frei, nicht, fokus, mg = w.einheit(tag, std, morgen)
-        hs = sum(n for p, n in plan if "(Partner)" not in p)
+        hs = sum(n for p, n in plan if "(zusaetzlich)" not in p)
         f = "Ganzkoerper" if not fokus else ("Fokus Oberkoerper" if fokus is OBEN else "Fokus Unterkoerper")
         extra = f"  [frei {frei} Saetze -> Zirkel/Bonus anbieten]" if frei > 2 else ""
         print(f" {TAGE[tag]} {std}h ({f}, morgen wieder: {'ja' if mg else 'nein'}): {hs} Saetze | "

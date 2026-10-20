@@ -17,20 +17,22 @@ def e1rm(last, wdh, reserve):
 def wdh_bei(e, last, reserve=2):
     return math.floor(30 * (e / last - 1) + 1e-6) - reserve
 
-def plane(e_est, last, ziel, fb, gemacht, seit_steigerung):
-    """Hybrid: Wdh. steigen (Doppelprogression), e1RM prueft nur, ob der Lastsprung machbar ist."""
+def plane(e_est, last, ziel, fb, gemacht, seit_steigerung, lo=LO, hi=HI):
+    """Regeln laut Spezifikation (Klarstellungen B1 bis B4): alles am ersten Satz gemessen,
+    Schwellen aus dem Bereich der Uebung abgeleitet."""
+    erster = gemacht[0]
     if fb == "schwer":
-        if seit_steigerung < 2 and min(gemacht) >= LO - 2:
-            return last, max(LO - 1, min(gemacht)), "Eingewoehnung"
-        if min(gemacht) < LO - 2:
-            return last - STEP, LO, "Last -"
+        if seit_steigerung < 2 and erster >= lo - 2:
+            return last, max(lo - 1, erster), "Eingewoehnung"
+        if erster < lo - 2:
+            return last - STEP, lo, "Last -"
         return last, ziel, ""
     neu = ziel + (2 if fb == "leicht" else 1)
-    neu = max(ziel, min(neu, wdh_bei(e_est, last, reserve=1)))   # nie schneller als die Kraftschaetzung
-    if neu > HI:
+    neu = max(ziel, min(neu, wdh_bei(e_est, last, reserve=1)))
+    if neu > hi:
         r_neu = wdh_bei(e_est, last + STEP, reserve=1)
-        if r_neu >= LO or neu > HI_DEHN:
-            return last + STEP, max(LO - 1, min(HI, r_neu)), "Last +"
+        if r_neu >= lo or neu > hi + 3:
+            return last + STEP, max(lo - 1, min(hi, r_neu)), "Last +"
         return last, neu, "Bereich gedehnt"
     return last, neu, ""
 
