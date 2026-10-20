@@ -18,3 +18,5 @@ betrifft eine Entscheidung beschriebenes Verhalten, ist `docs/spezifikation.md` 
 | 20.10.2026 | Lastanzeige bei einer oder zwei Hanteln? | „16 kg je Hand“ bei zwei Hanteln, „16 kg“ bei einer; neues Katalogfeld `anzahlGewichte`. | Jede Übung zeigt die Last eindeutig an. |
 | 20.10.2026 | Was zeigen die noch leeren Tabs (Paket 0)? | Nur den Titel, ohne weiteren Text. | Schlicht; nichts muss später wieder entfernt werden. |
 | 20.10.2026 | Wie sieht das App-Icon aus? | Weiße, schlichte Hantel auf petrolfarbener Fläche (#0F766E). | Sofort als Trainings-App erkennbar. |
+| 20.10.2026 | Darf für den Backup-Test eine Testhilfe (fake-indexeddb) als zusätzliche Bibliothek genutzt werden? | Ja, nur für Tests. | Der Test prüft den echten Speicherweg; die Bibliothek landet nicht in der App. |
+| 20.10.2026 | Wie genau ist die Meldung bei einer beschädigten Backup-Datei? | Kurz mit Fundstelle, z. B. „Die Backup-Datei ist beschädigt (Einheiten, Eintrag 3). Deine Daten bleiben unverändert.“ | Hilft bei der Fehlersuche. |

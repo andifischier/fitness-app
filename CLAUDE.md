@@ -40,7 +40,7 @@ in `docs/annahmen.md` notieren. Im Zweifel, ob ein Punkt in die erste Gruppe fä
 
 ## Technik (nicht ändern ohne ausdrücklichen Auftrag)
 TypeScript strict, React 18, Vite, Tailwind, React Router (Hash-Routing), Dexie, zod,
-vite-plugin-pwa (registerType autoUpdate), Vitest. Keine weiteren Bibliotheken.
+vite-plugin-pwa (registerType autoUpdate), Vitest, fake-indexeddb (nur in Tests). Keine weiteren Bibliotheken.
 GitHub Pages über `.github/workflows/deploy.yml`, `base: '/fitness-app/'`.
 
 ## Regeln für Code
