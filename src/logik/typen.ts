@@ -74,6 +74,7 @@ export interface Einstellungen {
   einschraenkungen: { id: string; typ: 'region' | 'muster'; wert: string; bis?: string }[];
   onboardingAbgeschlossen: boolean;
   letztesBackup?: string;
+  videoLinks?: Record<string, string>; // eigene Video-Links für Katalogübungen (eigene Übungen: eigenerVideoLink)
 }
 
 // Trainingszustand (wird nur vom Planungsmodul geschrieben)

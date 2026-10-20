@@ -1,21 +1,29 @@
-import type { TabIcon } from './tabs';
-
 // Schlichte Linien-Icons (Inline-SVG), Strichfarbe folgt der Textfarbe.
-const PFADE: Record<TabIcon, string> = {
+const PFADE = {
   heute: 'M4 10.5 12 4l8 6.5V20H4z M9.5 20v-5.5h5V20',
   fortschritt: 'M4 4v16h16 M7.5 15l4-4.5 3 3L20 7',
   uebungen: 'M6 3.5h12v17H6z M9 8h6 M9 12h6 M9 16h4',
   einstellungen:
     'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z M12 2.5v3 M12 18.5v3 M2.5 12h3 M18.5 12h3 M5.3 5.3l2.1 2.1 M16.6 16.6l2.1 2.1 M5.3 18.7l2.1-2.1 M16.6 7.4l2.1-2.1',
-};
+  zurueck: 'M15 5l-7 7 7 7',
+  weiter: 'M9 5l7 7-7 7',
+  haken: 'M5 12.5l4.5 4.5L19 7.5',
+  plus: 'M12 5v14 M5 12h14',
+  kreuz: 'M6 6l12 12 M18 6L6 18',
+  stern: 'M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z',
+  suche: 'M10.5 4a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13z M15.5 15.5 20 20',
+  video: 'M4 6.5h11v11H4z M15 10.5l5-3v9l-5-3',
+} as const;
 
-export function Icon({ name }: { name: TabIcon }) {
+export type IconName = keyof typeof PFADE;
+
+export function Icon({ name, groesse = 26, gefuellt = false }: { name: IconName; groesse?: number; gefuellt?: boolean }) {
   return (
     <svg
       viewBox="0 0 24 24"
-      width="26"
-      height="26"
-      fill="none"
+      width={groesse}
+      height={groesse}
+      fill={gefuellt ? 'currentColor' : 'none'}
       stroke="currentColor"
       strokeWidth="1.7"
       strokeLinecap="round"

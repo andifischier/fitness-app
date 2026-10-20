@@ -5,6 +5,8 @@ import type { Einstellungen, MusterId, Muskel, Prioritaet } from './logik/typen'
 export const PROFIL = {
   einheitenProWoche: { min: 1, max: 6 },
   dauerMin: { min: 20, max: 90, schritt: 5 },
+  // Einstellbare Pausen je Art (Entscheidung 20.10.2026)
+  pausenSek: { min: 30, max: 180, schritt: 15 },
   // Musterstufe ohne Testtag
   musterstufeNachLevel: { einsteiger: 3, fortgeschritten: 5, erfahren: 6 },
   // Persönliche Volumengrenze (Start) relativ zur Tabelle „Wochenziel pro Muskel“

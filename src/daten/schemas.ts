@@ -90,6 +90,7 @@ export const einstellungenSchema = z.object({
   })),
   onboardingAbgeschlossen: z.boolean(),
   letztesBackup: z.string().optional(),
+  videoLinks: z.record(z.string(), z.string()).optional(),
 });
 
 export const varianteSchema = z.object({
