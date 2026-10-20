@@ -245,10 +245,13 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
     const u = uebungVon(neu, p.uebungId);
     if (!u || !ort) continue;
     if (p.istMaxTest) {
+      // Gespeichert wird in der Einheit der Übung; am Testtag hat der Klimmzug-Test bei 0 Wdh.
+      // zusätzlich die Sekunden im Hängen (nur für die Startvariante).
       const s = p.ergebnisse[0]!;
+      const inSek = u.bereich.einheit === 'Sek.';
       const test: MaxTest = {
         id: `maxtest-${start}-${u.muster}`, datum: start, muster: u.muster, uebungId: u.id,
-        ergebnis: s.sek ?? s.wdh ?? 0, einheit: s.sek !== undefined ? 'Sek.' : 'Wdh.',
+        ergebnis: (inSek ? s.sek ?? s.wdh : s.wdh ?? s.sek) ?? 0, einheit: u.bereich.einheit,
       };
       neu = { ...neu, maxTests: ersetze(neu.maxTests, test, (x) => x.id === test.id) };
       if (fertig.format === 'test') continue;
@@ -299,7 +302,8 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
   const zyklen: Zyklus[] = neu.zyklen.length > 0 ? neu.zyklen : [{ nr: 1, start }];
   return {
     ...neu, muskeln, zyklen,
-    wochen: ersetze(neu.wochen, woche, (w) => w.id === wocheId),
+    // Der Testtag zählt nicht als Einheit der Woche (Entscheidung 20.10.2026).
+    wochen: fertig.format === 'test' ? neu.wochen : ersetze(neu.wochen, woche, (w) => w.id === wocheId),
     einheiten: ersetze(neu.einheiten, fertig, (x) => x.id === fertig.id),
   };
 }

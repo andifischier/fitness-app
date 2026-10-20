@@ -1,6 +1,6 @@
 // Orte und Equipment (Mockup 9). Änderungen gelten erst nach „Speichern“; ohne Pflichtangaben
 // lässt sich der Ort nicht speichern.
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   loescheEigenesUtensil, loescheOrt, speichereEigenesUtensil, speichereOrt,
 } from '../../daten/speichern';
@@ -66,7 +66,10 @@ export function OrteSeite() {
   return <OrteBearbeiten z={z} />;
 }
 
-function OrteBearbeiten({ z }: { z: AppZustand }) {
+// Im Onboarding: eigener Titel und Vorspann; „weiter“ folgt auf das Speichern (oder ohne Änderung).
+export function OrteBearbeiten({ z, titel = 'Orte und Equipment', zurueck = '/einstellungen', vorspann, weiter }: {
+  z: AppZustand; titel?: string; zurueck?: string; vorspann?: ReactNode; weiter?: () => void;
+}) {
   const startOrt = z.orte.find((o) => o.standard) ?? z.orte[0];
   const [auswahl, setAuswahl] = useState<string>(startOrt?.id ?? NEU);
   const [entwurf, setEntwurf] = useState<Ort>(startOrt ?? neuerOrt(z, 'Zuhause'));
@@ -110,6 +113,7 @@ function OrteBearbeiten({ z }: { z: AppZustand }) {
     if (an && details === u.id) setDetails(undefined);
   };
   const speichern = async () => {
+    if (weiter && !geaendert && gespeichert) { weiter(); return; }
     setVersuch(true);
     if (fehler.length > 0) return;
     const o = { ...entwurf, name: entwurf.name.trim() };
@@ -119,6 +123,7 @@ function OrteBearbeiten({ z }: { z: AppZustand }) {
     setGeaendert(false);
     setVersuch(false);
     setMeldung('Gespeichert.');
+    weiter?.();
   };
   const loeschen = async () => {
     if (!gespeichert || !window.confirm(`Ort „${gespeichert.name}“ löschen?`)) return;
@@ -148,7 +153,8 @@ function OrteBearbeiten({ z }: { z: AppZustand }) {
   const detailEquipment = details ? equipmentVon(entwurf, details) : undefined;
 
   return (
-    <Seite titel="Orte und Equipment" zurueck="/einstellungen">
+    <Seite titel={titel} zurueck={zurueck}>
+      {vorspann}
       <div className="flex flex-wrap gap-2">
         {ortChips.map((o) => (
           <Chip key={o.id} aktiv={auswahl === o.id} onClick={() => wechsle(o.id)}>
@@ -249,8 +255,8 @@ function OrteBearbeiten({ z }: { z: AppZustand }) {
 
       {versuch && <Fehler meldungen={fehler.map((f) => f.text)} />}
       {meldung && <p role="status" className="text-basis font-semibold text-akzent">{meldung}</p>}
-      <Knopf onClick={() => void speichern()} deaktiviert={!geaendert && !!gespeichert}>
-        {gespeichert ? 'Speichern' : 'Ort anlegen'}
+      <Knopf onClick={() => void speichern()} deaktiviert={!geaendert && !!gespeichert && !weiter}>
+        {weiter ? (geaendert || !gespeichert ? 'Speichern und weiter' : 'Weiter') : gespeichert ? 'Speichern' : 'Ort anlegen'}
       </Knopf>
       {gespeichert && <OrtLoeschen z={z} ort={gespeichert} onLoeschen={() => void loeschen()} />}
     </Seite>

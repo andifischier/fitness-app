@@ -45,12 +45,20 @@ export function ProfilSeite() {
 export function PrioritaetenSeite() {
   const z = useZustand();
   if (!z) return <Laedt />;
-  const e = einstellungenAus(z);
-  const setzePrio = (m: Muskel, p: Prioritaet) => void setze({ prioritaeten: { ...e.prioritaeten, [m]: p } });
-  const standard = MUSKELN.every((m) => e.prioritaeten[m] === STANDARD_PRIORITAETEN[m]);
   return (
     <Seite titel="Muskelprioritäten" zurueck="/einstellungen">
       <Hinweis>Höhere Priorität bekommt mehr Sätze pro Woche. Standard ist „Oberkörper betont“.</Hinweis>
+      <PrioritaetenListe e={einstellungenAus(z)} />
+    </Seite>
+  );
+}
+
+// Prioritäten je Muskel; auch im Onboarding genutzt.
+export function PrioritaetenListe({ e }: { e: Einstellungen }) {
+  const setzePrio = (m: Muskel, p: Prioritaet) => void setze({ prioritaeten: { ...e.prioritaeten, [m]: p } });
+  const standard = MUSKELN.every((m) => e.prioritaeten[m] === STANDARD_PRIORITAETEN[m]);
+  return (
+    <>
       <Karte>
         <div className="flex flex-col gap-5">
           {MUSKELN.map((m) => (
@@ -69,7 +77,7 @@ export function PrioritaetenSeite() {
           Zurück zu „Oberkörper betont“
         </Knopf>
       )}
-    </Seite>
+    </>
   );
 }
 

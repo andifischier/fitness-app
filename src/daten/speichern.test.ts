@@ -4,11 +4,12 @@ import { KATALOG } from './katalog';
 import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
 import { entwurfAusVorlage, fertigeUebung, mitFavorit, mitVideoLink, neuesUtensil } from '../logik/einstellungen';
 import { ort } from '../logik/testhilfe';
+import { testtagEinheit } from '../logik/testtag';
 import type { Einheit } from '../logik/typen';
 import { FitnessDb, ladeZustand } from './db';
 import {
-  aendereEinstellungen, ladeEinstellungen, loescheEigeneUebung, loescheEigenesUtensil, loescheOrt,
-  speichereEigeneUebung, speichereEigenesUtensil, speichereOrt,
+  aendereEinstellungen, beendeOnboarding, ladeEinstellungen, loescheEigeneUebung, loescheEigenesUtensil, loescheOrt,
+  speichereEigeneUebung, speichereEigenesUtensil, speichereOrt, speichereTesttag,
 } from './speichern';
 
 let nr = 0;
@@ -96,5 +97,32 @@ describe('Eigene Übungen und Utensilien', () => {
     await speichereOrt(ort([], 'garage'), d);
     expect(await loescheEigenesUtensil(sack.id, d)).toBe(true);
     expect((await ladeZustand(d)).eigeneUtensilien).toEqual([]);
+  });
+});
+
+describe('Onboarding', () => {
+  it('speichert den Testtag mit Max-Tests, Startvarianten und schließt das Onboarding ab', async () => {
+    const d = neueDb();
+    await speichereOrt(ort(), d);
+    const jetzt = '2026-10-20T18:00:00';
+    const geplant = testtagEinheit(await ladeZustand(d), 'zuhause', jetzt);
+    const e: Einheit = {
+      ...geplant,
+      bloecke: geplant.bloecke.map((b) => ({ ...b, positionen: b.positionen.map((p) => ({ ...p, ergebnisse: [{ nr: 1, wdh: 10, sek: 40, zeit: jetzt }] })) })),
+    };
+    await speichereTesttag(e, jetzt, d);
+    const z = await ladeZustand(d);
+    expect(z.maxTests).toHaveLength(4);
+    expect(z.muster.map((m) => m.muster).sort()).toEqual(['Knie', 'Rumpf', 'hDruck', 'vZug']);
+    expect(z.einheiten.map((x) => x.format)).toEqual(['test']);
+    expect(z.wochen).toEqual([]);
+    expect((await ladeEinstellungen(d)).onboardingAbgeschlossen).toBe(true);
+  });
+
+  it('Überspringen schließt das Onboarding ohne Trainingsdaten ab', async () => {
+    const d = neueDb();
+    await beendeOnboarding(d);
+    expect((await ladeEinstellungen(d)).onboardingAbgeschlossen).toBe(true);
+    expect((await ladeZustand(d)).maxTests).toEqual([]);
   });
 });

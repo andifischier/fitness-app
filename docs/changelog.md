@@ -82,3 +82,15 @@
   Spezifikation angepasst.
 - **Warum:** Arbeitspaket 4 der Spezifikation; Grundlage für Onboarding (Paket 5) und die
   Trainingsscreens.
+
+## Paket 5: Onboarding und Testtag (20.10.2026)
+- **Was:** Beim ersten Start führt Heute direkt ins Onboarding (Vollbild, 5 Schritte, alles
+  vorausgefüllt): Ziele und Level; übliche Einheiten, Dauer und Muskelprioritäten; erster Ort mit
+  Equipment; optionale Einschränkungen (Hinweis auf Favoriten und Ausschlüsse im Tab Übungen);
+  Testtag oder Überspringen. Testtag: Aufwärmen als Checkliste, dann Liegestütz, Klimmzug (bei 0:
+  Hängen mit Stoppuhr), Kniebeuge und Plank mit Zähler bzw. Stoppuhr; Tests, die am Ort nicht gehen,
+  entfallen. Die Ergebnisse setzen Musterstufe, Startvariante (als Hauptvariante A) und Startziel
+  (70 %) und werden als Max-Tests gespeichert. Neue Logik `src/logik/testtag.ts` mit Tests;
+  `schliesseEinheitAb` lässt die Woche beim Testtag unverändert und speichert Max-Tests in der
+  Einheit der Übung. Drei Entscheidungen in `docs/entscheidungen.md`, Spezifikation angepasst.
+- **Warum:** Arbeitspaket 5 der Spezifikation.
