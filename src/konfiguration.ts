@@ -101,14 +101,60 @@ export const SUPERSATZ_PAARE: readonly (readonly [readonly MusterId[], readonly 
   [['Rumpf'], ['Waden']],
 ];
 
-// Erholungsfenster: ab dieser Zahl fraktioneller Sätze gilt das Fenster in Stunden
+// Art der Übung nach Muster: Grundübung, Isolation, Zusatz (Bauch und Waden, außerhalb des
+// Zeitbudgets) oder Kondition (nur Zirkel und Aufwärmen)
+export const MUSTER_ART: Record<MusterId, 'grund' | 'isolation' | 'zusatz' | 'kondition'> = {
+  hDruck: 'grund', vDruck: 'grund', hZug: 'grund', vZug: 'grund', Knie: 'grund', Einbein: 'grund', Huefte: 'grund',
+  Bizeps: 'isolation', Trizeps: 'isolation', Schulter: 'isolation',
+  Rumpf: 'zusatz', Waden: 'zusatz', Kondition: 'kondition',
+};
+
+// Fokus-Gruppen; Bauch ist immer erlaubt
+export const FOKUS_GRUPPEN: Record<'oben' | 'unten', readonly Muskel[]> = {
+  oben: ['Brust', 'Ruecken', 'Schultern', 'Bizeps', 'Trizeps'],
+  unten: ['Quadrizeps', 'Gesaess', 'HintereOS', 'Waden'],
+};
+
+// Rangfolge der Lasttypen bei der Wahl der Hauptvarianten (kleiner = bevorzugt)
+export const LASTTYP_RANG = { Last: 0, Band: 1, KG: 2, Zeit: 3 } as const;
+
+// Ersatz, wenn ein Muster am Ort keine Variante hat (der Reihe nach)
+export const ERSATZ: Partial<Record<MusterId, readonly ({ uebung: string } | { muster: MusterId })[]>> = {
+  vZug: [{ uebung: 'band_latzug' }, { uebung: 'tischrudern' }, { muster: 'hZug' }],
+  Bizeps: [{ uebung: 'chinup' }, { uebung: 'tischrudern' }],
+  Schulter: [{ muster: 'vDruck' }],
+};
+
+// Sperren nach Körperregion: gesperrte Muster und Übungen; Ausnahmen bleiben erlaubt
+export const SPERREN_NACH_REGION: Record<string, { muster: readonly MusterId[]; uebungen: readonly string[]; ausnahmen: readonly string[] }> = {
+  schulter: { muster: ['vDruck', 'Schulter'], uebungen: ['dips', 'bank_dips', 'archer_liegestuetz', 'wand_hs_liegestuetz'], ausnahmen: [] },
+  ellbogen: { muster: ['Bizeps', 'Trizeps'], uebungen: ['dips', 'bank_dips'], ausnahmen: [] },
+  handgelenk: {
+    muster: [],
+    uebungen: [
+      'knieliegestuetz', 'liegestuetz_erhoeht_haende', 'liegestuetz', 'liegestuetz_fuesse_erhoeht', 'liegestuetz_band',
+      'ringe_liegestuetz', 'archer_liegestuetz', 'diamond_liegestuetz', 'wand_hs_liegestuetz',
+      'pike_liegestuetz', 'pike_erhoeht', 'burpees', 'mountain_climbers',
+    ],
+    ausnahmen: [],
+  },
+  untererRuecken: {
+    muster: ['Huefte'], uebungen: ['kh_rudern_vorgebeugt', 'lh_rudern'],
+    ausnahmen: ['glute_bridge', 'mini_glute_bridge', 'hip_thrust_einbeinig'],
+  },
+  knie: { muster: ['Knie', 'Einbein'], uebungen: ['sprung_kniebeuge', 'skater', 'burpees', 'kh_thruster'], ausnahmen: [] },
+  huefte: { muster: ['Einbein', 'Huefte'], uebungen: ['skater'], ausnahmen: [] },
+};
+
+// Erholungsfenster: Fenster der höchsten Stufe, deren Grenze die fraktionellen Sätze der letzten
+// Einheit überschreiten; ab 10 Sätzen 72 Std.
 export const ERHOLUNG = {
   fenster: [
-    { abSaetzen: 10, stunden: 72 },
-    { abSaetzen: 7, stunden: 48 },
-    { abSaetzen: 4, stunden: 36 },
-    { abSaetzen: 0, stunden: 24 },
+    { ueberSaetzen: 0, stunden: 24 },
+    { ueberSaetzen: 3, stunden: 36 },
+    { ueberSaetzen: 6, stunden: 48 },
   ],
+  maxFenster: { abSaetzen: 10, stunden: 72 },
   zuschlagZuSchwerStunden: 24,
 } as const;
 
