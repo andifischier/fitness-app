@@ -1,0 +1,2900 @@
+{
+ "schemaVersion": 2,
+ "uebungen": [
+  {
+   "id": "knieliegestuetz",
+   "name": "Knieliegestütz",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 1,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Knieliegest%C3%BCtz+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "liegestuetz_erhoeht_haende",
+   "name": "Liegestütz, Hände erhöht",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 2,
+   "equipment": [
+    [
+     "ERH"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Liegest%C3%BCtz%2C+H%C3%A4nde+erh%C3%B6ht+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "band_brustpresse",
+   "name": "Band-Brustpresse stehend",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 3,
+   "equipment": [
+    [
+     "BAND"
+    ],
+    [
+     "ANKER",
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Brustpresse+stehend+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "liegestuetz",
+   "name": "Liegestütz",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 4,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Liegest%C3%BCtz+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_bodendruecken",
+   "name": "Kurzhantel-Bodendrücken",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 4,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Bodendr%C3%BCcken+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "liegestuetz_fuesse_erhoeht",
+   "name": "Liegestütz, Füße erhöht",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "ERH"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Liegest%C3%BCtz%2C+F%C3%BC%C3%9Fe+erh%C3%B6ht+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_bankdruecken",
+   "name": "Kurzhantel-Bankdrücken",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ],
+    [
+     "BANK",
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Bankdr%C3%BCcken+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_schraegbank",
+   "name": "Kurzhantel-Schrägbankdrücken",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Schultern",
+    "Trizeps"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ],
+    [
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Schr%C3%A4gbankdr%C3%BCcken+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "liegestuetz_band",
+   "name": "Liegestütz mit Band",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 6,
+   "equipment": [
+    [
+     "BAND"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Liegest%C3%BCtz+mit+Band+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "lh_bankdruecken",
+   "name": "Langhantel-Bankdrücken",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 6,
+   "equipment": [
+    [
+     "LH"
+    ],
+    [
+     "BANK",
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 6,
+    "bis": 10,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Langhantel-Bankdr%C3%BCcken+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "dips",
+   "name": "Dips am Barren",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 7,
+   "equipment": [
+    [
+     "DIP"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 6,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dips+am+Barren+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "ringe_liegestuetz",
+   "name": "Liegestütz an Ringen",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 7,
+   "equipment": [
+    [
+     "RINGE"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Liegest%C3%BCtz+an+Ringen+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "archer_liegestuetz",
+   "name": "Archer-Liegestütz",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 8,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 6,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Archer-Liegest%C3%BCtz+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "band_schulterdruecken",
+   "name": "Band-Schulterdrücken",
+   "muster": "vDruck",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Trizeps"
+   ],
+   "stufe": 3,
+   "equipment": [
+    [
+     "BAND"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Schulterdr%C3%BCcken+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "pike_liegestuetz",
+   "name": "Pike-Liegestütz",
+   "muster": "vDruck",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Trizeps"
+   ],
+   "stufe": 4,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Pike-Liegest%C3%BCtz+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_schulterdruecken_stehend",
+   "name": "Kurzhantel-Schulterdrücken stehend",
+   "muster": "vDruck",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Trizeps"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Schulterdr%C3%BCcken+stehend+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_schulterdruecken_sitzend",
+   "name": "Kurzhantel-Schulterdrücken sitzend",
+   "muster": "vDruck",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Trizeps"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ],
+    [
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Schulterdr%C3%BCcken+sitzend+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "arnold_press",
+   "name": "Arnold-Press",
+   "muster": "vDruck",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Trizeps"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Arnold-Press+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kb_schulterdruecken",
+   "name": "Kettlebell-Schulterdrücken",
+   "muster": "vDruck",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Trizeps"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KB"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kettlebell-Schulterdr%C3%BCcken+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "pike_erhoeht",
+   "name": "Pike-Liegestütz, Füße erhöht",
+   "muster": "vDruck",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Trizeps"
+   ],
+   "stufe": 6,
+   "equipment": [
+    [
+     "ERH"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 6,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Pike-Liegest%C3%BCtz%2C+F%C3%BC%C3%9Fe+erh%C3%B6ht+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "lh_ueberkopf",
+   "name": "Langhantel-Überkopfdrücken",
+   "muster": "vDruck",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Trizeps"
+   ],
+   "stufe": 6,
+   "equipment": [
+    [
+     "LH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 6,
+    "bis": 10,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Langhantel-%C3%9Cberkopfdr%C3%BCcken+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "wand_hs_liegestuetz",
+   "name": "Handstand-Liegestütz an der Wand",
+   "muster": "vDruck",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Trizeps"
+   ],
+   "stufe": 9,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 3,
+    "bis": 8,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Handstand-Liegest%C3%BCtz+an+der+Wand+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "band_rudern",
+   "name": "Band-Rudern sitzend",
+   "muster": "hZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps",
+    "Schultern"
+   ],
+   "stufe": 3,
+   "equipment": [
+    [
+     "BAND"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Rudern+sitzend+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "band_face_pull",
+   "name": "Band-Face-Pull",
+   "muster": "hZug",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Ruecken"
+   ],
+   "stufe": 3,
+   "equipment": [
+    [
+     "BAND"
+    ],
+    [
+     "ANKER",
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Face-Pull+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "tischrudern",
+   "name": "Rudern unter dem Tisch",
+   "muster": "hZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps",
+    "Schultern"
+   ],
+   "stufe": 4,
+   "equipment": [
+    [
+     "TISCH"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Rudern+unter+dem+Tisch+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_rudern_einarmig",
+   "name": "Kurzhantel-Rudern einarmig",
+   "muster": "hZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps",
+    "Schultern"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ],
+    [
+     "BANK",
+     "SCHRAEG",
+     "ERH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Rudern+einarmig+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_rudern_vorgebeugt",
+   "name": "Kurzhantel-Rudern vorgebeugt",
+   "muster": "hZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps",
+    "Schultern"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Rudern+vorgebeugt+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_rudern_brustgestuetzt",
+   "name": "Brustgestütztes Kurzhantel-Rudern",
+   "muster": "hZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps",
+    "Schultern"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ],
+    [
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Brustgest%C3%BCtztes+Kurzhantel-Rudern+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kb_rudern",
+   "name": "Kettlebell-Rudern",
+   "muster": "hZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps",
+    "Schultern"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KB"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kettlebell-Rudern+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "ringe_rudern",
+   "name": "Rudern an Ringen",
+   "muster": "hZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps",
+    "Schultern"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "RINGE"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Rudern+an+Ringen+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "lh_rudern",
+   "name": "Langhantel-Rudern",
+   "muster": "hZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps",
+    "Schultern"
+   ],
+   "stufe": 6,
+   "equipment": [
+    [
+     "LH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 6,
+    "bis": 10,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Langhantel-Rudern+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "scapula_pullups",
+   "name": "Schulterblatt-Klimmzüge",
+   "muster": "vZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [],
+   "stufe": 1,
+   "equipment": [
+    [
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Schulterblatt-Klimmz%C3%BCge+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "band_latzug",
+   "name": "Band-Latzug kniend",
+   "muster": "vZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps"
+   ],
+   "stufe": 2,
+   "equipment": [
+    [
+     "BAND"
+    ],
+    [
+     "ANKER",
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Latzug+kniend+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "negative_klimmzuege",
+   "name": "Negative Klimmzüge",
+   "muster": "vZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps"
+   ],
+   "stufe": 3,
+   "equipment": [
+    [
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 3,
+    "bis": 6,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Negative+Klimmz%C3%BCge+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "klimmzug_band",
+   "name": "Klimmzug mit Bandunterstützung",
+   "muster": "vZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps"
+   ],
+   "stufe": 4,
+   "equipment": [
+    [
+     "STANGE"
+    ],
+    [
+     "BAND"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 6,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Klimmzug+mit+Bandunterst%C3%BCtzung+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": true
+  },
+  {
+   "id": "chinup",
+   "name": "Klimmzug Untergriff (Chin-up)",
+   "muster": "vZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 5,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Klimmzug+Untergriff+%28Chin-up%29+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "klimmzug",
+   "name": "Klimmzug Obergriff",
+   "muster": "vZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps"
+   ],
+   "stufe": 6,
+   "equipment": [
+    [
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 5,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Klimmzug+Obergriff+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "klimmzug_gewicht",
+   "name": "Klimmzug mit Zusatzgewicht",
+   "muster": "vZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps"
+   ],
+   "stufe": 8,
+   "equipment": [
+    [
+     "STANGE"
+    ],
+    [
+     "KH",
+     "KB"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 5,
+    "bis": 10,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Klimmzug+mit+Zusatzgewicht+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kniebeuge",
+   "name": "Kniebeuge",
+   "muster": "Knie",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kniebeuge+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "band_kniebeuge",
+   "name": "Band-Kniebeuge",
+   "muster": "Knie",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 3,
+   "equipment": [
+    [
+     "BAND"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Kniebeuge+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "pausen_kniebeuge",
+   "name": "Kniebeuge mit Pause unten",
+   "muster": "Knie",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 3,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kniebeuge+mit+Pause+unten+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "goblet_squat",
+   "name": "Goblet Squat",
+   "muster": "Knie",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 4,
+   "equipment": [
+    [
+     "KH",
+     "KB"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Goblet+Squat+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_kniebeuge",
+   "name": "Kurzhantel-Kniebeuge",
+   "muster": "Knie",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Kniebeuge+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "pistol_assistiert",
+   "name": "Einbeinige Kniebeuge mit Halt",
+   "muster": "Knie",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 7,
+   "equipment": [
+    [
+     "ERH"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 5,
+    "bis": 10,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Einbeinige+Kniebeuge+mit+Halt+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "pistol",
+   "name": "Pistol Squat",
+   "muster": "Knie",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 9,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 3,
+    "bis": 8,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Pistol+Squat+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "ausfallschritt_rueck",
+   "name": "Ausfallschritt rückwärts",
+   "muster": "Einbein",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 3,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Ausfallschritt+r%C3%BCckw%C3%A4rts+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "step_up",
+   "name": "Step-up",
+   "muster": "Einbein",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 3,
+   "equipment": [
+    [
+     "ERH"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Step-up+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "bss_kg",
+   "name": "Bulgarian Split Squat",
+   "muster": "Einbein",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 4,
+   "equipment": [
+    [
+     "ERH",
+     "BANK",
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Bulgarian+Split+Squat+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_step_up",
+   "name": "Kurzhantel-Step-up",
+   "muster": "Einbein",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 4,
+   "equipment": [
+    [
+     "KH"
+    ],
+    [
+     "ERH",
+     "BANK",
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Step-up+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_ausfallschritt",
+   "name": "Kurzhantel-Ausfallschritt gehend",
+   "muster": "Einbein",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Ausfallschritt+gehend+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "bss_kh",
+   "name": "Bulgarian Split Squat mit Kurzhanteln",
+   "muster": "Einbein",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 6,
+   "equipment": [
+    [
+     "KH"
+    ],
+    [
+     "ERH",
+     "BANK",
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Bulgarian+Split+Squat+mit+Kurzhanteln+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "shrimp_squat",
+   "name": "Shrimp Squat",
+   "muster": "Einbein",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 8,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 5,
+    "bis": 10,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Shrimp+Squat+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "glute_bridge",
+   "name": "Glute Bridge",
+   "muster": "Huefte",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [
+    "HintereOS"
+   ],
+   "stufe": 1,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Glute+Bridge+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "mini_glute_bridge",
+   "name": "Glute Bridge mit Mini-Band",
+   "muster": "Huefte",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [
+    "HintereOS"
+   ],
+   "stufe": 2,
+   "equipment": [
+    [
+     "MINI"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Glute+Bridge+mit+Mini-Band+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "band_pull_through",
+   "name": "Band-Pull-Through",
+   "muster": "Huefte",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [
+    "HintereOS"
+   ],
+   "stufe": 3,
+   "equipment": [
+    [
+     "BAND"
+    ],
+    [
+     "ANKER",
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 12,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Pull-Through+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "hip_thrust_einbeinig",
+   "name": "Hip Thrust einbeinig",
+   "muster": "Huefte",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [
+    "HintereOS"
+   ],
+   "stufe": 3,
+   "equipment": [
+    [
+     "ERH",
+     "BANK",
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Hip+Thrust+einbeinig+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "sliding_leg_curl",
+   "name": "Beinbeuger mit Handtuch (Sliding Leg Curl)",
+   "muster": "Huefte",
+   "primaer": [
+    "HintereOS"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 4,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Beinbeuger+mit+Handtuch+%28Sliding+Leg+Curl%29+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_hip_thrust",
+   "name": "Kurzhantel-Hip-Thrust",
+   "muster": "Huefte",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [
+    "HintereOS"
+   ],
+   "stufe": 4,
+   "equipment": [
+    [
+     "KH"
+    ],
+    [
+     "BANK",
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Hip-Thrust+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_rdl",
+   "name": "Rumänisches Kreuzheben mit Kurzhanteln",
+   "muster": "Huefte",
+   "primaer": [
+    "HintereOS"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Rum%C3%A4nisches+Kreuzheben+mit+Kurzhanteln+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_rdl_einbeinig",
+   "name": "Einbeiniges Kreuzheben mit Kurzhantel",
+   "muster": "Huefte",
+   "primaer": [
+    "HintereOS"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH",
+     "KB"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Einbeiniges+Kreuzheben+mit+Kurzhantel+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kb_swing",
+   "name": "Kettlebell-Swing",
+   "muster": "Huefte",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [
+    "HintereOS"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KB"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kettlebell-Swing+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "lh_kreuzheben",
+   "name": "Langhantel-Kreuzheben",
+   "muster": "Huefte",
+   "primaer": [
+    "HintereOS"
+   ],
+   "sekundaer": [
+    "Gesaess",
+    "Ruecken"
+   ],
+   "stufe": 6,
+   "equipment": [
+    [
+     "LH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 5,
+    "bis": 8,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Langhantel-Kreuzheben+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "nordic_curl",
+   "name": "Nordic Curl (Füße fixiert)",
+   "muster": "Huefte",
+   "primaer": [
+    "HintereOS"
+   ],
+   "sekundaer": [],
+   "stufe": 8,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 3,
+    "bis": 8,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Nordic+Curl+%28F%C3%BC%C3%9Fe+fixiert%29+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "dead_bug",
+   "name": "Dead Bug",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 1,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dead+Bug+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "plank",
+   "name": "Unterarmstütz (Plank)",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "Zeit",
+   "bereich": {
+    "von": 20,
+    "bis": 60,
+    "einheit": "Sek."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Unterarmst%C3%BCtz+%28Plank%29+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "seitstuetz",
+   "name": "Seitstütz",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "Zeit",
+   "bereich": {
+    "von": 20,
+    "bis": 45,
+    "einheit": "Sek."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Seitst%C3%BCtz+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "band_pallof",
+   "name": "Band-Pallof-Press",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [
+    [
+     "BAND"
+    ],
+    [
+     "ANKER",
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Pallof-Press+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_russian_twist",
+   "name": "Russian Twist mit Kurzhantel",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [
+    [
+     "KH",
+     "KB"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Russian+Twist+mit+Kurzhantel+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "hollow_hold",
+   "name": "Hollow Hold",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 4,
+   "equipment": [],
+   "lasttyp": "Zeit",
+   "bereich": {
+    "von": 20,
+    "bis": 45,
+    "einheit": "Sek."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Hollow+Hold+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "haengendes_knieheben",
+   "name": "Hängendes Knieheben",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 5,
+   "equipment": [
+    [
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=H%C3%A4ngendes+Knieheben+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "haengendes_beinheben",
+   "name": "Hängendes Beinheben",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 7,
+   "equipment": [
+    [
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 6,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=H%C3%A4ngendes+Beinheben+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "band_curls",
+   "name": "Band-Curls",
+   "muster": "Bizeps",
+   "primaer": [
+    "Bizeps"
+   ],
+   "sekundaer": [],
+   "stufe": 2,
+   "equipment": [
+    [
+     "BAND"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Curls+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_curls",
+   "name": "Kurzhantel-Curls",
+   "muster": "Bizeps",
+   "primaer": [
+    "Bizeps"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Curls+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "hammer_curls",
+   "name": "Hammer-Curls",
+   "muster": "Bizeps",
+   "primaer": [
+    "Bizeps"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Hammer-Curls+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "konzentrationscurl",
+   "name": "Konzentrationscurl",
+   "muster": "Bizeps",
+   "primaer": [
+    "Bizeps"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [
+    [
+     "KH"
+    ],
+    [
+     "ERH",
+     "BANK",
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Konzentrationscurl+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "schraegbank_curls",
+   "name": "Schrägbank-Curls",
+   "muster": "Bizeps",
+   "primaer": [
+    "Bizeps"
+   ],
+   "sekundaer": [],
+   "stufe": 4,
+   "equipment": [
+    [
+     "KH"
+    ],
+    [
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Schr%C3%A4gbank-Curls+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "lh_curls",
+   "name": "Langhantel-Curls",
+   "muster": "Bizeps",
+   "primaer": [
+    "Bizeps"
+   ],
+   "sekundaer": [],
+   "stufe": 4,
+   "equipment": [
+    [
+     "LH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Langhantel-Curls+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "band_trizeps",
+   "name": "Band-Trizepsdrücken",
+   "muster": "Trizeps",
+   "primaer": [
+    "Trizeps"
+   ],
+   "sekundaer": [],
+   "stufe": 2,
+   "equipment": [
+    [
+     "BAND"
+    ],
+    [
+     "ANKER",
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Trizepsdr%C3%BCcken+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_kickback",
+   "name": "Kurzhantel-Kickback",
+   "muster": "Trizeps",
+   "primaer": [
+    "Trizeps"
+   ],
+   "sekundaer": [],
+   "stufe": 2,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 12,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Kickback+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "bank_dips",
+   "name": "Dips an der Bank",
+   "muster": "Trizeps",
+   "primaer": [
+    "Trizeps"
+   ],
+   "sekundaer": [
+    "Brust"
+   ],
+   "stufe": 3,
+   "equipment": [
+    [
+     "ERH",
+     "BANK",
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 10,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dips+an+der+Bank+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_trizeps_ueberkopf",
+   "name": "Trizepsdrücken über Kopf mit Kurzhantel",
+   "muster": "Trizeps",
+   "primaer": [
+    "Trizeps"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Trizepsdr%C3%BCcken+%C3%BCber+Kopf+mit+Kurzhantel+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_trizeps_liegend",
+   "name": "Liegendes Trizepsdrücken mit Kurzhanteln",
+   "muster": "Trizeps",
+   "primaer": [
+    "Trizeps"
+   ],
+   "sekundaer": [],
+   "stufe": 4,
+   "equipment": [
+    [
+     "KH"
+    ],
+    [
+     "BANK",
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Liegendes+Trizepsdr%C3%BCcken+mit+Kurzhanteln+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "diamond_liegestuetz",
+   "name": "Diamant-Liegestütz",
+   "muster": "Trizeps",
+   "primaer": [
+    "Trizeps"
+   ],
+   "sekundaer": [
+    "Brust"
+   ],
+   "stufe": 5,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Diamant-Liegest%C3%BCtz+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "band_pull_apart",
+   "name": "Band-Pull-Apart",
+   "muster": "Schulter",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Ruecken"
+   ],
+   "stufe": 2,
+   "equipment": [
+    [
+     "BAND"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 15,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Pull-Apart+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "band_seitheben",
+   "name": "Band-Seitheben",
+   "muster": "Schulter",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [],
+   "stufe": 2,
+   "equipment": [
+    [
+     "BAND"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Seitheben+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_seitheben",
+   "name": "Kurzhantel-Seitheben",
+   "muster": "Schulter",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Seitheben+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_reverse_flys",
+   "name": "Vorgebeugtes Seitheben (hintere Schulter)",
+   "muster": "Schulter",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Ruecken"
+   ],
+   "stufe": 3,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Vorgebeugtes+Seitheben+%28hintere+Schulter%29+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "wadenheben",
+   "name": "Wadenheben",
+   "muster": "Waden",
+   "primaer": [
+    "Waden"
+   ],
+   "sekundaer": [],
+   "stufe": 1,
+   "equipment": [
+    [
+     "ERH"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 15,
+    "bis": 25,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Wadenheben+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "wadenheben_einbeinig",
+   "name": "Wadenheben einbeinig",
+   "muster": "Waden",
+   "primaer": [
+    "Waden"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [
+    [
+     "ERH"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 10,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Wadenheben+einbeinig+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_wadenheben",
+   "name": "Kurzhantel-Wadenheben",
+   "muster": "Waden",
+   "primaer": [
+    "Waden"
+   ],
+   "sekundaer": [],
+   "stufe": 4,
+   "equipment": [
+    [
+     "KH"
+    ],
+    [
+     "ERH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Wadenheben+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "hampelmann",
+   "name": "Hampelmann",
+   "muster": "Kondition",
+   "primaer": [],
+   "sekundaer": [
+    "Waden"
+   ],
+   "stufe": 1,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 20,
+    "bis": 50,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Hampelmann+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "high_knees",
+   "name": "Kniehebelauf auf der Stelle",
+   "muster": "Kondition",
+   "primaer": [],
+   "sekundaer": [
+    "Quadrizeps"
+   ],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 20,
+    "bis": 50,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kniehebelauf+auf+der+Stelle+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "mountain_climbers",
+   "name": "Mountain Climbers",
+   "muster": "Kondition",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [
+    "Schultern"
+   ],
+   "stufe": 3,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 20,
+    "bis": 40,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Mountain+Climbers+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "seilspringen",
+   "name": "Seilspringen",
+   "muster": "Kondition",
+   "primaer": [
+    "Waden"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [
+    [
+     "SEIL"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 50,
+    "bis": 150,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Seilspringen+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "skater",
+   "name": "Skater-Sprünge",
+   "muster": "Kondition",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [
+    "Quadrizeps"
+   ],
+   "stufe": 4,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 16,
+    "bis": 30,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Skater-Spr%C3%BCnge+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "sprung_kniebeuge",
+   "name": "Sprung-Kniebeuge",
+   "muster": "Kondition",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 4,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 10,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Sprung-Kniebeuge+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "burpees",
+   "name": "Burpees",
+   "muster": "Kondition",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Quadrizeps",
+    "Schultern"
+   ],
+   "stufe": 5,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Burpees+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  },
+  {
+   "id": "kh_thruster",
+   "name": "Kurzhantel-Thruster",
+   "muster": "Kondition",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Schultern",
+    "Gesaess",
+    "Trizeps"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Thruster+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false
+  }
+ ],
+ "zirkel": [
+  {
+   "id": "sprint",
+   "name": "Sprint",
+   "runden": 4,
+   "dauerHinweis": "ca. 10 Min",
+   "stationen": [
+    {
+     "muster": "Kondition",
+     "vorgabe": 10,
+     "hinweis": "Burpees bevorzugt"
+    },
+    {
+     "muster": "Knie",
+     "vorgabe": 20,
+     "hinweis": ""
+    },
+    {
+     "muster": "hDruck",
+     "vorgabe": 10,
+     "hinweis": ""
+    },
+    {
+     "muster": "Kondition",
+     "vorgabe": 20,
+     "hinweis": "Mountain Climbers bevorzugt"
+    }
+   ]
+  },
+  {
+   "id": "fundament",
+   "name": "Fundament",
+   "runden": 5,
+   "dauerHinweis": "ca. 15 Min",
+   "stationen": [
+    {
+     "muster": "Knie",
+     "vorgabe": 15,
+     "hinweis": ""
+    },
+    {
+     "muster": "hDruck",
+     "vorgabe": 10,
+     "hinweis": ""
+    },
+    {
+     "muster": "hZug",
+     "vorgabe": 10,
+     "hinweis": ""
+    },
+    {
+     "muster": "Rumpf",
+     "vorgabe": "30 Sek.",
+     "hinweis": "Plank bevorzugt"
+    }
+   ]
+  },
+  {
+   "id": "leiter",
+   "name": "Leiter",
+   "runden": 1,
+   "dauerHinweis": "ca. 12 Min",
+   "stationen": [
+    {
+     "muster": "hDruck",
+     "vorgabe": "2-4-6-8-10",
+     "hinweis": "Leiter: jede Stufe alle drei Übungen"
+    },
+    {
+     "muster": "Knie",
+     "vorgabe": "2-4-6-8-10",
+     "hinweis": ""
+    },
+    {
+     "muster": "Rumpf",
+     "vorgabe": "2-4-6-8-10",
+     "hinweis": "Dead Bug oder Knieheben"
+    }
+   ]
+  },
+  {
+   "id": "kraftprobe",
+   "name": "Kraftprobe",
+   "runden": 4,
+   "dauerHinweis": "ca. 15 Min",
+   "stationen": [
+    {
+     "muster": "Kondition",
+     "vorgabe": 10,
+     "hinweis": "Thruster, ohne Kurzhanteln Sprung-Kniebeuge"
+    },
+    {
+     "muster": "hZug",
+     "vorgabe": 10,
+     "hinweis": ""
+    },
+    {
+     "muster": "Einbein",
+     "vorgabe": "10 je Seite",
+     "hinweis": ""
+    },
+    {
+     "muster": "vDruck",
+     "vorgabe": 10,
+     "hinweis": ""
+    }
+   ]
+  },
+  {
+   "id": "ausdauer",
+   "name": "Ausdauer",
+   "runden": 3,
+   "dauerHinweis": "ca. 16 Min",
+   "stationen": [
+    {
+     "muster": "Kondition",
+     "vorgabe": 50,
+     "hinweis": "Hampelmann bevorzugt"
+    },
+    {
+     "muster": "Huefte",
+     "vorgabe": 15,
+     "hinweis": ""
+    },
+    {
+     "muster": "hDruck",
+     "vorgabe": 12,
+     "hinweis": ""
+    },
+    {
+     "muster": "Einbein",
+     "vorgabe": 20,
+     "hinweis": "gesamt"
+    },
+    {
+     "muster": "Rumpf",
+     "vorgabe": "30 Sek.",
+     "hinweis": "Seitstütz je Seite"
+    }
+   ]
+  }
+ ],
+ "aufwaermen": {
+  "allgemein": [
+   "60 Sek. Hampelmann",
+   "30 Sek. Armkreisen vorwärts und rückwärts",
+   "10 Kniebeugen ohne Last"
+  ],
+  "mobility": {
+   "hDruck": [
+    "10 Wand-Slides",
+    "10 Band-Pull-Aparts (nur mit BAND)"
+   ],
+   "vDruck": [
+    "10 Wand-Slides",
+    "10 Band-Pull-Aparts (nur mit BAND)"
+   ],
+   "hZug": [
+    "10 Schulterblatt-Rudern im Stand",
+    "5 Schulterblatt-Klimmzüge (nur mit STANGE)"
+   ],
+   "vZug": [
+    "10 Schulterblatt-Rudern im Stand",
+    "5 Schulterblatt-Klimmzüge (nur mit STANGE)"
+   ],
+   "Knie": [
+    "5 Ausfallschritte mit Oberkörperdrehung je Seite"
+   ],
+   "Einbein": [
+    "5 Ausfallschritte mit Oberkörperdrehung je Seite"
+   ],
+   "Huefte": [
+    "10 Good Mornings ohne Last",
+    "30 Sek. Hüftbeuger-Dehnung kniend je Seite"
+   ],
+   "Rumpf": [
+    "8 Katze-Kuh"
+   ]
+  },
+  "maxMobilityZeilen": 3,
+  "aufwaermsatz": {
+   "anteilLast": 0.5,
+   "wdh": 8
+  }
+ },
+ "utensilien": [
+  {
+   "id": "KH",
+   "name": "Kurzhanteln",
+   "details": "Modus verstellbar (Min, Max, Schritt in kg) oder feste Paare (Liste in kg)",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "BANK",
+   "name": "Hantelbank flach",
+   "details": "keine",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "SCHRAEG",
+   "name": "Hantelbank verstellbar (schräg)",
+   "details": "keine; schließt flach ein",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "STANGE",
+   "name": "Klimmzugstange",
+   "details": "keine",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "BAND",
+   "name": "Widerstandsbänder (lang)",
+   "details": "vorhandene Stufen: leicht, mittel, schwer, extra schwer",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "ANKER",
+   "name": "Türanker für Bänder",
+   "details": "keine",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "MINI",
+   "name": "Mini-Bänder (Loops)",
+   "details": "vorhandene Stufen",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "KB",
+   "name": "Kettlebell",
+   "details": "Liste der Gewichte in kg",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "LH",
+   "name": "Langhantel mit Scheiben",
+   "details": "Stangengewicht in kg; Scheiben als Liste aus Gewicht und Anzahl Paare",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "DIP",
+   "name": "Dip-Barren",
+   "details": "keine",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "RINGE",
+   "name": "Ringe / Schlingentrainer",
+   "details": "keine",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "SEIL",
+   "name": "Springseil",
+   "details": "keine",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "TISCH",
+   "name": "Stabiler Tisch",
+   "details": "keine",
+   "immerVorhanden": true,
+   "eigenes": false
+  },
+  {
+   "id": "ERH",
+   "name": "Erhöhung (Stuhl, Kasten, Stufe)",
+   "details": "keine",
+   "immerVorhanden": true,
+   "eigenes": false
+  }
+ ]
+}
