@@ -1,11 +1,12 @@
 // Nur für Tests: Test-Katalog, Ort „Zuhause“ und ein einfacher Simulator, der erledigte Einheiten
-// wie später `schliesseEinheitAb` in Woche und Muskeln fortschreibt.
+// wie `schliesseEinheitAb` in Woche und Muskeln fortschreibt, aber ohne Progression (die Use Cases
+// prüfen nur die Planung, wie der Planungs-Prototyp).
 import { KATALOG } from '../daten/katalog';
 import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
 import { plusTage, isoWoche } from './datum';
 import { dosisProMuskel, einstellungenVon, erstelleEinheit, persoenlicheGrenze, startfragen } from './planung';
 import {
-  MUSKELN, type AppZustand, type Einheit, type Einstellungen, type Muskel, type MuskelZustand, type Ort, type OrtEquipment,
+  MUSKELN, type AppZustand, type Einheit, type Einstellungen, type MaxTest, type Muskel, type MuskelZustand, type Ort, type OrtEquipment,
 } from './typen';
 
 // Test-Katalog laut Spezifikation, Abschnitt „Simulation der Use Cases“
@@ -31,14 +32,24 @@ export function ort(utensilien: string[] = ['KH', 'SCHRAEG', 'STANGE', 'BAND', '
   return { id, name: id, standard: id === 'zuhause', equipment };
 }
 
-export function zustand(opt: { katalog?: 'test' | 'voll'; einstellungen?: Partial<Einstellungen>; orte?: Ort[] } = {}): AppZustand {
+// Testtag am Sonntag vor der Testwoche: In der Woche ist kein Max-Test fällig (wie in den Use Cases).
+export const TESTTAG: MaxTest[] = [
+  { id: 't-hDruck', datum: '2026-10-18T10:00:00', muster: 'hDruck', uebungId: 'liegestuetz', ergebnis: 20, einheit: 'Wdh.' },
+  { id: 't-vZug', datum: '2026-10-18T10:00:00', muster: 'vZug', uebungId: 'klimmzug', ergebnis: 8, einheit: 'Wdh.' },
+  { id: 't-Knie', datum: '2026-10-18T10:00:00', muster: 'Knie', uebungId: 'kniebeuge', ergebnis: 25, einheit: 'Wdh.' },
+  { id: 't-Rumpf', datum: '2026-10-18T10:00:00', muster: 'Rumpf', uebungId: 'plank', ergebnis: 60, einheit: 'Sek.' },
+];
+
+export function zustand(opt: {
+  katalog?: 'test' | 'voll'; einstellungen?: Partial<Einstellungen>; orte?: Ort[]; maxTests?: MaxTest[];
+} = {}): AppZustand {
   const uebungen = opt.katalog === 'voll' ? KATALOG.uebungen : KATALOG.uebungen.filter((u) => TEST_IDS.includes(u.id));
   return {
     katalog: { ...KATALOG, uebungen },
     einstellungen: [{ ...STANDARD_EINSTELLUNGEN, ...opt.einstellungen }],
     orte: opt.orte ?? [ort()],
     eigeneUebungen: [], eigeneUtensilien: [], varianten: [], muster: [], muskeln: [],
-    wochen: [], zyklen: [], einheiten: [], zirkelErgebnisse: [], maxTests: [],
+    wochen: [], zyklen: [], einheiten: [], zirkelErgebnisse: [], maxTests: opt.maxTests ?? TESTTAG,
   };
 }
 

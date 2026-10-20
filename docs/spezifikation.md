@@ -192,19 +192,20 @@ interface Einstellungen {
 // Trainingszustand (wird nur vom Planungsmodul geschrieben)
 interface VarianteZustand { uebungId: string; last?: number; bandStufe?: BandStufe;
   zielWdh: number; e1rm?: number; bestErsterSatz?: number;
-  seitSteigerung: number; schwerSerie: number; zuletzt?: string }
+  seitSteigerung: number; schwerSerie: number; zuletzt?: string;
+  langsam?: boolean }               // 3 Sek. absenken (Zwischenstufe oder schwerste Last erreicht)
 interface MusterZustand { muster: MusterId; stufe: number; hauptvarianten: string[] } // max. 2 je Zyklus; letzter Test steht in maxTests
 interface MuskelZustand { muskel: Muskel; letzteBelastung?: string; letzteDosis: number; letzteSchwer: boolean;
   persoenlicheGrenze: number; gleichWochen: number; leistung: { woche: string; wert: number }[] }
 interface Woche { id: string; prognose: number; einheiten: number;
   ziele: Record<Muskel, number>; erledigt: Record<Muskel, number>;
-  erholungswoche: boolean; laengerAngenommen: boolean }
+  erholungswoche: boolean; laengerAngenommen: boolean; ausgewertet?: boolean }  // ausgewertet: Wochenabschluss gelaufen
 interface Zyklus { nr: number; start: string; ende?: string; grund?: 'zeitablauf'|'erholungswoche' }
 
 // Einheiten
 interface SatzErgebnis { nr: number; wdh?: number; sek?: number; last?: number; bandStufe?: BandStufe; zeit: string }
 interface Position { uebungId: string; saetze: number; zielWdh: number; last?: number; bandStufe?: BandStufe;
-  istMaxTest?: boolean; istErsatz?: boolean; getauschtVon?: string;
+  istMaxTest?: boolean; istErsatz?: boolean; getauschtVon?: string; langsam?: boolean;
   ergebnisse: SatzErgebnis[]; feedback?: Feedback }
 interface Block { typ: 'einzeln'|'supersatz'|'zirkel'; positionen: Position[];
   pauseSek: number; zirkelId?: string; runden?: number }
@@ -436,9 +437,11 @@ Ziel und Last werden pro Variante fortgeschrieben. Das Wiederholungsziel gilt f�
 
 **Ergebnis der 12-Wochen-Simulation** (Python-Prototyp `progression_prototyp.py`, simulierter Trainierender mit rund 0,5 bis 1 % Kraftzuwachs pro Woche, Frequenzen 1 bis 5, 50 Zufallsverläufe): im Schnitt 0,02 Lastrückschritte, die erste Laststeigerung von 16 auf 18,5 kg nach 5 bis 7 Wochen, fast alle Bewertungen „passend“. Die Kraftschätzung liegt bis zu 3 % unter der echten Kraft; sie ist bewusst vorsichtig, Max-Tests und „zu leicht“ korrigieren sie nach oben. Eine frühere Regelversion (Ziel für alle Sätze, keine Kraftschätzung) pendelte ständig zwischen zwei Gewichten und senkte das Volumen fälschlich; das ist damit behoben.
 
-**12-Wochen-Tests in TypeScript:** eigener Simulator mit festem Zufallsstartwert (z. B. mulberry32) und demselben Modell wie der Prototyp. Geprüft werden Eigenschaften, keine exakten Zahlen: über 50 Startwerte im Schnitt höchstens 0,1 Lastrückschritte, in keinem Verlauf mehr als 1; erste Laststeigerung spätestens in Woche 8; kein Muster Last A, B, A innerhalb von 3 Einheiten.
+**12-Wochen-Tests in TypeScript:** eigener Simulator mit festem Zufallsstartwert (z. B. mulberry32) und demselben Modell wie der Prototyp. Geprüft werden Eigenschaften, keine exakten Zahlen: über 50 Startwerte im Schnitt höchstens 0,1 Lastrückschritte, in keinem Verlauf mehr als 1; erste Laststeigerung im Schnitt spätestens in Woche 8 (in keinem Verlauf nach Woche 10; auch der Prototyp liegt bei 2 Einheiten pro Woche in einzelnen Verläufen bei Woche 9); kein Muster Last A, B, A innerhalb von 3 Einheiten.
 
-**Wenn die Last ausgeht** (schwerste Kurzhantel erreicht): Progression in dieser Reihenfolge über langsameres Tempo (3 Sek. absenken), Wiederholungsbereich bis O + 5, einseitige Variante, nächste Variante im Muster.
+**Wenn die Last ausgeht** (schwerste Kurzhantel erreicht): Progression in dieser Reihenfolge über langsameres Tempo (3 Sek. absenken, Ziel U), Wiederholungsbereich bis O + 5, einseitige Variante (falls im Katalog und am Ort vorhanden, z. B. Rumänisches Kreuzheben einbeinig; sonst direkt der nächste Schritt; Entscheidung 20.10.2026), nächste Variante im Muster.
+
+**Nächste Variante:** die am Ort mögliche, nicht gesperrte und nicht ausgeschlossene Variante desselben Musters mit der kleinsten höheren Stufe; bei Gleichstand derselbe Lasttyp, dann Last vor Band vor KG vor Zeit. Der Wechsel ersetzt die Hauptvariante; die alte Variante behält ihre Werte.
 
 ### Musterstufe und Variantenwechsel
 
@@ -465,7 +468,9 @@ Diese Regel ist eine Designentscheidung auf Basis der Dosis-Wirkungs-Daten, kein
 
 **Leistung pro Muskel:** Jede Hauptvariante hat einen Leistungswert: e1RM bei Lasttyp Last, Wiederholungen des ersten Satzes bei KG und Band, Sekunden bei Zeit. Je Variante zählt die relative Veränderung gegenüber dem 2-Wochen-Mittel davor. Die Leistung eines Muskels ist das Mittel dieser Veränderungen über alle Hauptvarianten, in denen der Muskel primär ist. Varianten, die in der Woche gewechselt wurden, zählen nicht.
 
-**Wochenabschluss:** Läuft beim Öffnen der App für alle abgeschlossenen, noch nicht ausgewerteten Wochen nacheinander (Nachholen). Er passt die Grenzen an und prüft die Auslöser für Erholungswochen.
+Der Deckel wirkt beim Anheben: Die Grenze steigt nie über bestes Wochenvolumen + 4, wird durch ihn aber nicht gesenkt (sonst würden schwache Wochen die Grenze verändern).
+
+**Wochenabschluss:** Läuft beim Öffnen der App für alle abgeschlossenen, noch nicht ausgewerteten Wochen nacheinander (Nachholen; `Woche.ausgewertet`). Er speichert die Leistung je Muskel, passt die Grenzen an und beendet bei Bedarf den Zyklus (nach 6 Wochen oder mit einer Erholungswoche). Die Auslöser für Erholungswochen prüft die App bei der ersten Einheit der Folgewoche (siehe unten).
 
 ### Erholungswochen (nur reaktiv)
 
@@ -474,6 +479,8 @@ Ein fester Deload-Rhythmus entfällt: Eine Woche Pause brachte in der bisher ein
 - Leistung sinkt bei mindestens 2 Mustern in 2 aufeinanderfolgenden Einheiten (weniger Wiederholungen bei gleicher Last; bei KG und Band: erster Satz derselben Variante 2 oder mehr Wiederholungen unter dem Mittel der beiden vorherigen Einheiten).
 - Gesamtanstrengung über die letzten 4 Workouts im Schnitt 4,5 oder höher.
 - 10 Wochen ohne eine Woche unter 60 % des üblichen Volumens: dann nur als Angebot, das abgelehnt werden kann. **Übliches Volumen** = Mittel der erledigten Wochensätze (alle Muskeln) der letzten 4 Wochen.
+
+**Alle drei Auslöser sind nur ein Angebot** (Entscheidung 20.10.2026): Bei der ersten Einheit einer Woche, zusammen mit der Frage nach der Wochenprognose, fragt die App, ob diese Woche eine Erholungswoche sein soll. Ausgewertet werden die Daten bis Ende der Vorwoche. Die Antwort gilt für die ganze Woche (`Woche.erholungswoche`); direkt nach einer Erholungswoche kommt kein neues Angebot.
 
 In der Erholungswoche: Volumen 50 %, Last und Reserve unverändert (die Intensität erhält die Leistung), keine Max-Tests, keine Zirkel. Danach beginnt ein neuer Zyklus.
 
@@ -485,13 +492,15 @@ In der Erholungswoche: Volumen 50 %, Last und Reserve unverändert (die Intensit
 | 8 bis 21 Tage | Erste Einheit je Muster mit Ziel-Reserve 3, Wochenziel in dieser Woche 70 % |
 | über 21 Tage | Zusätzlich 10 % weniger Last bzw. eine Variantenstufe leichter; Wochenziel 2 Wochen lang 70 % |
 
+„Ziel-Reserve 3“ heißt: Ziel im ersten Satz 2 Wdh. unter dem letzten Ziel der Variante, bei Halteübungen 10 Sek. weniger (Entscheidung 20.10.2026). Grund: Nach 1 bis 3 Wochen Pause sind Kraft, Sehnen und Gelenke etwas aus der Übung; eine leichtere erste Einheit je Muster vermeidet verfehlte Ziele, starken Muskelkater und Zerrungen. Ab der zweiten Einheit des Musters läuft die Progression normal. Über 21 Tage: Last 10 % weniger (nächste vorhandene darunter), Band eine Stufe leichter, Körpergewicht und Halteübungen eine Variantenstufe leichter.
+
 Die Stufen ab 8 Tagen sind vorsichtige Startwerte, die Studienlage zu längeren Pausen ist dünner als zur einwöchigen.
 
 ### Max-Tests
 
 - **Zeitpunkt:** Immer am Anfang einer Einheit, direkt nach dem Aufwärmen. Nie am Ende, da Vorermüdung das Ergebnis verfälscht.
 - **Testtag beim Onboarding:** Max. Liegestütze, max. Klimmzüge (oder max. Sekunden im Hängen, falls keiner geht), max. Kniebeugen, max. Plank in Sekunden (Details und Startvarianten siehe Onboarding).
-- **Danach:** Frühestens 21 Tage nach dem letzten Test eines Musters, rotierend über hDruck, vZug, Knie und Rumpf, höchstens ein Test pro Einheit. Getestet wird immer mit derselben Übung wie am Testtag, damit die Ergebnisse vergleichbar sind; ist sie am Ort nicht möglich, wird der Test verschoben. In Wochen mit 1 bis 2 Einheiten nur, wenn der Test 28 Tage oder länger zurückliegt.
+- **Danach:** Frühestens 21 Tage nach dem letzten Test eines Musters, rotierend über hDruck, vZug, Knie und Rumpf, höchstens ein Test pro Einheit. Getestet wird immer mit derselben Übung wie am Testtag, damit die Ergebnisse vergleichbar sind; ist sie am Ort nicht möglich, wird der Test verschoben. In Wochen mit 1 bis 2 Einheiten nur, wenn der Test 28 Tage oder länger zurückliegt. Gibt es für ein Muster noch keinen Test (Testtag übersprungen), ist er sofort fällig, mit der Übung des Testtags (Entscheidung 20.10.2026). In einer Fokus-Einheit nur Muster, deren Primärmuskeln zur Fokusgruppe gehören.
 - **Ausnahmen:** Kein Test in Erholungswochen und nicht, solange das Erholungsfenster eines beteiligten Muskels noch läuft.
 - **Am Testtag:** Der Test zählt als ein harter Satz; das getestete Muster bekommt in dieser Einheit 50 % weniger weitere Sätze.
 - **Auswertung:** Liegt das Ergebnis über dem Zielbereich der getesteten Variante, wechselt das Muster ab der nächsten Einheit zur nächstschwereren Variante; die Musterstufe steigt entsprechend. Jeder Test landet im Verlauf (Tabelle `maxTests`); ein neuer Rekord wird beim Abschluss hervorgehoben.
@@ -600,15 +609,19 @@ startfragen(z: AppZustand, jetzt: string): {
   morgenWiederVorschlag: boolean; laengerAnbieten: boolean; ruhetagEmpfohlen: boolean;
   zirkelVorschlag: boolean; finisherAnbieten: boolean };  // Zirkel statt Krafteinheit; Zirkel-Finisher bei 3+ freien Sätzen
 erstelleEinheit(z: AppZustand, e: { jetzt: string; ortId: string; prognose: number;
-  morgenWieder: boolean; laenger: boolean; zirkelId?: string }): Einheit;
+  morgenWieder: boolean; laenger: boolean; zirkelId?: string;
+  erholungswoche?: boolean }): Einheit;   // angenommenes Angebot, solange die Woche noch nicht gespeichert ist
 alternativen(z: AppZustand, einheit: Einheit, block: number, position: number):
   { uebungId: string; zielWdh: number; last?: number; bandStufe?: BandStufe }[];
 tausche(z: AppZustand, einheit: Einheit, block: number, position: number, uebungId: string): Einheit;
 
 // src/logik/progression.ts
-werteUebungAus(z: AppZustand, p: Position, jetzt: string): { variante: VarianteZustand; muster: MusterZustand };
-schliesseEinheitAb(z: AppZustand, e: Einheit, jetzt: string): AppZustand;   // Muskeln, Woche, Rekorde
-wochenabschluss(z: AppZustand, wocheId: string): AppZustand;              // Grenzen, Erholungswoche
+werteUebungAus(z: AppZustand, p: Position, jetzt: string, ortId: string): { variante: VarianteZustand; muster: MusterZustand };
+schliesseEinheitAb(z: AppZustand, e: Einheit, jetzt: string): AppZustand;   // Progression, Hauptvarianten, Max-Tests, Muskeln, Woche, Zirkel-Ergebnis
+neueRekorde(z: AppZustand, e: Einheit): Rekord[];                          // vor schliesseEinheitAb aufrufen
+wochenabschluss(z: AppZustand, wocheId: string): AppZustand;              // Leistung, Grenzen, Zyklus
+offeneWochenabschluesse(z: AppZustand, jetzt: string): string[];
+erholungswocheAngebot(z: AppZustand, jetzt: string): 'leistung' | 'anstrengung' | 'zehnWochen' | null;
 maxTestFaellig(z: AppZustand, jetzt: string, ortId: string): { muster: MusterId; uebungId: string } | null;
 naechsteLast(o: Ort, u: Uebung, aktuell: number, richtung: 1 | -1): number | null;
 
@@ -647,7 +660,7 @@ Der Agent arbeitet die Pakete in dieser Reihenfolge ab, je Paket eine Sitzung. E
 | 0 | Projektgerüst und Veröffentlichung: Vite, React, TypeScript, Tailwind mit Tokens, Schrift Manrope unter `public/fonts/`, Vitest, vite-plugin-pwa, GitHub-Actions-Workflow für GitHub Pages; legt `docs/annahmen.md` an und führt `docs/changelog.md` weiter | Leere App mit 4 Tabs ist unter der GitHub-Pages-Adresse erreichbar, auf Android installierbar und startet im Flugmodus |
 | 1 | Datenmodell und Speicher: Typen, Dexie-Tabellen, `konfiguration.ts`, Laden und Prüfen von `katalog.json`, Backup-Export und -Import | Export und anschließender Import ergeben identische Daten (Test); eine beschädigte Datei wird mit verständlicher Meldung abgelehnt |
 | 2 | Planungsmodul (`planung.ts`) nach Abschnitt Planungslogik | Die 7 Use Cases aus „Simulation der Use Cases“ laufen als Tests mit Test-Katalog (±1 Satz je Muskel gegenüber dem Prototyp), Rauchtest mit vollem Katalog besteht; Erholungsfenster (inkl. +24 Std. bei „zu schwer“), Prioritäten und Favoriten-Bonus haben eigene Tests |
-| 3 | Progressionsmodul (`progression.ts`) nach Abschnitt Progression | 12-Wochen-Tests (eigener TS-Simulator, 50 feste Startwerte) für die Frequenzen „wechselnd“, 2x, 3x und 5x: im Schnitt höchstens 0,1 Lastrückschritte, in keinem Verlauf mehr als 1, erste Laststeigerung spätestens in Woche 8, kein Muster Last A, B, A innerhalb von 3 Einheiten; Deckel der Volumengrenze, Erholungswoche, Pausenregeln und Max-Test-Fälligkeit getestet |
+| 3 | Progressionsmodul (`progression.ts`) nach Abschnitt Progression | 12-Wochen-Tests (eigener TS-Simulator, 50 feste Startwerte) für die Frequenzen „wechselnd“, 2x, 3x und 5x: im Schnitt höchstens 0,1 Lastrückschritte, in keinem Verlauf mehr als 1, erste Laststeigerung im Schnitt spätestens in Woche 8, kein Muster Last A, B, A innerhalb von 3 Einheiten; Deckel der Volumengrenze, Erholungswoche, Pausenregeln und Max-Test-Fälligkeit getestet |
 | 4 | Einstellungen: Orte und Equipment (Mockup 9), Profil, Prioritäten, Dauer, Zirkel-Anteil, Pausen, Einschränkungen, Backup; Screen Übungen | Ort mit Kurzhanteln (verstellbar und feste Paare), Bändern und Bank anlegbar; Pflichtangaben werden geprüft; eigene Übung anlegbar und im Plan nutzbar |
 | 5 | Onboarding und Testtag | Neuer Nutzer kommt in unter 5 Minuten vom ersten Öffnen zur ersten Einheit; Testergebnisse setzen Musterstufen und Startvarianten |
 | 6 | Heute, Vor dem Start, Vorschau mit Tausch (Mockups 1 bis 3) | Startfragen vorausgefüllt; Tausch zeigt nur Alternativen desselben Musters, die am Ort möglich sind |

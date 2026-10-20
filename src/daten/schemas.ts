@@ -96,6 +96,7 @@ export const varianteSchema = z.object({
   uebungId: z.string().min(1), last: zahl.optional(), bandStufe: bandStufe.optional(),
   zielWdh: zahl, e1rm: zahl.optional(), bestErsterSatz: zahl.optional(),
   seitSteigerung: ganzzahl.nonnegative(), schwerSerie: ganzzahl.nonnegative(), zuletzt: z.string().optional(),
+  langsam: z.boolean().optional(),
 });
 
 export const musterZustandSchema = z.object({
@@ -111,7 +112,7 @@ export const muskelZustandSchema = z.object({
 export const wocheSchema = z.object({
   id: z.string().min(1), prognose: ganzzahl.min(1).max(6), einheiten: ganzzahl.nonnegative(),
   ziele: muskelWerte(zahl), erledigt: muskelWerte(zahl),
-  erholungswoche: z.boolean(), laengerAngenommen: z.boolean(),
+  erholungswoche: z.boolean(), laengerAngenommen: z.boolean(), ausgewertet: z.boolean().optional(),
 });
 
 export const zyklusSchema = z.object({
@@ -127,7 +128,7 @@ const satzSchema = z.object({
 const positionSchema = z.object({
   uebungId: z.string().min(1), saetze: ganzzahl.nonnegative(), zielWdh: zahl, last: zahl.optional(),
   bandStufe: bandStufe.optional(), istMaxTest: z.boolean().optional(), istErsatz: z.boolean().optional(),
-  getauschtVon: z.string().optional(), ergebnisse: z.array(satzSchema), feedback: z.enum(FEEDBACKS).optional(),
+  getauschtVon: z.string().optional(), langsam: z.boolean().optional(), ergebnisse: z.array(satzSchema), feedback: z.enum(FEEDBACKS).optional(),
 });
 
 export const einheitSchema = z.object({

@@ -81,6 +81,7 @@ export interface VarianteZustand {
   uebungId: string; last?: number; bandStufe?: BandStufe;
   zielWdh: number; e1rm?: number; bestErsterSatz?: number;
   seitSteigerung: number; schwerSerie: number; zuletzt?: string;
+  langsam?: boolean;                // 3 Sek. absenken (Zwischenstufe oder schwerste Last erreicht)
 }
 export interface MusterZustand { muster: MusterId; stufe: number; hauptvarianten: string[] } // letzter Test steht in maxTests
 export interface MuskelZustand {
@@ -91,6 +92,7 @@ export interface Woche {
   id: string; prognose: number; einheiten: number;
   ziele: Record<Muskel, number>; erledigt: Record<Muskel, number>;
   erholungswoche: boolean; laengerAngenommen: boolean;
+  ausgewertet?: boolean;            // Wochenabschluss gelaufen
 }
 export interface Zyklus { nr: number; start: string; ende?: string; grund?: 'zeitablauf' | 'erholungswoche' }
 
@@ -99,6 +101,7 @@ export interface SatzErgebnis { nr: number; wdh?: number; sek?: number; last?: n
 export interface Position {
   uebungId: string; saetze: number; zielWdh: number; last?: number; bandStufe?: BandStufe;
   istMaxTest?: boolean; istErsatz?: boolean; getauschtVon?: string;
+  langsam?: boolean;                // 3 Sek. absenken
   ergebnisse: SatzErgebnis[]; feedback?: Feedback;
 }
 export interface Block {

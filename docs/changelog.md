@@ -53,3 +53,17 @@
   Entscheidung „beide Hauptvarianten in einer Einheit“ in `docs/entscheidungen.md`; Spezifikation
   (Schritt 6, Schnittstelle `startfragen`) angepasst. Noch keine sichtbare Änderung in der App.
 - **Warum:** Arbeitspaket 2 der Spezifikation; Grundlage für Heute, Vor dem Start und Vorschau.
+
+## Paket 3: Progressionsmodul (20.10.2026)
+- **Was:** `src/logik/progression.ts` mit `werteUebungAus` (doppelte Progression am ersten Satz,
+  Kraftschätzung, Eingewöhnung, Bandstufen, Halteübungen, Variantenwechsel mit Zwischenstufe, „wenn die
+  Last ausgeht“), `schliesseEinheitAb` (Varianten, Hauptvarianten, Max-Tests, Muskeln, Woche,
+  Zirkel-Ergebnis, Zyklus), `neueRekorde`, `wochenabschluss` (Leistung je Muskel, persönliche
+  Volumengrenze mit Deckel, Zyklusende, neue Nebenübungen), `offeneWochenabschluesse`,
+  `erholungswocheAngebot`, `maxTestFaellig`, `naechsteLast`. Neu `src/logik/verlauf.ts` (gemeinsame
+  Hilfen). Planung ergänzt: Max-Test am Anfang der Einheit, Erholungswoche 50 %, Trainingspause
+  (Wochenziel 70 %, erste Einheit je Muster leichter), Tempo-Hinweis. Neue optionale Felder
+  `langsam` und `Woche.ausgewertet`. Tests: 12-Wochen-Simulator (mulberry32, 50 Startwerte, 4
+  Frequenzen) sowie Einzeltests für alle Regeln. Vier Entscheidungen in `docs/entscheidungen.md`,
+  Spezifikation angepasst. Noch keine sichtbare Änderung in der App.
+- **Warum:** Arbeitspaket 3 der Spezifikation; Grundlage für Feedback, Abschluss und Fortschritt.
