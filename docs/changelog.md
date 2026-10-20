@@ -41,3 +41,15 @@
   fake-indexeddb). Zwei Entscheidungen in `docs/entscheidungen.md`, Spezifikation (Schnittstelle
   Backup, Tests) und `CLAUDE.md` (Testhilfe) angepasst. Noch keine sichtbare Änderung in der App.
 - **Warum:** Arbeitspaket 1 der Spezifikation; Grundlage für Planung, Progression und alle Screens.
+
+## Paket 2: Planungsmodul (20.10.2026)
+- **Was:** `src/logik/planung.ts` mit `startfragen`, `erstelleEinheit`, `alternativen` und `tausche` nach
+  Abschnitt Planungslogik: Wochenziel pro Muskel, Zeitbudget, Erholungsfenster, Fokus-Einheiten,
+  Pacing, gierige Übungswahl, Bauch und Waden zusätzlich, Supersatz-Paare, Hauptvarianten mit
+  Ersatzregeln, Sperren, Aufwärmen, Zirkel-Einheiten und Zirkel-Vorschlag. Dazu
+  `src/logik/datum.ts` und `src/logik/equipment.ts` (Lastraster, Sperren). Tests: die 7 Use Cases mit
+  Test-Katalog (je Muskel höchstens 1 Satz neben dem Prototyp), Rauchtest mit vollem Katalog sowie
+  Erholung, Prioritäten, Favoriten-Bonus, Ersatz, Sperren, Ortswechsel, Tausch und Zirkel.
+  Entscheidung „beide Hauptvarianten in einer Einheit“ in `docs/entscheidungen.md`; Spezifikation
+  (Schritt 6, Schnittstelle `startfragen`) angepasst. Noch keine sichtbare Änderung in der App.
+- **Warum:** Arbeitspaket 2 der Spezifikation; Grundlage für Heute, Vor dem Start und Vorschau.
