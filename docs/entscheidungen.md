@@ -16,3 +16,5 @@ betrifft eine Entscheidung beschriebenes Verhalten, ist `docs/spezifikation.md` 
 | 20.10.2026 | Sperre blockiert alle Varianten eines Musters? | Volumen fällt weg, kein Ersatz. | Entspricht der Regel, gesperrtes Volumen nicht umzulegen; schützt die gesperrte Stelle. |
 | 20.10.2026 | Max-Tests doppelt speichern? | Nur Test-Verlauf (`maxTests`); `MusterZustand.letzterTest` entfällt. | Keine widersprüchlichen Daten möglich. |
 | 20.10.2026 | Lastanzeige bei einer oder zwei Hanteln? | „16 kg je Hand“ bei zwei Hanteln, „16 kg“ bei einer; neues Katalogfeld `anzahlGewichte`. | Jede Übung zeigt die Last eindeutig an. |
+| 20.10.2026 | Was zeigen die noch leeren Tabs (Paket 0)? | Nur den Titel, ohne weiteren Text. | Schlicht; nichts muss später wieder entfernt werden. |
+| 20.10.2026 | Wie sieht das App-Icon aus? | Weiße, schlichte Hantel auf petrolfarbener Fläche (#0F766E). | Sofort als Trainings-App erkennbar. |

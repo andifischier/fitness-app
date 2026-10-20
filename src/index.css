@@ -1,0 +1,71 @@
+@import 'tailwindcss';
+
+/* Schrift Manrope, lokal unter public/fonts/ (offline verfügbar) */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/manrope-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/manrope-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/manrope-700.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/manrope-800.woff2') format('woff2');
+}
+
+/* Tokens aus der Spezifikation, Abschnitt „Gestaltung“ */
+@theme {
+  --color-*: initial;
+  --color-hintergrund: #f7f7f5;
+  --color-flaeche: #ffffff;
+  --color-rand: #e4e5e2;
+  --color-text: #16181d;
+  --color-gedaempft: #5b6270;
+  --color-akzent: #0f766e;
+  --color-akzent-hell: #e6f2f1;
+  --color-linie: #eeefec;
+
+  --font-sans: 'Manrope', system-ui, sans-serif;
+
+  --text-titel: 30px;
+  --text-titel--line-height: 1.2;
+  --text-screen: 22px;
+  --text-screen--line-height: 1.3;
+  --text-gross: 17px;
+  --text-gross--line-height: 1.45;
+  --text-basis: 15px;
+  --text-basis--line-height: 1.45;
+  --text-hinweis: 13px;
+  --text-hinweis--line-height: 1.4;
+  --text-klein: 12px;
+  --text-klein--line-height: 1.4;
+  --text-zahl: 56px;
+  --text-zahl--line-height: 1;
+
+  --radius-karte: 16px;
+
+  --spacing-seite: 20px;
+  --spacing-touch: 44px;
+  --spacing-primaer: 52px;
+}
+
+body {
+  @apply bg-hintergrund font-sans text-basis text-text antialiased;
+}
