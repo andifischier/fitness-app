@@ -44,3 +44,15 @@ export function isoWoche(iso: string): string {
 export function wochenNummer(wocheId: string): number {
   return Number(wocheId.split('-W')[1]);
 }
+
+// Montag 00:00 einer ISO-Woche.
+export function wocheStart(wocheId: string): string {
+  const [jahr = 0, nr = 1] = wocheId.split('-W').map(Number);
+  const vierterJanuar = `${jahr}-01-04T00:00:00`;
+  return plusTage(vierterJanuar, (nr - 1) * 7 - wochentag(vierterJanuar));
+}
+
+// ISO-Woche, um eine Zahl von Wochen verschoben.
+export function wocheVerschoben(wocheId: string, wochen: number): string {
+  return isoWoche(plusTage(wocheStart(wocheId), 7 * wochen));
+}

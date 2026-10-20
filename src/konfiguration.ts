@@ -187,6 +187,9 @@ export const PROGRESSION = {
   neueVarianteReserve: 3,
   zwischenstufeAbStufen: 2,
   tempoAbsenkenSek: 3,
+  startSeitSteigerung: 2,         // neue Variante: keine Eingewöhnung
+  // Wenn die Last ausgeht: einseitige Variante desselben Musters (Kennzeichen in der Übungs-ID)
+  einseitigKennzeichen: ['einbeinig', 'einarmig'] as readonly string[],
 } as const;
 
 // Persönliche Volumengrenze pro Muskel
@@ -225,6 +228,9 @@ export const TRAININGSPAUSE = {
   wochenzielAnteil: 0.7,
   lastAbschlag: 0.1,
   wochenNachLangerPause: 2,
+  // Ziel-Reserve 3 statt 1: erster Satz der ersten Einheit je Muster weniger (Entscheidung 20.10.2026)
+  zielWeniger: 2,
+  zeitWeniger: 10,
 } as const;
 
 // Max-Tests
@@ -234,6 +240,8 @@ export const MAXTEST = {
   wenigeEinheitenBis: 2,
   weitereSaetzeAnteil: 0.5,
   rotation: ['hDruck', 'vZug', 'Knie', 'Rumpf'] as readonly MusterId[],
+  // Übung des Testtags je Muster; spätere Tests nutzen dieselbe Übung wie der letzte Test
+  uebungen: { hDruck: 'liegestuetz', vZug: 'klimmzug', Knie: 'kniebeuge', Rumpf: 'plank' } as Partial<Record<MusterId, string>>,
 } as const;
 
 // Backup

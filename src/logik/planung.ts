@@ -1,8 +1,8 @@
 // Planungsmodul laut Spezifikation, Abschnitt „Planungslogik“. Rein und deterministisch: Die
 // aktuelle Zeit wird übergeben; der Zustand wird nur gelesen, nie verändert.
 import {
-  EINHEIT, ERHOLUNG, ERSATZ, FOKUS_GRUPPEN, LASTTYP_RANG, MUSTER_ART, PROFIL, PROGRESSION,
-  STANDARD_EINSTELLUNGEN, SUPERSATZ_PAARE, WOCHENZIEL, ZEITBUDGET, ZIRKEL,
+  ERHOLUNGSWOCHE, EINHEIT, ERSATZ, FOKUS_GRUPPEN, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
+  SUPERSATZ_PAARE, TRAININGSPAUSE, WOCHENZIEL, ZEITBUDGET, ZIRKEL,
 } from '../konfiguration';
 import { isoWoche, plusTage, stundenZwischen, verbleibendeTage, wochenNummer } from './datum';
 import {
@@ -10,15 +10,21 @@ import {
 } from './equipment';
 import {
   BAND_STUFEN, MUSKELN, MUSTER_IDS, type AppZustand, type BandStufe, type Block, type Einheit, type Einstellungen,
-  type MuskelZustand, type Muskel, type MusterId, type Ort, type Position, type Uebung, type Zirkel,
+  type Muskel, type MusterId, type Ort, type Position, type Uebung, type Zirkel,
 } from './typen';
+import {
+  einstellungenVon, faelligerMaxTest, fertigeEinheiten, istErholt, letzteEinheitZeit, seitRueckkehrTrainiert,
+  trainingspause, uebungVon, wdhBei, zielReserve, type Pause,
+} from './verlauf';
+
+export { einstellungenVon, erholungsfenster, istErholt } from './verlauf';
 
 type ProMuskel = Record<Muskel, number>;
 type Fokus = Einheit['fokus'];
 type Format = Einheit['format'];
 
 export interface Kandidat { uebung: Uebung; istErsatz: boolean }
-export interface Startwerte { zielWdh: number; last?: number; bandStufe?: BandStufe }
+export interface Startwerte { zielWdh: number; last?: number; bandStufe?: BandStufe; langsam?: boolean }
 export interface StartfragenErgebnis {
   prognoseAbfragen: boolean; prognoseVorschlag: number; ortId: string;
   morgenWiederVorschlag: boolean; laengerAnbieten: boolean; ruhetagEmpfohlen: boolean;
@@ -26,18 +32,11 @@ export interface StartfragenErgebnis {
 }
 export interface EinheitEingabe {
   jetzt: string; ortId: string; prognose: number; morgenWieder: boolean; laenger: boolean; zirkelId?: string;
+  erholungswoche?: boolean;         // angenommene Erholungswoche, solange die Woche noch nicht gespeichert ist
 }
 
 const leer = (): ProMuskel => Object.fromEntries(MUSKELN.map((m) => [m, 0])) as ProMuskel;
 const begrenze = (x: number, min: number, max: number) => Math.min(max, Math.max(min, x));
-
-export function einstellungenVon(z: AppZustand): Einstellungen {
-  return z.einstellungen[0] ?? STANDARD_EINSTELLUNGEN;
-}
-
-function uebungVon(z: AppZustand, id: string): Uebung | undefined {
-  return alleUebungen(z).find((u) => u.id === id);
-}
 
 const hauptmuskel = (u: Uebung): Muskel | undefined => u.primaer[0];
 const istGrund = (u: Uebung) => MUSTER_ART[u.muster] === 'grund';
@@ -52,19 +51,6 @@ function beitrag(u: Uebung, primaer: number = WOCHENZIEL.anteilPrimaer, sekundae
     ...u.primaer.map((m) => [m, primaer] as const),
     ...u.sekundaer.map((m) => [m, sekundaer] as const),
   ];
-}
-
-// Abgeschlossene Einheiten, älteste zuerst.
-function fertigeEinheiten(z: AppZustand): Einheit[] {
-  const zeit = (e: Einheit) => e.gestartetAm ?? e.erstelltAm;
-  return z.einheiten
-    .filter((e) => e.status === 'abgeschlossen' || e.status === 'abgebrochen')
-    .sort((a, b) => (zeit(a) < zeit(b) ? -1 : zeit(a) > zeit(b) ? 1 : 0));
-}
-
-function letzteEinheitZeit(z: AppZustand): string | undefined {
-  const letzte = fertigeEinheiten(z).at(-1);
-  return letzte ? (letzte.gestartetAm ?? letzte.erstelltAm) : undefined;
 }
 
 // ---------- Zeitbudget ----------
@@ -117,14 +103,31 @@ export function persoenlicheGrenze(z: AppZustand, e: Einstellungen, m: Muskel): 
   return gespeichert ?? WOCHENZIEL.prioritaet[e.prioritaeten[m]].grenzeStart + PROFIL.grenzeNachLevel[e.level];
 }
 
-export function wochenziele(z: AppZustand, prognose: number, ortId: string, jetzt: string): ProMuskel {
+export function istErholungswoche(z: AppZustand, jetzt: string, angenommen = false): boolean {
+  return z.wochen.find((w) => w.id === isoWoche(jetzt))?.erholungswoche ?? angenommen;
+}
+
+// Erholungswoche 50 %; nach einer Trainingspause 70 % (über 21 Tage zwei Wochen lang).
+export function wochenzielFaktor(z: AppZustand, jetzt: string, erholungswoche = false): number {
+  if (istErholungswoche(z, jetzt, erholungswoche)) return ERHOLUNGSWOCHE.volumenAnteil;
+  const pause = trainingspause(z, jetzt);
+  if (!pause) return 1;
+  const wochen = pause.tage > TRAININGSPAUSE.leichtBisTage ? TRAININGSPAUSE.wochenNachLangerPause : 1;
+  const ab = isoWoche(pause.rueckkehr);
+  const bis = isoWoche(plusTage(pause.rueckkehr, 7 * (wochen - 1)));
+  const woche = isoWoche(jetzt);
+  return woche >= ab && woche <= bis ? TRAININGSPAUSE.wochenzielAnteil : 1;
+}
+
+export function wochenziele(z: AppZustand, prognose: number, ortId: string, jetzt: string, erholungswoche = false): ProMuskel {
   const e = einstellungenVon(z);
+  const faktor = wochenzielFaktor(z, jetzt, erholungswoche);
   const budget = prognose * arbeitssaetze(z, prognose, e.standardDauerMin) * WOCHENZIEL.fraktionelleSaetzeProArbeitssatz;
   const summe = MUSKELN.reduce((s, m) => s + gewicht(e, m), 0);
   const ziele = leer();
   for (const m of MUSKELN) {
     const p = WOCHENZIEL.prioritaet[e.prioritaeten[m]];
-    ziele[m] = Math.round(Math.min(persoenlicheGrenze(z, e, m), p.obergrenze,
+    ziele[m] = Math.round(faktor * Math.min(persoenlicheGrenze(z, e, m), p.obergrenze,
       Math.max(p.untergrenze, (budget * gewicht(e, m)) / summe)));
   }
   const ort = z.orte.find((o) => o.id === ortId);
@@ -147,20 +150,7 @@ function primaerAbgedeckt(z: AppZustand, e: Einstellungen, ort: Ort, jetzt: stri
   return muskeln;
 }
 
-// ---------- Erholung ----------
-
-export function erholungsfenster(dosis: number, zuSchwer: boolean): number {
-  if (dosis <= 0) return 0;
-  const stunden = dosis >= ERHOLUNG.maxFenster.abSaetzen
-    ? ERHOLUNG.maxFenster.stunden
-    : ERHOLUNG.fenster.filter((f) => dosis > f.ueberSaetzen).at(-1)?.stunden ?? 0;
-  return stunden + (zuSchwer ? ERHOLUNG.zuschlagZuSchwerStunden : 0);
-}
-
-export function istErholt(mz: MuskelZustand | undefined, jetzt: string): boolean {
-  if (!mz?.letzteBelastung) return true;
-  return stundenZwischen(mz.letzteBelastung, jetzt) >= erholungsfenster(mz.letzteDosis, mz.letzteSchwer);
-}
+// ---------- Volumen ----------
 
 // Fraktionelle Sätze pro Muskel; geplante Einheiten zählen die geplanten, sonst die erledigten Sätze.
 export function dosisProMuskel(z: AppZustand, einheit: Einheit): ProMuskel {
@@ -288,11 +278,7 @@ export function startwerte(z: AppZustand, e: Einstellungen, ort: Ort, u: Uebung)
         // Fehlt die Last am Ort: nächstniedrigere, Ziel per Kraftschätzung umgerechnet.
         const last = [...raster].reverse().find((kg) => kg < v.last!) ?? raster[0]!;
         werte.last = last;
-        if (v.e1rm) {
-          const reserve = e.zielReserve === '2-3' ? PROGRESSION.zielReserveSchonend : PROGRESSION.zielReserve;
-          const wdh = Math.floor(PROGRESSION.e1rmTeiler * (v.e1rm / last - 1) - reserve);
-          werte.zielWdh = begrenze(wdh, bereich.von - 1, bereich.bis);
-        }
+        if (v.e1rm) werte.zielWdh = begrenze(wdhBei(v.e1rm, last, zielReserve(e)), bereich.von - 1, bereich.bis);
       }
     }
   }
@@ -308,7 +294,39 @@ export function startwerte(z: AppZustand, e: Einstellungen, ort: Ort, u: Uebung)
       werte.bandStufe = [...vorhanden].reverse().find((s) => reihe.indexOf(s) < pos) ?? vorhanden[0];
     }
   }
+  if (v?.langsam) werte.langsam = true;
   return werte;
+}
+
+// Erste Einheit je Muster nach einer Pause: Ziel 2 Wdh. (Halteübungen 10 Sek.) weniger; nach über
+// 21 Tagen zusätzlich 10 % weniger Last, ein leichteres Band bzw. eine Variantenstufe leichter.
+function nachPause(z: AppZustand, e: Einstellungen, ort: Ort, u: Uebung, pause: Pause, jetzt: string): { uebung: Uebung; werte: Startwerte } {
+  let uebung = u;
+  if (pause.tage > TRAININGSPAUSE.leichtBisTage && (u.lasttyp === 'KG' || u.lasttyp === 'Zeit')) {
+    const leichter = alleUebungen(z)
+      .filter((v) => v.muster === u.muster && v.stufe < u.stufe && uebungErlaubt(e, ort, v, jetzt))
+      .sort((a, b) => b.stufe - a.stufe || Number(b.lasttyp === u.lasttyp) - Number(a.lasttyp === u.lasttyp))[0];
+    if (leichter) uebung = leichter;
+  }
+  const werte = startwerte(z, e, ort, uebung);
+  if (z.varianten.some((v) => v.uebungId === uebung.id)) {
+    const weniger = uebung.lasttyp === 'Zeit' ? TRAININGSPAUSE.zeitWeniger : TRAININGSPAUSE.zielWeniger;
+    werte.zielWdh = Math.max(1, werte.zielWdh - weniger);
+  }
+  if (pause.tage > TRAININGSPAUSE.leichtBisTage) {
+    if (werte.last !== undefined) {
+      const ziel = werte.last * (1 - TRAININGSPAUSE.lastAbschlag);
+      const raster = lastraster(ort, uebung);
+      werte.last = [...raster].reverse().find((kg) => kg <= ziel + 1e-9) ?? raster[0] ?? werte.last;
+    }
+    if (werte.bandStufe) {
+      const reihe = uebung.unterstuetzend ? [...BAND_STUFEN].reverse() : [...BAND_STUFEN];
+      const vorhanden = reihe.filter((s) => bandStufen(ort, uebung).includes(s));
+      const pos = vorhanden.indexOf(werte.bandStufe);
+      if (pos > 0) werte.bandStufe = vorhanden[pos - 1];
+    }
+  }
+  return { uebung, werte };
 }
 
 // ---------- Erzeugung einer Einheit ----------
@@ -336,9 +354,15 @@ function leereEinheit(eing: EinheitEingabe, format: Format = 'klassisch'): Einhe
   };
 }
 
-function neuePosition(z: AppZustand, e: Einstellungen, ort: Ort, k: Kandidat, saetze: number): Position {
+interface Kontext { z: AppZustand; e: Einstellungen; ort: Ort; jetzt: string; pause?: Pause }
+
+function neuePosition(c: Kontext, k: Kandidat, saetze: number): Position {
+  const { z, e, ort, jetzt, pause } = c;
+  const angepasst = pause && !seitRueckkehrTrainiert(z, k.uebung.muster, pause.rueckkehr, jetzt)
+    ? nachPause(z, e, ort, k.uebung, pause, jetzt)
+    : { uebung: k.uebung, werte: startwerte(z, e, ort, k.uebung) };
   return {
-    uebungId: k.uebung.id, saetze, ...startwerte(z, e, ort, k.uebung),
+    uebungId: angepasst.uebung.id, saetze, ...angepasst.werte,
     ...(k.istErsatz ? { istErsatz: true } : {}), ergebnisse: [],
   };
 }
@@ -394,7 +418,8 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
   const erledigteEinheiten = woche?.einheiten ?? 0;
   const prognose = Math.max(eing.prognose, erledigteEinheiten + 1);
   const erledigt = woche?.erledigt ?? leer();
-  const ziele = wochenziele(z, prognose, ort.id, jetzt);
+  const erholungswoche = istErholungswoche(z, jetzt, eing.erholungswoche);
+  const ziele = wochenziele(z, prognose, ort.id, jetzt, erholungswoche);
   const tage = verbleibendeTage(jetzt);
   const letzte = letzteEinheitZeit(z);
   let n = Math.max(1, Math.min(prognose - erledigteEinheiten, tage));
@@ -426,12 +451,22 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
     }
   }
   const dosis = leer();
+  let gesamt = 0;
+
+  // Max-Test (falls fällig) am Anfang; er zählt als ein harter Satz.
+  const imFokus = (m: Muskel) => fokus === 'ganz' || m === 'Bauch' || FOKUS_GRUPPEN[fokus].includes(m);
+  const test = faelligerMaxTest(z, jetzt, ort, prognose, erholungswoche, imFokus);
+  const testUebung = test ? uebungVon(z, test.uebungId) : undefined;
+  if (testUebung) {
+    for (const [m, v] of beitrag(testUebung)) dosis[m] += v;
+    gesamt += 1;
+  }
+
   const wert = (u: Uebung) =>
     beitrag(u).reduce((s, [m, v]) => s + Math.min(Math.max(0, bedarf[m] - dosis[m]), v) * gewicht(e, m), 0);
   const letzteJeMuskel = letzteUebungJeMuskel(z);
   const gewaehlt: Auswahl[] = [];
   const benutzt = new Set<string>();
-  let gesamt = 0;
   const offen = () => kandidaten.filter((k) => !benutzt.has(k.uebung.id) && wert(k.uebung) > EINHEIT.minOffenerBedarf);
   while (gesamt < budget) {
     const liste = offen();
@@ -469,13 +504,31 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
     for (const [mm, v] of beitrag(k.uebung)) dosis[mm] += saetze * v;
   }
 
+  // Das getestete Muster bekommt 50 % weniger weitere Sätze.
+  if (testUebung) {
+    for (const a of [...gewaehlt, ...zusatz]) {
+      if (a.k.uebung.muster !== testUebung.muster) continue;
+      const weniger = Math.max(1, Math.round(a.saetze * MAXTEST.weitereSaetzeAnteil));
+      if (gewaehlt.includes(a)) gesamt -= a.saetze - weniger;
+      a.saetze = weniger;
+    }
+  }
+
   // Schritt 8: Reihenfolge und Supersatz-Paare
   const liste = [
     ...gewaehlt.filter((a) => istGrund(a.k.uebung)),
     ...gewaehlt.filter((a) => !istGrund(a.k.uebung)),
     ...zusatz,
   ];
-  const { bloecke, format } = bildeBloecke(z, e, ort, liste, supersatzAnteil(prognose));
+  const c: Kontext = { z, e, ort, jetzt, pause: trainingspause(z, jetzt) };
+  const gebildet = bildeBloecke(c, liste, supersatzAnteil(prognose));
+  const format = gebildet.format;
+  const bloecke: Block[] = testUebung
+    ? [{
+      typ: 'einzeln', pauseSek: e.pausenSek.grund,
+      positionen: [{ uebungId: testUebung.id, saetze: 1, zielWdh: 0, istMaxTest: true, ergebnisse: [] }],
+    }, ...gebildet.bloecke]
+    : gebildet.bloecke;
   const einheit: Einheit = {
     ...leereEinheit(eing, format),
     fokus,
@@ -486,7 +539,8 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
   return { einheit, budgetSaetze: gesamt, freieSaetze: budget - gesamt, bedarfOffen };
 }
 
-function bildeBloecke(z: AppZustand, e: Einstellungen, ort: Ort, liste: Auswahl[], anteil: number): { bloecke: Block[]; format: Format } {
+function bildeBloecke(c: Kontext, liste: Auswahl[], anteil: number): { bloecke: Block[]; format: Format } {
+  const { e } = c;
   const gesamt = liste.reduce((s, a) => s + a.saetze, 0);
   const partner = new Map<number, number>();
   let paarSaetze = 0;
@@ -511,7 +565,7 @@ function bildeBloecke(z: AppZustand, e: Einstellungen, ort: Ort, liste: Auswahl[
   liste.forEach((a, i) => {
     const j = partner.get(i);
     if (j !== undefined && j < i) return;
-    const position = (x: Auswahl) => neuePosition(z, e, ort, x.k, x.saetze);
+    const position = (x: Auswahl) => neuePosition(c, x.k, x.saetze);
     if (j !== undefined) {
       bloecke.push({ typ: 'supersatz', positionen: [position(a), position(liste[j]!)], pauseSek: e.pausenSek.supersatz });
     } else {
@@ -556,7 +610,7 @@ function zirkelEinheit(z: AppZustand, e: Einstellungen, ort: Ort, zirkel: Zirkel
     const u = zirkelStation(z, e, ort, s.muster, eing.jetzt);
     if (!u) continue;
     const vorgabe = typeof s.vorgabe === 'number' ? s.vorgabe : Number.parseInt(s.vorgabe, 10) || 0;
-    positionen.push({ ...neuePosition(z, e, ort, { uebung: u, istErsatz: false }, zirkel.runden), zielWdh: vorgabe });
+    positionen.push({ ...neuePosition({ z, e, ort, jetzt: eing.jetzt }, { uebung: u, istErsatz: false }, zirkel.runden), zielWdh: vorgabe });
   }
   const bloecke: Block[] = positionen.length > 0
     ? [{ typ: 'zirkel', positionen, pauseSek: 0, zirkelId: zirkel.id, runden: zirkel.runden }]
@@ -628,7 +682,7 @@ export function startfragen(z: AppZustand, jetzt: string): StartfragenErgebnis {
     laengerAnbieten: e.laengerAnbieten && prognose <= ZEITBUDGET.laengerBisPrognose && probe.bedarfOffen,
     ruhetagEmpfohlen,
     zirkelVorschlag: zirkelVorschlagen(z, jetzt, prognose, ortId),
-    finisherAnbieten: !ruhetagEmpfohlen && probe.freieSaetze >= EINHEIT.freiFuerZirkelAbSaetzen,
+    finisherAnbieten: !ruhetagEmpfohlen && !istErholungswoche(z, jetzt) && probe.freieSaetze >= EINHEIT.freiFuerZirkelAbSaetzen,
   };
 }
 
