@@ -25,3 +25,6 @@ betrifft eine Entscheidung beschriebenes Verhalten, ist `docs/spezifikation.md` 
 | 20.10.2026 | Wann kommt der erste Max-Test, wenn der Testtag übersprungen wurde? | Sofort, in der ersten passenden Einheit. | Früher Messwert. |
 | 20.10.2026 | Schwerste Hantel erreicht, 3. Schritt „einseitige Variante“: was tun, wenn der Katalog keine hat? | Einseitige Variante desselben Musters, wenn im Katalog und am Ort möglich; sonst gleich die nächste Variante. | Wie in der Spezifikation. |
 | 20.10.2026 | Startet eine Erholungswoche wegen sinkender Leistung oder sehr hoher Anstrengung automatisch? | Nein, als Angebot mit Ja/Nein, wie beim Angebot nach 10 Wochen. | Volle Kontrolle für den Nutzer. |
+| 20.10.2026 | Wie wird eine eigene Übung angelegt? | Eine ähnliche Übung als Vorlage wählen; alle Angaben sind daraus vorausgefüllt und änderbar. | Schnell und kaum Fehler. |
+| 20.10.2026 | Dürfen Orte und eigene Übungen gelöscht werden? | Nur solange damit noch nie trainiert wurde; sonst umbenennen bzw. ausschließen. | Der Verlauf bleibt immer vollständig. |
+| 20.10.2026 | In welchem Bereich lassen sich die Pausen einstellen? | 30 bis 180 Sek. in 15-Sek.-Schritten, getrennt für Grundübung, Isolation und Supersatz. | Viel Spielraum. |

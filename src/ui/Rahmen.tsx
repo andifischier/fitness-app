@@ -16,7 +16,7 @@ export function Rahmen() {
             <li key={tab.pfad} className="flex-1">
               <NavLink
                 to={tab.pfad}
-                end
+                end={tab.pfad === '/'}
                 className={({ isActive }) =>
                   `flex min-h-touch flex-col items-center gap-1 py-2 text-hinweis font-semibold ${
                     isActive ? 'text-akzent' : 'text-gedaempft'

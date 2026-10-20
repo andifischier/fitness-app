@@ -67,3 +67,18 @@
   Frequenzen) sowie Einzeltests für alle Regeln. Vier Entscheidungen in `docs/entscheidungen.md`,
   Spezifikation angepasst. Noch keine sichtbare Änderung in der App.
 - **Warum:** Arbeitspaket 3 der Spezifikation; Grundlage für Feedback, Abschluss und Fortschritt.
+
+## Paket 4: Einstellungen und Übungen (20.10.2026)
+- **Was:** Tab Einstellungen mit Unterseiten: Orte und Equipment nach Mockup 9 (Utensilien abhaken,
+  Hantelbank keine/flach/verstellbar, Details für Kurzhanteln verstellbar oder feste Paare, Bänder,
+  Kettlebells, Langhantel; Pflichtangaben werden vor dem Speichern geprüft; Zahl der möglichen
+  Übungen; Hinweis „Für … fehlt Equipment“; eigene Utensilien; Standardort; Löschen nur, solange nie
+  genutzt), Profil (Ziele, Level, übliche Einheiten, Ziel-Reserve), Muskelprioritäten, Dauer/Zirkel/
+  Pausen (30 bis 180 Sek.), Einschränkungen mit optionalem Enddatum, Backup speichern und einlesen
+  mit Bestätigung. Tab Übungen: Suche, Filter nach Muster und Ort, Favorit, Ausschluss, eigener
+  Video-Link, eigene Übung aus einer Vorlage anlegen, bearbeiten und löschen. Neue Logik in
+  `src/logik/einstellungen.ts`, Speichern in `src/daten/speichern.ts`, jeweils mit Tests. Neues
+  optionales Feld `Einstellungen.videoLinks`. Drei Entscheidungen in `docs/entscheidungen.md`,
+  Spezifikation angepasst.
+- **Warum:** Arbeitspaket 4 der Spezifikation; Grundlage für Onboarding (Paket 5) und die
+  Trainingsscreens.

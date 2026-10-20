@@ -187,6 +187,7 @@ interface Einstellungen {
   einschraenkungen: { id: string; typ: 'region'|'muster'; wert: string; bis?: string }[];
   onboardingAbgeschlossen: boolean;
   letztesBackup?: string;
+  videoLinks?: Record<string, string>; // eigene Video-Links für Katalogübungen (eigene Übungen: eigenerVideoLink)
 }
 
 // Trainingszustand (wird nur vom Planungsmodul geschrieben)
@@ -289,6 +290,7 @@ Die Standarddauer (Einstellung, z. B. 40 Min) bestimmt die Zahl der Arbeitssätz
 - Mittlere Satzdauer klassisch = 45 Sek. + 0,6 × Grundpause + 0,4 × Isolationspause. Die Pausen sind einstellbar (Standard 90 Sek. Grundübung, 75 Sek. Isolation, also rund 129 Sek.).
 - Satzdauer im Supersatz: zwei Sätze à 45 Sek. plus Supersatz-Pause (Standard 75 Sek.) nach dem Paar, also rund 83 Sek. pro Satz.
 - **Bauch und Waden kommen zusätzlich:** Rumpf- und Wadenübungen sind eigene Übungen mit eigenen Sätzen und Pausen (nicht in den Pausen anderer Übungen). Sie werden nach dem Zeitbudget zusätzlich eingeplant und nehmen den anderen Muskeln keine Sätze weg. Die Einheit dauert dadurch etwas länger als die Standarddauer; die angezeigte geschätzte Dauer enthält sie.
+- **Pausen einstellen:** je 30 bis 180 Sek. in 15-Sek.-Schritten, getrennt für Grundübung, Isolation und Supersatz (Entscheidung 20.10.2026).
 - **Echte Satzdauer** = (Einheitsdauer − Aufwärmdauer) ÷ Zahl aller Arbeitssätze (inklusive Bauch und Waden), gleitender Mittelwert über die letzten 5 Einheiten je Format. Sie ersetzt die Schätzung ab der 5. Einheit eines Formats.
 
 | Wochenprognose | Supersatz-Anteil | Arbeitssätze pro 40-Min-Einheit (ohne Bauch und Waden) | Zusatz |
@@ -559,8 +561,8 @@ Navigation unten mit 4 Tabs: Heute, Fortschritt (mit Unterreiter Verlauf), Übun
 | Übungsfeedback | 3 Buttons mit Definition, geschaffte Wiederholungen, Vorschau der Folge („Nächstes Mal: 16 kg, Ziel 11 im ersten Satz“) | „Zu schwer“ vorausgewählt, wenn der erste Satz das Ziel verfehlt |
 | Abschluss | Dauer, Sätze, Rekorde, Gesamtanstrengung 1 bis 5, Notiz, optional Abkühlen | Zirkel: Zeit und Bestzeit-Vergleich |
 | Fortschritt | Max-Test-Verlauf pro Muster (Chips für alle getesteten Muster inklusive Plank in Sekunden), Sätze pro Woche pro Muskel mit Hinweis „zählt als Entlastung“ bei Wochen unter 60 % des üblichen Volumens, eigene Karte Zirkel-Bestzeiten (Zirkel, Ort, Bestzeit, Datum); Unterreiter Verlauf mit allen Einheiten. Tipp auf eine Einheit zeigt Datum, Ort, Dauer, alle Übungen mit Sätzen, Last, Feedback, Gesamtanstrengung und Notiz | Leer: „Nach deiner ersten Einheit siehst du hier deinen Fortschritt.“ |
-| Übungen | Suche, Filter nach Muster und Ort, Favorit/Ausschluss, eigene Übung anlegen, eigener Video-Link |  |
-| Einstellungen | Orte und Equipment (Mockup 9, Regeln siehe Orte), Profil, Prioritäten, Dauer, Zirkel-Anteil, Pausen, Einschränkungen, Backup (Export/Import) | Ort ohne Pflichtangaben lässt sich nicht speichern |
+| Übungen | Suche, Filter nach Muster und Ort, Favorit/Ausschluss, eigene Übung anlegen (ähnliche Übung als Vorlage, alle Angaben vorausgefüllt und änderbar), eigener Video-Link | Eigene Übung lässt sich nur löschen, solange sie nie trainiert wurde (Entscheidung 20.10.2026) |
+| Einstellungen | Orte und Equipment (Mockup 9, Regeln siehe Orte), Profil, Prioritäten, Dauer, Zirkel-Anteil, Pausen, Einschränkungen, Backup (Export/Import) | Ort ohne Pflichtangaben lässt sich nicht speichern · Ort lässt sich nur löschen, solange dort nie trainiert wurde (Entscheidung 20.10.2026) |
 
 Texte sind auf Deutsch, Du-Form, kurz. Zahlen mit deutschem Dezimalkomma (2,5 kg).
 

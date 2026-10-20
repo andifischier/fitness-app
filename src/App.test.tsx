@@ -21,11 +21,22 @@ describe('App-Rahmen', () => {
   it.each([
     ['/', 'Heute'],
     ['/fortschritt', 'Fortschritt'],
-    ['/uebungen', 'Übungen'],
-    ['/einstellungen', 'Einstellungen'],
   ])('zeigt unter %s die Seite %s mit aktivem Tab', (pfad, titel) => {
     const html = rendere(pfad);
     expect(html).toContain(`<h1 class="text-titel font-extrabold">${titel}</h1>`);
     expect(html).toMatch(new RegExp(`aria-current="page"[^>]*>.*?</svg>${titel}</a>`));
+  });
+
+  // Übungen und Einstellungen laden ihre Daten erst im Browser; der Tab ist sofort aktiv.
+  it.each([
+    ['/uebungen', 'Übungen'],
+    ['/uebungen/neu', 'Übungen'],
+    ['/einstellungen', 'Einstellungen'],
+    ['/einstellungen/orte', 'Einstellungen'],
+    ['/einstellungen/backup', 'Einstellungen'],
+  ])('markiert unter %s den Tab %s', (pfad, titel) => {
+    const html = rendere(pfad);
+    const aktiv = [...html.matchAll(/aria-current="page"[^>]*>.*?<\/svg>([^<]+)<\/a>/g)].map((m) => m[1]);
+    expect(aktiv).toEqual([titel]);
   });
 });
