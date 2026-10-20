@@ -61,7 +61,7 @@ Das Onboarding erfasst Ziele, Rahmenbedingungen und Equipment und endet mit eine
 1. Ziele und Level wählen.
 2. Übliche Einheiten pro Woche, Standarddauer und Muskelprioritäten festlegen.
 3. Ersten Ort anlegen und Equipment aus dem Katalog abhaken.
-4. Optional Einschränkungen, Favoriten und Ausschlüsse setzen.
+4. Optional Einschränkungen setzen; Favoriten und Ausschlüsse setzt der Nutzer jederzeit im Tab Übungen (das Onboarding zeigt dazu nur einen Hinweis; Entscheidung 20.10.2026).
 5. Testtag durchführen: geführtes Aufwärmen, danach Max-Tests der Grundmuster (siehe Abschnitt Progression). Die Ergebnisse bestimmen die Startvariante und Startwiederholungen jedes Musters.
 6. Ersten Plan generieren.
 
@@ -80,6 +80,9 @@ Wird der Testtag übersprungen, schätzt die App die Startstufe aus dem Level un
 | Rumpf | unter 30 / 30 bis 60 / über 60 Sek. | dead_bug / plank / hollow_hold |
 
 - Musterstufe = Stufe der Startvariante. Startziel = 70 % des Testergebnisses, begrenzt auf den Bereich der Variante.
+- Die Startvariante wird Hauptvariante A des Musters (B nach den üblichen Regeln). Ist sie am Ort nicht möglich oder gesperrt, gilt die nächstleichtere Variante aus der Tabelle, die am Ort geht; die Musterstufe bleibt die Stufe laut Tabelle (Entscheidung 20.10.2026).
+- Ein Test, dessen Übung am Ort nicht möglich oder gesperrt ist (z. B. keine Klimmzugstange), entfällt; das Muster startet nach Level, der Test folgt später wie ein übersprungener Testtag.
+- Der Testtag zählt nicht als Einheit der Woche: Er zählt für die Erholung, aber nicht für Wochenprognose und Wochenziel; die Wochenprognose wird bei der ersten regulären Einheit abgefragt (Entscheidung 20.10.2026).
 - Nicht getestete Muster: Musterstufe nach Level (siehe Wirkung der Profilfelder). Varianten mit Last beginnen mit einem Kalibrierungssatz: Die App fragt „Mit welchem Gewicht startest du?“, vorbelegt mit der kleinsten verfügbaren Last; Ziel ist die Untergrenze des Bereichs mit Reserve 3; danach Kraftschätzung wie in „Progression pro Übung“.
 
 ## Datenmodell: Übungen, Equipment, Orte

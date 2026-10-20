@@ -39,4 +39,9 @@ describe('App-Rahmen', () => {
     const aktiv = [...html.matchAll(/aria-current="page"[^>]*>.*?<\/svg>([^<]+)<\/a>/g)].map((m) => m[1]);
     expect(aktiv).toEqual([titel]);
   });
+
+  // Onboarding und Testtag laufen als Vollbild ohne Tab-Leiste.
+  it.each(['/onboarding/1', '/testtag'])('zeigt unter %s keine Tab-Leiste', (pfad) => {
+    expect(rendere(pfad)).not.toContain('Hauptnavigation');
+  });
 });

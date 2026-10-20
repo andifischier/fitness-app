@@ -2,7 +2,8 @@
 // Löschen prüft dort noch einmal, dass der Eintrag nie genutzt wurde.
 import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
 import { ohneUebung, ortGenutzt, uebungGenutzt, utensilGenutzt } from '../logik/einstellungen';
-import type { Einstellungen, Ort, Uebung, Utensil } from '../logik/typen';
+import { schliesseTesttagAb } from '../logik/testtag';
+import type { Einheit, Einstellungen, Ort, Uebung, Utensil } from '../logik/typen';
 import { db, EINSTELLUNGEN_SCHLUESSEL, ladeZustand, TABELLEN, type FitnessDb } from './db';
 
 export async function ladeEinstellungen(d: FitnessDb = db): Promise<Einstellungen> {
@@ -70,4 +71,21 @@ export async function loescheEigenesUtensil(utensilId: string, d: FitnessDb = db
     await d.eigeneUtensilien.delete(utensilId);
     return true;
   });
+}
+
+// Trainingszustand, den der Testtag fortschreibt (Einträge werden nur ergänzt oder ersetzt).
+const TRAININGSTABELLEN = ['varianten', 'muster', 'muskeln', 'wochen', 'zyklen', 'einheiten', 'maxTests'] as const;
+
+// Speichert den Testtag und schließt das Onboarding ab, beides in einem Schritt.
+export async function speichereTesttag(einheit: Einheit, jetzt: string, d: FitnessDb = db): Promise<void> {
+  await d.transaction('rw', TABELLEN.map((t) => d.table(t)), async () => {
+    const neu = schliesseTesttagAb(await ladeZustand(d), einheit, jetzt);
+    for (const t of TRAININGSTABELLEN) await d.table(t).bulkPut(neu[t]);
+    await d.einstellungen.put({ ...(await ladeEinstellungen(d)), onboardingAbgeschlossen: true }, EINSTELLUNGEN_SCHLUESSEL);
+  });
+}
+
+// Onboarding ohne Testtag beenden: Die Startstufen kommen aus dem Level.
+export async function beendeOnboarding(d: FitnessDb = db): Promise<void> {
+  await aendereEinstellungen((e) => ({ ...e, onboardingAbgeschlossen: true }), d);
 }

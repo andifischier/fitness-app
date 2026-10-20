@@ -1,6 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router';
 import { Rahmen } from './ui/Rahmen';
+import { HeuteSeite } from './seiten/Heute';
 import { LeereSeite } from './seiten/LeereSeite';
+import { OnboardingSeite } from './seiten/onboarding/Onboarding';
+import { TesttagSeite } from './seiten/onboarding/Testtag';
 import { BackupSeite } from './seiten/einstellungen/Backup';
 import { EinschraenkungenSeite } from './seiten/einstellungen/Einschraenkungen';
 import { OrteSeite } from './seiten/einstellungen/Orte';
@@ -13,8 +16,11 @@ import { UebungenSeite } from './seiten/uebungen/Liste';
 export function App() {
   return (
     <Routes>
+      <Route path="/onboarding" element={<Navigate to="/onboarding/1" replace />} />
+      <Route path="/onboarding/:schritt" element={<OnboardingSeite />} />
+      <Route path="/testtag" element={<TesttagSeite />} />
       <Route element={<Rahmen />}>
-        <Route path="/" element={<LeereSeite titel="Heute" />} />
+        <Route path="/" element={<HeuteSeite />} />
         <Route path="/fortschritt" element={<LeereSeite titel="Fortschritt" />} />
         <Route path="/uebungen" element={<UebungenSeite />} />
         <Route path="/uebungen/neu" element={<VorlageSeite />} />

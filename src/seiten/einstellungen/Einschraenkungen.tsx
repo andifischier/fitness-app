@@ -3,7 +3,7 @@ import { SPERREN_NACH_REGION } from '../../konfiguration';
 import { aendereEinstellungen } from '../../daten/speichern';
 import { lokaleZeit } from '../../daten/zeit';
 import { mitEinschraenkung, ohneEinschraenkung, sperreAktiv, type Einschraenkung } from '../../logik/einstellungen';
-import { MUSTER_IDS } from '../../logik/typen';
+import { MUSTER_IDS, type Einstellungen } from '../../logik/typen';
 import { Auswahl, Hinweis, Karte, Knopf, Laedt, Seite, Textfeld } from '../../ui/bausteine';
 import { datumText, MUSTER_NAMEN, REGION_NAMEN } from '../../ui/texte';
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
@@ -18,11 +18,19 @@ function name(s: Einschraenkung): string {
 
 export function EinschraenkungenSeite() {
   const z = useZustand();
+  if (!z) return <Laedt />;
+  return (
+    <Seite titel="Einschränkungen" zurueck="/einstellungen">
+      <EinschraenkungenInhalt e={einstellungenAus(z)} />
+    </Seite>
+  );
+}
+
+// Liste der Sperren und Formular für neue; auch im Onboarding genutzt.
+export function EinschraenkungenInhalt({ e }: { e: Einstellungen }) {
   const [typ, setTyp] = useState<Einschraenkung['typ']>('region');
   const [wert, setWert] = useState<string>(REGIONEN[0]!.wert);
   const [bis, setBis] = useState('');
-  if (!z) return <Laedt />;
-  const e = einstellungenAus(z);
   const jetzt = lokaleZeit();
 
   const waehleTyp = (t: Einschraenkung['typ']) => {
@@ -35,7 +43,7 @@ export function EinschraenkungenSeite() {
   };
 
   return (
-    <Seite titel="Einschränkungen" zurueck="/einstellungen">
+    <>
       <Hinweis>
         Gesperrte Übungen tauchen weder im Plan noch beim Tauschen auf. Das ausfallende Volumen wird nicht auf andere
         Muskeln verteilt.
@@ -71,6 +79,6 @@ export function EinschraenkungenSeite() {
           <Knopf onClick={hinzufuegen}>Sperre hinzufügen</Knopf>
         </div>
       </Karte>
-    </Seite>
+    </>
   );
 }

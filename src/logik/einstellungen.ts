@@ -1,5 +1,6 @@
 // Regeln für die Screens Einstellungen und Übungen: Orte und Equipment, eigene Übungen und
 // Utensilien, Favoriten, Ausschlüsse, Video-Links und Einschränkungen. Rein und deterministisch.
+import { PROFIL } from '../konfiguration';
 import { alleUebungen, uebungMoeglich } from './equipment';
 import { hauptvarianten } from './planung';
 import { einstellungenVon } from './verlauf';
@@ -339,4 +340,9 @@ export function mitEinschraenkung(e: Einstellungen, s: Omit<Einschraenkung, 'id'
 
 export function ohneEinschraenkung(e: Einstellungen, id: string): Einstellungen {
   return { ...e, einschraenkungen: e.einschraenkungen.filter((s) => s.id !== id) };
+}
+
+// Zirkel-Anteil als Startwert nach den Zielen: Ausdauer oder Fitness allgemein ⇒ 1x pro Woche.
+export function zirkelAnteilFuerZiele(ziele: Einstellungen['ziele']): Einstellungen['zirkelAnteil'] {
+  return ziele.includes('ausdauer') || ziele.includes('fitness') ? PROFIL.zirkelMitAusdauer : PROFIL.zirkelSonst;
 }

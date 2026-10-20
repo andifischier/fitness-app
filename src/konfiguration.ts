@@ -13,6 +13,9 @@ export const PROFIL = {
   grenzeNachLevel: { einsteiger: -2, fortgeschritten: 0, erfahren: 2 },
   // Bereich für Grundübungen mit Last, wenn das Ziel „Kraft“ gewählt ist
   kraftBereich: { von: 6, bis: 10 },
+  // Vorschlag für den Zirkel-Anteil nach den Zielen (nur im Onboarding)
+  zirkelMitAusdauer: '1proWoche',
+  zirkelSonst: 'alle2Wochen',
 } as const;
 
 export const STANDARD_PRIORITAETEN: Record<Muskel, Prioritaet> = {
@@ -46,6 +49,7 @@ export const TESTTAG = {
   Knie: { grenzen: [14, 30], varianten: ['kniebeuge', 'pausen_kniebeuge', 'goblet_squat'], ersatzOhneLast: 'bss_kg' },
   Rumpf: { grenzen: [29, 60], varianten: ['dead_bug', 'plank', 'hollow_hold'] },
   kalibrierungReserve: 3,
+  minutenProTest: 3,              // geschätzte Dauer je Test (plus Aufwärmen)
 } as const;
 
 // Zeitbudget pro Einheit
