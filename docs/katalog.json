@@ -1,91 +1,5 @@
 {
- "schemaVersion": 1,
- "equipment": [
-  {
-   "id": "KH",
-   "name": "Kurzhanteln",
-   "details": "Modus verstellbar (Min, Max, Schritt in kg) oder feste Paare (Liste in kg)",
-   "immerVorhanden": false
-  },
-  {
-   "id": "BANK",
-   "name": "Hantelbank flach",
-   "details": "keine",
-   "immerVorhanden": false
-  },
-  {
-   "id": "SCHRAEG",
-   "name": "Hantelbank verstellbar (schräg)",
-   "details": "keine; schließt flach ein",
-   "immerVorhanden": false
-  },
-  {
-   "id": "STANGE",
-   "name": "Klimmzugstange",
-   "details": "keine",
-   "immerVorhanden": false
-  },
-  {
-   "id": "BAND",
-   "name": "Widerstandsbänder (lang)",
-   "details": "vorhandene Stufen: leicht, mittel, schwer, extra schwer",
-   "immerVorhanden": false
-  },
-  {
-   "id": "ANKER",
-   "name": "Türanker für Bänder",
-   "details": "keine",
-   "immerVorhanden": false
-  },
-  {
-   "id": "MINI",
-   "name": "Mini-Bänder (Loops)",
-   "details": "vorhandene Stufen",
-   "immerVorhanden": false
-  },
-  {
-   "id": "KB",
-   "name": "Kettlebell",
-   "details": "Liste der Gewichte in kg",
-   "immerVorhanden": false
-  },
-  {
-   "id": "LH",
-   "name": "Langhantel mit Scheiben",
-   "details": "Stangengewicht, Scheiben in kg",
-   "immerVorhanden": false
-  },
-  {
-   "id": "DIP",
-   "name": "Dip-Barren",
-   "details": "keine",
-   "immerVorhanden": false
-  },
-  {
-   "id": "RINGE",
-   "name": "Ringe / Schlingentrainer",
-   "details": "keine",
-   "immerVorhanden": false
-  },
-  {
-   "id": "SEIL",
-   "name": "Springseil",
-   "details": "keine",
-   "immerVorhanden": false
-  },
-  {
-   "id": "TISCH",
-   "name": "Stabiler Tisch",
-   "details": "keine",
-   "immerVorhanden": true
-  },
-  {
-   "id": "ERH",
-   "name": "Erhöhung (Stuhl, Kasten, Stufe)",
-   "details": "keine",
-   "immerVorhanden": true
-  }
- ],
+ "schemaVersion": 2,
  "uebungen": [
   {
    "id": "knieliegestuetz",
@@ -108,7 +22,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Knieliegest%C3%BCtz+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "liegestuetz_erhoeht_haende",
@@ -135,7 +50,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Liegest%C3%BCtz%2C+H%C3%A4nde+erh%C3%B6ht+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "band_brustpresse",
@@ -166,7 +82,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Brustpresse+stehend+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "liegestuetz",
@@ -189,7 +106,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Liegest%C3%BCtz+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_bodendruecken",
@@ -216,7 +134,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Bodendr%C3%BCcken+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "liegestuetz_fuesse_erhoeht",
@@ -243,7 +162,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Liegest%C3%BCtz%2C+F%C3%BC%C3%9Fe+erh%C3%B6ht+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_bankdruecken",
@@ -274,7 +194,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Bankdr%C3%BCcken+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_schraegbank",
@@ -304,7 +225,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Schr%C3%A4gbankdr%C3%BCcken+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "liegestuetz_band",
@@ -331,7 +253,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Liegest%C3%BCtz+mit+Band+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "lh_bankdruecken",
@@ -362,7 +285,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Langhantel-Bankdr%C3%BCcken+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "dips",
@@ -389,7 +313,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Dips+am+Barren+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "ringe_liegestuetz",
@@ -416,7 +341,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Liegest%C3%BCtz+an+Ringen+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "archer_liegestuetz",
@@ -439,7 +365,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Archer-Liegest%C3%BCtz+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "band_schulterdruecken",
@@ -465,7 +392,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Schulterdr%C3%BCcken+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "pike_liegestuetz",
@@ -487,7 +415,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Pike-Liegest%C3%BCtz+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_schulterdruecken_stehend",
@@ -513,7 +442,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Schulterdr%C3%BCcken+stehend+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_schulterdruecken_sitzend",
@@ -542,7 +472,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Schulterdr%C3%BCcken+sitzend+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "arnold_press",
@@ -568,7 +499,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Arnold-Press+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kb_schulterdruecken",
@@ -594,7 +526,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kettlebell-Schulterdr%C3%BCcken+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "pike_erhoeht",
@@ -620,7 +553,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Pike-Liegest%C3%BCtz%2C+F%C3%BC%C3%9Fe+erh%C3%B6ht+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "lh_ueberkopf",
@@ -646,7 +580,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Langhantel-%C3%9Cberkopfdr%C3%BCcken+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "wand_hs_liegestuetz",
@@ -668,14 +603,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Handstand-Liegest%C3%BCtz+an+der+Wand+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "band_rudern",
    "name": "Band-Rudern sitzend",
    "muster": "hZug",
    "primaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "sekundaer": [
     "Bizeps",
@@ -695,7 +631,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Rudern+sitzend+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "band_face_pull",
@@ -705,7 +642,7 @@
     "Schultern"
    ],
    "sekundaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "stufe": 3,
    "equipment": [
@@ -725,14 +662,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Face-Pull+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "tischrudern",
    "name": "Rudern unter dem Tisch",
    "muster": "hZug",
    "primaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "sekundaer": [
     "Bizeps",
@@ -752,14 +690,15 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Rudern+unter+dem+Tisch+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_rudern_einarmig",
    "name": "Kurzhantel-Rudern einarmig",
    "muster": "hZug",
    "primaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "sekundaer": [
     "Bizeps",
@@ -784,14 +723,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Rudern+einarmig+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_rudern_vorgebeugt",
    "name": "Kurzhantel-Rudern vorgebeugt",
    "muster": "hZug",
    "primaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "sekundaer": [
     "Bizeps",
@@ -811,14 +751,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Rudern+vorgebeugt+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_rudern_brustgestuetzt",
    "name": "Brustgestütztes Kurzhantel-Rudern",
    "muster": "hZug",
    "primaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "sekundaer": [
     "Bizeps",
@@ -841,14 +782,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Brustgest%C3%BCtztes+Kurzhantel-Rudern+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kb_rudern",
    "name": "Kettlebell-Rudern",
    "muster": "hZug",
    "primaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "sekundaer": [
     "Bizeps",
@@ -868,14 +810,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kettlebell-Rudern+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "ringe_rudern",
    "name": "Rudern an Ringen",
    "muster": "hZug",
    "primaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "sekundaer": [
     "Bizeps",
@@ -895,14 +838,15 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Rudern+an+Ringen+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "lh_rudern",
    "name": "Langhantel-Rudern",
    "muster": "hZug",
    "primaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "sekundaer": [
     "Bizeps",
@@ -922,14 +866,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Langhantel-Rudern+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "scapula_pullups",
    "name": "Schulterblatt-Klimmzüge",
    "muster": "vZug",
    "primaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "sekundaer": [],
    "stufe": 1,
@@ -946,14 +891,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Schulterblatt-Klimmz%C3%BCge+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "band_latzug",
    "name": "Band-Latzug kniend",
    "muster": "vZug",
    "primaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "sekundaer": [
     "Bizeps"
@@ -976,14 +922,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Latzug+kniend+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "negative_klimmzuege",
    "name": "Negative Klimmzüge",
    "muster": "vZug",
    "primaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "sekundaer": [
     "Bizeps"
@@ -1002,14 +949,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Negative+Klimmz%C3%BCge+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "klimmzug_band",
    "name": "Klimmzug mit Bandunterstützung",
    "muster": "vZug",
    "primaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "sekundaer": [
     "Bizeps"
@@ -1031,14 +979,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Klimmzug+mit+Bandunterst%C3%BCtzung+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": true
   },
   {
    "id": "chinup",
    "name": "Klimmzug Untergriff (Chin-up)",
    "muster": "vZug",
    "primaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "sekundaer": [
     "Bizeps"
@@ -1057,14 +1006,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Klimmzug+Untergriff+%28Chin-up%29+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "klimmzug",
    "name": "Klimmzug Obergriff",
    "muster": "vZug",
    "primaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "sekundaer": [
     "Bizeps"
@@ -1083,14 +1033,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Klimmzug+Obergriff+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "klimmzug_gewicht",
    "name": "Klimmzug mit Zusatzgewicht",
    "muster": "vZug",
    "primaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "sekundaer": [
     "Bizeps"
@@ -1113,7 +1064,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Klimmzug+mit+Zusatzgewicht+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kniebeuge",
@@ -1123,7 +1075,7 @@
     "Quadrizeps"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 2,
    "equipment": [],
@@ -1135,7 +1087,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kniebeuge+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "band_kniebeuge",
@@ -1145,7 +1098,7 @@
     "Quadrizeps"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 3,
    "equipment": [
@@ -1161,7 +1114,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Kniebeuge+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "pausen_kniebeuge",
@@ -1171,7 +1125,7 @@
     "Quadrizeps"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 3,
    "equipment": [],
@@ -1183,7 +1137,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kniebeuge+mit+Pause+unten+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "goblet_squat",
@@ -1193,7 +1148,7 @@
     "Quadrizeps"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 4,
    "equipment": [
@@ -1210,7 +1165,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Goblet+Squat+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_kniebeuge",
@@ -1220,7 +1176,7 @@
     "Quadrizeps"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 5,
    "equipment": [
@@ -1236,7 +1192,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Kniebeuge+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "pistol_assistiert",
@@ -1246,7 +1203,7 @@
     "Quadrizeps"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 7,
    "equipment": [
@@ -1262,7 +1219,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Einbeinige+Kniebeuge+mit+Halt+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "pistol",
@@ -1272,7 +1230,7 @@
     "Quadrizeps"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 9,
    "equipment": [],
@@ -1284,7 +1242,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Pistol+Squat+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "ausfallschritt_rueck",
@@ -1294,7 +1253,7 @@
     "Quadrizeps"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 3,
    "equipment": [],
@@ -1306,7 +1265,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Ausfallschritt+r%C3%BCckw%C3%A4rts+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "step_up",
@@ -1316,7 +1276,7 @@
     "Quadrizeps"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 3,
    "equipment": [
@@ -1332,7 +1292,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Step-up+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "bss_kg",
@@ -1342,7 +1303,7 @@
     "Quadrizeps"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 4,
    "equipment": [
@@ -1360,7 +1321,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Bulgarian+Split+Squat+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_step_up",
@@ -1370,7 +1332,7 @@
     "Quadrizeps"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 4,
    "equipment": [
@@ -1391,7 +1353,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Step-up+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_ausfallschritt",
@@ -1401,7 +1364,7 @@
     "Quadrizeps"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 5,
    "equipment": [
@@ -1417,7 +1380,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Ausfallschritt+gehend+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "bss_kh",
@@ -1427,7 +1391,7 @@
     "Quadrizeps"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 6,
    "equipment": [
@@ -1448,7 +1412,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Bulgarian+Split+Squat+mit+Kurzhanteln+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "shrimp_squat",
@@ -1458,7 +1423,7 @@
     "Quadrizeps"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 8,
    "equipment": [],
@@ -1470,17 +1435,18 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Shrimp+Squat+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "glute_bridge",
    "name": "Glute Bridge",
    "muster": "Huefte",
    "primaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "sekundaer": [
-    "Hintere Oberschenkel"
+    "HintereOS"
    ],
    "stufe": 1,
    "equipment": [],
@@ -1492,17 +1458,18 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Glute+Bridge+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "mini_glute_bridge",
    "name": "Glute Bridge mit Mini-Band",
    "muster": "Huefte",
    "primaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "sekundaer": [
-    "Hintere Oberschenkel"
+    "HintereOS"
    ],
    "stufe": 2,
    "equipment": [
@@ -1518,17 +1485,18 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Glute+Bridge+mit+Mini-Band+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "band_pull_through",
    "name": "Band-Pull-Through",
    "muster": "Huefte",
    "primaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "sekundaer": [
-    "Hintere Oberschenkel"
+    "HintereOS"
    ],
    "stufe": 3,
    "equipment": [
@@ -1548,17 +1516,18 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Pull-Through+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "hip_thrust_einbeinig",
    "name": "Hip Thrust einbeinig",
    "muster": "Huefte",
    "primaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "sekundaer": [
-    "Hintere Oberschenkel"
+    "HintereOS"
    ],
    "stufe": 3,
    "equipment": [
@@ -1576,17 +1545,18 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Hip+Thrust+einbeinig+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "sliding_leg_curl",
    "name": "Beinbeuger mit Handtuch (Sliding Leg Curl)",
    "muster": "Huefte",
    "primaer": [
-    "Hintere Oberschenkel"
+    "HintereOS"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 4,
    "equipment": [],
@@ -1598,17 +1568,18 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Beinbeuger+mit+Handtuch+%28Sliding+Leg+Curl%29+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_hip_thrust",
    "name": "Kurzhantel-Hip-Thrust",
    "muster": "Huefte",
    "primaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "sekundaer": [
-    "Hintere Oberschenkel"
+    "HintereOS"
    ],
    "stufe": 4,
    "equipment": [
@@ -1628,17 +1599,18 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Hip-Thrust+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_rdl",
    "name": "Rumänisches Kreuzheben mit Kurzhanteln",
    "muster": "Huefte",
    "primaer": [
-    "Hintere Oberschenkel"
+    "HintereOS"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 5,
    "equipment": [
@@ -1654,17 +1626,18 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Rum%C3%A4nisches+Kreuzheben+mit+Kurzhanteln+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_rdl_einbeinig",
    "name": "Einbeiniges Kreuzheben mit Kurzhantel",
    "muster": "Huefte",
    "primaer": [
-    "Hintere Oberschenkel"
+    "HintereOS"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 5,
    "equipment": [
@@ -1681,17 +1654,18 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Einbeiniges+Kreuzheben+mit+Kurzhantel+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kb_swing",
    "name": "Kettlebell-Swing",
    "muster": "Huefte",
    "primaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "sekundaer": [
-    "Hintere Oberschenkel"
+    "HintereOS"
    ],
    "stufe": 5,
    "equipment": [
@@ -1707,18 +1681,19 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kettlebell-Swing+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "lh_kreuzheben",
    "name": "Langhantel-Kreuzheben",
    "muster": "Huefte",
    "primaer": [
-    "Hintere Oberschenkel"
+    "HintereOS"
    ],
    "sekundaer": [
-    "Gesäß",
-    "Rücken"
+    "Gesaess",
+    "Ruecken"
    ],
    "stufe": 6,
    "equipment": [
@@ -1734,14 +1709,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Langhantel-Kreuzheben+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "nordic_curl",
    "name": "Nordic Curl (Füße fixiert)",
    "muster": "Huefte",
    "primaer": [
-    "Hintere Oberschenkel"
+    "HintereOS"
    ],
    "sekundaer": [],
    "stufe": 8,
@@ -1754,7 +1730,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Nordic+Curl+%28F%C3%BC%C3%9Fe+fixiert%29+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "dead_bug",
@@ -1774,7 +1751,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Dead+Bug+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "plank",
@@ -1794,7 +1772,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Unterarmst%C3%BCtz+%28Plank%29+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "seitstuetz",
@@ -1814,7 +1793,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Seitst%C3%BCtz+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "band_pallof",
@@ -1842,7 +1822,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Pallof-Press+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_russian_twist",
@@ -1867,7 +1848,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Russian+Twist+mit+Kurzhantel+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "hollow_hold",
@@ -1887,7 +1869,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Hollow+Hold+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "haengendes_knieheben",
@@ -1911,7 +1894,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=H%C3%A4ngendes+Knieheben+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "haengendes_beinheben",
@@ -1935,7 +1919,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=H%C3%A4ngendes+Beinheben+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "band_curls",
@@ -1959,7 +1944,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Curls+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_curls",
@@ -1983,7 +1969,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Curls+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "hammer_curls",
@@ -2007,7 +1994,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Hammer-Curls+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "konzentrationscurl",
@@ -2036,7 +2024,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Konzentrationscurl+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "schraegbank_curls",
@@ -2063,7 +2052,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Schr%C3%A4gbank-Curls+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "lh_curls",
@@ -2087,7 +2077,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Langhantel-Curls+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "band_trizeps",
@@ -2115,7 +2106,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Trizepsdr%C3%BCcken+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_kickback",
@@ -2139,7 +2131,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Kickback+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "bank_dips",
@@ -2167,7 +2160,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Dips+an+der+Bank+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_trizeps_ueberkopf",
@@ -2191,7 +2185,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Trizepsdr%C3%BCcken+%C3%BCber+Kopf+mit+Kurzhantel+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_trizeps_liegend",
@@ -2219,7 +2214,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Liegendes+Trizepsdr%C3%BCcken+mit+Kurzhanteln+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "diamond_liegestuetz",
@@ -2241,7 +2237,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Diamant-Liegest%C3%BCtz+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "band_pull_apart",
@@ -2251,7 +2248,7 @@
     "Schultern"
    ],
    "sekundaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "stufe": 2,
    "equipment": [
@@ -2267,7 +2264,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Pull-Apart+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "band_seitheben",
@@ -2291,7 +2289,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Seitheben+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_seitheben",
@@ -2315,7 +2314,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Seitheben+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_reverse_flys",
@@ -2325,7 +2325,7 @@
     "Schultern"
    ],
    "sekundaer": [
-    "Rücken"
+    "Ruecken"
    ],
    "stufe": 3,
    "equipment": [
@@ -2341,7 +2341,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Vorgebeugtes+Seitheben+%28hintere+Schulter%29+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "wadenheben",
@@ -2365,7 +2366,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Wadenheben+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "wadenheben_einbeinig",
@@ -2389,7 +2391,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Wadenheben+einbeinig+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_wadenheben",
@@ -2416,7 +2419,8 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Wadenheben+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "hampelmann",
@@ -2436,7 +2440,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Hampelmann+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "high_knees",
@@ -2456,7 +2461,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kniehebelauf+auf+der+Stelle+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "mountain_climbers",
@@ -2478,7 +2484,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Mountain+Climbers+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "seilspringen",
@@ -2502,14 +2509,15 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Seilspringen+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "skater",
    "name": "Skater-Sprünge",
    "muster": "Kondition",
    "primaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "sekundaer": [
     "Quadrizeps"
@@ -2524,7 +2532,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Skater-Spr%C3%BCnge+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "sprung_kniebeuge",
@@ -2534,7 +2543,7 @@
     "Quadrizeps"
    ],
    "sekundaer": [
-    "Gesäß"
+    "Gesaess"
    ],
    "stufe": 4,
    "equipment": [],
@@ -2546,7 +2555,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Sprung-Kniebeuge+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "burpees",
@@ -2569,7 +2579,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Burpees+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   },
   {
    "id": "kh_thruster",
@@ -2580,7 +2591,7 @@
    ],
    "sekundaer": [
     "Schultern",
-    "Gesäß",
+    "Gesaess",
     "Trizeps"
    ],
    "stufe": 5,
@@ -2597,7 +2608,8 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Thruster+richtige+Ausf%C3%BChrung",
-   "herkunft": "katalog"
+   "herkunft": "katalog",
+   "unterstuetzend": false
   }
  ],
  "zirkel": [
@@ -2784,5 +2796,105 @@
    "anteilLast": 0.5,
    "wdh": 8
   }
- }
+ },
+ "utensilien": [
+  {
+   "id": "KH",
+   "name": "Kurzhanteln",
+   "details": "Modus verstellbar (Min, Max, Schritt in kg) oder feste Paare (Liste in kg)",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "BANK",
+   "name": "Hantelbank flach",
+   "details": "keine",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "SCHRAEG",
+   "name": "Hantelbank verstellbar (schräg)",
+   "details": "keine; schließt flach ein",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "STANGE",
+   "name": "Klimmzugstange",
+   "details": "keine",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "BAND",
+   "name": "Widerstandsbänder (lang)",
+   "details": "vorhandene Stufen: leicht, mittel, schwer, extra schwer",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "ANKER",
+   "name": "Türanker für Bänder",
+   "details": "keine",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "MINI",
+   "name": "Mini-Bänder (Loops)",
+   "details": "vorhandene Stufen",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "KB",
+   "name": "Kettlebell",
+   "details": "Liste der Gewichte in kg",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "LH",
+   "name": "Langhantel mit Scheiben",
+   "details": "Stangengewicht in kg; Scheiben als Liste aus Gewicht und Anzahl Paare",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "DIP",
+   "name": "Dip-Barren",
+   "details": "keine",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "RINGE",
+   "name": "Ringe / Schlingentrainer",
+   "details": "keine",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "SEIL",
+   "name": "Springseil",
+   "details": "keine",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "TISCH",
+   "name": "Stabiler Tisch",
+   "details": "keine",
+   "immerVorhanden": true,
+   "eigenes": false
+  },
+  {
+   "id": "ERH",
+   "name": "Erhöhung (Stuhl, Kasten, Stufe)",
+   "details": "keine",
+   "immerVorhanden": true,
+   "eigenes": false
+  }
+ ]
 }

@@ -15,10 +15,9 @@ Der Startkatalog umfasst 98 Übungen in 13 Mustern, 14 Utensilien und 5 feste Zi
 
 | Muster ohne Variante | Ersatz |
 | --- | --- |
-| vZug (keine Stange, kein Band) | hZug, bevorzugt Rudern unter dem Tisch |
-| Bizeps | hZug-Variante mit Untergriff; Bizeps-Volumen kommt dann nur aus sekundären Sätzen |
+| vZug (keine Stange) | band_latzug, falls BAND und ANKER vorhanden; sonst hZug, bevorzugt tischrudern |
+| Bizeps | chinup, falls Stange vorhanden; sonst tischrudern (Bizeps nur sekundär) |
 | Schulter (seitlich/hinten) | vDruck-Variante |
-| Trizeps | Diamant-Liegestütz (immer möglich) |
 | alle anderen | haben immer mindestens eine Variante ohne gekauftes Equipment |
 
 ## Utensilien

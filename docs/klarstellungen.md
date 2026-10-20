@@ -1,8 +1,11 @@
-# Klarstellungen zur Spezifikation (verbindlich)
+# Klarstellungen zur Spezifikation
 
-Stand 20.10.2026. Beantwortet alle Punkte aus dem Probelauf. Diese Datei hat Vorrang vor
-`docs/spezifikation.md`, den Mockups und den Prototypen, bis ihr Inhalt in die Spezifikation
-eingearbeitet ist.
+> **In Spezifikation eingearbeitet am 20.10.2026.** Maßgeblich ist jetzt `docs/spezifikation.md`.
+> Diese Datei bleibt nur als Historie erhalten und hat keinen Vorrang mehr.
+
+Stand 20.10.2026. Beantwortet alle Punkte aus dem Probelauf. (Ursprünglich: Diese Datei hatte
+Vorrang vor `docs/spezifikation.md`, den Mockups und den Prototypen, bis ihr Inhalt in die
+Spezifikation eingearbeitet war.)
 
 ## Grundsatz
 
