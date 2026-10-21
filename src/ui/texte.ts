@@ -2,7 +2,7 @@
 import { PLAYER, PROGRESSION } from '../konfiguration';
 import type { NaechstesMal, Rekord } from '../logik/progression';
 import type {
-  AppZustand, BandStufe, Einheit, Einstellungen, Feedback, MusterId, Muskel, Prioritaet, Uebung, Utensil,
+  AppZustand, BandStufe, Einheit, Einstellungen, Feedback, MusterId, Muskel, Position, Prioritaet, Uebung, Utensil,
 } from '../logik/typen';
 import { uebungVon } from '../logik/verlauf';
 
@@ -204,4 +204,52 @@ export function rekordZeile(z: AppZustand, einheit: Einheit, r: Rekord): { name:
     return { name, wert: bester ? `${kgZahl(bester.kg)} × ${bester.wdh}` : kgZahl(r.wert) };
   }
   return { name, wert: `${r.wert} ${r.art === 'sekunden' ? 'Sek.' : 'Wdh.'}` };
+}
+
+// ---------- Fortschritt und Verlauf (Paket 9) ----------
+
+export const FEEDBACK_NAMEN: Record<Feedback, string> = { leicht: 'Zu leicht', passend: 'Passend', schwer: 'Zu schwer' };
+
+const MONATE_KURZ = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+
+// „2026-10-20…“ → „Okt“
+export function monatKurz(iso: string): string {
+  return MONATE_KURZ[Number(iso.slice(5, 7)) - 1] ?? '';
+}
+
+// „2026-W41“ → „KW 41“
+export function kwText(wocheId: string): string {
+  return `KW ${Number(wocheId.split('-W')[1])}`;
+}
+
+// Zuwachs seit dem ersten Max-Test: „+3 seit Start“, „+15 Sek. seit Start“, „−2 seit Start“
+export function seitStartText(wert: number, einheit: 'Wdh.' | 'Sek.'): string {
+  const zahl = wert < 0 ? `−${-wert}` : `+${wert}`;
+  return `${zahl}${einheit === 'Sek.' ? ' Sek.' : ''} seit Start`;
+}
+
+// Hinweis unter den Wochenbalken: „KW 41 nur 2 Einheiten, zählt als Entlastung.“
+export function entlastungText(wocheId: string, einheiten: number, erholungswoche: boolean): string {
+  const kw = kwText(wocheId);
+  if (erholungswoche) return `${kw} Erholungswoche, zählt als Entlastung.`;
+  if (einheiten === 0) return `${kw} ohne Training, zählt als Entlastung.`;
+  return `${kw} nur ${einheiten} ${einheiten === 1 ? 'Einheit' : 'Einheiten'}, zählt als Entlastung.`;
+}
+
+// Name einer Einheit im Verlauf: Zirkelname, „Testtag“ oder Fokus („Ganzkörper“)
+export function einheitName(z: AppZustand, e: Einheit): string {
+  if (e.format === 'test') return 'Testtag';
+  if (e.format === 'zirkel') return z.katalog.zirkel.find((x) => x.id === e.bloecke[0]?.zirkelId)?.name ?? 'Zirkel';
+  return FOKUS_NAMEN[e.fokus];
+}
+
+// Sätze einer Übung im Verlauf: „16 kg je Hand · 12, 11, 10 Wdh.“; wechselt die Last innerhalb der
+// Übung (z. B. nach dem Kalibrierungssatz), steht sie bei jedem Satz: „10 Wdh. mit 12 kg je Hand, …“.
+export function saetzeZeile(u: Uebung, p: Position): string {
+  const inSek = u.bereich.einheit === 'Sek.';
+  const werte = p.ergebnisse.map((s) => (inSek ? s.sek ?? s.wdh : s.wdh ?? s.sek) ?? 0);
+  const lasten = p.ergebnisse.map((s) => lastText(u, { last: s.last ?? p.last, bandStufe: s.bandStufe ?? p.bandStufe }));
+  const einheit = u.bereich.einheit;
+  if (lasten.every((l) => l === lasten[0])) return [lasten[0], `${werte.join(', ')} ${einheit}`].filter(Boolean).join(' · ');
+  return werte.map((w, i) => `${w} ${einheit}${lasten[i] ? ` mit ${lasten[i]}` : ''}`).join(', ');
 }

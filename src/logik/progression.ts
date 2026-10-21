@@ -574,20 +574,26 @@ export function erholungswocheAngebot(z: AppZustand, jetzt: string): Erholungswo
     .slice(-ERHOLUNGSWOCHE.anstrengungWorkouts).map((x) => x.gesamtbewertung!);
   if (bewertungen.length === ERHOLUNGSWOCHE.anstrengungWorkouts && mittel(bewertungen)! >= ERHOLUNGSWOCHE.anstrengungAb) return 'anstrengung';
 
-  // 10 Wochen ohne eine Woche unter 60 % des üblichen Volumens (Mittel der 4 Wochen davor)
-  const summe = (id: string) => {
-    const w = z.wochen.find((x) => x.id === id);
-    return w ? MUSKELN.reduce((s, m) => s + w.erledigt[m], 0) : 0;
-  };
+  // 10 Wochen ohne eine Woche unter 60 % des üblichen Volumens
   const erste = z.wochen.map((w) => w.id).sort()[0];
   const anzahl = ERHOLUNGSWOCHE.wochenOhneEntlastung;
   if (!erste || erste > wocheVerschoben(wocheId, -anzahl)) return null;
-  const ohneEntlastung = Array.from({ length: anzahl }, (_, i) => wocheVerschoben(wocheId, -1 - i)).every((id) => {
-    if (z.wochen.find((w) => w.id === id)?.erholungswoche) return false;
-    const ueblich = mittel(Array.from({ length: ERHOLUNGSWOCHE.ueblichesVolumenWochen }, (_, i) => summe(wocheVerschoben(id, -1 - i))))!;
-    return summe(id) >= ERHOLUNGSWOCHE.entlastungUnterAnteil * ueblich;
-  });
+  const ohneEntlastung = Array.from({ length: anzahl }, (_, i) => wocheVerschoben(wocheId, -1 - i)).every((id) => !istEntlastung(z, id));
   return ohneEntlastung ? 'zehnWochen' : null;
+}
+
+// Erledigte Wochensätze aller Muskeln; fehlende Wochen zählen 0.
+export function wochenSaetze(z: AppZustand, wocheId: string): number {
+  const w = z.wochen.find((x) => x.id === wocheId);
+  return w ? MUSKELN.reduce((s, m) => s + w.erledigt[m], 0) : 0;
+}
+
+// Zählt die Woche als Entlastung? Erholungswoche oder unter 60 % des üblichen Volumens (Mittel der
+// erledigten Wochensätze der 4 Wochen davor).
+export function istEntlastung(z: AppZustand, wocheId: string): boolean {
+  if (z.wochen.find((w) => w.id === wocheId)?.erholungswoche) return true;
+  const ueblich = mittel(Array.from({ length: ERHOLUNGSWOCHE.ueblichesVolumenWochen }, (_, i) => wochenSaetze(z, wocheVerschoben(wocheId, -1 - i))))!;
+  return wochenSaetze(z, wocheId) < ERHOLUNGSWOCHE.entlastungUnterAnteil * ueblich;
 }
 
 // ---------- Max-Tests ----------

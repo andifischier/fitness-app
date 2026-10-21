@@ -146,3 +146,14 @@
   und `speichereBewertung`; Tests für alle Regeln, darunter „nächste Einheit zeigt die angekündigten
   Ziele und Lasten“. Vier Entscheidungen in `docs/entscheidungen.md`, Spezifikation angepasst.
 - **Warum:** Arbeitspaket 8 der Spezifikation; Wunsch des Nutzers nach einer Bewertung der Übungen.
+
+## Paket 9: Fortschritt und Verlauf (21.10.2026)
+- **Was:** Tab Fortschritt nach Mockup 8 mit Unterreitern Übersicht und Verlauf. Übersicht: Max-Test-Verlauf
+  als Liniendiagramm mit Chips für alle getesteten Muster (Plank in Sekunden) und „+3 seit Start“; Sätze pro
+  Woche für alle Muskeln untereinander über 6 Wochen mit Ziel und Hinweis „zählt als Entlastung“; Karte
+  Zirkel-Bestzeiten (Zirkel, Ort, Bestzeit, Datum, eine Zeile je Übungsauswahl). Verlauf: alle Einheiten,
+  Tipp zeigt Datum, Ort, Dauer, Übungen mit Sätzen, Last und Feedback, Gesamtanstrengung und Notiz. Leere
+  Zustände vorhanden. Neue Logik `src/logik/fortschritt.ts`, die 60-%-Regel als gemeinsame Funktion
+  `istEntlastung` in `progression.ts` (Verhalten des Erholungswochen-Angebots unverändert), Texthilfen in
+  `texte.ts`, jeweils mit Tests. Drei Entscheidungen in `docs/entscheidungen.md`, Spezifikation angepasst.
+- **Warum:** Arbeitspaket 9 der Spezifikation.

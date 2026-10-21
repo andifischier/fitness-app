@@ -41,3 +41,6 @@ betrifft eine Entscheidung beschriebenes Verhalten, ist `docs/spezifikation.md` 
 | 21.10.2026 | Was gilt beim vorzeitigen Beenden für eine angefangene Übung ohne Feedback? | Automatisch: „zu schwer“, wenn der erste Satz das Ziel verfehlt hat, sonst „passend“; keine Nachfrage. | Schnell; die Regeln messen ohnehin am ersten Satz. |
 | 21.10.2026 | Ist die Gesamtanstrengung im Abschluss vorausgewählt? | Nein, nichts vorausgewählt und freiwillig; ohne Angabe wird keine gespeichert. | Nur echte Angaben steuern Volumengrenze und Erholungswoche. |
 | 21.10.2026 | Welche Erklärung steht bei Halteübungen unter den Feedback-Buttons? | In Sekunden: zu leicht = mehr als 10 Sek. wären noch gegangen, passend = bis 10 Sek., zu schwer = Ziel nicht geschafft oder Haltung brach ein. | Passt zur Übung; „Wiederholungen“ wäre bei Halteübungen falsch. |
+| 21.10.2026 | Wie wählt man in „Sätze pro Woche“ den Muskel? | Alle Muskeln untereinander (Muskeln mit Ziel oder erledigten Sätzen). | Alles auf einen Blick ohne Tippen. |
+| 21.10.2026 | Wie viele Wochen zeigt „Sätze pro Woche“? | 6 Wochen wie im Mockup. | Breite, gut lesbare Balken. |
+| 21.10.2026 | Wie zeigt die Karte Zirkel-Bestzeiten verschiedene Übungsauswahlen desselben Zirkels am selben Ort? | Eine Zeile je Übungsauswahl; eine zweite Zeile nennt die abweichenden Übungen. | Ehrlich vergleichbare Bestzeiten. |
