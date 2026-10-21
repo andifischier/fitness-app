@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  aktuellerSchritt, beende, erledigteSaetze, feedbackVorschlag, istKalibrierung, kalibriere, letztesMal, offeneFeedbacks, pauseNach,
+  aktuellerSchritt, beende, erledigteSaetze, feedbackVorschlag, fortschrittshinweis, istKalibrierung, kalibriere, letztesMal, offeneFeedbacks, pauseNach,
   korrigiereSatz, lastWaehlbar, satzVorgabe, schritte, setzeFeedback, starte, trageSatzEin,
 } from './player';
 import { bereichFuer } from './planung';
@@ -279,5 +279,42 @@ describe('Übungsfeedback', () => {
     const z = zustand();
     const zirkel = einheit([{ typ: 'zirkel', pauseSek: 0, runden: 1, zirkelId: 'z', positionen: [pos('kh_curls', 1)] }], { format: 'zirkel' });
     expect(offeneFeedbacks(erledige(z, zirkel, 1))).toEqual([]);
+  });
+});
+
+describe('Fortschritt im Training', () => {
+  const frueher = (id: string, wdh: number[], last: number | undefined, tag: string): Einheit => einheit(
+    [{ typ: 'einzeln', pauseSek: 90, positionen: [pos(id, wdh.length, {
+      ...(last !== undefined ? { last } : {}), ergebnisse: wdh.map((w, i) => ({ nr: i + 1, wdh: w, ...(last !== undefined ? { last } : {}), zeit: tag })),
+    })] }],
+    { id: `alt-${tag}`, status: 'abgeschlossen', gestartetAm: tag, beendetAm: tag },
+  );
+
+  it('zeigt im ersten Satz letztes Mal, Ziel heute und ab wann mehr Gewicht kommt', () => {
+    const z = { ...mitVarianten(zustand()), einheiten: [
+      frueher('kh_bankdruecken', [9, 8, 8], 16, '2026-10-16T18:00:00'), frueher('kh_bankdruecken', [10, 9, 8], 16, '2026-10-18T18:00:00'),
+    ] };
+    const e = einheit([{ typ: 'einzeln', pauseSek: 90, positionen: [pos('kh_bankdruecken', 3, { last: 16, zielWdh: 11 })] }]);
+    const h = fortschrittshinweis(z, e, { block: 0, position: 0, satz: 1 }, '2026-10-20T18:10:00')!;
+    expect(h).toMatchObject({ letztesMal: 10, heute: 11, ab: 12, schritt: 'gewicht', inSek: false });
+    expect(h.verlauf).toHaveLength(2);
+    expect(h.verlauf[1]!).toBeGreaterThan(h.verlauf[0]!);
+    // Ab dem zweiten Satz kein Hinweis
+    expect(fortschrittshinweis(z, e, { block: 0, position: 0, satz: 2 }, '2026-10-20T18:10:00')).toBeUndefined();
+  });
+
+  it('nennt bei Körpergewicht die nächste Variante', () => {
+    const z = zustand({ katalog: 'voll' });
+    const e = einheit([{ typ: 'einzeln', pauseSek: 90, positionen: [pos('liegestuetz', 3, { zielWdh: 12 })] }]);
+    const h = fortschrittshinweis(z, e, { block: 0, position: 0, satz: 1 }, '2026-10-20T18:10:00')!;
+    expect(h).toMatchObject({ heute: 12, ab: 15, schritt: 'variante', naechste: 'Liegestütz, Füße erhöht' });
+    expect(h.letztesMal).toBeUndefined();
+  });
+
+  it('kein Hinweis beim Kalibrierungssatz und beim Max-Test', () => {
+    const z = zustand();
+    const e = einheit([{ typ: 'einzeln', pauseSek: 90, positionen: [pos('kh_bankdruecken', 3, { last: 2 }), pos('klimmzug', 1, { istMaxTest: true })] }]);
+    expect(fortschrittshinweis(z, e, { block: 0, position: 0, satz: 1 }, '2026-10-20T18:10:00')).toBeUndefined();
+    expect(fortschrittshinweis(z, e, { block: 0, position: 1, satz: 1 }, '2026-10-20T18:10:00')).toBeUndefined();
   });
 });

@@ -4,7 +4,11 @@ import type {
   AppZustand, Einheit, Einstellungen, MaxTest, MuskelZustand, MusterZustand, Ort, Tabellen,
   Uebung, Utensil, VarianteZustand, Woche, ZirkelErgebnis, Zyklus,
 } from '../logik/typen';
+import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
 import { KATALOG } from './katalog';
+
+// Früherer Standard der Isolations- und Kombi-Pause (bis Version 1 der Datenbank)
+const PAUSE_ALT = 75;
 
 // Einstellungen sind genau ein Datensatz unter diesem Schlüssel.
 export const EINSTELLUNGEN_SCHLUESSEL = 1;
@@ -44,6 +48,13 @@ export class FitnessDb extends Dexie {
       zirkelErgebnisse: '[zirkelId+ortId+datum]',
       maxTests: 'id, muster',
     });
+    // Version 2 (Entscheidung 21.10.2026): Isolations- und Kombi-Pause von 75 auf 60 Sek., aber nur,
+    // wenn der Nutzer den alten Standardwert nicht selbst geändert hat. Sonst bleibt alles unverändert.
+    this.version(2).upgrade((tx) => tx.table('einstellungen').toCollection().modify((e: Einstellungen) => {
+      for (const art of ['isolation', 'supersatz'] as const) {
+        if (e.pausenSek?.[art] === PAUSE_ALT) e.pausenSek[art] = STANDARD_EINSTELLUNGEN.pausenSek[art];
+      }
+    }));
   }
 }
 

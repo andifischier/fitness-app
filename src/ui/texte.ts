@@ -1,5 +1,6 @@
 // Anzeigenamen für IDs aus Datenmodell und Konfiguration (Deutsch, kurz).
 import { PLAYER, PROGRESSION } from '../konfiguration';
+import type { Fortschrittshinweis } from '../logik/player';
 import type { NaechstesMal, Rekord } from '../logik/progression';
 import type {
   AppZustand, BandStufe, Einheit, Einstellungen, Feedback, MusterId, Muskel, Position, Prioritaet, Uebung, Utensil,
@@ -273,12 +274,14 @@ export function saetzeZeile(u: Uebung, p: Position): string {
 }
 
 // „3 × Ziel 10 · 16 kg je Hand“; Halteübungen in Sekunden, Max-Test ohne Ziel.
-// Ohne bekannte Last (`lastBekannt` false) steht statt der kleinsten Last, dass das Gewicht im ersten
-// Satz gewählt wird (Entscheidung 21.10.2026).
-export function detailText(u: Uebung, p: Position, lastBekannt = true): string {
+// Ohne bekannte Last steht statt der kleinsten Last, dass das Gewicht im ersten Satz gewählt wird;
+// mit einem Vorschlag aus den Gewichtstests „etwa 8 kg je Hand“ (Entscheidungen 21.10.2026).
+export function detailText(u: Uebung, p: Position, anzeige: 'bekannt' | 'vorschlag' | 'waehlen' = 'bekannt'): string {
   if (p.istMaxTest) return u.bereich.einheit === 'Sek.' ? 'Max-Test · so lange wie möglich' : 'Max-Test · so viele wie möglich';
   const ziel = u.bereich.einheit === 'Sek.' ? `Ziel ${p.zielWdh} Sek.` : `Ziel ${p.zielWdh}`;
-  const last = lastBekannt || p.last === undefined ? lastText(u, p) : 'Gewicht wählst du im 1. Satz';
+  const text = lastText(u, p);
+  const last = anzeige === 'bekannt' || p.last === undefined ? text
+    : anzeige === 'vorschlag' ? `etwa ${text}` : 'Gewicht wählst du im 1. Satz';
   return [`${p.saetze} × ${ziel}`, last].filter(Boolean).join(' · ');
 }
 
@@ -294,4 +297,19 @@ export const TAGE_KURZ = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 export function tagText(datum: string, tag: number): string {
   const [, m, t] = datum.slice(0, 10).split('-');
   return `${TAGE_KURZ[tag]}, ${t}.${m}.`;
+}
+
+// Fortschritt im ersten Satz (Entscheidung 21.10.2026): „Letztes Mal 9 · heute 10“ und darunter, was
+// als Nächstes kommt: „Ab 12 im 1. Satz: mehr Gewicht“.
+export function fortschrittZeilen(h: Fortschrittshinweis): { jetzt: string; danach: string } {
+  const e = h.inSek ? ' Sek.' : '';
+  const jetzt = [h.letztesMal !== undefined ? `Letztes Mal ${h.letztesMal}${e}` : 'Erstes Mal', `heute ${h.heute}${e}`].join(' · ');
+  const folge = {
+    gewicht: 'mehr Gewicht',
+    variante: h.naechste ?? 'die nächste Stufe',
+    langsam: 'erst langsames Absenken, dann die nächste Stufe',
+    band: 'das nächste Band',
+    bandLeichter: 'weniger Unterstützung',
+  }[h.schritt];
+  return { jetzt, danach: `Ab ${h.ab}${e} im 1. Satz: ${folge}` };
 }

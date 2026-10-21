@@ -1,17 +1,20 @@
 // Testtag als Vollbild: Aufwärmen als Checkliste, dann je Test ein Bildschirm mit Zähler bzw.
-// Stoppuhr (Mockup 4). Beim Klimmzug mit 0 Wdh. folgen die Sekunden im Hängen. Am Ende zeigt ein
-// Ergebnisbildschirm Startübung und Startziel je Test (Entscheidung 21.10.2026).
+// Stoppuhr (Mockup 4). Beim Klimmzug mit 0 Wdh. folgen die Sekunden im Hängen. Danach die
+// Gewichtstests: Gewicht wählen, so viele saubere Wiederholungen wie möglich. Am Ende zeigt ein
+// Ergebnisbildschirm Startübung und Startziel je Test (Entscheidungen 21.10.2026).
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { speichereTesttag } from '../../daten/speichern';
 import { lokaleZeit } from '../../daten/zeit';
-import { lastBekannt } from '../../logik/planung';
-import { testtagEinheit, testtagErgebnisse, type TestErgebnis } from '../../logik/testtag';
-import type { AppZustand, Einheit, Einstellungen, SatzErgebnis, Uebung } from '../../logik/typen';
+import { lastraster } from '../../logik/equipment';
+import { bereichFuer, lastAnzeige } from '../../logik/planung';
+import { lasttestErgebnisse, testtagEinheit, testtagErgebnisse, type TestErgebnis } from '../../logik/testtag';
+import type { AppZustand, Einheit, Einstellungen, Position, SatzErgebnis, Uebung } from '../../logik/typen';
 import { uebungVon } from '../../logik/verlauf';
 import { Checkliste, Hinweis, Knopf, Laedt } from '../../ui/bausteine';
 import { Icon } from '../../ui/Icon';
 import { Technik } from '../../ui/technik';
+import { lastTeile } from '../../ui/texte';
 import { Stoppuhr, Zaehler } from '../../ui/zaehler';
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
 
@@ -82,9 +85,12 @@ function Ablauf({ z, start }: { z: AppZustand; start: Einheit }) {
       </div>
       {fehler && <p role="alert" className="mt-4 font-semibold">Speichern hat nicht geklappt. Bitte versuche es noch einmal.</p>}
       {schritt < 0 && <Aufwaermen zeilen={start.aufwaermen} weiter={() => setSchritt(0)} />}
-      {p && u && (
+      {p && u && !p.istLasttest && (
         <Test key={schritt} u={u} e={einstellungenAus(z)}
           inSek={u.bereich.einheit === 'Sek.'} mitHaengen={u.muster === 'vZug'} onErledigt={erledigt} />
+      )}
+      {p && u && p.istLasttest && (
+        <Lasttest key={schritt} z={z} ortId={start.ortId} p={p} u={u} onErledigt={erledigt} />
       )}
     </main>
   );
@@ -139,6 +145,53 @@ function Test({ u, e, inSek, mitHaengen, onErledigt }: {
   );
 }
 
+// Gewichtstest: Gewicht mit −/+ wählen, dann so viele saubere Wiederholungen wie möglich.
+function Lasttest({ z, ortId, p, u, onErledigt }: {
+  z: AppZustand; ortId: string; p: Position; u: Uebung; onErledigt: (r: Ergebnis) => void;
+}) {
+  const ort = z.orte.find((o) => o.id === ortId);
+  const raster = ort ? lastraster(ort, u) : [];
+  const [last, setLast] = useState(p.last ?? raster[0] ?? 0);
+  const [wert, setWert] = useState(0);
+  const { von, bis } = bereichFuer(einstellungenAus(z), u);
+  const pos = raster.indexOf(last);
+  const teile = lastTeile(u, { last });
+  return (
+    <div className="mt-8 flex flex-1 flex-col">
+      <p className="text-hinweis font-bold tracking-wide text-akzent uppercase">Gewichtstest</p>
+      <h1 className="mt-1 text-titel font-extrabold">{u.name}</h1>
+      <Technik e={einstellungenAus(z)} u={u} />
+      <div className="mt-4 rounded-karte border border-rand bg-flaeche p-5">
+        <p className="text-basis text-gedaempft">Mit welchem Gewicht?</p>
+        <div className="mt-1 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-titel leading-tight font-extrabold">{teile?.gross}</p>
+            {teile?.klein && <p className="text-basis text-gedaempft">{teile.klein}</p>}
+          </div>
+          <div className="flex gap-2">
+            <button type="button" aria-label="Leichter" disabled={pos <= 0} onClick={() => setLast(raster[pos - 1]!)}
+              className="flex size-touch items-center justify-center rounded-xl border border-rand text-akzent disabled:text-rand">
+              <span aria-hidden="true" className="text-screen font-bold">−</span>
+            </button>
+            <button type="button" aria-label="Schwerer" disabled={pos < 0 || pos >= raster.length - 1} onClick={() => setLast(raster[pos + 1]!)}
+              className="flex size-touch items-center justify-center rounded-xl border border-rand text-akzent disabled:text-rand">
+              <Icon name="plus" groesse={20} />
+            </button>
+          </div>
+        </div>
+        <p className="mt-4 border-t border-linie pt-4 text-basis">
+          Wähle ein Gewicht, mit dem du etwa {von} bis {bis} Wiederholungen schaffst. Dann so viele saubere
+          Wiederholungen wie möglich, aufhören, wenn höchstens noch eine ginge.
+        </p>
+      </div>
+      <Zaehler wert={wert} onChange={setWert} />
+      <div className="mt-auto pt-8">
+        <Knopf onClick={() => onErledigt({ wdh: wert, last })}>Test erledigt</Knopf>
+      </div>
+    </div>
+  );
+}
+
 function ergebnisText(t: TestErgebnis): string {
   if (t.haengenSek !== undefined) return `0 Wdh., ${t.haengenSek} Sek. hängen`;
   return `${t.ergebnis} ${t.inSek ? 'Sek.' : 'Wdh.'}`;
@@ -147,6 +200,7 @@ function ergebnisText(t: TestErgebnis): string {
 // Ergebnis des Testtags: je Test das Ergebnis, darunter Startübung und Startziel.
 function Ergebnis({ z, einheit, onWeiter }: { z: AppZustand; einheit: Einheit; onWeiter: () => void }) {
   const liste = testtagErgebnisse(z, einheit);
+  const lasten = lasttestErgebnisse(z, einheit);
   return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col px-seite pt-12 pb-8">
       <p className="text-basis font-semibold text-akzent">Testtag erledigt</p>
@@ -161,12 +215,28 @@ function Ergebnis({ z, einheit, onWeiter }: { z: AppZustand; einheit: Einheit; o
             {t.start && (
               <p className="mt-2 text-basis text-gedaempft">
                 Start: {t.start.uebung.name} · Ziel {t.start.zielWdh}{t.start.uebung.bereich.einheit === 'Sek.' ? ' Sek.' : ''}
-                {!lastBekannt(z, t.start.uebung) ? ' · Gewicht wählst du im 1. Satz' : ''}
+                {lastAnzeige(z, t.start.uebung) === 'waehlen' ? ' · Gewicht wählst du im 1. Satz' : ''}
+              </p>
+            )}
+          </li>
+        ))}
+        {lasten.map((t) => (
+          <li key={t.uebung.id} className="rounded-karte border border-rand bg-flaeche p-5">
+            <p className="flex items-baseline justify-between gap-3 text-basis">
+              <span className="font-semibold">{t.uebung.name}</span>
+              <span className="shrink-0 text-gross font-extrabold">{lastTeile(t.uebung, { last: t.last })?.gross} × {t.wdh}</span>
+            </p>
+            {t.start && (
+              <p className="mt-2 text-basis text-gedaempft">
+                Start: {lastTeile(t.uebung, { last: t.start.last })?.gross} · Ziel {t.start.zielWdh}
               </p>
             )}
           </li>
         ))}
       </ul>
+      {lasten.length > 0 && (
+        <div className="mt-4"><Hinweis>Für andere Hantelübungen schlägt die App ein Startgewicht aus diesen Tests vor.</Hinweis></div>
+      )}
       <div className="mt-4"><Hinweis>Erste Einheit ab morgen. Deine Woche planst du auf Heute.</Hinweis></div>
       <div className="mt-auto pt-8"><Knopf onClick={onWeiter}>Zu Heute</Knopf></div>
     </main>

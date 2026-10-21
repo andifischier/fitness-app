@@ -70,7 +70,7 @@ describe('Wochenziel und Prioritäten', () => {
 
   it('gespeicherte persönliche Grenze hat Vorrang', () => {
     const z = { ...zustand(), muskeln: [{ ...belastet('Brust', MO, 0), letzteBelastung: undefined, persoenlicheGrenze: 14 }] };
-    expect(wochenziele(z, 2, 'zuhause', MO).Brust).toBe(11); // Zeitbudget begrenzt
+    expect(wochenziele(z, 1, 'zuhause', MO).Brust).toBe(6); // Zeitbudget begrenzt
     expect(wochenziele(z, 5, 'zuhause', MO).Brust).toBe(14);
   });
 });
@@ -130,11 +130,13 @@ describe('Startfragen, Fokus und Pacing', () => {
 
   it('„15 Min länger?“ nur bei Prognose 1 bis 2, Einstellung an und offenem Bedarf', () => {
     const di = zeitpunkt(1, 18);
-    expect(startfragen(setzePrognose(zustand(), di, 2), di).laengerAnbieten).toBe(true);
-    expect(startfragen(setzePrognose(zustand(), di, 3), di).laengerAnbieten).toBe(false);
-    expect(startfragen(setzePrognose(zustand({ einstellungen: { laengerAnbieten: false } }), di, 2), di).laengerAnbieten).toBe(false);
-    const laenger = erstelleEinheit(zustand(), { jetzt: di, ortId: 'zuhause', prognose: 2, morgenWieder: false, laenger: true });
-    const normal = erstelleEinheit(zustand(), { jetzt: di, ortId: 'zuhause', prognose: 2, morgenWieder: false, laenger: false });
+    // 25 Min: Das Zeitbudget ist voll, bevor 6 Übungen erreicht sind.
+    const kurz = { standardDauerMin: 25 };
+    expect(startfragen(setzePrognose(zustand({ einstellungen: kurz }), di, 2), di).laengerAnbieten).toBe(true);
+    expect(startfragen(setzePrognose(zustand({ einstellungen: kurz }), di, 3), di).laengerAnbieten).toBe(false);
+    expect(startfragen(setzePrognose(zustand({ einstellungen: { ...kurz, laengerAnbieten: false } }), di, 2), di).laengerAnbieten).toBe(false);
+    const laenger = erstelleEinheit(zustand({ einstellungen: kurz }), { jetzt: di, ortId: 'zuhause', prognose: 2, morgenWieder: false, laenger: true });
+    const normal = erstelleEinheit(zustand({ einstellungen: kurz }), { jetzt: di, ortId: 'zuhause', prognose: 2, morgenWieder: false, laenger: false });
     const saetze = (e: Einheit) => e.bloecke.flatMap((b) => b.positionen).reduce((s, p) => s + p.saetze, 0);
     expect(saetze(laenger)).toBeGreaterThan(saetze(normal));
   });

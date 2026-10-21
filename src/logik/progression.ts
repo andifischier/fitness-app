@@ -326,7 +326,7 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
   // Progression je Übung und Max-Tests
   for (const p of positionen) {
     const u = uebungVon(neu, p.uebungId);
-    if (!u || !ort) continue;
+    if (!u || !ort || p.istLasttest) continue;     // Gewichtstests wertet `schliesseTesttagAb` aus
     if (p.istMaxTest) {
       // Gespeichert wird in der Einheit der Übung; am Testtag hat der Klimmzug-Test bei 0 Wdh.
       // zusätzlich die Sekunden im Hängen (nur für die Startvariante).
@@ -352,7 +352,8 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
     const alt = neu.muskeln.find((x) => x.muskel === m) ?? {
       muskel: m, letzteDosis: 0, letzteSchwer: false, persoenlicheGrenze: persoenlicheGrenze(z, e, m), gleichWochen: 0, leistung: [],
     };
-    if (dosis[m] <= 0) return alt;
+    // Der Testtag sperrt keine Muskeln (Entscheidung 21.10.2026).
+    if (dosis[m] <= 0 || fertig.format === 'test') return alt;
     return { ...alt, letzteBelastung: start, letzteDosis: dosis[m], letzteSchwer: zuSchwer.has(m) };
   });
 

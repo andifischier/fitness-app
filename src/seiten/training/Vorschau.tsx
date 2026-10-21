@@ -8,7 +8,7 @@ import { speichereTausch } from '../../daten/speichern';
 import { WORKOUT } from '../../konfiguration';
 import { entferneUebung, fuegeUebungHinzu, hinzufuegbar, kannAnpassen, setzeSaetze } from '../../logik/anpassen';
 import { keinMuskelErholt, zirkelVorgaben } from '../../logik/heute';
-import { lastBekannt, tausche } from '../../logik/planung';
+import { lastAnzeige, tausche } from '../../logik/planung';
 import type { AppZustand, Einheit } from '../../logik/typen';
 import { uebungVon } from '../../logik/verlauf';
 import { Hinweis, Knopf, Laedt, Stepper } from '../../ui/bausteine';
@@ -101,7 +101,7 @@ function Ansicht({ z, einheit }: { z: AppZustand; einheit: Einheit }) {
                   if (!u) return null;
                   const detail = b.typ === 'zirkel'
                     ? [vorgabeText(u, vorgaben[pi]), lastText(u, p)].filter(Boolean).join(' · ')
-                    : detailText(u, p, lastBekannt(z, u));
+                    : detailText(u, p, lastAnzeige(z, u));
                   const merkmale = [
                     p.istErsatz && 'Ersatz', p.getauschtVon && 'Getauscht', p.langsam && '3 Sek. absenken',
                   ].filter(Boolean);

@@ -2,14 +2,15 @@
 // den Standardwerten vorausgefüllt und werden sofort gespeichert; „Weiter“ genügt.
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
-import { MAXTEST, PROFIL, STANDARD_PRIORITAETEN } from '../../konfiguration';
+import { PROFIL, STANDARD_PRIORITAETEN } from '../../konfiguration';
 import { aendereEinstellungen, beendeOnboarding } from '../../daten/speichern';
 import { lokaleZeit } from '../../daten/zeit';
 import { zirkelAnteilFuerZiele } from '../../logik/einstellungen';
-import { testtagTests } from '../../logik/testtag';
+import { hatUtensil } from '../../logik/equipment';
+import { testtagAusfaelle, testtagLasttests, testtagTests } from '../../logik/testtag';
 import { MUSKELN, type AppZustand, type Einstellungen } from '../../logik/typen';
 import { Auswahl, Hinweis, Karte, Knopf, Laedt, Mehrfachauswahl, Seite, Stepper } from '../../ui/bausteine';
-import { LEVEL_NAMEN, MUSTER_NAMEN, ZIEL_NAMEN } from '../../ui/texte';
+import { LEVEL_NAMEN, MUSTER_NAMEN, ZIEL_NAMEN, equipmentText } from '../../ui/texte';
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
 import { EinschraenkungenInhalt } from '../einstellungen/Einschraenkungen';
 import { OrteBearbeiten } from '../einstellungen/Orte';
@@ -122,7 +123,11 @@ function WocheUndDauer({ e, zurueck, weiter }: { e: Einstellungen; zurueck: stri
 function TesttagStart({ z, zurueck }: { z: AppZustand; zurueck: string }) {
   const navigate = useNavigate();
   const ort = z.orte.find((o) => o.standard) ?? z.orte[0];
-  const tests = ort ? testtagTests(z, ort.id, lokaleZeit()) : [];
+  const jetzt = lokaleZeit();
+  const tests = ort ? testtagTests(z, ort.id, jetzt) : [];
+  const lasttests = ort ? testtagLasttests(z, ort.id, jetzt) : [];
+  const ausfaelle = ort ? testtagAusfaelle(z, ort.id, jetzt) : [];
+  const utensilien = [...z.katalog.utensilien, ...z.eigeneUtensilien];
   const ueberspringen = async () => {
     await beendeOnboarding();
     navigate('/', { replace: true });
@@ -132,7 +137,7 @@ function TesttagStart({ z, zurueck }: { z: AppZustand; zurueck: string }) {
       <Schritt nr={5} />
       <Karte titel="So findet die App deinen Start"
         hinweis="Nach kurzem Aufwärmen machst du jeden Test einmal, so viel wie sauber möglich. Danach steht dein erster Plan.">
-        {tests.length > 0 ? (
+        {tests.length + lasttests.length > 0 ? (
           <ul className="flex flex-col gap-2">
             {tests.map((t) => (
               <li key={t.muster} className="text-basis">
@@ -140,15 +145,39 @@ function TesttagStart({ z, zurueck }: { z: AppZustand; zurueck: string }) {
                 <span className="text-gedaempft"> · {MUSTER_NAMEN[t.muster]}</span>
               </li>
             ))}
+            {lasttests.map((u) => (
+              <li key={u.id} className="text-basis">
+                <span className="font-semibold">{u.name}</span>
+                <span className="text-gedaempft"> · Gewichtstest</span>
+              </li>
+            ))}
           </ul>
         ) : (
           <Hinweis>{ort ? 'An diesem Ort ist kein Test möglich.' : 'Lege zuerst in Schritt 3 deinen Ort an.'}</Hinweis>
         )}
       </Karte>
-      {tests.length > 0 && tests.length < MAXTEST.rotation.length && (
-        <Hinweis>Fehlende Tests holt die App später nach, sobald sie an deinem Ort möglich sind.</Hinweis>
+      {ort && ausfaelle.length > 0 && (
+        <Karte titel={ausfaelle.length === 1 ? 'Ein Test entfällt' : `${ausfaelle.length} Tests entfallen`}
+          hinweis="Fehlende Tests holt die App später nach, sobald sie an deinem Ort möglich sind.">
+          <ul className="flex flex-col gap-2">
+            {ausfaelle.map((a) => (
+              <li key={a.muster} className="text-basis">
+                <span className="font-semibold">{a.uebung.name}</span>
+                <span className="text-gedaempft">
+                  {' · '}
+                  {a.grund === 'gesperrt'
+                    ? 'durch eine Einschränkung gesperrt'
+                    : `fehlt: ${equipmentText(a.uebung.equipment.filter((g) => !g.some((id) => hatUtensil(ort, id))), utensilien)}`}
+                </span>
+              </li>
+            ))}
+          </ul>
+          {ausfaelle.some((a) => a.grund === 'ausstattung') && (
+            <Knopf art="schlicht" onClick={() => navigate('/onboarding/3')}>Ausstattung ändern</Knopf>
+          )}
+        </Karte>
       )}
-      {tests.length > 0 && <Knopf onClick={() => navigate('/testtag')}>Testtag starten</Knopf>}
+      {tests.length + lasttests.length > 0 && <Knopf onClick={() => navigate('/testtag')}>Testtag starten</Knopf>}
       <Knopf art="sekundaer" onClick={() => void ueberspringen()}>Überspringen</Knopf>
       <Hinweis>Ohne Testtag schätzt die App deinen Start aus dem Level und passt ihn in den ersten zwei Wochen an.</Hinweis>
     </Seite>
