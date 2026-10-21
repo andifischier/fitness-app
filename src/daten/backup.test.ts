@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { afterEach, describe, expect, it } from 'vitest';
 import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
 import type { Muskel, Tabellen } from '../logik/typen';
-import { backupDateiname, exportiere, importiere, MELDUNG, pruefeBackup } from './backup';
+import { backupDateiname, exportiere, importiere, MELDUNG, merkeBackup, pruefeBackup } from './backup';
 import { ersetzeTabellen, FitnessDb, leseTabellen } from './db';
 
 let nr = 0;
@@ -83,6 +83,16 @@ async function gueltigesBackup(): Promise<Record<string, unknown>> {
 }
 
 describe('Backup', () => {
+  it('merkt sich das Backup beim Teilen erst nach Erfolg', async () => {
+    const d = neueDb();
+    await ersetzeTabellen(beispielDaten(), d);
+    const vorher = (await leseTabellen(d)).einstellungen[0]!.letztesBackup;
+    await exportiere('2026-10-21T19:00:00', d, false);
+    expect((await leseTabellen(d)).einstellungen[0]!.letztesBackup).toBe(vorher);
+    await merkeBackup('2026-10-21T19:01:00', d);
+    expect((await leseTabellen(d)).einstellungen[0]!.letztesBackup).toBe('2026-10-21T19:01:00');
+  });
+
   it('Export und anschließender Import ergeben identische Daten', async () => {
     const quelle = neueDb();
     await ersetzeTabellen(beispielDaten(), quelle);

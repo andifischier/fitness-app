@@ -69,7 +69,7 @@ export function keinMuskelErholt(z: AppZustand, jetzt: string): boolean {
   return MUSKELN.every((m) => !istErholt(z.muskeln.find((x) => x.muskel === m), jetzt));
 }
 
-// Erinnerung an ein Backup: alle 4 Wochen seit dem letzten Export bzw. seit der ersten Einheit.
+// Vorschlag eines Backups: jede Woche (7 Tage) seit dem letzten Backup bzw. seit der ersten Einheit.
 export function backupErinnerung(z: AppZustand, jetzt: string): boolean {
   const erste = fertigeEinheiten(z)[0];
   if (!erste) return false;

@@ -14,6 +14,7 @@ import { uebungVon } from '../logik/verlauf';
 import { Hinweis, Knopf, TageWahl } from '../ui/bausteine';
 import { Icon } from '../ui/Icon';
 import { abText, datumLang, FOKUS_NAMEN, muskelgruppenText, tagText } from '../ui/texte';
+import { kannTeilen, sichereBackup } from '../ui/backupSichern';
 import { UebungsListe } from '../ui/uebungsliste';
 import { einstellungenAus, useZustand } from '../ui/useZustand';
 
@@ -134,15 +135,7 @@ function Inhalt({ z, jetzt }: { z: AppZustand; jetzt: string }) {
         </p>
       )}
 
-      {backup && (
-        <Link to="/einstellungen/backup" className="flex items-center gap-3 rounded-karte border border-rand bg-flaeche p-5">
-          <span className="flex-1">
-            <span className="block text-gross font-semibold">Zeit für ein Backup</span>
-            <span className="block text-hinweis text-gedaempft">Sichere deine Daten alle 4 Wochen in einer Datei.</span>
-          </span>
-          <span className="text-gedaempft"><Icon name="weiter" groesse={20} /></span>
-        </Link>
-      )}
+      {backup && <WochenBackup />}
     </div>
   );
 }
@@ -247,5 +240,36 @@ function AusblickZeile({ z, t }: { z: AppZustand; t: AusblickTag }) {
         <div className="px-5 pb-4"><UebungsListe z={z} einheit={e} /></div>
       </details>
     </li>
+  );
+}
+
+// Wochen-Backup: einmal pro Woche vorgeschlagen; ein Tipp sichert in Drive (Teilen) oder als Datei.
+function WochenBackup() {
+  const [laeuft, setLaeuft] = useState(false);
+  const [fehler, setFehler] = useState(false);
+  const sichern = async (art: 'teilen' | 'speichern') => {
+    setLaeuft(true);
+    setFehler(false);
+    try {
+      await sichereBackup(art);
+    } catch {
+      setFehler(true);
+    }
+    setLaeuft(false);
+  };
+  return (
+    <section className="rounded-karte border border-rand bg-flaeche p-5">
+      <p className="text-gross font-semibold">Zeit für dein Wochen-Backup</p>
+      <p className="mb-4 text-hinweis text-gedaempft">
+        Sichere deine Daten außerhalb der App. Im Teilen-Menü wählst du z. B. Google Drive.
+      </p>
+      <div className="flex flex-col gap-2">
+        {kannTeilen() && <Knopf onClick={() => void sichern('teilen')} deaktiviert={laeuft}>In Drive sichern</Knopf>}
+        <Knopf art={kannTeilen() ? 'sekundaer' : 'primaer'} onClick={() => void sichern('speichern')} deaktiviert={laeuft}>
+          Auf dem Handy speichern
+        </Knopf>
+      </div>
+      {fehler && <p role="alert" className="mt-3 text-hinweis font-semibold">Das Backup hat nicht geklappt. Bitte versuche es noch einmal.</p>}
+    </section>
   );
 }

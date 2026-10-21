@@ -16,7 +16,7 @@ Gebaut wird eine persönliche Trainings-App als Web-App (PWA), die einen adaptiv
 | --- | --- |
 | Nutzer | Nur eine Person, kein Login, kein Store-Release |
 | Plattform | PWA, auf dem Handy installierbar, offline nutzbar |
-| Daten | Nur lokal auf dem Gerät, Backup als Export/Import-Datei |
+| Daten | Nur lokal auf dem Gerät, Backup als Export/Import-Datei; wöchentlicher Vorschlag mit Sichern in Drive per Teilen-Menü (Entscheidung 21.10.2026) |
 | Übungsvideos | Keine eigenen Videos, pro Übung ein YouTube-Link und eine Kurzanleitung; ausgewählte Übungen mit fest eingebettetem YouTube-Video (Entscheidung 21.10.2026) |
 | Sprache | Deutsch |
 | Einheiten | kg |
@@ -655,7 +655,7 @@ importiere(datei: Blob): Promise<{ ok: true } | { ok: false; fehler: string }>;
 
 `AppZustand` bündelt alle Tabellen aus „Entitäten“ plus den geladenen Katalog. Die UI liest und schreibt nur über diese Funktionen und die Datenbank-Schicht.
 
-**Backup-Format:** `{ "format": "fitness-app-backup", "schemaVersion": 1, "exportiertAm": "…", "daten": { <alle Tabellen> } }`. Der Import prüft das Format mit zod, zeigt eine Zusammenfassung (Anzahl Einheiten, Zeitraum) und ersetzt nach Bestätigung alle Daten in einem Schritt; schlägt etwas fehl, bleiben die Daten unverändert. Eine beschädigte Datei wird mit kurzer Meldung samt Fundstelle abgelehnt, z. B. „Die Backup-Datei ist beschädigt (Einheiten, Eintrag 3). Deine Daten bleiben unverändert.“ Ändert sich das Schema, steigt `schemaVersion` und eine Migrationsfunktion hebt alte Backups an. Alle 4 Wochen erinnert die Heute-Seite an ein Backup (Datum des letzten Exports in `Einstellungen.letztesBackup`).
+**Backup-Format:** `{ "format": "fitness-app-backup", "schemaVersion": 1, "exportiertAm": "…", "daten": { <alle Tabellen> } }`. Der Import prüft das Format mit zod, zeigt eine Zusammenfassung (Anzahl Einheiten, Zeitraum) und ersetzt nach Bestätigung alle Daten in einem Schritt; schlägt etwas fehl, bleiben die Daten unverändert. Eine beschädigte Datei wird mit kurzer Meldung samt Fundstelle abgelehnt, z. B. „Die Backup-Datei ist beschädigt (Einheiten, Eintrag 3). Deine Daten bleiben unverändert.“ Ändert sich das Schema, steigt `schemaVersion` und eine Migrationsfunktion hebt alte Backups an. **Wochen-Backup (Entscheidung 21.10.2026):** Ist das letzte Backup (bzw. ohne Backup die erste Einheit) 7 Tage oder länger her, schlägt die Heute-Seite ein Backup vor: „In Drive sichern“ öffnet das Teilen-Menü des Handys mit der Datei (Ziel z. B. Google Drive; Chrome teilt keine .json-Dateien, deshalb wird derselbe Inhalt als `fitness-backup-JJJJ-MM-TT.txt` geteilt), „Auf dem Handy speichern“ lädt die .json-Datei in den Download-Ordner. Ohne Teilen-Funktion im Browser gibt es nur Speichern. `Einstellungen.letztesBackup` wird erst gesetzt, wenn Teilen oder Speichern geklappt hat; bricht der Nutzer das Teilen ab, bleibt der Vorschlag. Die Backup-Seite bietet dieselben zwei Wege; Einlesen nimmt .json und .txt. Ganz ohne Tipp geht es nicht: Browser erlauben kein Speichern oder Hochladen ohne Zutun des Nutzers.
 
 ### Abnahmekriterien Version 1
 

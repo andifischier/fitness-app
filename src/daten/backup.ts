@@ -68,16 +68,25 @@ export function backupDateiname(jetzt: string): string {
   return `fitness-backup-${jetzt.slice(0, 10)}.json`;
 }
 
-export async function exportiere(jetzt: string = lokaleZeit(), d: FitnessDb = db): Promise<Blob> {
+// Erstellt die Backup-Datei. Mit `merken` gilt das Backup sofort als gespeichert (letztesBackup);
+// beim Teilen erst, wenn das Teilen geklappt hat (`merkeBackup`).
+export async function exportiere(jetzt: string = lokaleZeit(), d: FitnessDb = db, merken = true): Promise<Blob> {
   const daten = await d.transaction('rw', TABELLEN.map((t) => d.table(t)), async () => {
     const einstellungen = await d.einstellungen.get(EINSTELLUNGEN_SCHLUESSEL);
-    if (einstellungen) {
+    if (einstellungen && merken) {
       await d.einstellungen.put({ ...einstellungen, letztesBackup: jetzt }, EINSTELLUNGEN_SCHLUESSEL);
     }
     return leseTabellen(d);
   });
   const datei: BackupDatei = { format: BACKUP.format, schemaVersion: BACKUP.schemaVersion, exportiertAm: jetzt, daten };
   return new Blob([JSON.stringify(datei, null, 2)], { type: 'application/json' });
+}
+
+export async function merkeBackup(jetzt: string, d: FitnessDb = db): Promise<void> {
+  await d.transaction('rw', d.einstellungen, async () => {
+    const einstellungen = await d.einstellungen.get(EINSTELLUNGEN_SCHLUESSEL);
+    if (einstellungen) await d.einstellungen.put({ ...einstellungen, letztesBackup: jetzt }, EINSTELLUNGEN_SCHLUESSEL);
+  });
 }
 
 function fundstelle(tabelle: keyof Tabellen, index?: number): string {

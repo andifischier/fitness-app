@@ -189,3 +189,9 @@
   Onboarding: Seiten lesen beim Öffnen zusätzlich direkt aus der Datenbank, damit keine Seite leer bleibt.
   Neue Tests für Ausblick, Tage, Video-Links und Katalog.
 - **Warum:** Wünsche des Nutzers (drei Entscheidungen in `docs/entscheidungen.md`), Fehlerbericht zum Onboarding.
+
+## Wochen-Backup (21.10.2026)
+- **Was:** Heute schlägt jede Woche ein Backup vor (statt alle 4 Wochen). „In Drive sichern“ öffnet das Teilen-Menü mit
+  der Backup-Datei, „Auf dem Handy speichern“ legt sie in den Download-Ordner. Als gesichert gilt es erst nach Erfolg.
+  Die Backup-Seite bietet dieselben Wege; Einlesen nimmt jetzt auch .txt. Tests für Erinnerung und `merkeBackup`.
+- **Warum:** Wunsch des Nutzers nach regelmäßigem Backup außerhalb des Browsers.
