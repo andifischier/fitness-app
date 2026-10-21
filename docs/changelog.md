@@ -94,3 +94,19 @@
   `schliesseEinheitAb` lässt die Woche beim Testtag unverändert und speichert Max-Tests in der
   Einheit der Übung. Drei Entscheidungen in `docs/entscheidungen.md`, Spezifikation angepasst.
 - **Warum:** Arbeitspaket 5 der Spezifikation.
+
+## Paket 6: Heute, Vor dem Start, Vorschau mit Tausch (21.10.2026)
+- **Was:** Heute nach Mockup 1: Datum, nächste Einheit als Vorschau (Ort, Fokus, Dauer, Muskelgruppen),
+  „Training starten“, Wochenfortschritt pro Muskel, Wochenzahl mit „ändern“, nächster Max-Test;
+  Zustände Erholungswoche (Hinweisband), Ruhetag empfohlen („Trotzdem trainieren“, „Zirkel“,
+  „Mobility“ als Checkliste ohne Speichern), erstellte Einheit („Vorschau öffnen“, „Neu erstellen“),
+  unterbrochene Einheit („Fortsetzen“), Backup-Erinnerung. Vor dem Start nach Mockup 2: Wochenfrage
+  (erste Einheit der Woche bzw. nach längerer Pause), Angebot einer Erholungswoche, Ort, „Morgen wieder
+  trainieren?“, „15 Min länger?“, „Einheit erstellen“, „Stattdessen Zirkel“ mit den 5 Zirkeln samt
+  Dauer und Bestzeit am Ort bzw. „Doch Krafteinheit“. Vorschau nach Mockup 3 mit Aufwärmen,
+  Supersätzen, Zielen, Lasten und Tausch-Blatt (nur Alternativen desselben Musters am Ort).
+  Wochenabschluss läuft beim Öffnen der App. Neue Logik `src/logik/heute.ts`, neue
+  Speicherfunktionen, jeweils mit Tests. Drei Entscheidungen in `docs/entscheidungen.md`,
+  Spezifikation angepasst.
+- **Warum:** Arbeitspaket 6 der Spezifikation; „Los geht's“ führt vorerst auf einen Platzhalter, den
+  Trainings-Player baut Paket 7.

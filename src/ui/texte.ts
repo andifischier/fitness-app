@@ -76,3 +76,64 @@ export function datumText(iso: string): string {
   const [j, m, t] = iso.slice(0, 10).split('-');
   return `${t}.${m}.${j}`;
 }
+
+export const FOKUS_NAMEN: Record<'ganz' | 'oben' | 'unten', string> = {
+  ganz: 'Ganzkörper', oben: 'Oberkörper', unten: 'Unterkörper',
+};
+
+const WOCHENTAGE = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+const MONATE = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+
+const tagVon = (iso: string) => {
+  const [j = 0, m = 1, t = 1] = iso.slice(0, 10).split('-').map(Number);
+  return new Date(Date.UTC(j, m - 1, t));
+};
+
+// „2026-10-20T…“ → „Dienstag, 20. Oktober“
+export function datumLang(iso: string): string {
+  const d = tagVon(iso);
+  return `${WOCHENTAGE[d.getUTCDay()]}, ${d.getUTCDate()}. ${MONATE[d.getUTCMonth()]}`;
+}
+
+// Ab wann etwas fällig ist: „ab heute“, „ab morgen“, „ab Donnerstag“ (innerhalb einer Woche), sonst „ab 12.11.“
+export function abText(ab: string, jetzt: string): string {
+  const tage = Math.round((tagVon(ab).getTime() - tagVon(jetzt).getTime()) / 86_400_000);
+  if (tage <= 0) return 'ab heute';
+  if (tage === 1) return 'ab morgen';
+  if (tage < 7) return `ab ${WOCHENTAGE[tagVon(ab).getUTCDay()]}`;
+  const [, m, t] = ab.slice(0, 10).split('-');
+  return `ab ${t}.${m}.`;
+}
+
+// Sekunden als „12:05“
+export function zeitText(sek: number): string {
+  const s = Math.round(sek);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+// Fraktionelle Sätze mit Dezimalkomma, auf halbe Sätze gerundet: „4,5“
+export function saetzeText(n: number): string {
+  return String(Math.round(n * 2) / 2).replace('.', ',');
+}
+
+// Lastanzeige laut Spezifikation „Equipment und Gewichtsstufen“
+export function lastText(u: Uebung, werte: { last?: number; bandStufe?: BandStufe }): string | undefined {
+  if (werte.bandStufe) return `${u.unterstuetzend ? 'Unterstützung: ' : ''}Band ${BAND_NAMEN[werte.bandStufe]}`;
+  if (werte.last === undefined) return undefined;
+  const kg = `${String(Math.round(werte.last * 100) / 100).replace('.', ',')} kg`;
+  const braucht = (id: string) => u.equipment.some((g) => g.includes(id));
+  if (braucht('LH')) return `${kg} gesamt`;
+  if (braucht('STANGE')) return `+${kg}`;
+  return u.anzahlGewichte === 2 ? `${kg} je Hand` : kg;
+}
+
+// Muskelgruppen einer Einheit für die Kurzbeschreibung („Brust, Rücken, Beine, Arme“)
+const GRUPPEN: [string, Muskel[]][] = [
+  ['Brust', ['Brust']], ['Rücken', ['Ruecken']], ['Schultern', ['Schultern']], ['Arme', ['Bizeps', 'Trizeps']],
+  ['Beine', ['Quadrizeps', 'Gesaess', 'HintereOS', 'Waden']], ['Bauch', ['Bauch']],
+];
+
+export function muskelgruppenText(muskeln: Iterable<Muskel>): string {
+  const alle = new Set(muskeln);
+  return GRUPPEN.filter(([, ms]) => ms.some((m) => alle.has(m))).map(([name]) => name).join(', ');
+}
