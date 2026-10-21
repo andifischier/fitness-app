@@ -169,3 +169,13 @@
   2 Wochen“ statt „alle 2 wochen“. Drei Entscheidungen in `docs/entscheidungen.md`, Spezifikation angepasst
   (Ruhetag, Erholungsfenster, Zirkel-Stationen).
 - **Warum:** Arbeitspaket 10 der Spezifikation; letzte Prüfung vor Version 1.
+
+## Kombi oder Klassisch (21.10.2026)
+- **Was:** Auf „Vor dem Start“ neue Frage „Wie trainierst du heute?“ mit Kombi (vorbelegt) oder Klassisch. Kombi bildet
+  Runden aus 2 bis 3 Übungen ohne gemeinsamen Hauptmuskel (Bauch und Waden mit allem kombinierbar): je ein Satz jeder
+  Übung, dann Pause. Klassisch: alle Sätze einer Übung, dann die nächste. Der feste Supersatz-Anteil je Wochenprognose und
+  die festen Supersatz-Paare entfallen; das Wochenziel rechnet mit Kombi (bei 3 Einheiten Beine 10 statt 9 Sätze).
+  Anzeige „Kombi A · Übung 1 von 3“, Pausen-Einstellung „Kombi (nach jeder Runde)“. Use-Case-Werte mit dem Prototyp neu
+  berechnet; Tests für Rundenbildung, Klassisch, Bauch mit Oberkörper und Dreier-Runden im Player. Vier Entscheidungen in
+  `docs/entscheidungen.md`, Spezifikation angepasst. Keine neue Datenbankversion.
+- **Warum:** Wunsch des Nutzers: zeiteffizientes Training zu Hause, Kombi als Standard.

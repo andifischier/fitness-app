@@ -2,7 +2,7 @@
 // aktuelle Zeit wird übergeben; der Zustand wird nur gelesen, nie verändert.
 import {
   BEWERTUNG, ERHOLUNGSWOCHE, EINHEIT, ERSATZ, FOKUS_GRUPPEN, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
-  SUPERSATZ_PAARE, TRAININGSPAUSE, WOCHENZIEL, ZEITBUDGET, ZIRKEL,
+  KOMBI, TRAININGSPAUSE, WOCHENZIEL, ZEITBUDGET, ZIRKEL,
 } from '../konfiguration';
 import { isoWoche, plusTage, stundenZwischen, verbleibendeTage, wochenNummer } from './datum';
 import {
@@ -33,6 +33,7 @@ export interface StartfragenErgebnis {
 export interface EinheitEingabe {
   jetzt: string; ortId: string; prognose: number; morgenWieder: boolean; laenger: boolean; zirkelId?: string;
   erholungswoche?: boolean;         // angenommene Erholungswoche, solange die Woche noch nicht gespeichert ist
+  klassisch?: boolean;              // Klassisch statt Kombi (Standard: Kombi, Entscheidung 21.10.2026)
 }
 
 const leer = (): ProMuskel => Object.fromEntries(MUSKELN.map((m) => [m, 0])) as ProMuskel;
@@ -54,14 +55,6 @@ function beitrag(u: Uebung, primaer: number = WOCHENZIEL.anteilPrimaer, sekundae
 }
 
 // ---------- Zeitbudget ----------
-
-function supersatzAnteil(prognose: number): number {
-  return ZEITBUDGET.supersatzAnteil[begrenze(Math.round(prognose), PROFIL.einheitenProWoche.min, PROFIL.einheitenProWoche.max)] ?? 0;
-}
-
-function erwartetesFormat(anteil: number): Format {
-  return anteil >= 1 ? 'supersatz' : anteil > 0 ? 'mix' : 'klassisch';
-}
 
 // Echte Satzdauer in Sekunden: gleitender Mittelwert der letzten Einheiten dieses Formats.
 export function echteSatzdauer(z: AppZustand, format: Format): number | undefined {
@@ -87,12 +80,11 @@ function satzdauerSupersatz(e: Einstellungen): number {
   return (2 * ZEITBUDGET.satzArbeitSek + e.pausenSek.supersatz) / 2;
 }
 
-// Arbeitssätze pro Einheit ohne Bauch und Waden.
-export function arbeitssaetze(z: AppZustand, prognose: number, minuten: number): number {
+// Arbeitssätze pro Einheit ohne Bauch und Waden. Das Wochenziel rechnet mit Kombi (Standard).
+export function arbeitssaetze(z: AppZustand, minuten: number, klassisch = false): number {
   const e = einstellungenVon(z);
-  const anteil = supersatzAnteil(prognose);
-  const dauer = echteSatzdauer(z, erwartetesFormat(anteil))
-    ?? anteil * satzdauerSupersatz(e) + (1 - anteil) * satzdauerKlassisch(e);
+  const dauer = echteSatzdauer(z, klassisch ? 'klassisch' : 'supersatz')
+    ?? (klassisch ? satzdauerKlassisch(e) : satzdauerSupersatz(e));
   return Math.max(0, Math.floor(((minuten - ZEITBUDGET.aufwaermenMin) * 60) / dauer));
 }
 
@@ -122,7 +114,7 @@ export function wochenzielFaktor(z: AppZustand, jetzt: string, erholungswoche = 
 export function wochenziele(z: AppZustand, prognose: number, ortId: string, jetzt: string, erholungswoche = false): ProMuskel {
   const e = einstellungenVon(z);
   const faktor = wochenzielFaktor(z, jetzt, erholungswoche);
-  const budget = prognose * arbeitssaetze(z, prognose, e.standardDauerMin) * WOCHENZIEL.fraktionelleSaetzeProArbeitssatz;
+  const budget = prognose * arbeitssaetze(z, e.standardDauerMin) * WOCHENZIEL.fraktionelleSaetzeProArbeitssatz;
   const summe = MUSKELN.reduce((s, m) => s + gewicht(e, m), 0);
   const ziele = leer();
   for (const m of MUSKELN) {
@@ -466,7 +458,7 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
   }
 
   // Schritt 6: Übungen gierig wählen aus den Hauptvarianten A und B aller Muster außer Rumpf und Waden
-  const budget = arbeitssaetze(z, prognose, e.standardDauerMin + (eing.laenger ? ZEITBUDGET.laengerMin : 0));
+  const budget = arbeitssaetze(z, e.standardDauerMin + (eing.laenger ? ZEITBUDGET.laengerMin : 0), eing.klassisch === true);
   const kandidaten: Kandidat[] = [];
   for (const muster of MUSTER_IDS) {
     const art = MUSTER_ART[muster];
@@ -547,7 +539,7 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
     ...zusatz,
   ];
   const c: Kontext = { z, e, ort, jetzt, pause: trainingspause(z, jetzt) };
-  const gebildet = bildeBloecke(c, liste, supersatzAnteil(prognose));
+  const gebildet = bildeBloecke(c, liste, eing.klassisch === true);
   const format = gebildet.format;
   const bloecke: Block[] = testUebung
     ? [{
@@ -565,41 +557,47 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
   return { einheit, budgetSaetze: gesamt, freieSaetze: budget - gesamt, bedarfOffen };
 }
 
-function bildeBloecke(c: Kontext, liste: Auswahl[], anteil: number): { bloecke: Block[]; format: Format } {
+// Schritt 8: Kombi (Standard) bildet Runden aus bis zu `KOMBI.maxUebungen` Übungen, die sich nicht
+// überschneiden: Ein Muskel, der in einer Übung Hauptmuskel ist, darf in keiner anderen Übung der Runde
+// vorkommen (Entscheidung 21.10.2026). Die Rundengröße richtet sich nach den übrigen Übungen, damit
+// möglichst keine allein bleibt; bevorzugt kommen Übungen mit gleicher Satzzahl zusammen.
+// Klassisch: jede Übung einzeln.
+function bildeBloecke(c: Kontext, liste: Auswahl[], klassisch: boolean): { bloecke: Block[]; format: Format } {
   const { e } = c;
-  const gesamt = liste.reduce((s, a) => s + a.saetze, 0);
-  const partner = new Map<number, number>();
-  let paarSaetze = 0;
-  const suche = (muster: readonly MusterId[], ausser = -1) =>
-    liste.findIndex((a, i) => i !== ausser && !partner.has(i) && muster.includes(a.k.uebung.muster));
-  const naechstesPaar = () => {
-    for (const [as, bs] of SUPERSATZ_PAARE) {
-      const i = suche(as);
-      const j = i < 0 ? -1 : suche(bs, i);
-      if (i >= 0 && j >= 0) return [i, j] as const;
-    }
-    return undefined;
-  };
-  let paar = naechstesPaar();
-  while (paar && paarSaetze < anteil * gesamt) {
-    const [i, j] = paar;
-    partner.set(i, j).set(j, i);
-    paarSaetze += liste[i]!.saetze + liste[j]!.saetze;
-    paar = naechstesPaar();
-  }
+  const position = (x: Auswahl) => neuePosition(c, x.k, x.saetze);
+  const einzeln = (a: Auswahl): Block =>
+    ({ typ: 'einzeln', positionen: [position(a)], pauseSek: istGrund(a.k.uebung) ? e.pausenSek.grund : e.pausenSek.isolation });
+  if (klassisch) return { bloecke: liste.map(einzeln), format: 'klassisch' };
+
+  const frei = [...liste];
   const bloecke: Block[] = [];
-  liste.forEach((a, i) => {
-    const j = partner.get(i);
-    if (j !== undefined && j < i) return;
-    const position = (x: Auswahl) => neuePosition(c, x.k, x.saetze);
-    if (j !== undefined) {
-      bloecke.push({ typ: 'supersatz', positionen: [position(a), position(liste[j]!)], pauseSek: e.pausenSek.supersatz });
-    } else {
-      bloecke.push({ typ: 'einzeln', positionen: [position(a)], pauseSek: istGrund(a.k.uebung) ? e.pausenSek.grund : e.pausenSek.isolation });
+  let gruppiert = 0;
+  while (frei.length > 0) {
+    const max = KOMBI.maxUebungen;
+    const groesse = frei.length <= max ? frei.length : frei.length === max + 1 ? Math.ceil(frei.length / 2) : max;
+    const runde = [frei.shift()!];
+    while (runde.length < groesse) {
+      const passend = frei.filter((x) => runde.every((r) => vertragenSich(r.k.uebung, x.k.uebung)));
+      if (passend.length === 0) break;
+      const ziel = runde[0]!.saetze;
+      const naechste = passend.reduce((b, x) => (Math.abs(x.saetze - ziel) < Math.abs(b.saetze - ziel) ? x : b));
+      runde.push(naechste);
+      frei.splice(frei.indexOf(naechste), 1);
     }
-  });
-  const format: Format = partner.size === 0 ? 'klassisch' : paar ? 'mix' : 'supersatz';
+    if (runde.length === 1) bloecke.push(einzeln(runde[0]!));
+    else {
+      gruppiert += runde.length;
+      bloecke.push({ typ: 'supersatz', positionen: runde.map(position), pauseSek: e.pausenSek.supersatz });
+    }
+  }
+  const format: Format = gruppiert === 0 ? 'klassisch' : gruppiert === liste.length ? 'supersatz' : 'mix';
   return { bloecke, format };
+}
+
+// Zwei Übungen passen in eine Kombi-Runde, wenn kein Hauptmuskel der einen in der anderen arbeitet.
+function vertragenSich(a: Uebung, b: Uebung): boolean {
+  const alle = (u: Uebung) => [...u.primaer, ...u.sekundaer];
+  return !a.primaer.some((m) => alle(b).includes(m)) && !b.primaer.some((m) => alle(a).includes(m));
 }
 
 function geschaetzteDauer(z: AppZustand, einheit: Einheit): number {

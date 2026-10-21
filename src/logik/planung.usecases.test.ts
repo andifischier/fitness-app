@@ -8,13 +8,14 @@ import { MUSKELN, type Muskel } from './typen';
 type Werte = [number, number, number, number, number, number, number, number, number, number];
 const proMuskel = (w: Werte) => Object.fromEntries(MUSKELN.map((m, i) => [m, w[i]])) as Record<Muskel, number>;
 
-// Erledigte fraktionelle Sätze laut Prototyp, Reihenfolge wie MUSKELN:
+// Erledigte fraktionelle Sätze laut Prototyp mit Kombi als Standard (Supersatz-Anteil dort immer 1,
+// Entscheidung 21.10.2026), Reihenfolge wie MUSKELN:
 // Brust, Rücken, Schultern, Bizeps, Trizeps, Quadrizeps, Gesäß, hintere OS, Bauch, Waden
 const FAELLE: { name: string; prognose: number; termine: Termin[]; prototyp: Werte }[] = [
   {
     name: 'UC1 Normalwoche Mo, Mi, Fr', prognose: 3,
     termine: [{ tag: 0, stunde: 18 }, { tag: 2, stunde: 18 }, { tag: 4, stunde: 18 }],
-    prototyp: [12, 12, 12, 12, 12, 9, 10.5, 9, 6, 4],
+    prototyp: [12, 12, 12, 12, 13, 10, 11.5, 10, 6, 4],
   },
   {
     name: 'UC2 5 Einheiten Mo, Di, Mi, Fr, Sa', prognose: 5,
@@ -29,22 +30,22 @@ const FAELLE: { name: string; prognose: number; termine: Termin[]; prototyp: Wer
   {
     name: 'UC4 Prognose 3, tatsächlich 5 Tage am Stück', prognose: 3,
     termine: [0, 1, 2, 3, 4].map((tag) => ({ tag, stunde: 18 })),
-    prototyp: [14, 13, 14.5, 12.5, 13, 10, 11.5, 10, 6, 4],
+    prototyp: [14, 13, 14.5, 12.5, 13, 10, 13, 10, 6, 4],
   },
   {
     name: 'UC5 Prognose 4, nur Mo und Do, am Do korrigiert', prognose: 4,
     termine: [{ tag: 0, stunde: 18 }, { tag: 3, stunde: 18, prognose: 2 }],
-    prototyp: [12, 11, 12, 8.5, 8, 8, 8, 5, 5, 3],
+    prototyp: [12, 11, 12, 8.5, 9, 8, 8, 5, 5, 3],
   },
   {
     name: 'UC5b Prognose 4, nur Mo und Do, ohne Korrektur', prognose: 4,
     termine: [{ tag: 0, stunde: 18 }, { tag: 3, stunde: 18 }],
-    prototyp: [9, 9, 10, 7.5, 6.5, 6, 7, 5, 5, 2],
+    prototyp: [9, 9, 10, 9.5, 9.5, 6, 7, 5, 5, 2],
   },
   {
     name: 'UC6 Fr abends, Sa und So morgens', prognose: 3,
     termine: [{ tag: 4, stunde: 18 }, { tag: 5, stunde: 10 }, { tag: 6, stunde: 10 }],
-    prototyp: [12, 12, 12, 12, 12, 8, 9, 5.5, 6, 4],
+    prototyp: [12, 12, 12, 12, 12, 8, 10, 6, 6, 4],
   },
 ];
 
@@ -61,7 +62,7 @@ describe('Use Cases mit Test-Katalog', () => {
     const z = zustand();
     const jetzt = zeitpunkt(0, 18);
     expect(wochenziele(z, 2, 'zuhause', jetzt)).toMatchObject({ Brust: 11, Quadrizeps: 8, Bauch: 5, Waden: 3 });
-    expect(wochenziele(z, 3, 'zuhause', jetzt)).toMatchObject({ Brust: 12, Quadrizeps: 9, Bauch: 6, Waden: 4 });
+    expect(wochenziele(z, 3, 'zuhause', jetzt)).toMatchObject({ Brust: 12, Quadrizeps: 10, Bauch: 6, Waden: 4 });
     expect(wochenziele(z, 5, 'zuhause', jetzt)).toMatchObject({ Brust: 12, Quadrizeps: 10, Bauch: 6, Waden: 4 });
   });
 });

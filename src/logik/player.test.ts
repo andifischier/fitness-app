@@ -42,6 +42,20 @@ describe('Reihenfolge der Sätze', () => {
     expect(schritte(MIX).map((_, i) => pauseNach(MIX, i))).toEqual([90, 0, 75, 0, 75, 75, 60, 0]);
   });
 
+  it('Kombi-Runde mit 3 Übungen: je ein Satz jeder Übung, Pause nach der Runde, Feedback nach der Runde', () => {
+    const kombi = einheit([{ typ: 'supersatz', pauseSek: 75, positionen: [
+      pos('kh_bankdruecken', 2, { last: 16 }), pos('kh_rudern_einarmig', 2, { last: 18 }), pos('haengendes_knieheben', 1),
+    ] }]);
+    expect(schritte(kombi).map((s) => `${s.position}.${s.satz}`)).toEqual(['0.1', '1.1', '2.1', '0.2', '1.2']);
+    expect(schritte(kombi).map((_, i) => pauseNach(kombi, i))).toEqual([0, 0, 75, 0, 0]);
+    let e = kombi;
+    const z = zustand();
+    for (const s of schritte(kombi).slice(0, 3)) e = trageSatzEin(z, e, s, 10, '2026-10-20T18:10:00');
+    expect(offeneFeedbacks(e)).toEqual([]);   // Knieheben ist fertig, die Runde aber noch nicht
+    for (const s of schritte(kombi).slice(3)) e = trageSatzEin(z, e, s, 10, '2026-10-20T18:12:00');
+    expect(offeneFeedbacks(e)).toHaveLength(3);
+  });
+
   it('läuft im Zirkel Runde für Runde ohne Pausen', () => {
     const zirkel = einheit([{ typ: 'zirkel', pauseSek: 0, runden: 2, zirkelId: 'z', positionen: [pos('a', 2), pos('b', 2)] }], { format: 'zirkel' });
     expect(schritte(zirkel).map((s) => `${s.position}.${s.satz}`)).toEqual(['0.1', '1.1', '0.2', '1.2']);

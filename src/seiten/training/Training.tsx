@@ -246,13 +246,13 @@ function Aufwaermen({ zeilen, zirkel, weiter }: { zeilen: string[]; zirkel: bool
   );
 }
 
-// Kennzeichnung über dem Namen: „Supersatz A · Übung 1 von 2“ bzw. „Max-Test“.
+// Kennzeichnung über dem Namen: „Kombi A · Übung 1 von 3“ bzw. „Max-Test“.
 function kennzeichnung(einheit: Einheit, s: Schritt): string | undefined {
   const b = einheit.bloecke[s.block]!;
   if (positionVon(einheit, s).istMaxTest) return 'Max-Test';
   if (b.typ !== 'supersatz') return undefined;
   const buchstabe = String.fromCharCode(65 + einheit.bloecke.slice(0, s.block).filter((x) => x.typ === 'supersatz').length);
-  return `Supersatz ${buchstabe} · Übung ${s.position + 1} von ${b.positionen.length}`;
+  return `Kombi ${buchstabe} · Übung ${s.position + 1} von ${b.positionen.length}`;
 }
 
 function Kopf({ z, u, label }: { z: AppZustand; u: Uebung; label?: string }) {

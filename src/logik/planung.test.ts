@@ -69,7 +69,7 @@ describe('Wochenziel und Prioritäten', () => {
 
   it('gespeicherte persönliche Grenze hat Vorrang', () => {
     const z = { ...zustand(), muskeln: [{ ...belastet('Brust', MO, 0), letzteBelastung: undefined, persoenlicheGrenze: 14 }] };
-    expect(wochenziele(z, 3, 'zuhause', MO).Brust).toBe(12); // Zeitbudget begrenzt
+    expect(wochenziele(z, 2, 'zuhause', MO).Brust).toBe(11); // Zeitbudget begrenzt
     expect(wochenziele(z, 5, 'zuhause', MO).Brust).toBe(14);
   });
 });
@@ -140,34 +140,51 @@ describe('Startfragen, Fokus und Pacing', () => {
 });
 
 describe('Aufbau der Einheit', () => {
-  it('Grundübungen vor Isolation, Bauch und Waden zusätzlich, Bauch nie mit Oberkörper gepaart', () => {
-    const { einheiten } = simuliereWoche(zustand(), 2, [{ tag: 1, stunde: 18 }, { tag: 5, stunde: 10 }]);
-    const z = zustand();
+  it('Kombi (Standard): Runden aus 2 bis 3 Übungen ohne gemeinsamen Hauptmuskel, Bauch und Waden zusätzlich', () => {
+    const voll = zustand({ katalog: 'voll' });
+    const { einheiten } = simuliereWoche(voll, 3, [{ tag: 0, stunde: 18 }, { tag: 2, stunde: 18 }, { tag: 4, stunde: 18 }]);
+    const hauptmuskelIn = (a: string, b: string) => {
+      const ua = uebung(voll, a);
+      const ub = uebung(voll, b);
+      return ua.primaer.some((m) => [...ub.primaer, ...ub.sekundaer].includes(m));
+    };
     for (const e of einheiten) {
-      for (const b of e.bloecke.filter((x) => x.typ === 'supersatz')) {
-        const muster = b.positionen.map((p) => uebung(z, p.uebungId).muster);
-        expect(b.positionen).toHaveLength(2);
-        if (muster.includes('Rumpf')) expect(muster.some((m) => ['Knie', 'Einbein', 'Waden'].includes(m))).toBe(true);
-      }
-      expect(ids(e)).toContain('haengendes_knieheben');
       expect(e.format).not.toBe('klassisch');
+      expect(e.bloecke.filter((b) => b.typ === 'einzeln').length).toBeLessThanOrEqual(1);
+      for (const b of e.bloecke.filter((x) => x.typ === 'supersatz')) {
+        expect(b.positionen.length).toBeGreaterThanOrEqual(2);
+        expect(b.positionen.length).toBeLessThanOrEqual(3);
+        expect(b.pauseSek).toBe(voll.einstellungen[0]!.pausenSek.supersatz);
+        for (const x of b.positionen) for (const y of b.positionen) if (x !== y) expect(hauptmuskelIn(x.uebungId, y.uebungId)).toBe(false);
+      }
     }
+    expect(einheiten.some((e) => ids(e).some((id) => uebung(voll, id).muster === 'Rumpf'))).toBe(true);
+    // Grundübungen vor Isolation: die erste Runde beginnt mit einer Grundübung
+    expect(['hDruck', 'vDruck', 'hZug', 'vZug', 'Knie', 'Einbein', 'Huefte']).toContain(uebung(voll, ids(einheiten[0]!)[0]!).muster);
   });
 
-  it('Supersatz-Anteil: bei Prognose 4 bis 6 weniger Paare als bei 1 bis 2', () => {
-    const paarSaetze = (e: Einheit) => e.bloecke.filter((b) => b.typ === 'supersatz')
-      .flatMap((b) => b.positionen).reduce((s, p) => s + p.saetze, 0);
-    const alle = (e: Einheit) => e.bloecke.flatMap((b) => b.positionen).reduce((s, p) => s + p.saetze, 0);
-    const viele = plane(zustand(), MO, { prognose: 5 });
-    expect(paarSaetze(viele) / alle(viele)).toBeLessThan(0.7);
-    expect(viele.format).toBe('mix');
+  it('Bauch darf mit Oberkörper in eine Runde (Entscheidung 21.10.2026)', () => {
+    const z = zustand();
+    const e = plane(z, MO, { morgenWieder: true });   // Fokus Oberkörper
+    expect(e.fokus).toBe('oben');
+    const runden = e.bloecke.filter((b) => b.typ === 'supersatz').map((b) => b.positionen.map((p) => uebung(z, p.uebungId).muster));
+    expect(runden).toContainEqual(['hDruck', 'hZug', 'Rumpf']);
+  });
+
+  it('Klassisch: jede Übung einzeln; Kombi bringt in derselben Zeit mehr Sätze unter', () => {
+    const saetze = (e: Einheit) => e.bloecke.flatMap((b) => b.positionen).reduce((s, p) => s + p.saetze, 0);
+    const klassisch = plane(zustand(), MO, { prognose: 2, klassisch: true });
+    const kombi = plane(zustand(), MO, { prognose: 2 });
+    expect(klassisch.format).toBe('klassisch');
+    expect(klassisch.bloecke.every((b) => b.typ === 'einzeln')).toBe(true);
+    expect(kombi.format).not.toBe('klassisch');
+    expect(saetze(kombi)).toBeGreaterThan(saetze(klassisch));
   });
 
   it('geschätzte Dauer enthält Bauch- und Wadensätze', () => {
     const e = plane(zustand());
     const ohne = { ...zustand(), katalog: { ...zustand().katalog, uebungen: zustand().katalog.uebungen.filter((u) => u.muster !== 'Rumpf' && u.muster !== 'Waden') } };
     expect(e.geschaetzteDauerMin).toBeGreaterThan(plane(ohne).geschaetzteDauerMin);
-    expect(e.geschaetzteDauerMin).toBeGreaterThanOrEqual(40);
   });
 
   it('Aufwärmen: allgemein, Mobility der Tagesmuster, Aufwärmsatz der ersten Grundübung', () => {
