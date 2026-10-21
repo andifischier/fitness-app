@@ -1,17 +1,17 @@
-// Vor dem Start (Mockup 2): Wochenprognose (nur erste Einheit der Woche, mit Angebot einer
-// Erholungswoche), Ort, Kombi oder Klassisch (Standard Kombi), „Morgen wieder?“, „15 Min länger?“
+// Vor dem Start (Mockup 2): Trainingstage der Woche (nur, solange keine gewählt sind, mit Angebot
+// einer Erholungswoche; Entscheidung 21.10.2026), Ort, Kombi oder Klassisch (Standard Kombi), „Morgen wieder?“, „15 Min länger?“
 // und „Einheit erstellen“; darunter „Stattdessen Zirkel“ mit der Liste der Zirkel. Alles ist vorausgefüllt.
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import { PROFIL } from '../../konfiguration';
 import { speichereNeueEinheit } from '../../daten/speichern';
 import { lokaleZeit } from '../../daten/zeit';
-import { isoWoche } from '../../logik/datum';
+import { maxOffeneTage, vorschlagTage } from '../../logik/ausblick';
+import { isoWoche, wochentag } from '../../logik/datum';
 import { zirkelBestzeit } from '../../logik/heute';
 import { erstelleEinheit, startfragen } from '../../logik/planung';
 import { erholungswocheAngebot, type ErholungswocheGrund } from '../../logik/progression';
 import type { AppZustand } from '../../logik/typen';
-import { Auswahl, Fehler, Hinweis, Karte, Knopf, Laedt } from '../../ui/bausteine';
+import { Auswahl, Fehler, Hinweis, Karte, Knopf, Laedt, TageWahl } from '../../ui/bausteine';
 import { Icon } from '../../ui/Icon';
 import { zeitText } from '../../ui/texte';
 import { useZustand } from '../../ui/useZustand';
@@ -39,10 +39,14 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
   // Startwerte einmal beim Öffnen; spätere Änderungen der Daten setzen die Auswahl nicht zurück.
   const [start] = useState(() => ({ fragen: startfragen(z, jetzt), angebot: erholungswocheAngebot(z, jetzt) }));
   const { fragen, angebot } = start;
-  const [prognose, setPrognose] = useState(fragen.prognoseVorschlag);
+  const heute = wochentag(jetzt);
+  const erledigt = z.wochen.find((w) => w.id === isoWoche(jetzt))?.einheiten ?? 0;
+  // Heute ist immer dabei; die Prognose folgt aus erledigten Einheiten, heute und den späteren Tagen.
+  const [tage, setTage] = useState(() => [...new Set([heute, ...vorschlagTage(z, jetzt)])].sort((a, b) => a - b));
+  const prognose = fragen.prognoseAbfragen ? erledigt + tage.filter((t) => t >= heute).length : fragen.prognoseVorschlag;
   const [erholung, setErholung] = useState(angebot !== null);
   const [ortId, setOrtId] = useState(fragen.ortId);
-  const [morgenWieder, setMorgenWieder] = useState(fragen.morgenWiederVorschlag);
+  const [morgenWieder, setMorgenWieder] = useState(fragen.prognoseAbfragen ? tage.includes(heute + 1) : fragen.morgenWiederVorschlag);
   const [laenger, setLaenger] = useState(false);
   const [art, setArt] = useState<'kombi' | 'klassisch'>('kombi');   // Standard Kombi (Entscheidung 21.10.2026)
   const [zirkelModus, setZirkelModus] = useState((fragen.zirkelVorschlag || params.get('zirkel') === '1') && angebot === null);
@@ -62,7 +66,10 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
     setLaeuft(true);
     const zeit = lokaleZeit();
     const ohneZirkel = zirkelId === undefined;
-    const extra = { ...(angebot !== null ? { erholungswoche: erholung } : {}), laenger: ohneZirkel && laenger };
+    const extra = {
+      ...(angebot !== null ? { erholungswoche: erholung } : {}), laenger: ohneZirkel && laenger,
+      ...(fragen.prognoseAbfragen ? { tage } : {}),
+    };
     const einheit = erstelleEinheit(z, {
       jetzt: zeit, ortId, prognose, morgenWieder: ohneZirkel && morgenWieder, laenger: extra.laenger, zirkelId,
       klassisch: art === 'klassisch',
@@ -77,8 +84,6 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
     }
   };
 
-  const { min, max } = PROFIL.einheitenProWoche;
-  const zahlen = Array.from({ length: max - min + 1 }, (_, i) => ({ wert: min + i, text: String(min + i) }));
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col px-seite pt-8 pb-8">
@@ -91,11 +96,16 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
       <div className="flex flex-col gap-5">
         {fehler && <Fehler meldungen={['Speichern hat nicht geklappt. Bitte versuche es noch einmal.']} />}
         {fragen.prognoseAbfragen && (
-          <Karte titel="Wie oft schaffst du es diese Woche?"
+          <Karte titel="An welchen Tagen trainierst du diese Woche?"
             hinweis={nachPause
-              ? 'Du hast länger pausiert. Der Vorschlag ist angepasst.'
-              : 'Nur bei der ersten Einheit der Woche. Vorschlag aus deinem Schnitt.'}>
-            <Auswahl optionen={zahlen} wert={prognose} onChange={setPrognose} spalten={6} />
+              ? 'Du hast länger pausiert. Wähle die restlichen Tage neu; heute ist dabei.'
+              : 'Nur bei der ersten Einheit der Woche; heute ist dabei. Auf Heute siehst du dann, was an jedem Tag geplant ist.'}>
+            <TageWahl wert={tage} ab={heute} max={maxOffeneTage(z, jetzt)}
+              onChange={(neu) => {
+                const mitHeute = [...new Set([heute, ...neu])].sort((a, b) => a - b);
+                setTage(mitHeute);
+                setMorgenWieder(mitHeute.includes(heute + 1));
+              }} />
           </Karte>
         )}
         {angebot !== null && (

@@ -17,7 +17,7 @@ Gebaut wird eine persönliche Trainings-App als Web-App (PWA), die einen adaptiv
 | Nutzer | Nur eine Person, kein Login, kein Store-Release |
 | Plattform | PWA, auf dem Handy installierbar, offline nutzbar |
 | Daten | Nur lokal auf dem Gerät, Backup als Export/Import-Datei |
-| Übungsvideos | Keine eigenen Videos, pro Übung ein YouTube-Link |
+| Übungsvideos | Keine eigenen Videos, pro Übung ein YouTube-Link und eine Kurzanleitung; ausgewählte Übungen mit fest eingebettetem YouTube-Video (Entscheidung 21.10.2026) |
 | Sprache | Deutsch |
 | Einheiten | kg |
 
@@ -39,7 +39,7 @@ Das Onboarding erfasst Ziele, Rahmenbedingungen und Equipment und endet mit eine
 | --- | --- | --- |
 | Ziele | Mehrfachauswahl: Muskelaufbau, Fettabbau/Fitness allgemein, Kraft, Ausdauer | Muskelaufbau + Fitness allgemein |
 | Trainingslevel | Einsteiger, Fortgeschritten, Erfahren | Fortgeschritten |
-| Übliche Einheiten pro Woche | 1 bis 6; nur Startwert der Wochenprognose, die jede Woche neu abgefragt wird | 3 |
+| Übliche Einheiten pro Woche | 1 bis 6; nur Startwert für die Zahl der vorausgewählten Trainingstage, die jede Woche neu gewählt werden | 3 |
 | Standard-Trainingsdauer | 20 bis 90 Min in 5-Min-Schritten | 40 Min |
 | Längere Einheiten anbieten | Ja/Nein: in Wochen mit 1 bis 2 Einheiten „15 Min länger?“ vorschlagen | Ja |
 | Muskelprioritäten | Pro Muskelgruppe: hoch, normal, niedrig, sehr niedrig | Oberkörper betont (siehe Planungslogik) |
@@ -155,6 +155,8 @@ interface Uebung {
   zirkelGeeignet: boolean;
   youtubeUrl: string;               // Standard: YouTube-Suche
   eigenerVideoLink?: string;        // vom Nutzer, hat Vorrang
+  videoId?: string;                 // festes YouTube-Video zum Einbetten (ausgewählte Katalogübungen)
+  anleitung?: string[];             // Kurzanleitung in Stichpunkten (jede Katalogübung)
   herkunft: 'katalog'|'eigene';
 }
 interface Zirkel { id: string; name: string; runden: number; dauerHinweis: string;
@@ -204,7 +206,8 @@ interface MuskelZustand { muskel: Muskel; letzteBelastung?: string; letzteDosis:
   persoenlicheGrenze: number; gleichWochen: number; leistung: { woche: string; wert: number }[] }
 interface Woche { id: string; prognose: number; einheiten: number;
   ziele: Record<Muskel, number>; erledigt: Record<Muskel, number>;
-  erholungswoche: boolean; laengerAngenommen: boolean; ausgewertet?: boolean }  // ausgewertet: Wochenabschluss gelaufen
+  erholungswoche: boolean; laengerAngenommen: boolean; ausgewertet?: boolean;  // ausgewertet: Wochenabschluss gelaufen
+  tage?: number[] }                 // gewählte Trainingstage, 0 = Montag … 6 = Sonntag (Wochenausblick)
 interface Zyklus { nr: number; start: string; ende?: string; grund?: 'zeitablauf'|'erholungswoche' }
 
 // Einheiten
@@ -278,13 +281,16 @@ Es gibt keinen festen Split und keine festen Wochentage. Jede Einheit wird unmit
 ### Woche und Wochenprognose
 
 - Eine Woche ist die Kalenderwoche von Montag bis Sonntag.
-- Bei der ersten Einheit einer Woche fragt die App: „Wie oft schaffst du es diese Woche?“ (1 bis 6). Vorausgefüllt ist der gerundete Durchschnitt der letzten 4 Wochen, ein Tipp bestätigt.
-- Die Prognose ist auf dem Heute-Screen jederzeit änderbar, auch vor der ersten Einheit der Woche. Wer sie dort vorher festlegt, hat die Wochenfrage damit beantwortet; das Angebot einer Erholungswoche entfällt dann für diese Woche (Entscheidung 21.10.2026).
+- **Trainingstage (Entscheidung 21.10.2026, ersetzt die Frage „Wie oft schaffst du es diese Woche?“):** Der Nutzer wählt die Tage der Woche, an denen er trainieren will (Mo bis So, vergangene Tage nicht wählbar, höchstens so viele, dass die Prognose 6 nicht übersteigt). Auf dem Heute-Screen jederzeit, auch vor der ersten Einheit; sonst bei der ersten Einheit der Woche auf „Vor dem Start“ (heute ist dort immer dabei). Vorausgewählt sind die Tage der Vorwoche ab heute, sonst die vorgeschlagene Zahl (gerundeter Durchschnitt der letzten 4 Wochen) gleichmäßig ab heute verteilt.
+- **Prognose aus den Tagen:** erledigte Einheiten plus noch anstehende gewählte Tage (heute zählt, solange heute noch nicht trainiert wurde). Beim Start einer Einheit: erledigte + diese + gewählte Tage nach heute. Eine Einheit an einem nicht gewählten Tag erhöht die Prognose damit automatisch, ein ausgelassener Tag senkt sie. Wer die Tage auf Heute vor der ersten Einheit festlegt, hat die Wochenfrage beantwortet; das Angebot einer Erholungswoche entfällt dann für diese Woche (Entscheidung 21.10.2026).
+- **„Morgen wieder?“** ist bei gewählten Tagen mit Ja vorbelegt, wenn morgen ein gewählter Tag ist, sonst mit Nein.
 - Startet der Nutzer mehr Einheiten als prognostiziert, steigt die Prognose automatisch um 1 und das Wochenziel wird neu berechnet.
-- **Pacing-Korrektur:** Liegt die letzte Einheit 72 Std. oder länger zurück, rechnet die App mit höchstens so vielen weiteren Einheiten, wie die halbe Zahl der verbleibenden Tage (aufgerundet) zulässt, und schlägt die korrigierte Prognose zur Bestätigung vor. Die Korrektur senkt nur die Restzahl n für die Verteilung; Prognose und Wochenziel ändern sich erst, wenn der Nutzer die vorgeschlagene Prognose bestätigt.
+- **Pacing-Korrektur** (nur für Wochen ohne gewählte Tage, z. B. aus der Zeit vor dem Wochenausblick; mit Tagen ergibt sich die Restzahl direkt daraus): Liegt die letzte Einheit 72 Std. oder länger zurück, rechnet die App mit höchstens so vielen weiteren Einheiten, wie die halbe Zahl der verbleibenden Tage (aufgerundet) zulässt, und schlägt die korrigierte Prognose zur Bestätigung vor. Die Korrektur senkt nur die Restzahl n für die Verteilung; Prognose und Wochenziel ändern sich erst, wenn der Nutzer die vorgeschlagene Prognose bestätigt.
 - Ein Defizit wird nicht in die nächste Woche übertragen. Nachholen würde die Folgewoche überladen; maßgeblich ist das Volumen pro Woche.
 
 **Wenn sich die Tage unter der Woche ändern:** Es gibt nichts umzuplanen, weil keine Einheit im Voraus feststeht. Trainierst du an einem anderen Tag als gedacht, rechnet die nächste Einheit mit dem, was erledigt und erholt ist. Fällt eine Einheit aus, korrigiert die Pacing-Regel die Restzahl; kommt eine dazu, steigt die Prognose automatisch. Trainierst du zwei Tage hintereinander, sorgt „Morgen wieder?“ dafür, dass am zweiten Tag die andere Körperhälfte dran ist.
+
+**Wochenausblick (Entscheidung 21.10.2026):** Sind Tage gewählt, zeigt Heute für jeden noch anstehenden Tag die voraussichtliche Einheit mit allen Übungen (Sätze, Ziel, Last), erledigte Einheiten an ihrem Tag. Berechnet wird nacheinander mit der echten Planung (`startfragen` und `erstelleEinheit` zur gleichen Uhrzeit wie jetzt); jede geschätzte Einheit gilt danach als wie geplant geschafft (alle Sätze mit Ziel und Last, Feedback „passend“), damit Erholung, Wochenvolumen und Progression der Folgetage stimmen. Ein vorgeschlagener Zirkel erscheint als „Zirkel · Auswahl beim Start“, ein zu kleiner Bedarf als „Ruhetag empfohlen“. Der Ausblick ist eine Schätzung und wird nicht gespeichert; jede Einheit entsteht weiterhin erst vor dem Start.
 
 ### Zeitbudget pro Einheit
 
@@ -326,7 +332,7 @@ Die Frage „Morgen wieder?“ ist der Schlüssel für Tage am Stück: Sie läss
 
 1. **Ort:** Standardort vorausgewählt, änderbar. Alle folgenden Schritte nutzen nur Varianten, die an diesem Ort möglich, nicht gesperrt und nicht ausgeschlossen sind.
 2. **Restzahl n:** n = min(Prognose minus erledigte Einheiten, verbleibende Tage inklusive heute), mindestens 1. Pacing-Korrektur wie oben.
-3. **„Morgen wieder trainieren?“** Vorausgefüllt mit Ja, wenn nach heute noch Einheiten geplant sind und deren Zahl mindestens halb so groß ist wie die Zahl der verbleibenden Tage nach heute. Immer Nein, wenn die letzte Einheit 72 Std. oder länger zurückliegt. Ein Tipp ändert die Antwort.
+3. **„Morgen wieder trainieren?“** Mit gewählten Tagen: Ja, wenn morgen ein gewählter Tag ist. Sonst vorausgefüllt mit Ja, wenn nach heute noch Einheiten geplant sind und deren Zahl mindestens halb so groß ist wie die Zahl der verbleibenden Tage nach heute. Immer Nein, wenn die letzte Einheit 72 Std. oder länger zurückliegt. Ein Tipp ändert die Antwort.
 4. **Fokus:** Bei Nein entsteht eine Ganzkörper-Einheit. Bei Ja eine Fokus-Einheit für Oberkörper (Brust, Rücken, Schultern, Bizeps, Trizeps) oder Unterkörper (Quadrizeps, Gesäß, hintere Oberschenkel, Waden); Bauch ist immer erlaubt. Gewählt wird die Gruppe, deren letzte Belastung länger zurückliegt; bei Gleichstand die mit dem größeren gewichteten Restbedarf. Ist kein Muskel dieser Gruppe erholt, wird die andere gewählt.
 5. **Bedarf pro Muskel:** Rest = Wochenziel minus erledigt. Ganzkörper: Rest ÷ n. Fokus: Rest ÷ aufgerundet(n ÷ 2) für Muskeln der Fokusgruppe, 0 für die anderen. Aufrunden, höchstens 10, und 0 für nicht erholte Muskeln.
 6. **Übungen wählen (gierig):** Kandidaten sind die Hauptvarianten A und B aller Muster außer Rumpf, Waden und Kondition (siehe Hauptvarianten und Abwechslung); beide dürfen in derselben Einheit vorkommen, abgewechselt wird über den Abschlag unten (Entscheidung 20.10.2026). Für jede Kandidatenübung wird ihr Wert berechnet: Summe über ihre Muskeln von min(offener Bedarf, Beitrag pro Satz) × Gewicht. Zuschläge: Grundübung +0,3, Favorit +0,2, Bewertung 5 Sterne +0,2, 4 Sterne +0,1, 2 Sterne −0,2 (siehe Bewertung der Übungen). Abschlag −0,6, wenn sie für ihren Hauptmuskel schon in der letzten Einheit gewählt wurde. Die beste Übung wird übernommen (bei Gleichstand die höhere Variantenstufe), mit Sätzen = offener Bedarf des Hauptmuskels, aufgerundet, 2 bis 4, höchstens das restliche Zeitbudget. Wiederholen, bis das Zeitbudget voll ist oder kein Bedarf über 0,25 bleibt.
@@ -527,11 +533,11 @@ Das Training läuft geführt Schritt für Schritt: eine Übung pro Bildschirm, S
 
 ### Ablauf einer Einheit
 
-1. **Startbildschirm:** Bei der ersten Einheit der Woche die Frage „Wie oft schaffst du es diese Woche?“ (vorausgefüllt). Danach vorausgefüllte Angaben, je mit einem Tipp änderbar: Ort, „Wie trainierst du heute?“ (Kombi oder Klassisch, vorbelegt Kombi), „Morgen wieder trainieren?“ und gegebenenfalls „15 Min länger?“. Erst dann wird die Einheit erzeugt und mit Format, geschätzter Dauer und Muskelgruppen angezeigt. Alternativ: unter „Einheit erstellen“ ein zweiter, schlichter Button „Stattdessen Zirkel“; er öffnet die Liste der 5 Zirkel mit Dauer und Bestzeit am gewählten Ort.
+1. **Startbildschirm:** Bei der ersten Einheit der Woche, solange keine Tage gewählt sind, die Frage „An welchen Tagen trainierst du diese Woche?“ (vorausgefüllt, heute immer dabei). Danach vorausgefüllte Angaben, je mit einem Tipp änderbar: Ort, „Wie trainierst du heute?“ (Kombi oder Klassisch, vorbelegt Kombi), „Morgen wieder trainieren?“ und gegebenenfalls „15 Min länger?“. Erst dann wird die Einheit erzeugt und mit Format, geschätzter Dauer und Muskelgruppen angezeigt. Alternativ: unter „Einheit erstellen“ ein zweiter, schlichter Button „Stattdessen Zirkel“; er öffnet die Liste der 5 Zirkel mit Dauer und Bestzeit am gewählten Ort.
 2. **Vorschau:** Liste aller Übungen mit Sätzen, Zielwiederholungen und Last. Die Satzzahl umfasst alle Sätze inklusive Bauch und Waden. Pro Übung „Tauschen“: Die App zeigt nur Alternativen desselben Musters, die am Ort möglich sind, mit passender Zielvorgabe. Der Tausch wird gespeichert und fließt in den Verlauf des Musters ein. „Zurück“ behält die erstellte Einheit samt Tausch; Heute zeigt dann „Vorschau öffnen“ und „Neu erstellen“ (verwirft sie) (Entscheidung 21.10.2026).
 3. **Aufwärmen (ca. 5 Min):** 2 Min allgemein (z. B. Hampelmann, Armkreisen), 2 Min Mobility für die Muster des Tages, 1 Aufwärmsatz der ersten Grundübung mit etwa 50 % Last bzw. leichterer Variante. Angezeigt als Checkliste auf einem Screen mit „Fertig“ und „Überspringen“.
 4. **Max-Test (falls geplant):** Eigener Bildschirm mit Zähler bzw. Stoppuhr.
-5. **Übungsbildschirme:** Name, YouTube-Link, Satz x von y, Zielwiederholungen, Last, Feld für geschaffte Wiederholungen, Button „Satz erledigt“. Danach startet der Pausentimer (Ton und Vibration am Ende, Pause verlängern oder überspringen möglich). In Kombi-Runden wechselt der Bildschirm zwischen den Übungen der Runde in der Reihenfolge A1 Satz 1, A2 Satz 1, A3 Satz 1, Pause, A1 Satz 2 usw.; Pause nur nach der Runde, „Als Nächstes“ ist innerhalb der Runde immer die nächste Übung. Kennzeichnung „Kombi A · Übung 1 von 3“.
+5. **Übungsbildschirme:** Name, „So geht's“ (aufklappbar: Kurzanleitung, eingebettetes Video falls vorhanden, Link zu YouTube), Satz x von y, Zielwiederholungen, Last, Feld für geschaffte Wiederholungen, Button „Satz erledigt“. Danach startet der Pausentimer (Ton und Vibration am Ende, Pause verlängern oder überspringen möglich). In Kombi-Runden wechselt der Bildschirm zwischen den Übungen der Runde in der Reihenfolge A1 Satz 1, A2 Satz 1, A3 Satz 1, Pause, A1 Satz 2 usw.; Pause nur nach der Runde, „Als Nächstes“ ist innerhalb der Runde immer die nächste Übung. Kennzeichnung „Kombi A · Übung 1 von 3“.
    **Ziel und Vorgabe:** Das Ziel ist eine einzelne Zahl (`zielWdh`) und gilt für den ersten Satz. Die UI zeigt „Ziel 10“, darunter klein „Bereich 8 bis 12“. Folgesätze zeigen „Vorgabe 9“ = geschaffte Wiederholungen des vorherigen Satzes. (Bereiche wie „8 bis 10“ als Ziel in den Mockups 3 bis 5 sind falsch.)
 6. **Übungsfeedback:** Nach dem letzten Satz (in einer Kombi-Runde nach der ganzen Runde): zu leicht / passend / zu schwer. Darunter der Folgetext nach dem Muster „Nächstes Mal: 16 kg, Ziel 11 im ersten Satz“ (ein „Ziel in allen Sätzen“ gibt es nicht).
 7. **Abschluss:** Gesamtbewertung 1 bis 5 (freiwillig, nichts vorausgewählt), optionale Notiz, Sterne 1 bis 5 je Übung (freiwillig), Zusammenfassung mit Dauer, Volumen und neuen Rekorden. Optional Abkühlen: zeigt die Mobility-Zeilen des Aufwärmens erneut, ca. 3 Min.
@@ -565,15 +571,15 @@ Navigation unten mit 4 Tabs: Heute, Fortschritt (mit Unterreiter Verlauf), Übun
 
 | Screen | Inhalt | Besondere Zustände |
 | --- | --- | --- |
-| Heute | Nächste Einheit mit Ort und Dauer als Vorschau (`erstelleEinheit` mit den Vorschlägen aus `startfragen`, nur zur Anzeige, ohne zu speichern; Anzeige „voraussichtlich: Ganzkörper, ca. 40 Min“; nach den Startfragen wird neu erzeugt), Start-Button, Wochenfortschritt pro Muskel (erledigt von Ziel), Wochenprognose mit „ändern“, nächster Max-Test | Erster Start: Weiter zum Onboarding · Erholungswoche: Hinweisband · erstellte, noch nicht gestartete Einheit: „Vorschau öffnen“ und „Neu erstellen“ · Ruhetag empfohlen: Hinweis plus „trotzdem trainieren“, „Zirkel“, „Mobility“ (Mobility nur als Checkliste, ohne Speichern) · unterbrochene Einheit: „Fortsetzen“ statt Start |
-| Vor dem Start | Wochenprognose (nur erste Einheit der Woche), Ort, Kombi oder Klassisch (vorbelegt Kombi), „Morgen wieder?“, „15 Min länger?“ (nur bei Prognose 1 bis 2, Einstellung an und offenem Bedarf), Button „Einheit erstellen“, darunter schlicht „Stattdessen Zirkel“ | Alle Felder vorausgefüllt; Start mit einem Tipp möglich · Zirkel vorgeschlagen: „Doch Krafteinheit“ |
+| Heute | Nächste Einheit mit Ort und Dauer als Vorschau (`erstelleEinheit` mit den Vorschlägen aus `startfragen`, nur zur Anzeige, ohne zu speichern; nach den Startfragen wird neu erzeugt), Start-Button, darunter alle Übungen der Vorschau mit Sätzen, Ziel und Last („Voraussichtlich, mit den Standardangaben vor dem Start“); „Diese Woche“: „x von y Einheiten“, Trainingstage mit „ändern“ und Wochenausblick je Tag (aufklappbar mit allen Übungen); nächster Max-Test. Der Wochenfortschritt pro Muskel steht im Tab Fortschritt (Entscheidung 21.10.2026) | Noch keine Tage gewählt: Karte „An welchen Tagen trainierst du diese Woche?“ mit Vorschlag und „Übernehmen“ · Erster Start: Weiter zum Onboarding · Erholungswoche: Hinweisband · erstellte, noch nicht gestartete Einheit: „Vorschau öffnen“ und „Neu erstellen“ · Ruhetag empfohlen: Hinweis plus „trotzdem trainieren“, „Zirkel“, „Mobility“ (Mobility nur als Checkliste, ohne Speichern) · unterbrochene Einheit: „Fortsetzen“ statt Start |
+| Vor dem Start | Trainingstage (nur erste Einheit der Woche, solange keine gewählt sind; heute immer dabei), Ort, Kombi oder Klassisch (vorbelegt Kombi), „Morgen wieder?“, „15 Min länger?“ (nur bei Prognose 1 bis 2, Einstellung an und offenem Bedarf), Button „Einheit erstellen“, darunter schlicht „Stattdessen Zirkel“ | Alle Felder vorausgefüllt; Start mit einem Tipp möglich · Zirkel vorgeschlagen: „Doch Krafteinheit“ |
 | Vorschau | Blöcke mit Übungen, Sätzen (alle, inklusive Bauch und Waden), Zielen, Last, geschätzte Dauer; Tausch-Button pro Übung; Aufwärmen oben | Tausch-Blatt mit Alternativen desselben Musters · Ersatz-Markierung |
-| Satz | Übung, YouTube-Link, Satz x von y, „Ziel 10“ mit „Bereich 8 bis 12“ bzw. „Vorgabe 9“ ab Satz 2, Last, Zähler für geschaffte Wdh., „Letztes Mal“ (aus der letzten abgeschlossenen Position derselben Übung), Hinweis zur Reserve | Max-Test: Zähler ohne Ziel · Halteübung: Stoppuhr · Supersatz: Kennzeichnung A1/A2 |
+| Satz | Übung, „So geht's“ (Kurzanleitung, Video, YouTube-Link), Satz x von y, „Ziel 10“ mit „Bereich 8 bis 12“ bzw. „Vorgabe 9“ ab Satz 2, Last, Zähler für geschaffte Wdh., „Letztes Mal“ (aus der letzten abgeschlossenen Position derselben Übung), Hinweis zur Reserve | Max-Test: Zähler ohne Ziel · Halteübung: Stoppuhr · Supersatz: Kennzeichnung A1/A2 |
 | Pause | Timer-Ring, +30 Sek., Überspringen, „Als Nächstes“ (in einer Kombi-Runde die nächste Übung der Runde, Pause nur nach der Runde) | Ton und Vibration am Ende; Bildschirm bleibt an |
 | Übungsfeedback | 3 Buttons mit Definition (Halteübungen in Sekunden), geschaffte Wiederholungen, Vorschau der Folge („Nächstes Mal: 16 kg, Ziel 11 im ersten Satz“) | „Zu schwer“ vorausgewählt, wenn der erste Satz das Ziel verfehlt |
 | Abschluss | Dauer, Sätze, Rekorde, Gesamtanstrengung 1 bis 5 (nicht vorausgewählt), Sterne je Übung, Notiz, optional Abkühlen | Zirkel: Zeit und Bestzeit-Vergleich |
-| Fortschritt | Max-Test-Verlauf pro Muster (Chips für alle getesteten Muster inklusive Plank in Sekunden), Sätze pro Woche für alle Muskeln untereinander, je die letzten 6 Wochen (Entscheidung 21.10.2026), mit Hinweis „zählt als Entlastung“ bei abgeschlossenen Wochen unter 60 % des üblichen Volumens oder Erholungswochen, eigene Karte Zirkel-Bestzeiten (Zirkel, Ort, Bestzeit, Datum; eine Zeile je Übungsauswahl, abweichende Übungen werden genannt, Entscheidung 21.10.2026); Unterreiter Verlauf mit allen Einheiten. Tipp auf eine Einheit zeigt Datum, Ort, Dauer, alle Übungen mit Sätzen, Last, Feedback, Gesamtanstrengung und Notiz | Leer: „Nach deiner ersten Einheit siehst du hier deinen Fortschritt.“ |
-| Übungen | Suche, Filter nach Muster und Ort, Favorit/Ausschluss, Sterne 1 bis 5, eigene Übung anlegen (ähnliche Übung als Vorlage, alle Angaben vorausgefüllt und änderbar), eigener Video-Link | Eigene Übung lässt sich nur löschen, solange sie nie trainiert wurde (Entscheidung 20.10.2026) |
+| Fortschritt | Karte „Diese Woche“: Sätze pro Muskel, erledigt von Ziel (von Heute hierher verschoben, Entscheidung 21.10.2026); Max-Test-Verlauf pro Muster (Chips für alle getesteten Muster inklusive Plank in Sekunden), Sätze pro Woche für alle Muskeln untereinander, je die letzten 6 Wochen (Entscheidung 21.10.2026), mit Hinweis „zählt als Entlastung“ bei abgeschlossenen Wochen unter 60 % des üblichen Volumens oder Erholungswochen, eigene Karte Zirkel-Bestzeiten (Zirkel, Ort, Bestzeit, Datum; eine Zeile je Übungsauswahl, abweichende Übungen werden genannt, Entscheidung 21.10.2026); Unterreiter Verlauf mit allen Einheiten. Tipp auf eine Einheit zeigt Datum, Ort, Dauer, alle Übungen mit Sätzen, Last, Feedback, Gesamtanstrengung und Notiz | Leer: „Nach deiner ersten Einheit siehst du hier deinen Fortschritt.“ |
+| Übungen | Suche, Filter nach Muster und Ort, Favorit/Ausschluss, Sterne 1 bis 5, eigene Übung anlegen (ähnliche Übung als Vorlage, alle Angaben vorausgefüllt und änderbar; Kurzanleitung und festes Video der Vorlage werden nicht übernommen), Detail mit „So geht's“ (Kurzanleitung, Video), eigener Video-Link (ein YouTube-Link wird in der App abgespielt) | Eigene Übung lässt sich nur löschen, solange sie nie trainiert wurde (Entscheidung 20.10.2026) |
 | Einstellungen | Orte und Equipment (Mockup 9, Regeln siehe Orte), Profil, Prioritäten, Dauer, Zirkel-Anteil, Pausen, Einschränkungen, Backup (Export/Import) | Ort ohne Pflichtangaben lässt sich nicht speichern · Ort lässt sich nur löschen, solange dort nie trainiert wurde (Entscheidung 20.10.2026) |
 
 Texte sind auf Deutsch, Du-Form, kurz. Zahlen mit deutschem Dezimalkomma (2,5 kg).
@@ -614,7 +620,7 @@ Die App ist eine reine Client-Anwendung ohne eigenen Server: statisch gehostet, 
 
 ### Schnittstellen
 
-Es gibt keine Server-Schnittstelle. Nach außen geht nur der YouTube-Link (öffnet im Browser). Intern trennt die App strikt zwischen UI und zwei reinen Logikmodulen ohne UI-Abhängigkeit. Die Funktionen sind deterministisch: Die aktuelle Zeit wird immer übergeben, nie im Modul abgefragt.
+Es gibt keine Server-Schnittstelle. Nach außen gehen nur der YouTube-Link (öffnet im Browser) und, erst auf Tipp, das eingebettete Video (youtube-nocookie.com). Intern trennt die App strikt zwischen UI und zwei reinen Logikmodulen ohne UI-Abhängigkeit. Die Funktionen sind deterministisch: Die aktuelle Zeit wird immer übergeben, nie im Modul abgefragt.
 
 ```ts
 // src/logik/planung.ts

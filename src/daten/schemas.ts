@@ -35,6 +35,8 @@ export const uebungSchema = z.object({
   zirkelGeeignet: z.boolean(),
   youtubeUrl: z.string().min(1),
   eigenerVideoLink: z.string().optional(),
+  videoId: z.string().regex(/^[\w-]{11}$/).optional(),
+  anleitung: z.array(z.string().min(1)).optional(),
   herkunft: z.enum(['katalog', 'eigene']),
 });
 
@@ -116,6 +118,7 @@ export const wocheSchema = z.object({
   id: z.string().min(1), prognose: ganzzahl.min(1).max(6), einheiten: ganzzahl.nonnegative(),
   ziele: muskelWerte(zahl), erledigt: muskelWerte(zahl),
   erholungswoche: z.boolean(), laengerAngenommen: z.boolean(), ausgewertet: z.boolean().optional(),
+  tage: z.array(ganzzahl.min(0).max(6)).optional(),
 });
 
 export const zyklusSchema = z.object({

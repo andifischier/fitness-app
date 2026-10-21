@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { speichereTesttag } from '../../daten/speichern';
 import { lokaleZeit } from '../../daten/zeit';
-import { videoLinkVon } from '../../logik/einstellungen';
 import { testtagEinheit } from '../../logik/testtag';
-import type { AppZustand, Einheit, SatzErgebnis } from '../../logik/typen';
+import type { AppZustand, Einheit, Einstellungen, SatzErgebnis, Uebung } from '../../logik/typen';
 import { uebungVon } from '../../logik/verlauf';
 import { Checkliste, Hinweis, Knopf, Laedt } from '../../ui/bausteine';
 import { Icon } from '../../ui/Icon';
+import { Technik } from '../../ui/technik';
 import { Stoppuhr, Zaehler } from '../../ui/zaehler';
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
 
@@ -79,7 +79,7 @@ function Ablauf({ z, start }: { z: AppZustand; start: Einheit }) {
       {fehler && <p role="alert" className="mt-4 font-semibold">Speichern hat nicht geklappt. Bitte versuche es noch einmal.</p>}
       {schritt < 0 && <Aufwaermen zeilen={start.aufwaermen} weiter={() => setSchritt(0)} />}
       {p && u && (
-        <Test key={schritt} name={u.name} video={videoLinkVon(einstellungenAus(z), u)}
+        <Test key={schritt} u={u} e={einstellungenAus(z)}
           inSek={u.bereich.einheit === 'Sek.'} mitHaengen={u.muster === 'vZug'} onErledigt={erledigt} />
       )}
     </main>
@@ -100,8 +100,8 @@ function Aufwaermen({ zeilen, weiter }: { zeilen: Einheit['aufwaermen']; weiter:
   );
 }
 
-function Test({ name, video, inSek, mitHaengen, onErledigt }: {
-  name: string; video: string; inSek: boolean; mitHaengen: boolean; onErledigt: (r: Ergebnis) => void;
+function Test({ u, e, inSek, mitHaengen, onErledigt }: {
+  u: Uebung; e: Einstellungen; inSek: boolean; mitHaengen: boolean; onErledigt: (r: Ergebnis) => void;
 }) {
   const [wert, setWert] = useState(0);
   const [haengen, setHaengen] = useState<number>();     // gesetzt: Klimmzug mit 0 Wdh., jetzt Hängen
@@ -115,10 +115,8 @@ function Test({ name, video, inSek, mitHaengen, onErledigt }: {
   return (
     <div className="mt-8 flex flex-1 flex-col">
       <p className="text-hinweis font-bold tracking-wide text-akzent uppercase">Max-Test</p>
-      <h1 className="mt-1 text-titel font-extrabold">{haengen !== undefined ? 'Hängen an der Stange' : name}</h1>
-      <a href={video} target="_blank" rel="noreferrer" className="mt-3 flex min-h-touch items-center gap-2 text-gross font-semibold text-akzent">
-        <Icon name="video" groesse={22} /> Technik auf YouTube
-      </a>
+      <h1 className="mt-1 text-titel font-extrabold">{haengen !== undefined ? 'Hängen an der Stange' : u.name}</h1>
+      {haengen === undefined && <Technik e={e} u={u} />}
       <div className="mt-4 rounded-karte border border-rand bg-flaeche p-5 text-basis">
         {haengen !== undefined
           ? 'Kein Klimmzug geschafft. Häng dich mit gestreckten Armen an die Stange und halte so lange wie möglich.'

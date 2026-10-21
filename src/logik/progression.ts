@@ -364,6 +364,7 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
     id: wocheId, prognose, einheiten, erledigt,
     ziele: ort ? wochenziele(z, prognose, ort.id, start, altWoche?.erholungswoche) : (altWoche?.ziele ?? leer()),
     erholungswoche: altWoche?.erholungswoche ?? false, laengerAngenommen: altWoche?.laengerAngenommen ?? false,
+    ...(altWoche?.tage ? { tage: altWoche.tage } : {}),
   };
 
   // Zirkel-Bestzeit je Zirkel, Ort und Variantensatz

@@ -218,7 +218,8 @@ export function youtubeSuche(name: string): string {
 
 // Entwurf aus einer Vorlage: alle Angaben übernommen, Name leer (Entscheidung 20.10.2026).
 export function entwurfAusVorlage(vorlage: Uebung): Uebung {
-  const { eigenerVideoLink: _, ...rest } = vorlage;
+  // Video und Kurzanleitung gehören zur Vorlage, nicht zur neuen Übung.
+  const { eigenerVideoLink: _, videoId: _v, anleitung: _a, ...rest } = vorlage;
   return {
     ...rest, id: '', name: '', herkunft: 'eigene',
     primaer: [...vorlage.primaer], sekundaer: [...vorlage.sekundaer],
@@ -303,8 +304,32 @@ export function istVideoLink(text: string): boolean {
 }
 
 // Eigener Link hat Vorrang vor der YouTube-Suche.
+// Link zum Video: eigener Link, sonst das feste Katalogvideo, sonst die YouTube-Suche.
 export function videoLinkVon(e: Einstellungen, u: Uebung): string {
-  return u.eigenerVideoLink ?? e.videoLinks?.[u.id] ?? u.youtubeUrl;
+  return u.eigenerVideoLink ?? e.videoLinks?.[u.id] ?? (u.videoId ? `https://www.youtube.com/watch?v=${u.videoId}` : u.youtubeUrl);
+}
+
+// YouTube-Video-ID aus einem Link (watch?v=, youtu.be/, shorts/, embed/); sonst undefined.
+export function youtubeId(link: string): string | undefined {
+  try {
+    const url = new URL(link.trim());
+    const host = url.hostname.replace(/^(www\.|m\.)/, '');
+    let id: string | null | undefined;
+    if (host === 'youtu.be') id = url.pathname.split('/')[1];
+    else if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
+      id = url.pathname === '/watch' ? url.searchParams.get('v') : /^\/(shorts|embed|live)\/([^/]+)/.exec(url.pathname)?.[2];
+    }
+    return id && /^[\w-]{11}$/.test(id) ? id : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// Video zum Einbetten: ein eigener YouTube-Link hat Vorrang, sonst das feste Video aus dem Katalog.
+// Ein eigener Link, der kein YouTube-Video ist, wird nicht eingebettet.
+export function videoIdVon(e: Einstellungen, u: Uebung): string | undefined {
+  const eigener = eigenerLinkVon(e, u);
+  return eigener !== undefined ? youtubeId(eigener) : u.videoId;
 }
 
 export function eigenerLinkVon(e: Einstellungen, u: Uebung): string | undefined {

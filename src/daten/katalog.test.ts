@@ -14,6 +14,17 @@ describe('Katalog', () => {
     expect(KATALOG.uebungen.filter((u) => u.anzahlGewichte !== undefined)).toHaveLength(33);
   });
 
+  it('hat für jede Übung eine Kurzanleitung und für 10 Übungen ein festes Video', () => {
+    for (const u of KATALOG.uebungen) {
+      expect(u.anleitung?.length, u.id).toBeGreaterThanOrEqual(3);
+      for (const zeile of u.anleitung!) expect(zeile, u.id).not.toMatch(/[–—]/);
+    }
+    expect(KATALOG.uebungen.filter((u) => u.videoId).map((u) => u.id).sort()).toEqual([
+      'bss_kg', 'goblet_squat', 'kh_bankdruecken', 'kh_rdl', 'kh_rudern_einarmig', 'kh_schulterdruecken_stehend',
+      'klimmzug', 'kniebeuge', 'liegestuetz', 'plank',
+    ]);
+  });
+
   it('lehnt eine doppelte Übungs-ID ab', () => {
     const k = kopie();
     k.uebungen[1]!.id = k.uebungen[0]!.id;

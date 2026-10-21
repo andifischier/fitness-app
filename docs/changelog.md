@@ -179,3 +179,13 @@
   berechnet; Tests für Rundenbildung, Klassisch, Bauch mit Oberkörper und Dreier-Runden im Player. Vier Entscheidungen in
   `docs/entscheidungen.md`, Spezifikation angepasst. Keine neue Datenbankversion.
 - **Warum:** Wunsch des Nutzers: zeiteffizientes Training zu Hause, Kombi als Standard.
+
+## Heute mit Übungsliste, Wochenausblick, Kurzanleitungen und Videos (21.10.2026)
+- **Was:** Heute zeigt unter „Training starten“ alle Übungen der nächsten Einheit (Sätze, Ziel, Last). „Diese Woche“
+  ist jetzt ein Wochenausblick: Trainingstage wählen (ersetzt „Wie oft schaffst du es diese Woche?“, auch auf „Vor dem
+  Start“), danach je Tag die voraussichtliche Einheit mit allen Übungen. Prognose und „Morgen wieder?“ folgen den Tagen.
+  Der Fortschritt pro Muskel steht als Karte „Diese Woche“ im Tab Fortschritt. Neu „So geht's“ im Training, beim
+  Testtag und in der Übungsansicht: Kurzanleitung für alle 98 Übungen, eingebettetes YouTube-Video für 10 Übungen.
+  Onboarding: Seiten lesen beim Öffnen zusätzlich direkt aus der Datenbank, damit keine Seite leer bleibt.
+  Neue Tests für Ausblick, Tage, Video-Links und Katalog.
+- **Warum:** Wünsche des Nutzers (drei Entscheidungen in `docs/entscheidungen.md`), Fehlerbericht zum Onboarding.

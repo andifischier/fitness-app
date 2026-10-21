@@ -99,7 +99,7 @@ function WocheUndDauer({ e, zurueck, weiter }: { e: Einstellungen; zurueck: stri
   return (
     <Seite titel="Deine Woche" zurueck={zurueck}>
       <Schritt nr={2} />
-      <Karte titel="Übliche Einheiten pro Woche" hinweis="Jede Woche fragt die App neu, wie oft du es schaffst.">
+      <Karte titel="Übliche Einheiten pro Woche" hinweis="Jede Woche wählst du neu, an welchen Tagen du trainierst.">
         <Auswahl
           spalten={6} wert={e.ueblicheEinheiten} onChange={(n) => void setze({ ueblicheEinheiten: n })}
           optionen={Array.from({ length: max - min + 1 }, (_, i) => ({ wert: min + i, text: String(min + i) }))}

@@ -6,11 +6,11 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { speichereTausch } from '../../daten/speichern';
 import { keinMuskelErholt, zirkelVorgaben } from '../../logik/heute';
 import { alternativen, tausche } from '../../logik/planung';
-import type { AppZustand, Einheit, Position, Uebung } from '../../logik/typen';
+import type { AppZustand, Einheit } from '../../logik/typen';
 import { uebungVon } from '../../logik/verlauf';
 import { Hinweis, Knopf, Laedt } from '../../ui/bausteine';
 import { Icon } from '../../ui/Icon';
-import { FOKUS_NAMEN, lastText } from '../../ui/texte';
+import { detailText, FOKUS_NAMEN, lastText, vorgabeText } from '../../ui/texte';
 import { useZustand } from '../../ui/useZustand';
 
 export function VorschauSeite() {
@@ -20,13 +20,6 @@ export function VorschauSeite() {
   const einheit = z.einheiten.find((e) => e.id === id);
   if (!einheit || einheit.status !== 'geplant') return <Navigate to="/" replace />;
   return <Ansicht z={z} einheit={einheit} />;
-}
-
-// „3 × Ziel 10 · 16 kg je Hand“; Halteübungen in Sekunden, Max-Test ohne Ziel.
-function detailText(u: Uebung, p: Position): string {
-  if (p.istMaxTest) return u.bereich.einheit === 'Sek.' ? 'Max-Test · so lange wie möglich' : 'Max-Test · so viele wie möglich';
-  const ziel = u.bereich.einheit === 'Sek.' ? `Ziel ${p.zielWdh} Sek.` : `Ziel ${p.zielWdh}`;
-  return [`${p.saetze} × ${ziel}`, lastText(u, p)].filter(Boolean).join(' · ');
 }
 
 const satzZahl = (e: Einheit) => e.bloecke.reduce((s, b) => s + b.positionen.reduce((t, p) => t + p.saetze, 0), 0);
@@ -130,12 +123,6 @@ function Ansicht({ z, einheit }: { z: AppZustand; einheit: Einheit }) {
       {tausch && <TauschBlatt z={z} einheit={einheit} {...tausch} onWahl={(id) => void waehle(id)} onSchliessen={() => setTausch(undefined)} />}
     </main>
   );
-}
-
-// Zirkel-Vorgabe aus dem Katalog; reine Zahlen bekommen die Einheit der Übung.
-function vorgabeText(u: Uebung, vorgabe: string | undefined): string {
-  if (!vorgabe) return '';
-  return /^\d+$/.test(vorgabe) ? `${vorgabe} ${u.bereich.einheit}` : vorgabe;
 }
 
 function TauschBlatt({ z, einheit, block, position, onWahl, onSchliessen }: {

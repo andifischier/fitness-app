@@ -29,7 +29,7 @@ export function ProfilSeite() {
         <Auswahl optionen={optionen(LEVEL_NAMEN)} wert={e.level} onChange={(level) => void setze({ level })} />
       </Karte>
       <Karte titel="Übliche Einheiten pro Woche"
-        hinweis="Nur der Vorschlag für die Frage „Wie oft schaffst du es diese Woche?“.">
+        hinweis="Nur der Vorschlag, wie viele Trainingstage die App zu Wochenbeginn vorauswählt.">
         <Auswahl
           spalten={6} wert={e.ueblicheEinheiten} onChange={(n) => void setze({ ueblicheEinheiten: n })}
           optionen={Array.from({ length: max - min + 1 }, (_, i) => ({ wert: min + i, text: String(min + i) }))}

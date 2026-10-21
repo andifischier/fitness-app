@@ -55,7 +55,7 @@ export function zustand(opt: {
 
 const null10 = () => Object.fromEntries(MUSKELN.map((m) => [m, 0])) as Record<Muskel, number>;
 
-// Setzt die Wochenprognose, wie es die App nach der Frage „Wie oft schaffst du es diese Woche?“ tut.
+// Setzt die Wochenprognose (ohne gewählte Tage), wie es die App vor dem Wochenausblick tat.
 export function setzePrognose(z: AppZustand, jetzt: string, prognose: number): AppZustand {
   const id = isoWoche(jetzt);
   const alt = z.wochen.find((w) => w.id === id);

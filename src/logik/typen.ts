@@ -33,6 +33,8 @@ export interface Uebung {
   zirkelGeeignet: boolean;
   youtubeUrl: string;               // Standard: YouTube-Suche
   eigenerVideoLink?: string;        // vom Nutzer, hat Vorrang
+  videoId?: string;                 // festes YouTube-Video zum Einbetten (nur ausgewählte Katalogübungen)
+  anleitung?: string[];             // Kurzanleitung in Stichpunkten (alle Katalogübungen)
   herkunft: 'katalog' | 'eigene';
 }
 export interface Zirkel {
@@ -96,6 +98,7 @@ export interface Woche {
   ziele: Record<Muskel, number>; erledigt: Record<Muskel, number>;
   erholungswoche: boolean; laengerAngenommen: boolean;
   ausgewertet?: boolean;            // Wochenabschluss gelaufen
+  tage?: number[];                  // gewählte Trainingstage (0 = Montag … 6 = Sonntag), sortiert
 }
 export interface Zyklus { nr: number; start: string; ende?: string; grund?: 'zeitablauf' | 'erholungswoche' }
 

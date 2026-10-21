@@ -23,7 +23,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Knieliegest%C3%BCtz+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Hände etwas breiter als schulterbreit, Knie am Boden, Körper von Knie bis Kopf gerade.",
+    "Brust kontrolliert bis knapp über den Boden senken, Ellbogen etwa 45 Grad vom Körper.",
+    "Kräftig hochdrücken, Bauch und Po bleiben fest."
+   ]
   },
   {
    "id": "liegestuetz_erhoeht_haende",
@@ -51,7 +56,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Liegest%C3%BCtz%2C+H%C3%A4nde+erh%C3%B6ht+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Hände auf Stuhl, Bank oder Tischkante, Körper gerade wie ein Brett.",
+    "Brust zur Kante senken, Ellbogen etwa 45 Grad vom Körper.",
+    "Hochdrücken, ohne dass die Hüfte durchhängt. Je höher die Hände, desto leichter."
+   ]
   },
   {
    "id": "band_brustpresse",
@@ -83,7 +93,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Brustpresse+stehend+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Band hinter dir auf Brusthöhe befestigen, Griffe neben der Brust, Schrittstellung.",
+    "Arme nach vorn strecken, bis sich die Hände vor der Brust treffen.",
+    "Langsam zurück, bis die Hände wieder neben der Brust sind."
+   ]
   },
   {
    "id": "liegestuetz",
@@ -106,8 +121,14 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Liegest%C3%BCtz+richtige+Ausf%C3%BChrung",
+   "videoId": "X1qbPKGDuKM",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Hände etwas breiter als schulterbreit, Körper von Ferse bis Kopf gerade.",
+    "Brust bis knapp über den Boden senken, Ellbogen etwa 45 Grad vom Körper.",
+    "Kräftig hochdrücken, Bauch und Po fest, Blick zum Boden."
+   ]
   },
   {
    "id": "kh_bodendruecken",
@@ -136,7 +157,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Bodendr%C3%BCcken+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Rücklings auf den Boden, Knie gebeugt, Hanteln über der Brust.",
+    "Hanteln senken, bis die Oberarme den Boden berühren, kurz ablegen ohne Schwung.",
+    "Hanteln wieder nach oben drücken, Schulterblätter bleiben am Boden."
+   ]
   },
   {
    "id": "liegestuetz_fuesse_erhoeht",
@@ -164,7 +190,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Liegest%C3%BCtz%2C+F%C3%BC%C3%9Fe+erh%C3%B6ht+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Füße auf Stuhl oder Bank, Hände schulterbreit am Boden, Körper gerade.",
+    "Brust kontrolliert zum Boden senken.",
+    "Hochdrücken, die Hüfte nicht durchhängen lassen."
+   ]
   },
   {
    "id": "kh_bankdruecken",
@@ -195,9 +226,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Bankdr%C3%BCcken+richtige+Ausf%C3%BChrung",
+   "videoId": "Y0K5vP19d-w",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Auf der Bank liegen, Füße fest am Boden, Schulterblätter zusammen und nach unten.",
+    "Hanteln seitlich der Brust senken, Ellbogen etwa 45 bis 60 Grad vom Körper.",
+    "Nach oben drücken, bis die Arme fast gestreckt sind."
+   ]
   },
   {
    "id": "kh_schraegbank",
@@ -229,7 +266,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Schr%C3%A4gbankdr%C3%BCcken+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Bank auf etwa 30 Grad stellen, Schulterblätter zusammen, Füße fest.",
+    "Hanteln zur oberen Brust senken.",
+    "Schräg nach oben über die Schultern drücken."
+   ]
   },
   {
    "id": "liegestuetz_band",
@@ -257,7 +299,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Liegest%C3%BCtz+mit+Band+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Band über den oberen Rücken legen, Enden unter den Händen fixieren.",
+    "Liegestütz wie gewohnt: Körper gerade, Brust zum Boden.",
+    "Gegen den Bandzug hochdrücken, oben kurz halten."
+   ]
   },
   {
    "id": "lh_bankdruecken",
@@ -289,7 +336,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Langhantel-Bankdr%C3%BCcken+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf der Bank liegen, Augen unter der Stange, Griff etwas breiter als schulterbreit.",
+    "Stange kontrolliert zur unteren Brust senken, Ellbogen unter der Stange.",
+    "Hochdrücken, Po und Schultern bleiben auf der Bank. Am besten mit Sicherung."
+   ]
   },
   {
    "id": "dips",
@@ -317,7 +369,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Dips+am+Barren+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Am Barren hochstützen, Arme gestreckt, Schultern tief.",
+    "Oberkörper leicht nach vorn, senken, bis die Oberarme etwa waagerecht sind.",
+    "Hochdrücken, ohne die Schultern hochzuziehen."
+   ]
   },
   {
    "id": "ringe_liegestuetz",
@@ -345,7 +402,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Liegest%C3%BCtz+an+Ringen+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Ringe knapp über dem Boden, Hände in den Ringen, Körper gerade.",
+    "Brust zwischen die Ringe senken, Ringe nah am Körper führen.",
+    "Hochdrücken und die Ringe ruhig halten."
+   ]
   },
   {
    "id": "archer_liegestuetz",
@@ -369,7 +431,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Archer-Liegest%C3%BCtz+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Hände sehr breit, Körper gerade.",
+    "Zu einer Seite senken, der andere Arm bleibt fast gestreckt.",
+    "Hochdrücken und abwechselnd die Seite wechseln."
+   ]
   },
   {
    "id": "band_schulterdruecken",
@@ -396,7 +463,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Schulterdr%C3%BCcken+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf die Bandmitte stellen, Griffe auf Schulterhöhe.",
+    "Griffe senkrecht nach oben drücken, bis die Arme gestreckt sind.",
+    "Langsam zurück, Bauch fest, kein Hohlkreuz."
+   ]
   },
   {
    "id": "pike_liegestuetz",
@@ -419,7 +491,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Pike-Liegest%C3%BCtz+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Aus dem Liegestütz die Hüfte hoch schieben, Körper wie ein umgedrehtes V.",
+    "Kopf zwischen den Händen Richtung Boden senken.",
+    "Zurückdrücken, die Hüfte bleibt oben."
+   ]
   },
   {
    "id": "kh_schulterdruecken_stehend",
@@ -445,9 +522,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Schulterdr%C3%BCcken+stehend+richtige+Ausf%C3%BChrung",
+   "videoId": "ceLLZtOnzkA",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Schulterbreit stehen, Hanteln auf Schulterhöhe, Bauch und Po fest.",
+    "Hanteln über den Kopf drücken, bis die Arme gestreckt sind.",
+    "Kontrolliert zurück auf Schulterhöhe, kein Hohlkreuz."
+   ]
   },
   {
    "id": "kh_schulterdruecken_sitzend",
@@ -478,7 +561,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Schulterdr%C3%BCcken+sitzend+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Bank fast senkrecht, Rücken angelehnt, Hanteln auf Schulterhöhe.",
+    "Hanteln nach oben drücken, bis die Arme fast gestreckt sind.",
+    "Langsam zurück auf Schulterhöhe."
+   ]
   },
   {
    "id": "arnold_press",
@@ -506,7 +594,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Arnold-Press+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln vor den Schultern, Handflächen zu dir.",
+    "Beim Hochdrücken die Hände nach außen drehen, oben zeigen die Handflächen nach vorn.",
+    "Beim Senken die Drehung umkehren."
+   ]
   },
   {
    "id": "kb_schulterdruecken",
@@ -534,7 +627,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kettlebell-Schulterdr%C3%BCcken+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 1
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Kettlebell in Schulterhöhe, sie liegt am Unterarm, Ellbogen vor dem Körper.",
+    "Senkrecht nach oben drücken, Arm gestreckt, Handgelenk gerade.",
+    "Kontrolliert zurück in die Ausgangsposition, Bauch fest."
+   ]
   },
   {
    "id": "pike_erhoeht",
@@ -561,7 +659,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Pike-Liegest%C3%BCtz%2C+F%C3%BC%C3%9Fe+erh%C3%B6ht+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Füße auf einer Erhöhung, Hüfte hoch, Oberkörper möglichst senkrecht.",
+    "Kopf zwischen den Händen Richtung Boden senken.",
+    "Hochdrücken, die Hüfte bleibt über den Schultern."
+   ]
   },
   {
    "id": "lh_ueberkopf",
@@ -588,7 +691,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Langhantel-%C3%9Cberkopfdr%C3%BCcken+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Stange auf der oberen Brust, Griff etwas breiter als schulterbreit.",
+    "Kopf kurz zurück, Stange senkrecht über den Kopf drücken.",
+    "Oben Kopf durch die Arme schieben, kontrolliert zurück zur Brust."
+   ]
   },
   {
    "id": "wand_hs_liegestuetz",
@@ -611,7 +719,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Handstand-Liegest%C3%BCtz+an+der+Wand+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Im Handstand mit dem Rücken zur Wand, Hände etwas breiter als schulterbreit.",
+    "Kopf kontrolliert Richtung Boden senken.",
+    "Hochdrücken, bis die Arme gestreckt sind. Nur mit sicherem Handstand."
+   ]
   },
   {
    "id": "band_rudern",
@@ -639,7 +752,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Rudern+sitzend+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Sitzend, Beine gestreckt, Band um die Fußsohlen.",
+    "Griffe zum Bauch ziehen, Schulterblätter zusammen, Ellbogen nah am Körper.",
+    "Langsam nach vorn lassen, Rücken bleibt gerade."
+   ]
   },
   {
    "id": "band_face_pull",
@@ -670,7 +788,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Face-Pull+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Band auf Kopfhöhe befestigen, Griffe mit Obergriff.",
+    "Zum Gesicht ziehen, Ellbogen hoch und nach außen.",
+    "Kurz halten, Schulterblätter zusammen, langsam zurück."
+   ]
   },
   {
    "id": "tischrudern",
@@ -698,7 +821,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Rudern+unter+dem+Tisch+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Unter einen stabilen Tisch legen, Tischkante schulterbreit greifen.",
+    "Körper gerade, Brust zur Tischkante ziehen.",
+    "Langsam ablassen. Je flacher der Körper, desto schwerer."
+   ]
   },
   {
    "id": "kh_rudern_einarmig",
@@ -730,9 +858,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Rudern+einarmig+richtige+Ausf%C3%BChrung",
+   "videoId": "OvOE5xqsqwA",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 1
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Hand und Knie auf die Bank, Rücken gerade, Hantel hängt unter der Schulter.",
+    "Hantel zur Hüfte ziehen, Ellbogen nah am Körper.",
+    "Langsam ablassen, der Oberkörper dreht nicht mit."
+   ]
   },
   {
    "id": "kh_rudern_vorgebeugt",
@@ -761,7 +895,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Rudern+vorgebeugt+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Knie leicht gebeugt, Oberkörper etwa 45 Grad vorgebeugt, Rücken gerade.",
+    "Hanteln zur Hüfte ziehen, Schulterblätter zusammen.",
+    "Langsam ablassen, Rücken bleibt gerade."
+   ]
   },
   {
    "id": "kh_rudern_brustgestuetzt",
@@ -793,7 +932,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Brustgest%C3%BCtztes+Kurzhantel-Rudern+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Bauch auf die schräge Bank, Hanteln hängen nach unten.",
+    "Hanteln zur Hüfte ziehen, Schulterblätter zusammen.",
+    "Langsam ablassen, Brust bleibt auf der Bank."
+   ]
   },
   {
    "id": "kb_rudern",
@@ -822,7 +966,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kettlebell-Rudern+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 1
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Vorgebeugt, Rücken gerade, Kettlebell hängt unter der Schulter.",
+    "Zur Hüfte ziehen, Ellbogen nah am Körper.",
+    "Kontrolliert ablassen."
+   ]
   },
   {
    "id": "ringe_rudern",
@@ -850,7 +999,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Rudern+an+Ringen+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Ringe auf Hüfthöhe, Körper gerade, Arme gestreckt.",
+    "Brust zu den Ringen ziehen, Ellbogen nah am Körper.",
+    "Langsam ablassen. Je flacher, desto schwerer."
+   ]
   },
   {
    "id": "lh_rudern",
@@ -878,7 +1032,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Langhantel-Rudern+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Vorgebeugt, Knie leicht gebeugt, Rücken gerade, Stange hängt vor den Knien.",
+    "Stange zum Bauchnabel ziehen.",
+    "Kontrolliert ablassen, ohne Schwung."
+   ]
   },
   {
    "id": "scapula_pullups",
@@ -903,7 +1062,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Schulterblatt-Klimmz%C3%BCge+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Mit gestreckten Armen an der Stange hängen.",
+    "Nur die Schulterblätter nach unten und zusammen ziehen, Körper hebt sich ein wenig.",
+    "Langsam zurück in den Hang, Arme bleiben gestreckt."
+   ]
   },
   {
    "id": "band_latzug",
@@ -934,7 +1098,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Latzug+kniend+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Band oben befestigen, kniend die Griffe greifen.",
+    "Griffe zur Brust ziehen, Ellbogen nach unten und hinten.",
+    "Langsam zurück, Arme fast gestreckt."
+   ]
   },
   {
    "id": "negative_klimmzuege",
@@ -961,7 +1130,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Negative+Klimmz%C3%BCge+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Mit Hilfe eines Stuhls oder Sprungs oben an die Stange, Kinn über der Stange.",
+    "So langsam wie möglich nach unten ablassen, etwa 3 bis 5 Sekunden.",
+    "Unten absteigen und wieder hoch."
+   ]
   },
   {
    "id": "klimmzug_band",
@@ -991,7 +1165,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Klimmzug+mit+Bandunterst%C3%BCtzung+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": true
+   "unterstuetzend": true,
+   "anleitung": [
+    "Band um die Stange, Knie oder Fuß ins Band stellen.",
+    "Hochziehen, bis das Kinn über der Stange ist.",
+    "Langsam ablassen bis zu gestreckten Armen. Dünneres Band = schwerer."
+   ]
   },
   {
    "id": "chinup",
@@ -1018,7 +1197,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Klimmzug+Untergriff+%28Chin-up%29+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Untergriff, Hände schulterbreit, gestreckt hängen.",
+    "Brust zur Stange ziehen, bis das Kinn darüber ist.",
+    "Langsam ablassen, ohne Schwung."
+   ]
   },
   {
    "id": "klimmzug",
@@ -1044,8 +1228,14 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Klimmzug+Obergriff+richtige+Ausf%C3%BChrung",
+   "videoId": "5eScXtldIaI",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Obergriff, etwas breiter als schulterbreit, gestreckt hängen.",
+    "Schulterblätter nach unten, hochziehen, bis das Kinn über der Stange ist.",
+    "Kontrolliert ablassen, ohne Schwung."
+   ]
   },
   {
    "id": "klimmzug_gewicht",
@@ -1077,7 +1267,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Klimmzug+mit+Zusatzgewicht+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 1
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Hantel oder Kettlebell zwischen die Füße klemmen oder am Gürtel befestigen.",
+    "Klimmzug wie gewohnt, Kinn über die Stange.",
+    "Kontrolliert ablassen, das Gewicht pendelt nicht."
+   ]
   },
   {
    "id": "kniebeuge",
@@ -1099,8 +1294,14 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kniebeuge+richtige+Ausf%C3%BChrung",
+   "videoId": "u-G8nn6crRA",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Füße schulterbreit, Zehen leicht nach außen.",
+    "Hüfte nach hinten und unten, Knie folgen den Zehen, Rücken gerade.",
+    "Mindestens bis die Oberschenkel waagerecht sind, dann über die Fersen hochdrücken."
+   ]
   },
   {
    "id": "band_kniebeuge",
@@ -1127,7 +1328,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Kniebeuge+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf das Band stellen, Griffe auf Schulterhöhe.",
+    "Kniebeuge wie gewohnt: Hüfte nach hinten, Knie nach außen.",
+    "Gegen den Bandzug hochdrücken."
+   ]
   },
   {
    "id": "pausen_kniebeuge",
@@ -1150,7 +1356,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kniebeuge+mit+Pause+unten+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Kniebeuge wie gewohnt.",
+    "Unten 2 bis 3 Sekunden halten, Spannung bleibt.",
+    "Ohne Schwung hochdrücken."
+   ]
   },
   {
    "id": "goblet_squat",
@@ -1177,9 +1388,15 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Goblet+Squat+richtige+Ausf%C3%BChrung",
+   "videoId": "I-41oPS373Y",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 1
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Hantel oder Kettlebell vor der Brust halten, Ellbogen nach unten.",
+    "Tief in die Kniebeuge, Ellbogen zwischen die Knie.",
+    "Über die Fersen hochdrücken, Oberkörper aufrecht."
+   ]
   },
   {
    "id": "kh_kniebeuge",
@@ -1207,7 +1424,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Kniebeuge+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln seitlich hängen lassen, Füße schulterbreit.",
+    "Kniebeuge, Rücken gerade, Knie folgen den Zehen.",
+    "Über die Fersen hochdrücken."
+   ]
   },
   {
    "id": "pistol_assistiert",
@@ -1234,7 +1456,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Einbeinige+Kniebeuge+mit+Halt+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf einem Bein stehen, mit einer Hand an Stuhl oder Türrahmen festhalten.",
+    "Auf dem Standbein so tief wie möglich beugen, das andere Bein nach vorn.",
+    "Hochdrücken, die Hand hilft nur so viel wie nötig."
+   ]
   },
   {
    "id": "pistol",
@@ -1257,7 +1484,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Pistol+Squat+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf einem Bein stehen, das andere Bein gestreckt nach vorn.",
+    "Kontrolliert ganz tief beugen, Arme nach vorn als Gegengewicht.",
+    "Ohne Schwung hochdrücken, Ferse bleibt am Boden."
+   ]
   },
   {
    "id": "ausfallschritt_rueck",
@@ -1280,7 +1512,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Ausfallschritt+r%C3%BCckw%C3%A4rts+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Aufrecht stehen, mit einem Bein großen Schritt nach hinten.",
+    "Hinteres Knie Richtung Boden senken, vorderes Knie über dem Fuß.",
+    "Über die vordere Ferse zurückdrücken, Seite wechseln."
+   ]
   },
   {
    "id": "step_up",
@@ -1307,7 +1544,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Step-up+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Einen Fuß komplett auf eine stabile Erhöhung stellen.",
+    "Über das obere Bein hochdrücken, ohne Schwung vom unteren Bein.",
+    "Kontrolliert wieder absteigen."
+   ]
   },
   {
    "id": "bss_kg",
@@ -1335,8 +1577,14 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Bulgarian+Split+Squat+richtige+Ausf%C3%BChrung",
+   "videoId": "DQ1lm1QoYIg",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Rückwärts vor die Erhöhung, hinteren Fuß mit dem Rist darauf ablegen.",
+    "Hinteres Knie Richtung Boden senken, vorderes Knie über dem Fuß.",
+    "Über die vordere Ferse hochdrücken."
+   ]
   },
   {
    "id": "kh_step_up",
@@ -1369,7 +1617,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Step-up+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln seitlich halten, einen Fuß auf die Erhöhung.",
+    "Über das obere Bein hochdrücken.",
+    "Kontrolliert absteigen."
+   ]
   },
   {
    "id": "kh_ausfallschritt",
@@ -1397,7 +1650,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Ausfallschritt+gehend+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln seitlich halten, aufrecht stehen.",
+    "Großen Schritt nach vorn, hinteres Knie Richtung Boden.",
+    "Mit dem hinteren Bein nach vorn kommen und weitergehen."
+   ]
   },
   {
    "id": "bss_kh",
@@ -1430,7 +1688,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Bulgarian+Split+Squat+mit+Kurzhanteln+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln seitlich halten, hinteren Fuß auf die Erhöhung legen.",
+    "Hinteres Knie Richtung Boden senken.",
+    "Über die vordere Ferse hochdrücken."
+   ]
   },
   {
    "id": "shrimp_squat",
@@ -1453,7 +1716,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Shrimp+Squat+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf einem Bein stehen, den anderen Fuß hinten mit der Hand fassen.",
+    "Hinteres Knie langsam zum Boden senken.",
+    "Über das Standbein hochdrücken."
+   ]
   },
   {
    "id": "glute_bridge",
@@ -1476,7 +1744,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Glute+Bridge+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Rücklings, Knie gebeugt, Füße hüftbreit nah am Po.",
+    "Hüfte hochdrücken, bis Knie, Hüfte und Schultern eine Linie bilden.",
+    "Oben den Po fest anspannen, langsam ablassen."
+   ]
   },
   {
    "id": "mini_glute_bridge",
@@ -1503,7 +1776,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Glute+Bridge+mit+Mini-Band+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Mini-Band über den Knien, rücklings, Knie gebeugt.",
+    "Knie gegen das Band nach außen drücken und die Hüfte hochdrücken.",
+    "Oben Po anspannen, langsam ablassen."
+   ]
   },
   {
    "id": "band_pull_through",
@@ -1534,7 +1812,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Pull-Through+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Band tief hinter dir befestigen, Griff zwischen den Beinen.",
+    "Hüfte nach hinten schieben, Rücken gerade.",
+    "Hüfte kräftig nach vorn strecken, oben Po anspannen."
+   ]
   },
   {
    "id": "hip_thrust_einbeinig",
@@ -1563,7 +1846,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Hip+Thrust+einbeinig+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Schulterblätter an die Bankkante, ein Fuß am Boden, das andere Bein angehoben.",
+    "Hüfte hochdrücken, bis der Körper gerade ist.",
+    "Oben Po anspannen, langsam ablassen."
+   ]
   },
   {
    "id": "sliding_leg_curl",
@@ -1586,7 +1874,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Beinbeuger+mit+Handtuch+%28Sliding+Leg+Curl%29+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Rücklings, Fersen auf ein Handtuch auf glattem Boden.",
+    "Hüfte heben und die Fersen zum Po ziehen.",
+    "Langsam wieder ausstrecken, die Hüfte bleibt oben."
+   ]
   },
   {
    "id": "kh_hip_thrust",
@@ -1618,7 +1911,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Hip-Thrust+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Schulterblätter an die Bankkante, Hantel auf der Hüfte.",
+    "Hüfte hochdrücken, bis Knie, Hüfte und Schultern eine Linie bilden.",
+    "Oben Po anspannen, kontrolliert ablassen."
+   ]
   },
   {
    "id": "kh_rdl",
@@ -1644,9 +1942,15 @@
    },
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Rum%C3%A4nisches+Kreuzheben+mit+Kurzhanteln+richtige+Ausf%C3%BChrung",
+   "videoId": "QVWekyMdWvU",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln vor den Oberschenkeln, Knie leicht gebeugt.",
+    "Hüfte weit nach hinten schieben, Hanteln nah an den Beinen nach unten, Rücken gerade.",
+    "Wenn es hinten im Oberschenkel zieht, Hüfte nach vorn strecken."
+   ]
   },
   {
    "id": "kh_rdl_einbeinig",
@@ -1675,7 +1979,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Einbeiniges+Kreuzheben+mit+Kurzhantel+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 1
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Auf einem Bein stehen, Hantel in der Gegenhand.",
+    "Oberkörper nach vorn neigen, das freie Bein gerade nach hinten, Hüfte bleibt waagerecht.",
+    "Über das Standbein zurück in den Stand."
+   ]
   },
   {
    "id": "kb_swing",
@@ -1703,7 +2012,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kettlebell-Swing+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 1
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Füße breit, Kettlebell vor dir, Rücken gerade.",
+    "Kettlebell zwischen die Beine schwingen, Hüfte nach hinten.",
+    "Hüfte explosiv nach vorn strecken, die Arme führen nur, Kettlebell bis Brusthöhe."
+   ]
   },
   {
    "id": "lh_kreuzheben",
@@ -1731,7 +2045,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Langhantel-Kreuzheben+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Füße hüftbreit, Stange über der Fußmitte, Griff knapp außerhalb der Knie.",
+    "Rücken gerade, Brust raus, Stange nah am Körper hochziehen.",
+    "Oben aufrecht stehen, kontrolliert ablegen, Rücken bleibt gerade."
+   ]
   },
   {
    "id": "nordic_curl",
@@ -1752,7 +2071,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Nordic+Curl+%28F%C3%BC%C3%9Fe+fixiert%29+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Kniend, Füße unter einem schweren Möbel fixieren.",
+    "Körper gerade, so langsam wie möglich nach vorn sinken.",
+    "Mit den Händen abfangen und abdrücken, so wenig wie nötig helfen."
+   ]
   },
   {
    "id": "dead_bug",
@@ -1773,7 +2097,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Dead+Bug+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Rücklings, Arme senkrecht nach oben, Knie 90 Grad über der Hüfte.",
+    "Gegenarm und Gegenbein langsam strecken, der untere Rücken bleibt am Boden.",
+    "Zurück und Seite wechseln."
+   ]
   },
   {
    "id": "plank",
@@ -1793,8 +2122,14 @@
    },
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Unterarmst%C3%BCtz+%28Plank%29+richtige+Ausf%C3%BChrung",
+   "videoId": "SOScR90A3mM",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Unterarme unter den Schultern, Körper von Ferse bis Kopf gerade.",
+    "Bauch und Po fest anspannen, Hüfte nicht durchhängen lassen.",
+    "Ruhig atmen und halten."
+   ]
   },
   {
    "id": "seitstuetz",
@@ -1815,7 +2150,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Seitst%C3%BCtz+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Seitlich auf einen Unterarm stützen, Ellbogen unter der Schulter.",
+    "Hüfte heben, Körper bildet eine gerade Linie.",
+    "Halten, dann die Seite wechseln."
+   ]
   },
   {
    "id": "band_pallof",
@@ -1844,7 +2184,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Pallof-Press+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Band seitlich auf Brusthöhe befestigen, Griff vor der Brust.",
+    "Arme gerade nach vorn strecken, der Körper dreht nicht mit.",
+    "Kurz halten, zurück zur Brust. Beide Seiten."
+   ]
   },
   {
    "id": "kh_russian_twist",
@@ -1871,7 +2216,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Russian+Twist+mit+Kurzhantel+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 1
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Sitzen, Knie gebeugt, Oberkörper leicht zurück, Hantel vor der Brust.",
+    "Oberkörper zur Seite drehen, die Hantel neben die Hüfte führen.",
+    "Zur anderen Seite drehen, Rücken bleibt gerade."
+   ]
   },
   {
    "id": "hollow_hold",
@@ -1892,7 +2242,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Hollow+Hold+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Rücklings, unteren Rücken in den Boden drücken.",
+    "Schultern und gestreckte Beine knapp anheben, Arme nach hinten.",
+    "Halten, der untere Rücken bleibt am Boden. Leichter: Knie anwinkeln."
+   ]
   },
   {
    "id": "haengendes_knieheben",
@@ -1917,7 +2272,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=H%C3%A4ngendes+Knieheben+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "An der Stange hängen, Schultern aktiv.",
+    "Knie zur Brust ziehen, ohne zu schwingen.",
+    "Langsam ablassen."
+   ]
   },
   {
    "id": "haengendes_beinheben",
@@ -1942,7 +2302,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=H%C3%A4ngendes+Beinheben+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "An der Stange hängen, Beine gestreckt.",
+    "Gestreckte Beine bis mindestens waagerecht heben.",
+    "Langsam ablassen, ohne Schwung."
+   ]
   },
   {
    "id": "band_curls",
@@ -1967,7 +2332,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Curls+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf die Bandmitte stellen, Griffe mit Untergriff.",
+    "Hände zu den Schultern beugen, Ellbogen bleiben am Körper.",
+    "Langsam ablassen."
+   ]
   },
   {
    "id": "kh_curls",
@@ -1993,7 +2363,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Curls+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln seitlich, Handflächen nach vorn.",
+    "Hanteln zu den Schultern beugen, Ellbogen bleiben am Körper.",
+    "Langsam ablassen, kein Schwung aus dem Rücken."
+   ]
   },
   {
    "id": "hammer_curls",
@@ -2019,7 +2394,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Hammer-Curls+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln seitlich, Handflächen zueinander.",
+    "Zu den Schultern beugen, Ellbogen am Körper.",
+    "Langsam ablassen."
+   ]
   },
   {
    "id": "konzentrationscurl",
@@ -2050,7 +2430,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Konzentrationscurl+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 1
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Sitzen, Ellbogen innen am Oberschenkel abstützen.",
+    "Hantel zur Schulter beugen.",
+    "Langsam ablassen bis zum fast gestreckten Arm."
+   ]
   },
   {
    "id": "schraegbank_curls",
@@ -2079,7 +2464,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Schr%C3%A4gbank-Curls+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Rücklings auf die schräge Bank, Arme hängen gestreckt nach unten.",
+    "Hanteln zu den Schultern beugen, Oberarme bleiben senkrecht.",
+    "Langsam ablassen."
+   ]
   },
   {
    "id": "lh_curls",
@@ -2104,7 +2494,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Langhantel-Curls+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Stange mit Untergriff schulterbreit, Ellbogen am Körper.",
+    "Zur Brust beugen.",
+    "Langsam ablassen, ohne Schwung."
+   ]
   },
   {
    "id": "band_trizeps",
@@ -2133,7 +2528,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Trizepsdr%C3%BCcken+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Band oben befestigen, Ellbogen am Körper, Unterarme waagerecht.",
+    "Unterarme nach unten strecken, bis die Arme gestreckt sind.",
+    "Langsam zurück, die Ellbogen bewegen sich nicht."
+   ]
   },
   {
    "id": "kh_kickback",
@@ -2159,7 +2559,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Kickback+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Vorgebeugt, Rücken gerade, Oberarm parallel zum Körper.",
+    "Unterarm nach hinten strecken.",
+    "Langsam zurück, der Oberarm bleibt ruhig."
+   ]
   },
   {
    "id": "bank_dips",
@@ -2188,7 +2593,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Dips+an+der+Bank+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Hände hinter dir auf die Kante, Beine nach vorn.",
+    "Ellbogen nach hinten beugen, bis die Oberarme etwa waagerecht sind.",
+    "Hochdrücken. Leichter mit gebeugten Knien."
+   ]
   },
   {
    "id": "kh_trizeps_ueberkopf",
@@ -2214,7 +2624,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Trizepsdr%C3%BCcken+%C3%BCber+Kopf+mit+Kurzhantel+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 1
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Eine Hantel mit beiden Händen über dem Kopf.",
+    "Hinter dem Kopf senken, Ellbogen zeigen nach vorn und bleiben eng.",
+    "Wieder nach oben strecken."
+   ]
   },
   {
    "id": "kh_trizeps_liegend",
@@ -2244,7 +2659,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Liegendes+Trizepsdr%C3%BCcken+mit+Kurzhanteln+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Auf der Bank liegen, Hanteln mit gestreckten Armen über der Brust.",
+    "Nur die Unterarme beugen, Hanteln neben den Kopf senken.",
+    "Zurück nach oben strecken, Oberarme bleiben ruhig."
+   ]
   },
   {
    "id": "diamond_liegestuetz",
@@ -2267,7 +2687,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Diamant-Liegest%C3%BCtz+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Hände unter der Brust, Daumen und Zeigefinger bilden eine Raute.",
+    "Brust zu den Händen senken, Ellbogen nah am Körper.",
+    "Hochdrücken, Körper bleibt gerade."
+   ]
   },
   {
    "id": "band_pull_apart",
@@ -2294,7 +2719,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Pull-Apart+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Band schulterbreit vor dir auf Schulterhöhe.",
+    "Band mit gestreckten Armen auseinanderziehen, bis es die Brust berührt.",
+    "Langsam zurück, Schultern tief."
+   ]
   },
   {
    "id": "band_seitheben",
@@ -2319,7 +2749,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Band-Seitheben+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf das Band stellen, Griffe seitlich.",
+    "Arme leicht gebeugt seitlich bis Schulterhöhe heben.",
+    "Langsam ablassen."
+   ]
   },
   {
    "id": "kh_seitheben",
@@ -2345,7 +2780,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Seitheben+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln seitlich, Ellbogen leicht gebeugt.",
+    "Seitlich bis Schulterhöhe heben, Ellbogen führen.",
+    "Langsam ablassen, nicht schwingen."
+   ]
   },
   {
    "id": "kh_reverse_flys",
@@ -2373,7 +2813,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Vorgebeugtes+Seitheben+%28hintere+Schulter%29+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Vorgebeugt, Rücken gerade, Hanteln hängen unter der Brust.",
+    "Arme leicht gebeugt seitlich nach oben öffnen, Schulterblätter zusammen.",
+    "Langsam ablassen."
+   ]
   },
   {
    "id": "wadenheben",
@@ -2398,7 +2843,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Wadenheben+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Mit den Fußballen auf einer Stufe, Fersen frei.",
+    "Fersen so hoch wie möglich heben, oben kurz halten.",
+    "Fersen langsam unter die Stufe senken."
+   ]
   },
   {
    "id": "wadenheben_einbeinig",
@@ -2423,7 +2873,12 @@
    "zirkelGeeignet": false,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Wadenheben+einbeinig+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf einem Fußballen auf der Stufe, leicht festhalten.",
+    "Ferse ganz hoch heben, oben kurz halten.",
+    "Langsam tief absenken."
+   ]
   },
   {
    "id": "kh_wadenheben",
@@ -2452,7 +2907,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Wadenheben+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 1
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Hantel in einer Hand, Fußballen auf der Stufe.",
+    "Fersen hoch heben, oben kurz halten.",
+    "Langsam tief absenken."
+   ]
   },
   {
    "id": "hampelmann",
@@ -2473,7 +2933,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Hampelmann+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Aufrecht stehen, Arme seitlich.",
+    "Beine grätschen und Arme über den Kopf führen.",
+    "Zurückspringen, locker und zügig."
+   ]
   },
   {
    "id": "high_knees",
@@ -2494,7 +2959,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kniehebelauf+auf+der+Stelle+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf der Stelle laufen.",
+    "Knie bis Hüfthöhe ziehen, auf den Fußballen landen.",
+    "Arme laufen mit, Oberkörper aufrecht."
+   ]
   },
   {
    "id": "mountain_climbers",
@@ -2517,7 +2987,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Mountain+Climbers+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Liegestützposition, Hände unter den Schultern.",
+    "Knie abwechselnd schnell zur Brust ziehen.",
+    "Hüfte bleibt tief, Schultern über den Händen."
+   ]
   },
   {
    "id": "seilspringen",
@@ -2542,7 +3017,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Seilspringen+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Ellbogen am Körper, Seil aus den Handgelenken drehen.",
+    "Flach auf den Fußballen springen.",
+    "Locker und gleichmäßig bleiben."
+   ]
   },
   {
    "id": "skater",
@@ -2565,7 +3045,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Skater-Spr%C3%BCnge+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Seitlich auf ein Bein springen, das andere Bein kreuzt hinten.",
+    "Weich landen, Knie über dem Fuß.",
+    "Zur anderen Seite springen."
+   ]
   },
   {
    "id": "sprung_kniebeuge",
@@ -2588,7 +3073,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Sprung-Kniebeuge+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Kniebeuge bis etwa waagerecht.",
+    "Explosiv nach oben springen.",
+    "Weich landen und direkt in die nächste Kniebeuge."
+   ]
   },
   {
    "id": "burpees",
@@ -2612,7 +3102,12 @@
    "zirkelGeeignet": true,
    "youtubeUrl": "https://www.youtube.com/results?search_query=Burpees+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
-   "unterstuetzend": false
+   "unterstuetzend": false,
+   "anleitung": [
+    "Aus dem Stand in die Hocke, Hände auf den Boden.",
+    "Füße nach hinten in den Liegestütz springen, optional ein Liegestütz.",
+    "Füße zurück zu den Händen, hochspringen."
+   ]
   },
   {
    "id": "kh_thruster",
@@ -2642,7 +3137,12 @@
    "youtubeUrl": "https://www.youtube.com/results?search_query=Kurzhantel-Thruster+richtige+Ausf%C3%BChrung",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln auf Schulterhöhe, Kniebeuge.",
+    "Aus der Kniebeuge hochdrücken und die Hanteln direkt über den Kopf drücken.",
+    "Hanteln zurück auf die Schultern, nächste Kniebeuge."
+   ]
   }
  ],
  "zirkel": [
