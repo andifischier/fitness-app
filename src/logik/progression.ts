@@ -2,12 +2,13 @@
 // Max-Tests“. Rein und deterministisch: Die aktuelle Zeit wird übergeben; der Zustand wird nur
 // gelesen und als neuer Zustand zurückgegeben.
 import {
-  EINHEIT, ERHOLUNGSWOCHE, LASTTYP_RANG, MUSTER_ART, PROGRESSION, VOLUMENGRENZE, WOCHENZIEL,
+  BEWERTUNG, EINHEIT, ERHOLUNGSWOCHE, LASTTYP_RANG, MUSTER_ART, PROGRESSION, VOLUMENGRENZE, WOCHENZIEL,
 } from '../konfiguration';
 import { isoWoche, plusTage, stundenZwischen, wocheStart, wocheVerschoben } from './datum';
 import { alleUebungen, bandStufen, lastraster, uebungErlaubt } from './equipment';
 import {
-  bereichFuer, dosisProMuskel, hauptvarianten, istErholungswoche, musterstufe, persoenlicheGrenze, wochenziele,
+  bereichFuer, dosisProMuskel, hauptvarianten, istErholungswoche, musterstufe, persoenlicheGrenze, startwerte,
+  wochenziele,
 } from './planung';
 import {
   BAND_STUFEN, MUSKELN, type AppZustand, type BandStufe, type Einheit, type Einstellungen, type MaxTest,
@@ -16,7 +17,7 @@ import {
 } from './typen';
 import {
   e1rm, einheitZeit, einstellungenVon, ersterSatz, faelligerMaxTest, feedbackVon, fertigeEinheiten,
-  leistungswert, reserveFuer, sitzungen, uebungVon, wdhBei, zielReserve, type Sitzung,
+  leistungswert, reserveFuer, sitzungen, sterneVon, uebungVon, wdhBei, zielReserve, type Sitzung,
 } from './verlauf';
 
 const begrenze = (x: number, min: number, max: number) => Math.min(max, Math.max(min, x));
@@ -227,6 +228,79 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
 
 const ersetze = <T>(liste: T[], neu: T, gleich: (a: T) => boolean) => [...liste.filter((x) => !gleich(x)), neu];
 
+// Hauptvarianten bei der ersten Nutzung des Musters festlegen. Danach übernimmt sie den Ersatz für
+// Varianten mit 1 Stern, solange alle gespeicherten Hauptvarianten am Ort möglich sind (an einem
+// anderen Ort bleibt der gespeicherte Stand unberührt).
+function legeHauptvariantenFest(z: AppZustand, einheit: Einheit, ort: Ort, start: string): AppZustand {
+  if (einheit.format === 'zirkel' || einheit.format === 'test') return z;
+  const e = einstellungenVon(z);
+  let neu = z;
+  for (const p of einheit.bloecke.flatMap((b) => b.positionen)) {
+    const u = uebungVon(neu, p.uebungId);
+    if (!u || p.ergebnisse.length === 0 || p.istMaxTest || p.istErsatz) continue;
+    const mz = musterZustand(neu, e, u.muster);
+    const alle = mz.hauptvarianten.map((id) => uebungVon(neu, id));
+    if (mz.hauptvarianten.length > 0) {
+      const einStern = mz.hauptvarianten.some((id) => sterneVon(e, id) === 1);
+      if (!einStern || !alle.every((v) => v && uebungErlaubt(e, ort, v, start))) continue;
+    }
+    const ids = hauptvarianten(neu, u.muster, ort, start).filter((k) => !k.istErsatz).map((k) => k.uebung.id);
+    if (ids.length === 0 || ids.join() === mz.hauptvarianten.join()) continue;
+    neu = { ...neu, muster: ersetze(neu.muster, { ...mz, hauptvarianten: ids }, (x) => x.muster === u.muster) };
+  }
+  return neu;
+}
+
+// Bewertungen sofort auf die gespeicherten Hauptvarianten anwenden (1 Stern ersetzt eine
+// Hauptvariante, falls am Ort eine Alternative möglich ist). Gilt für alle Muster mit Hauptvarianten.
+export function uebernimmBewertungen(z: AppZustand, ortId: string, jetzt: string): AppZustand {
+  const ort = ortVon(z, ortId);
+  if (!ort) return z;
+  const positionen = z.muster.flatMap((mz) => mz.hauptvarianten.slice(0, 1))
+    .map((uebungId): Position => ({ uebungId, saetze: 1, zielWdh: 0, ergebnisse: [{ nr: 1, zeit: jetzt }] }));
+  const einheit: Einheit = {
+    id: '', woche: '', erstelltAm: jetzt, status: 'abgeschlossen', ortId: ort.id, fokus: 'ganz', format: 'klassisch',
+    geschaetzteDauerMin: 0, aufwaermen: [], bloecke: [{ typ: 'einzeln', positionen, pauseSek: 0 }],
+  };
+  return legeHauptvariantenFest(z, einheit, ort, jetzt);
+}
+
+export interface NaechstesMal {
+  uebungId: string; zielWdh: number; last?: number; bandStufe?: BandStufe; langsam?: boolean;
+  neueVariante: boolean;            // das Muster wechselt zur nächsten Variante
+  kalibrierung: boolean;            // Last-Variante ohne Last: Gewicht wählt der Nutzer im ersten Satz
+}
+
+// Vorschau für das Übungsfeedback: Was gilt nächstes Mal für diese Übung, wenn die Position mit
+// diesem Feedback ausgewertet wird (gleiche Regeln wie schliesseEinheitAb)?
+export function vorschauNaechstesMal(z: AppZustand, einheit: Einheit, position: Position, jetzt: string): NaechstesMal | undefined {
+  const e = einstellungenVon(z);
+  const ort = ortVon(z, einheit.ortId);
+  const u = uebungVon(z, position.uebungId);
+  if (!ort || !u || position.istMaxTest || position.ergebnisse.length === 0) return undefined;
+  const nurDiese: Einheit = { ...einheit, bloecke: [{ typ: 'einzeln', positionen: [position], pauseSek: 0 }] };
+  const z1 = legeHauptvariantenFest(z, nurDiese, ort, einheit.gestartetAm ?? jetzt);
+  const vorher = z1.muster.find((x) => x.muster === u.muster)?.hauptvarianten ?? [];
+  const { variante, muster } = werteUebungAus(z1, position, jetzt, ort.id);
+  const i = vorher.indexOf(u.id);
+  if (i >= 0 && !muster.hauptvarianten.includes(u.id) && muster.hauptvarianten.length > 0) {
+    const neuId = muster.hauptvarianten.find((id) => !vorher.includes(id))
+      ?? muster.hauptvarianten[Math.min(i, muster.hauptvarianten.length - 1)]!;
+    const neu = uebungVon(z1, neuId)!;
+    const z2 = { ...z1, varianten: ersetze(z1.varianten, variante, (x) => x.uebungId === variante.uebungId) };
+    const werte = startwerte(z2, e, ort, neu);
+    const kalibrierung = neu.lasttyp === 'Last' && !z2.varianten.some((v) => v.uebungId === neu.id && v.last !== undefined);
+    return { uebungId: neu.id, ...werte, ...(kalibrierung ? { zielWdh: bereichFuer(e, neu).von } : {}), neueVariante: true, kalibrierung };
+  }
+  return {
+    uebungId: u.id, zielWdh: variante.zielWdh,
+    ...(variante.last !== undefined ? { last: variante.last } : {}),
+    ...(variante.bandStufe ? { bandStufe: variante.bandStufe } : {}),
+    ...(variante.langsam ? { langsam: true } : {}),
+    neueVariante: false, kalibrierung: false,
+  };
+}
+
 // Schreibt eine beendete Einheit in den Trainingszustand: Progression je Übung, Hauptvarianten,
 // Max-Tests, Muskeln (Erholung), Woche, Zirkel-Bestzeit und Zyklus.
 export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: string): AppZustand {
@@ -243,18 +317,7 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
   const positionen = fertig.bloecke.filter((b) => b.typ !== 'zirkel').flatMap((b) => b.positionen)
     .filter((p) => p.ergebnisse.length > 0);
 
-  // Hauptvarianten bei der ersten Nutzung des Musters festlegen
-  if (ort && fertig.format !== 'zirkel' && fertig.format !== 'test') {
-    for (const p of positionen) {
-      const u = uebungVon(neu, p.uebungId);
-      if (!u || p.istMaxTest || p.istErsatz) continue;
-      const mz = musterZustand(neu, e, u.muster);
-      if (mz.hauptvarianten.length > 0) continue;
-      const ids = hauptvarianten(neu, u.muster, ort, start).filter((k) => !k.istErsatz).map((k) => k.uebung.id);
-      if (ids.length === 0) continue;
-      neu = { ...neu, muster: ersetze(neu.muster, { ...mz, hauptvarianten: ids }, (x) => x.muster === u.muster) };
-    }
-  }
+  if (ort) neu = legeHauptvariantenFest(neu, fertig, ort, start);
 
   // Progression je Übung und Max-Tests
   for (const p of positionen) {
@@ -383,18 +446,22 @@ function bestesVolumen(z: AppZustand, m: Muskel, wocheId: string): number {
 }
 
 // Neue Hauptvarianten der Nebenübungen (Isolation, Bauch, Waden) zu Beginn eines Zyklus: bevorzugt
-// eine andere Variante gleicher Stufe; Favoriten bleiben.
+// eine andere Variante gleicher Stufe. Favoriten und Varianten ab 4 Sternen bleiben; getauscht wird
+// nur gegen eine Variante mit mindestens 3 Sternen (bei 1 oder 2 Sternen genügen 2), mehr Sterne zuerst.
 function tauscheNebenuebungen(z: AppZustand, jetzt: string): MusterZustand[] {
   const e = einstellungenVon(z);
   const ort = ortVon(z, '');
+  const sterne = (id: string) => sterneVon(e, id);
   return z.muster.map((mz) => {
     const art = MUSTER_ART[mz.muster];
     if (!ort || (art !== 'isolation' && art !== 'zusatz')) return mz;
     const neu = mz.hauptvarianten.map((id) => {
       const u = uebungVon(z, id);
-      if (!u || e.favoriten.includes(id)) return id;
-      const andere = alleUebungen(z).find((v) => v.muster === u.muster && v.stufe === u.stufe
-        && !mz.hauptvarianten.includes(v.id) && uebungErlaubt(e, ort, v, jetzt));
+      if (!u || e.favoriten.includes(id) || sterne(id) >= BEWERTUNG.bleibtAbSterne) return id;
+      const mindestens = sterne(id) < BEWERTUNG.neutral ? BEWERTUNG.ersatzMinSterne : BEWERTUNG.tauschMinSterne;
+      const andere = alleUebungen(z).filter((v) => v.muster === u.muster && v.stufe === u.stufe
+        && !mz.hauptvarianten.includes(v.id) && sterne(v.id) >= mindestens && uebungErlaubt(e, ort, v, jetzt))
+        .sort((a, b) => sterne(b.id) - sterne(a.id))[0];
       return andere?.id ?? id;
     });
     return { ...mz, hauptvarianten: [...new Set(neu)] };

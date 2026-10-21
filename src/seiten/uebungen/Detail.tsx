@@ -2,13 +2,14 @@
 // oder löschen (nur, solange sie nie trainiert wurden).
 import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
-import { aendereEinstellungen, loescheEigeneUebung, speichereEigeneUebung } from '../../daten/speichern';
+import { aendereEinstellungen, loescheEigeneUebung, speichereBewertung, speichereEigeneUebung } from '../../daten/speichern';
+import { lokaleZeit } from '../../daten/zeit';
 import {
   alleUtensilien, eigenerLinkVon, istVideoLink, mitAusschluss, mitFavorit, mitVideoLink, uebungGenutzt, videoLinkVon,
 } from '../../logik/einstellungen';
 import { uebungVon } from '../../logik/verlauf';
 import type { AppZustand, Uebung } from '../../logik/typen';
-import { Fehler, Hinweis, Karte, Knopf, Laedt, Schalter, Seite, Textfeld } from '../../ui/bausteine';
+import { Fehler, Hinweis, Karte, Knopf, Laedt, Schalter, Seite, Sternwahl, Textfeld } from '../../ui/bausteine';
 import { Icon } from '../../ui/Icon';
 import { equipmentText, LASTTYP_NAMEN, MUSKEL_NAMEN, MUSTER_NAMEN } from '../../ui/texte';
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
@@ -99,6 +100,11 @@ function UebungAnsicht({ z, u, zurueck }: { z: AppZustand; u: Uebung; zurueck: s
             {eigenerLink && <Knopf art="sekundaer" onClick={() => void speichereLink(undefined)}>Link entfernen</Knopf>}
           </div>
         </div>
+      </Karte>
+
+      <Karte titel="Bewertung" hinweis="Mehr Sterne: kommt öfter dran. 1 Stern: wird ersetzt, wenn es eine ähnlich schwere Alternative gibt.">
+        <Sternwahl label={`Bewertung ${u.name}`} wert={e.bewertungen?.[u.id]}
+          onChange={(n) => void speichereBewertung(u.id, n, lokaleZeit())} />
       </Karte>
 
       <Karte>

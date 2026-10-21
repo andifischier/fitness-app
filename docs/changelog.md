@@ -127,3 +127,22 @@
   Entscheidungen festgelegt (umgesetzt mit Paket 8).
 - **Warum:** Arbeitspaket 7 der Spezifikation; Wunsch des Nutzers nach einer Bewertung der Übungen.
 
+
+## Paket 8: Übungsfeedback, Abschluss und Bewertung der Übungen (21.10.2026)
+- **Was:** Übungsfeedback nach Mockup 6: nach dem letzten Satz einer Übung (im Supersatz nach dem Paar)
+  „Wie war die Übung?“ mit den geschafften Wiederholungen, drei Buttons mit Definition (Halteübungen
+  in Sekunden), Vorauswahl „zu schwer“ bei verfehltem ersten Satz und Folgetext „Nächstes Mal: 16 kg je
+  Hand, Ziel 11 im ersten Satz.“ (auch Laststeigerung, langsames Absenken und Wechsel zur nächsten
+  Variante). Das Feedback wird sofort gespeichert und fließt über `schliesseEinheitAb` in die nächste
+  Einheit. Abschluss nach Mockup 7: Minuten, Sätze, Rekorde mit bestem Satz, Gesamtanstrengung 1 bis 5
+  (freiwillig), Sterne je Übung (vorausgefüllt mit der letzten Bewertung), Notiz, optional Abkühlen,
+  „Speichern“. Bewertung der Übungen: 1 Stern ersetzt die Hauptvariante ab der nächsten Einheit (falls
+  eine Alternative mit höchstens 1 Stufe Abstand und mindestens 2 Sternen am Ort möglich ist), 2 Sterne
+  Abschlag, 4 und 5 Sterne Zuschlag und Vorrang, Zyklusbeginn berücksichtigt Sterne; im Tab Übungen auf
+  der Übungsseite änderbar und in der Liste sichtbar. Neues optionales Feld `Einstellungen.bewertungen`
+  (keine neue Datenbankversion nötig). Neue Logik in `player.ts` (`offeneFeedbacks`, `setzeFeedback`,
+  `feedbackVorschlag`), `progression.ts` (`vorschauNaechstesMal`, `uebernimmBewertungen`) und
+  `planung.ts` (`ohneEinStern`, Sterne in Rangfolge und Übungswahl), Speichern mit `speichereAbschluss`
+  und `speichereBewertung`; Tests für alle Regeln, darunter „nächste Einheit zeigt die angekündigten
+  Ziele und Lasten“. Vier Entscheidungen in `docs/entscheidungen.md`, Spezifikation angepasst.
+- **Warum:** Arbeitspaket 8 der Spezifikation; Wunsch des Nutzers nach einer Bewertung der Übungen.

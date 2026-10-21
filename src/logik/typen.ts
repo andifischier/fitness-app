@@ -17,6 +17,7 @@ export type Muskel = (typeof MUSKELN)[number];
 export type Prioritaet = (typeof PRIORITAETEN)[number];
 export type Feedback = (typeof FEEDBACKS)[number];
 export type BandStufe = (typeof BAND_STUFEN)[number];
+export type Sterne = 1 | 2 | 3 | 4 | 5;
 
 // Katalog (katalog.json) und eigene Einträge
 export interface Utensil { id: string; name: string; details: string; immerVorhanden: boolean; eigenes: boolean }
@@ -75,6 +76,7 @@ export interface Einstellungen {
   onboardingAbgeschlossen: boolean;
   letztesBackup?: string;
   videoLinks?: Record<string, string>; // eigene Video-Links für Katalogübungen (eigene Übungen: eigenerVideoLink)
+  bewertungen?: Record<string, Sterne>; // Sterne je Übungs-ID, letzte Bewertung zählt; fehlt sie, gilt 3
 }
 
 // Trainingszustand (wird nur vom Planungsmodul geschrieben)

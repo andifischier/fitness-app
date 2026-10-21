@@ -1,7 +1,7 @@
 // Planungsmodul laut Spezifikation, Abschnitt „Planungslogik“. Rein und deterministisch: Die
 // aktuelle Zeit wird übergeben; der Zustand wird nur gelesen, nie verändert.
 import {
-  ERHOLUNGSWOCHE, EINHEIT, ERSATZ, FOKUS_GRUPPEN, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
+  BEWERTUNG, ERHOLUNGSWOCHE, EINHEIT, ERSATZ, FOKUS_GRUPPEN, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
   SUPERSATZ_PAARE, TRAININGSPAUSE, WOCHENZIEL, ZEITBUDGET, ZIRKEL,
 } from '../konfiguration';
 import { isoWoche, plusTage, stundenZwischen, verbleibendeTage, wochenNummer } from './datum';
@@ -14,7 +14,7 @@ import {
 } from './typen';
 import {
   einstellungenVon, faelligerMaxTest, fertigeEinheiten, istErholt, letzteEinheitZeit, seitRueckkehrTrainiert,
-  trainingspause, uebungVon, wdhBei, zielReserve, type Pause,
+  sterneVon, trainingspause, uebungVon, wdhBei, zielReserve, type Pause,
 } from './verlauf';
 
 export { einstellungenVon, erholungsfenster, istErholt } from './verlauf';
@@ -178,12 +178,16 @@ export function musterstufe(z: AppZustand, e: Einstellungen, muster: MusterId): 
   return z.muster.find((x) => x.muster === muster)?.stufe ?? PROFIL.musterstufeNachLevel[e.level];
 }
 
+// Rangfolge: Favorit; Varianten mit 1 Stern ans Ende; Abstand zur Musterstufe; mehr Sterne;
+// Lasttyp; Katalogreihenfolge.
 function rangiere(z: AppZustand, e: Einstellungen, muster: MusterId, liste: Uebung[]) {
   const stufe = musterstufe(z, e, muster);
   const reihenfolge = alleUebungen(z).map((u) => u.id);
   const schluessel = (u: Uebung) => [
     e.favoriten.includes(u.id) ? 0 : 1,
+    sterneVon(e, u.id) === 1 ? 1 : 0,
     u.lasttyp === 'Last' ? Math.max(0, u.stufe - stufe) : Math.abs(u.stufe - stufe),
+    -sterneVon(e, u.id),
     LASTTYP_RANG[u.lasttyp],
     reihenfolge.indexOf(u.id),
   ];
@@ -205,14 +209,14 @@ export function hauptvarianten(z: AppZustand, muster: MusterId, ort: Ort, jetzt:
     const gespeichert = z.muster.find((x) => x.muster === muster)?.hauptvarianten ?? [];
     const gueltig = gespeichert.map((id) => erlaubt.find((u) => u.id === id));
     if (gueltig.length > 0 && gueltig.every((u) => u)) {
-      return gueltig.map((u) => ({ uebung: u!, istErsatz: false }));
+      return ohneEinStern(z, e, gueltig as Uebung[], erlaubt).map((u) => ({ uebung: u, istErsatz: false }));
     }
     const sortiert = rangiere(z, e, muster, erlaubt);
     const a = sortiert[0]!;
     const rest = sortiert.slice(1);
     if (rest.length === 0) return [{ uebung: a.u, istErsatz: false }];
     // B: nächstbeste Variante, innerhalb derselben Stufe bevorzugt mit anderem Equipment.
-    const gleichAuf = rest.filter((r) => r.k[0] === rest[0]!.k[0] && r.k[1] === rest[0]!.k[1]);
+    const gleichAuf = rest.filter((r) => [0, 1, 2].every((i) => r.k[i] === rest[0]!.k[i]));
     const b = gleichAuf.find((r) => equipmentSchluessel(r.u) !== equipmentSchluessel(a.u)) ?? rest[0]!;
     return [a.u, b.u].slice(0, EINHEIT.maxHauptvarianten).map((u) => ({ uebung: u, istErsatz: false }));
   }
@@ -228,6 +232,20 @@ export function hauptvarianten(z: AppZustand, muster: MusterId, ort: Ort, jetzt:
     }
   }
   return [];
+}
+
+// 1 Stern: Eine Hauptvariante wird durch die beste erlaubte Alternative desselben Musters mit
+// höchstens 1 Stufe Abstand und mindestens 2 Sternen ersetzt; gibt es keine, bleibt sie.
+export function ohneEinStern(z: AppZustand, e: Einstellungen, liste: Uebung[], erlaubt: Uebung[]): Uebung[] {
+  const neu = [...liste];
+  neu.forEach((u, i) => {
+    if (sterneVon(e, u.id) !== 1) return;
+    const kandidaten = erlaubt.filter((v) => v.muster === u.muster && !neu.some((x) => x.id === v.id)
+      && Math.abs(v.stufe - u.stufe) <= BEWERTUNG.ersatzMaxStufen && sterneVon(e, v.id) >= BEWERTUNG.ersatzMinSterne);
+    const ersatz = rangiere(z, e, u.muster, kandidaten)[0];
+    if (ersatz) neu[i] = ersatz.u;
+  });
+  return neu;
 }
 
 // A und B wechseln sich ab: fällig ist die Variante, die zuletzt nicht dran war.
@@ -481,6 +499,7 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
     const punkte = (u: Uebung) => wert(u)
       + (istGrund(u) ? EINHEIT.zuschlagGrunduebung : 0)
       + (e.favoriten.includes(u.id) ? EINHEIT.zuschlagFavorit : 0)
+      + BEWERTUNG.zuschlag[sterneVon(e, u.id)]
       - (letzteJeMuskel.get(hauptmuskel(u)!) === u.id ? EINHEIT.abschlagLetzteEinheit : 0);
     // Bei Gleichstand gewinnt die höhere Variantenstufe, danach die Reihenfolge der Kandidaten.
     let beste = liste[0]!;

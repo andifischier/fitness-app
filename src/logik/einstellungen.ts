@@ -5,7 +5,8 @@ import { alleUebungen, uebungMoeglich } from './equipment';
 import { hauptvarianten } from './planung';
 import { einstellungenVon } from './verlauf';
 import {
-  MUSTER_IDS, type AppZustand, type Einstellungen, type MusterId, type Ort, type OrtEquipment, type Uebung, type Utensil,
+  MUSTER_IDS, type AppZustand, type Einstellungen, type MusterId, type Ort, type OrtEquipment, type Sterne, type Uebung,
+  type Utensil,
 } from './typen';
 
 // ---------- Zahlen mit Dezimalkomma ----------
@@ -319,9 +320,22 @@ export function mitVideoLink(e: Einstellungen, uebungId: string, link: string | 
   return neu;
 }
 
+// Bewertungen setzen (die letzte zählt); undefined entfernt die Bewertung einer Übung.
+export function mitBewertungen(e: Einstellungen, neu: Record<string, Sterne | undefined>): Einstellungen {
+  const bewertungen = { ...e.bewertungen };
+  for (const [id, sterne] of Object.entries(neu)) {
+    if (sterne === undefined) delete bewertungen[id];
+    else bewertungen[id] = sterne;
+  }
+  const ergebnis: Einstellungen = { ...e, bewertungen };
+  if (Object.keys(bewertungen).length === 0) delete ergebnis.bewertungen;
+  return ergebnis;
+}
+
 // Entfernt alle Verweise der Einstellungen auf eine gelöschte eigene Übung.
 export function ohneUebung(e: Einstellungen, uebungId: string): Einstellungen {
-  return mitVideoLink(mitAusschluss(mitFavorit(e, uebungId, false), uebungId, false), uebungId, undefined);
+  return mitBewertungen(mitVideoLink(mitAusschluss(mitFavorit(e, uebungId, false), uebungId, false), uebungId, undefined),
+    { [uebungId]: undefined });
 }
 
 // ---------- Einschränkungen ----------

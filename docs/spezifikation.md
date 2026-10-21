@@ -191,7 +191,7 @@ interface Einstellungen {
   onboardingAbgeschlossen: boolean;
   letztesBackup?: string;
   videoLinks?: Record<string, string>; // eigene Video-Links für Katalogübungen (eigene Übungen: eigenerVideoLink)
-  bewertungen?: Record<string, 1|2|3|4|5>; // Sterne je Übungs-ID, letzte Bewertung zählt; fehlt sie, gilt 3 (ab Paket 8)
+  bewertungen?: Record<string, 1|2|3|4|5>; // Sterne je Übungs-ID, letzte Bewertung zählt; fehlt sie, gilt 3
 }
 
 // Trainingszustand (wird nur vom Planungsmodul geschrieben)
@@ -355,7 +355,7 @@ Zirkel zählen für das Erholungsfenster mit demselben Volumen wie für das Woch
 - Pro Muster und Zyklus (6 Wochen oder bis zur nächsten Erholungswoche) legt die App bis zu zwei Hauptvarianten A und B fest (z. B. Kurzhantel-Bankdrücken und Schrägbankdrücken), bestimmt bei Zyklusbeginn bzw. bei der ersten Nutzung des Musters am Ort. A und B wechseln sich von Einheit zu Einheit ab. Jede führt ihren eigenen Progressionsverlauf.
 - **Auswahl:** Kandidaten sind Varianten, die am Ort möglich, nicht gesperrt und nicht ausgeschlossen sind. Rangfolge: Favorit; dann Varianten mit 1 Stern ans Ende; dann Abstand zur Musterstufe (bei Lasttyp Last zählt nur, wie weit die Stufe über der Musterstufe liegt, weil die Last den Rest regelt); dann Bewertung (mehr Sterne zuerst); dann Lasttyp Last vor Band vor KG vor Zeit; dann Katalogreihenfolge. A = beste Variante, B = nächstbeste Variante mit anderer ID, bevorzugt mit anderem Equipment.
 - Zu Beginn eines neuen Zyklus werden Nebenübungen bevorzugt gegen Varianten gleicher Stufe getauscht; Favoriten bleiben. Varianten mit 4 oder 5 Sternen bleiben ebenfalls, Varianten mit 1 oder 2 Sternen werden zuerst getauscht.
-- **Bewertung der Übungen** (Entscheidung 21.10.2026, umgesetzt mit Paket 8): Am Ende einer Einheit kann der Nutzer jede Übung mit 1 bis 5 Sternen bewerten. Die Bewertung ist freiwillig und mit der letzten Bewertung der Übung vorausgefüllt; es zählt immer die letzte. Ohne Bewertung gilt 3 (neutral). Im Tab Übungen lässt sie sich jederzeit ändern. Wirkung („ausgewogen“):
+- **Bewertung der Übungen** (Entscheidung 21.10.2026): Am Ende einer Einheit kann der Nutzer jede Übung mit 1 bis 5 Sternen bewerten. Die Bewertung ist freiwillig und mit der letzten Bewertung der Übung vorausgefüllt; es zählt immer die letzte. Ohne Bewertung gilt 3 (neutral). Im Tab Übungen lässt sie sich jederzeit ändern. Wirkung („ausgewogen“):
   - **1 Stern:** Ist die Übung Hauptvariante, wird sie ab der nächsten Einheit ersetzt, sofern am Ort eine Alternative desselben Musters mit höchstens 1 Stufe Abstand und mindestens 2 Sternen möglich ist (Auswahl nach der Rangfolge oben). Gibt es keine, bleibt sie.
   - **2 Sterne:** seltener (Abschlag in Schritt 6, beim Zyklusbeginn zuerst getauscht).
   - **4 und 5 Sterne:** häufiger (Zuschlag in Schritt 6, Vorrang in der Rangfolge bei gleichem Abstand zur Musterstufe, bleiben beim Zyklusbeginn).
@@ -420,9 +420,9 @@ Die Anpassung folgt einer doppelten Progression: erst mehr Wiederholungen im Zie
 | Ebene | Wann | Eingabe |
 | --- | --- | --- |
 | Satz | Nach jedem Satz | Geschaffte Wiederholungen (vorausgefüllt mit Zielwert) bzw. Sekunden |
-| Übung | Nach dem letzten Satz der Übung | **Zu leicht** = 4 oder mehr Wiederholungen wären noch gegangen · **Passend** = 1 bis 3 wären noch gegangen · **Zu schwer** = Ziel nicht geschafft oder Technik brach ein. Die Definition steht als Hilfetext direkt unter den Buttons. |
-| Workout | Am Ende | Gesamtanstrengung 1 bis 5 (1 = sehr leicht, 5 = am Limit), optional Notiz |
-| Gefallen je Übung | Am Ende | 1 bis 5 Sterne pro Übung, freiwillig, vorausgefüllt mit der letzten Bewertung (siehe Bewertung der Übungen; ab Paket 8) |
+| Übung | Nach dem letzten Satz der Übung; im Supersatz erst nach dem Paar, dann beide Übungen nacheinander (Entscheidung 21.10.2026) | **Zu leicht** = 4 oder mehr Wiederholungen wären noch gegangen · **Passend** = 1 bis 3 wären noch gegangen · **Zu schwer** = Ziel nicht geschafft oder Technik brach ein. Halteübungen: **Zu leicht** = mehr als 10 Sek. wären noch gegangen · **Passend** = bis 10 Sek. · **Zu schwer** = Ziel nicht geschafft oder Haltung brach ein (Entscheidung 21.10.2026). Die Definition steht als Hilfetext direkt unter den Buttons. Kein Feedback bei Max-Tests und Zirkel-Stationen. Wird das Training vorher beendet, gilt für Übungen ohne Feedback automatisch „zu schwer“, wenn der erste Satz das Ziel verfehlt hat, sonst „passend“ (Entscheidung 21.10.2026). |
+| Workout | Am Ende | Gesamtanstrengung 1 bis 5 (1 = sehr leicht, 5 = am Limit), freiwillig und nicht vorausgewählt (Entscheidung 21.10.2026), optional Notiz |
+| Gefallen je Übung | Am Ende | 1 bis 5 Sterne pro Übung, freiwillig, vorausgefüllt mit der letzten Bewertung (siehe Bewertung der Übungen) |
 
 ### Progression pro Übung
 
@@ -531,8 +531,8 @@ Das Training läuft geführt Schritt für Schritt: eine Übung pro Bildschirm, S
 4. **Max-Test (falls geplant):** Eigener Bildschirm mit Zähler bzw. Stoppuhr.
 5. **Übungsbildschirme:** Name, YouTube-Link, Satz x von y, Zielwiederholungen, Last, Feld für geschaffte Wiederholungen, Button „Satz erledigt“. Danach startet der Pausentimer (Ton und Vibration am Ende, Pause verlängern oder überspringen möglich). Bei Supersätzen wechselt der Bildschirm zwischen den beiden Übungen in der Reihenfolge A1 Satz 1, A2 Satz 1, Pause, A1 Satz 2, A2 Satz 2, Pause usw.; Pause nur nach dem Paar, „Als Nächstes“ nach A1 ist immer A2.
    **Ziel und Vorgabe:** Das Ziel ist eine einzelne Zahl (`zielWdh`) und gilt für den ersten Satz. Die UI zeigt „Ziel 10“, darunter klein „Bereich 8 bis 12“. Folgesätze zeigen „Vorgabe 9“ = geschaffte Wiederholungen des vorherigen Satzes. (Bereiche wie „8 bis 10“ als Ziel in den Mockups 3 bis 5 sind falsch.)
-6. **Übungsfeedback:** Nach dem letzten Satz: zu leicht / passend / zu schwer. Darunter der Folgetext nach dem Muster „Nächstes Mal: 16 kg, Ziel 11 im ersten Satz“ (ein „Ziel in allen Sätzen“ gibt es nicht).
-7. **Abschluss:** Gesamtbewertung 1 bis 5, optionale Notiz, Sterne 1 bis 5 je Übung (freiwillig), Zusammenfassung mit Dauer, Volumen und neuen Rekorden. Optional Abkühlen: zeigt die Mobility-Zeilen des Aufwärmens erneut, ca. 3 Min.
+6. **Übungsfeedback:** Nach dem letzten Satz (im Supersatz nach dem Paar): zu leicht / passend / zu schwer. Darunter der Folgetext nach dem Muster „Nächstes Mal: 16 kg, Ziel 11 im ersten Satz“ (ein „Ziel in allen Sätzen“ gibt es nicht).
+7. **Abschluss:** Gesamtbewertung 1 bis 5 (freiwillig, nichts vorausgewählt), optionale Notiz, Sterne 1 bis 5 je Übung (freiwillig), Zusammenfassung mit Dauer, Volumen und neuen Rekorden. Optional Abkühlen: zeigt die Mobility-Zeilen des Aufwärmens erneut, ca. 3 Min.
 
 **Zirkel-Modus:** Laufende Stoppuhr für das ganze Workout, Übungen nacheinander mit Tipp auf „weiter“, Rundenanzeige, am Ende Vergleich mit der Bestzeit an diesem Ort.
 
@@ -568,10 +568,10 @@ Navigation unten mit 4 Tabs: Heute, Fortschritt (mit Unterreiter Verlauf), Übun
 | Vorschau | Blöcke mit Übungen, Sätzen (alle, inklusive Bauch und Waden), Zielen, Last, geschätzte Dauer; Tausch-Button pro Übung; Aufwärmen oben | Tausch-Blatt mit Alternativen desselben Musters · Ersatz-Markierung |
 | Satz | Übung, YouTube-Link, Satz x von y, „Ziel 10“ mit „Bereich 8 bis 12“ bzw. „Vorgabe 9“ ab Satz 2, Last, Zähler für geschaffte Wdh., „Letztes Mal“ (aus der letzten abgeschlossenen Position derselben Übung), Hinweis zur Reserve | Max-Test: Zähler ohne Ziel · Halteübung: Stoppuhr · Supersatz: Kennzeichnung A1/A2 |
 | Pause | Timer-Ring, +30 Sek., Überspringen, „Als Nächstes“ (im Supersatz nach A1 immer A2, Pause nur nach dem Paar) | Ton und Vibration am Ende; Bildschirm bleibt an |
-| Übungsfeedback | 3 Buttons mit Definition, geschaffte Wiederholungen, Vorschau der Folge („Nächstes Mal: 16 kg, Ziel 11 im ersten Satz“) | „Zu schwer“ vorausgewählt, wenn der erste Satz das Ziel verfehlt |
-| Abschluss | Dauer, Sätze, Rekorde, Gesamtanstrengung 1 bis 5, Sterne je Übung, Notiz, optional Abkühlen | Zirkel: Zeit und Bestzeit-Vergleich |
+| Übungsfeedback | 3 Buttons mit Definition (Halteübungen in Sekunden), geschaffte Wiederholungen, Vorschau der Folge („Nächstes Mal: 16 kg, Ziel 11 im ersten Satz“) | „Zu schwer“ vorausgewählt, wenn der erste Satz das Ziel verfehlt |
+| Abschluss | Dauer, Sätze, Rekorde, Gesamtanstrengung 1 bis 5 (nicht vorausgewählt), Sterne je Übung, Notiz, optional Abkühlen | Zirkel: Zeit und Bestzeit-Vergleich |
 | Fortschritt | Max-Test-Verlauf pro Muster (Chips für alle getesteten Muster inklusive Plank in Sekunden), Sätze pro Woche pro Muskel mit Hinweis „zählt als Entlastung“ bei Wochen unter 60 % des üblichen Volumens, eigene Karte Zirkel-Bestzeiten (Zirkel, Ort, Bestzeit, Datum); Unterreiter Verlauf mit allen Einheiten. Tipp auf eine Einheit zeigt Datum, Ort, Dauer, alle Übungen mit Sätzen, Last, Feedback, Gesamtanstrengung und Notiz | Leer: „Nach deiner ersten Einheit siehst du hier deinen Fortschritt.“ |
-| Übungen | Suche, Filter nach Muster und Ort, Favorit/Ausschluss, Sterne 1 bis 5 (ab Paket 8), eigene Übung anlegen (ähnliche Übung als Vorlage, alle Angaben vorausgefüllt und änderbar), eigener Video-Link | Eigene Übung lässt sich nur löschen, solange sie nie trainiert wurde (Entscheidung 20.10.2026) |
+| Übungen | Suche, Filter nach Muster und Ort, Favorit/Ausschluss, Sterne 1 bis 5, eigene Übung anlegen (ähnliche Übung als Vorlage, alle Angaben vorausgefüllt und änderbar), eigener Video-Link | Eigene Übung lässt sich nur löschen, solange sie nie trainiert wurde (Entscheidung 20.10.2026) |
 | Einstellungen | Orte und Equipment (Mockup 9, Regeln siehe Orte), Profil, Prioritäten, Dauer, Zirkel-Anteil, Pausen, Einschränkungen, Backup (Export/Import) | Ort ohne Pflichtangaben lässt sich nicht speichern · Ort lässt sich nur löschen, solange dort nie trainiert wurde (Entscheidung 20.10.2026) |
 
 Texte sind auf Deutsch, Du-Form, kurz. Zahlen mit deutschem Dezimalkomma (2,5 kg).

@@ -1,14 +1,19 @@
 // Gemeinsame Hilfen für Planung und Progression: Einstellungen, Verlauf der Einheiten, Erholung,
 // Trainingspause, Kraftschätzung und Fälligkeit der Max-Tests. Rein und deterministisch.
-import { ERHOLUNG, MAXTEST, PROGRESSION, STANDARD_EINSTELLUNGEN, TRAININGSPAUSE } from '../konfiguration';
+import { BEWERTUNG, ERHOLUNG, MAXTEST, PROGRESSION, STANDARD_EINSTELLUNGEN, TRAININGSPAUSE } from '../konfiguration';
 import { stundenZwischen } from './datum';
 import { alleUebungen, uebungErlaubt } from './equipment';
 import type {
-  AppZustand, Einheit, Einstellungen, Feedback, MuskelZustand, MusterId, Ort, Position, Uebung,
+  AppZustand, Einheit, Einstellungen, Feedback, MuskelZustand, MusterId, Ort, Position, Sterne, Uebung,
 } from './typen';
 
 export function einstellungenVon(z: AppZustand): Einstellungen {
   return z.einstellungen[0] ?? STANDARD_EINSTELLUNGEN;
+}
+
+// Bewertung einer Übung; ohne Bewertung gilt 3 (neutral).
+export function sterneVon(e: Einstellungen, uebungId: string): Sterne {
+  return e.bewertungen?.[uebungId] ?? BEWERTUNG.neutral;
 }
 
 export function uebungVon(z: AppZustand, id: string): Uebung | undefined {

@@ -91,7 +91,9 @@ function UebungZeile({ z, u, zurueck }: { z: AppZustand; u: Uebung; zurueck: str
   const e = einstellungenAus(z);
   const favorit = e.favoriten.includes(u.id);
   const ausgeschlossen = e.ausgeschlossen.includes(u.id);
-  const merkmale = [u.herkunft === 'eigene' && 'Eigene', ausgeschlossen && 'Ausgeschlossen'].filter(Boolean).join(' · ');
+  const sterne = e.bewertungen?.[u.id];
+  const merkmale = [u.herkunft === 'eigene' && 'Eigene', sterne && (sterne === 1 ? '1 Stern' : `${sterne} Sterne`),
+    ausgeschlossen && 'Ausgeschlossen'].filter(Boolean).join(' · ');
   const ziel = `/uebungen/${encodeURIComponent(u.id)}${zurueck ? `?zurueck=${encodeURIComponent(zurueck)}` : ''}`;
   return (
     <li className="flex items-center gap-2 border-b border-linie last:border-b-0">

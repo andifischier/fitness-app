@@ -5,8 +5,8 @@
 import { MUSTER_ART, PLAYER, PROGRESSION } from '../konfiguration';
 import { lastraster } from './equipment';
 import { bereichFuer } from './planung';
-import type { AppZustand, BandStufe, Block, Einheit, Position, SatzErgebnis, Uebung } from './typen';
-import { e1rm, einstellungenVon, fertigeEinheiten, uebungVon, wdhBei, zielReserve } from './verlauf';
+import type { AppZustand, BandStufe, Block, Einheit, Feedback, Position, SatzErgebnis, Uebung } from './typen';
+import { e1rm, einstellungenVon, feedbackVon, fertigeEinheiten, uebungVon, wdhBei, zielReserve } from './verlauf';
 
 // Ein Schritt ist ein Satz (bzw. eine Zirkel-Station in einer Runde).
 export interface Schritt { block: number; position: number; satz: number }
@@ -194,6 +194,41 @@ export function letztesMal(z: AppZustand, uebungId: string, ausserEinheit?: stri
     }
   }
   return undefined;
+}
+
+// ---------- Übungsfeedback (Paket 8) ----------
+
+export interface Stelle { block: number; position: number }
+
+const fertig = (p: Position) => p.ergebnisse.length >= p.saetze;
+
+// Übungen, deren Feedback noch fehlt: alle Sätze erledigt, kein Max-Test, kein Zirkel. Im Supersatz
+// erst, wenn das ganze Paar fertig ist (Entscheidung 21.10.2026), dann beide nacheinander.
+export function offeneFeedbacks(einheit: Einheit): Stelle[] {
+  const liste: Stelle[] = [];
+  einheit.bloecke.forEach((b, block) => {
+    if (b.typ === 'zirkel' || !b.positionen.every(fertig)) return;
+    b.positionen.forEach((p, position) => {
+      if (!p.istMaxTest && p.feedback === undefined && p.ergebnisse.length > 0) liste.push({ block, position });
+    });
+  });
+  return liste;
+}
+
+// Vorausgewähltes Feedback: „zu schwer“, wenn der erste Satz das Ziel verfehlt, sonst „passend“. Nach
+// einem Kalibrierungssatz zählt der erste Satz danach (wie in der Progression).
+export function feedbackVorschlag(z: AppZustand, einheit: Einheit, s: Stelle): Feedback {
+  const p = einheit.bloecke[s.block]!.positionen[s.position]!;
+  if (p.ergebnisse.length > 1 && istKalibrierung(z, einheit, { ...s, satz: 1 }) && p.ergebnisse[0]?.last !== undefined) {
+    return feedbackVon({ ...p, ergebnisse: p.ergebnisse.slice(1) });
+  }
+  return feedbackVon(p);
+}
+
+export function setzeFeedback(einheit: Einheit, s: Stelle, feedback: Feedback): Einheit {
+  const neu = structuredClone(einheit);
+  neu.bloecke[s.block]!.positionen[s.position]!.feedback = feedback;
+  return neu;
 }
 
 // Beginn des Trainings nach dem Aufwärmen; im Zirkel startet damit die Stoppuhr.
