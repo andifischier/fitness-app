@@ -3,8 +3,8 @@ import { KATALOG } from '../daten/katalog';
 import { zustand } from '../logik/testhilfe';
 import type { Einheit } from '../logik/typen';
 import {
-  abText, datumLang, einheitName, kleinerAnfang, entlastungText, feedbackOptionen, kwText, lastTeile, lastText, monatKurz,
-  muskelgruppenText, naechstesMalText, rekordZeile, saetzeText, saetzeZeile, seitStartText, zeitText,
+  abText, datumLang, detailText, einheitName, kleinerAnfang, entlastungText, feedbackOptionen, kwText, lastTeile, lastText, monatKurz,
+  muskelgruppenText, naechstesMalText, rekordZeile, saetzeMitLast, saetzeText, saetzeZeile, seitStartText, zeitText,
 } from './texte';
 
 describe('kleinerAnfang', () => {
@@ -23,6 +23,18 @@ describe('Lastanzeige', () => {
     expect(lastTeile(u('klimmzug_gewicht'), { last: 8 })).toEqual({ titel: 'Gewicht', gross: '+8 kg', klein: 'zusätzlich' });
     expect(lastTeile(u('klimmzug_band'), { bandStufe: 'mittel' })).toEqual({ titel: 'Band', gross: 'mittel', klein: 'zur Unterstützung' });
     expect(lastTeile(u('liegestuetz'), {})).toBeUndefined();
+  });
+
+  it('nennt bei unbekannter Last statt einer Zahl die Wahl im ersten Satz', () => {
+    const p = { uebungId: 'kh_bankdruecken', saetze: 3, zielWdh: 8, last: 2, ergebnisse: [] };
+    expect(detailText(u('kh_bankdruecken'), p)).toBe('3 × Ziel 8 · 2 kg je Hand');
+    expect(detailText(u('kh_bankdruecken'), p, false)).toBe('3 × Ziel 8 · Gewicht wählst du im 1. Satz');
+  });
+
+  it('fasst Sätze mit gleicher Last für „Dein Verlauf“ zusammen', () => {
+    expect(saetzeMitLast(u('kh_bankdruecken'), [{ wert: 10, last: 16 }, { wert: 9, last: 16 }, { wert: 8, last: 14 }]))
+      .toBe('16 kg je Hand × 10, 9 · 14 kg je Hand × 8');
+    expect(saetzeMitLast(u('liegestuetz'), [{ wert: 12 }, { wert: 10 }])).toBe('12, 10 Wdh.');
   });
 
   it('zeigt Last je nach Gerät und Zahl der Hanteln', () => {

@@ -207,3 +207,23 @@
   `workoutEinheit` und `kannTauschen`; Tests für Workouts, Anpassen, Tausch im Training, Speichern, Backup und Katalog.
   Vier Entscheidungen in `docs/entscheidungen.md`, Spezifikation angepasst.
 - **Warum:** Wünsche des Nutzers: Videos für alle Übungen, eigene Workouts, bestehende bearbeiten und Übungen einfach ersetzen.
+
+## Usability-Prüfung und acht Verbesserungen (21.10.2026)
+- **Was:** Gesamte App im Handyformat durchgespielt (Onboarding, Testtag, Krafteinheit mit Kombi, Fortschritt, Übungen,
+  Einstellungen). Daraus acht Vorschläge, alle vom Nutzer gewählt und umgesetzt:
+  1. Gewicht in jedem Satz mit −/+ änderbar, gilt für die folgenden Sätze; anderes Gewicht im ersten Satz ⇒ nächstes Ziel
+     aus der Kraftschätzung bei diesem Gewicht (`player.ts`: `satzLast`, `lastWaehlbar`; `progression.ts`).
+  2. „Letzten Satz rückgängig“ in der Pause; auf „Wie war die Übung?“ lassen sich alle Zahlen antippen und korrigieren
+     (`korrigiereSatz`), bei wechselndem Gewicht steht darunter das Gewicht je Satz.
+  3. Ergebnisbildschirm nach dem Testtag mit Ergebnis, Startübung und Startziel je Test (`testtagErgebnisse`).
+  4. Heute zeigt nach dem Training (auch nach dem Testtag) „Heute erledigt“ mit Dauer, Sätzen und nächstem Trainingstag;
+     „Trotzdem trainieren“ klein darunter (`heuteErledigt`).
+  5. Vorschau, Heute und Wochenausblick zeigen bei neuen Übungen mit Last „Gewicht wählst du im 1. Satz“ statt der
+     kleinsten Last; der Aufwärmsatz nennt die Übung.
+  6. Kopfzeile im Training nur noch Zeit und Fortschritt („Übung x von y“ entfällt, im Zirkel bleibt die Runde).
+  7. Fortschritt: „Diese Woche“ und „Sätze pro Woche“ zu „Sätze pro Muskel“ zusammengelegt, Balken am Ziel gemessen,
+     Wochensäulen erst ab der zweiten Woche.
+  8. Übungsansicht mit „Dein Verlauf“: letzte 5 Einheiten und nächstes Ziel (`uebungVerlauf`, `saetzeMitLast`).
+  Neue Tests für alle neuen Funktionen. Acht Entscheidungen in `docs/entscheidungen.md`, Spezifikation angepasst. Keine
+  neue Datenbankversion.
+- **Warum:** Wunsch des Nutzers nach einer gesamtheitlichen Prüfung von Bedienung und Funktion.

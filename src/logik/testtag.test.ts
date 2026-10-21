@@ -3,7 +3,7 @@ import { zirkelAnteilFuerZiele } from './einstellungen';
 import { erstelleEinheit, startfragen } from './planung';
 import { ort, zeitpunkt, zustand } from './testhilfe';
 import {
-  schliesseTesttagAb, startvariante, startvarianteLautTabelle, testtagEinheit, testtagTests,
+  schliesseTesttagAb, startvariante, startvarianteLautTabelle, testtagEinheit, testtagErgebnisse, testtagTests,
 } from './testtag';
 import type { AppZustand, Einheit, SatzErgebnis } from './typen';
 
@@ -103,6 +103,20 @@ describe('Testtag', () => {
     expect(n.einheiten).toHaveLength(1);
     expect(n.einheiten[0]!.status).toBe('abgeschlossen');
     expect(n.muskeln.find((m) => m.muskel === 'Brust')!.letzteBelastung).toBe(MO);
+  });
+
+  it('fasst für den Ergebnisbildschirm Ergebnis, Startübung und Startziel je Test zusammen', () => {
+    const z = neu();
+    const e = mitErgebnissen(testtagEinheit(z, 'zuhause', MO), {
+      liegestuetz: { wdh: 25 }, klimmzug: { wdh: 0, sek: 25 }, kniebeuge: { wdh: 35 }, plank: { sek: 45 },
+    });
+    const liste = testtagErgebnisse(schliesseTesttagAb(z, e, MO), e);
+    expect(liste.map((t) => [t.test.id, t.ergebnis, t.inSek, t.haengenSek, t.start?.uebung.id, t.start?.zielWdh])).toEqual([
+      ['liegestuetz', 25, false, undefined, 'liegestuetz_fuesse_erhoeht', 15],
+      ['klimmzug', 0, false, 25, 'negative_klimmzuege', 3],
+      ['kniebeuge', 35, false, undefined, 'goblet_squat', 12],
+      ['plank', 45, true, undefined, 'plank', 32],
+    ]);
   });
 
   it('zählt nicht als Einheit der Woche: Die Wochenfrage kommt bei der ersten Einheit', () => {

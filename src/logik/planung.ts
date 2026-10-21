@@ -397,6 +397,11 @@ export function mobilityZeilen(z: AppZustand, ort: Ort, muster: Iterable<MusterI
   return mobility;
 }
 
+// Gibt es für eine Last-Übung schon eine Last? Sonst wählt der Nutzer sie im ersten Satz (Kalibrierung).
+export function lastBekannt(z: AppZustand, u: Uebung): boolean {
+  return u.lasttyp !== 'Last' || z.varianten.some((v) => v.uebungId === u.id && v.last !== undefined);
+}
+
 export function aufwaermenFuer(z: AppZustand, ort: Ort, bloecke: Block[]): Einheit['aufwaermen'] {
   const a = z.katalog.aufwaermen;
   const zeilen = a.allgemein.map((t) => ({ uebungId: '', vorgabe: t }));
@@ -409,12 +414,14 @@ export function aufwaermenFuer(z: AppZustand, ort: Ort, bloecke: Block[]): Einhe
   });
   if (erste) {
     const u = uebungVon(z, erste.uebungId)!;
-    let vorgabe = `${a.aufwaermsatz.wdh} Wdh., leichtere Variante`;
-    if (erste.last !== undefined) {
+    // Der Aufwärmsatz nennt die Übung; ohne bekannte Last (Kalibrierung folgt) „leichtes Gewicht“.
+    let vorgabe = `${a.aufwaermsatz.wdh} Wdh. ${u.name}: leichtere Variante`;
+    if (erste.last !== undefined && !lastBekannt(z, u)) vorgabe = `${a.aufwaermsatz.wdh} Wdh. ${u.name}: leichtes Gewicht`;
+    else if (erste.last !== undefined) {
       const raster = lastraster(ort, u);
       const ziel = erste.last * a.aufwaermsatz.anteilLast;
       const kg = [...raster].reverse().find((x) => x <= ziel) ?? raster[0] ?? ziel;
-      vorgabe = `${a.aufwaermsatz.wdh} Wdh. mit ${kgText(kg)}`;
+      vorgabe = `${a.aufwaermsatz.wdh} Wdh. ${u.name}: ${kgText(kg)}`;
     }
     zeilen.push({ uebungId: erste.uebungId, vorgabe });
   }

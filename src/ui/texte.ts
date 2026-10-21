@@ -187,6 +187,19 @@ export function naechstesMalText(u: Uebung, n: NaechstesMal): string {
   return `Nächstes Mal: ${teile}.${n.langsam ? ` ${PROGRESSION.tempoAbsenkenSek} Sek. absenken.` : ''}`;
 }
 
+// Sätze einer Einheit für „Dein Verlauf“: aufeinanderfolgende Sätze mit gleicher Last zusammen,
+// z. B. „16 kg je Hand × 10, 9 · 14 kg je Hand × 8“, ohne Last „10, 9 Wdh.“.
+export function saetzeMitLast(u: Uebung, saetze: { wert: number; last?: number; bandStufe?: BandStufe }[]): string {
+  const gruppen: { last?: string; werte: number[] }[] = [];
+  for (const s of saetze) {
+    const last = lastText(u, s);
+    const letzte = gruppen.at(-1);
+    if (letzte && letzte.last === last) letzte.werte.push(s.wert);
+    else gruppen.push({ last, werte: [s.wert] });
+  }
+  return gruppen.map((g) => (g.last ? `${g.last} × ${g.werte.join(', ')}` : `${g.werte.join(', ')} ${u.bereich.einheit}`)).join(' · ');
+}
+
 const kgZahl = (kg: number) => `${String(Math.round(kg * 100) / 100).replace('.', ',')} kg`;
 
 // Zeile eines Rekords im Abschluss: Name und Wert („18 kg × 10“, „12 Wdh.“, „Max-Test 25 Wdh.“, „11:40“).
@@ -260,10 +273,13 @@ export function saetzeZeile(u: Uebung, p: Position): string {
 }
 
 // „3 × Ziel 10 · 16 kg je Hand“; Halteübungen in Sekunden, Max-Test ohne Ziel.
-export function detailText(u: Uebung, p: Position): string {
+// Ohne bekannte Last (`lastBekannt` false) steht statt der kleinsten Last, dass das Gewicht im ersten
+// Satz gewählt wird (Entscheidung 21.10.2026).
+export function detailText(u: Uebung, p: Position, lastBekannt = true): string {
   if (p.istMaxTest) return u.bereich.einheit === 'Sek.' ? 'Max-Test · so lange wie möglich' : 'Max-Test · so viele wie möglich';
   const ziel = u.bereich.einheit === 'Sek.' ? `Ziel ${p.zielWdh} Sek.` : `Ziel ${p.zielWdh}`;
-  return [`${p.saetze} × ${ziel}`, lastText(u, p)].filter(Boolean).join(' · ');
+  const last = lastBekannt || p.last === undefined ? lastText(u, p) : 'Gewicht wählst du im 1. Satz';
+  return [`${p.saetze} × ${ziel}`, last].filter(Boolean).join(' · ');
 }
 
 // Zirkel-Vorgabe aus dem Katalog; reine Zahlen bekommen die Einheit der Übung.

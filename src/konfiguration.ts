@@ -289,4 +289,5 @@ export const WORKOUT = {
 // Fortschritt (Paket 9)
 export const FORTSCHRITT = {
   wochen: 6,                        // Balken je Muskel: aktuelle Woche und die 5 davor
+  uebungVerlauf: 5,                 // „Dein Verlauf“ in der Übungsansicht: letzte Einheiten
 } as const;

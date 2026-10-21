@@ -6,9 +6,9 @@ import { isoWoche, stundenZwischen, wocheVerschoben } from './datum';
 import { startfragen, wochenziele } from './planung';
 import { istEntlastung } from './progression';
 import {
-  MUSKELN, type AppZustand, type Einheit, type Feedback, type MaxTest, type Muskel, type MusterId, type Position,
+  MUSKELN, type AppZustand, type BandStufe, type Einheit, type Feedback, type MaxTest, type Muskel, type MusterId, type Position,
 } from './typen';
-import { feedbackVon, fertigeEinheiten } from './verlauf';
+import { feedbackVon, fertigeEinheiten, sitzungen, uebungVon } from './verlauf';
 
 // ---------- Max-Tests ----------
 
@@ -165,4 +165,31 @@ export function achse(werte: number[]): { min: number; max: number; linien: numb
   const linien: number[] = [];
   for (let w = min; w <= max + 1e-9; w += schritt) linien.push(Math.round(w * 1e6) / 1e6);
   return { min, max, linien };
+}
+
+// ---------- Dein Verlauf je Übung ----------
+
+export interface UebungSitzung { datum: string; saetze: { wert: number; last?: number; bandStufe?: BandStufe }[] }
+
+// „Dein Verlauf“ in der Übungsansicht (Entscheidung 21.10.2026): die letzten Einheiten mit dieser
+// Übung (ohne Zirkel und Max-Tests), neueste zuerst, und das nächste Ziel aus dem Trainingszustand.
+export function uebungVerlauf(z: AppZustand, uebungId: string): {
+  sitzungen: UebungSitzung[]; naechstes?: { zielWdh: number; last?: number; bandStufe?: BandStufe };
+} {
+  const inSek = uebungVon(z, uebungId)?.bereich.einheit === 'Sek.';
+  const liste = sitzungen(z, uebungId).slice(-FORTSCHRITT.uebungVerlauf).reverse().map((s): UebungSitzung => ({
+    datum: s.zeit.slice(0, 10),
+    saetze: s.position.ergebnisse.map((r) => ({
+      wert: (inSek ? r.sek : r.wdh) ?? 0,
+      ...((r.last ?? s.position.last) !== undefined ? { last: r.last ?? s.position.last } : {}),
+      ...((r.bandStufe ?? s.position.bandStufe) ? { bandStufe: r.bandStufe ?? s.position.bandStufe } : {}),
+    })),
+  }));
+  const v = z.varianten.find((x) => x.uebungId === uebungId);
+  return {
+    sitzungen: liste,
+    ...(v && liste.length > 0 ? { naechstes: {
+      zielWdh: v.zielWdh, ...(v.last !== undefined ? { last: v.last } : {}), ...(v.bandStufe ? { bandStufe: v.bandStufe } : {}),
+    } } : {}),
+  };
 }

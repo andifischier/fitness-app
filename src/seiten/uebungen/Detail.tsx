@@ -1,5 +1,5 @@
-// Eine Übung: Angaben, Video, eigener Video-Link, Favorit und Ausschluss; eigene Übungen bearbeiten
-// oder löschen (nur, solange sie nie trainiert wurden).
+// Eine Übung: Angaben, Video, „Dein Verlauf“ (Entscheidung 21.10.2026), eigener Video-Link, Favorit
+// und Ausschluss; eigene Übungen bearbeiten oder löschen (nur, solange sie nie trainiert wurden).
 import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { aendereEinstellungen, loescheEigeneUebung, speichereBewertung, speichereEigeneUebung } from '../../daten/speichern';
@@ -7,11 +7,12 @@ import { lokaleZeit } from '../../daten/zeit';
 import {
   alleUtensilien, eigenerLinkVon, istVideoLink, mitAusschluss, mitFavorit, mitVideoLink, uebungGenutzt, videoLinkVon,
 } from '../../logik/einstellungen';
+import { uebungVerlauf } from '../../logik/fortschritt';
 import { uebungVon } from '../../logik/verlauf';
 import type { AppZustand, Uebung } from '../../logik/typen';
 import { Fehler, Hinweis, Karte, Knopf, Laedt, Schalter, Seite, Sternwahl, Textfeld } from '../../ui/bausteine';
 import { Technik } from '../../ui/technik';
-import { equipmentText, LASTTYP_NAMEN, MUSKEL_NAMEN, MUSTER_NAMEN } from '../../ui/texte';
+import { datumText, equipmentText, LASTTYP_NAMEN, lastText, MUSKEL_NAMEN, MUSTER_NAMEN, saetzeMitLast } from '../../ui/texte';
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
 
 export function UebungSeite() {
@@ -87,6 +88,8 @@ function UebungAnsicht({ z, u, zurueck }: { z: AppZustand; u: Uebung; zurueck: s
         <Technik key={`${u.id}|${videoLinkVon(e, u)}`} e={e} u={u} offen />
       </Karte>
 
+      <DeinVerlauf z={z} u={u} />
+
       <Karte titel="Eigenes Video">
         <div className="flex flex-col gap-3">
           <Textfeld typ="url" label="Eigener Video-Link" wert={link} platzhalter="https://…"
@@ -130,5 +133,26 @@ function UebungAnsicht({ z, u, zurueck }: { z: AppZustand; u: Uebung; zurueck: s
         ? <Hinweis>Mit dieser Übung hast du schon trainiert, daher bleibt sie im Verlauf. Du kannst sie ausschließen.</Hinweis>
         : <Knopf art="sekundaer" onClick={() => void loeschen()}>Übung löschen</Knopf>)}
     </Seite>
+  );
+}
+
+// Die letzten Einheiten mit dieser Übung und das nächste Ziel; ohne Training damit nichts.
+function DeinVerlauf({ z, u }: { z: AppZustand; u: Uebung }) {
+  const { sitzungen, naechstes } = uebungVerlauf(z, u.id);
+  if (sitzungen.length === 0) return null;
+  const ziel = naechstes && [`Ziel ${naechstes.zielWdh}${u.bereich.einheit === 'Sek.' ? ' Sek.' : ''} im ersten Satz`, lastText(u, naechstes)]
+    .filter(Boolean).join(' · ');
+  return (
+    <Karte titel="Dein Verlauf">
+      <ul>
+        {sitzungen.map((s, i) => (
+          <li key={`${s.datum}-${i}`} className="flex justify-between gap-4 border-b border-linie py-2 last:border-b-0">
+            <span className="shrink-0 text-hinweis text-gedaempft">{datumText(s.datum)}</span>
+            <span className="text-right text-basis">{saetzeMitLast(u, s.saetze)}</span>
+          </li>
+        ))}
+      </ul>
+      {ziel && <p className="mt-3 text-basis font-semibold">Nächstes Mal: {ziel}</p>}
+    </Karte>
   );
 }

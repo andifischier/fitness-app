@@ -165,7 +165,11 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
       v.e1rm = alt?.e1rm === undefined ? aktuell : PROGRESSION.e1rmGlaettung * alt.e1rm + (1 - PROGRESSION.e1rmGlaettung) * aktuell;
     }
     const schaetzung = v.e1rm ?? e1rm(last, erster, reserveFuer(fb, e));
-    if (fb === 'schwer') {
+    if (p.last !== undefined && last !== p.last) {
+      // Gewicht im ersten Satz geändert (Entscheidung 21.10.2026): Ziel wie nach dem Kalibrierungssatz
+      // aus der Kraftschätzung bei diesem Gewicht; das Ziel des geplanten Gewichts ist kein Maßstab.
+      v.zielWdh = begrenze(wdhBei(schaetzung, last, zielReserve(e)), U - 1, O);
+    } else if (fb === 'schwer') {
       if (eingewoehnung) v.zielWdh = Math.max(U - 1, erster);
       else if (deutlichVerfehlt) {
         v.last = naechsteLast(ort, u, last, -1) ?? last;

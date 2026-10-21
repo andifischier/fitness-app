@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isoWoche } from './datum';
 import {
-  aktuelleEinheit, backupErinnerung, keinMuskelErholt, mobilityAlle, naechsterMaxTest, wocheMitPrognose, zirkelBestzeit, zirkelVorgaben,
+  aktuelleEinheit, backupErinnerung, heuteErledigt, keinMuskelErholt, mobilityAlle, naechsterMaxTest, wocheMitPrognose, zirkelBestzeit, zirkelVorgaben,
 } from './heute';
 import { erstelleEinheit, wochenziele } from './planung';
 import { ort, setzePrognose, zeitpunkt, zustand } from './testhilfe';
@@ -146,5 +146,25 @@ describe('mobilityAlle', () => {
     expect(mitBand).toContain('10 Band-Pull-Aparts');
     expect(new Set(mitBand).size).toBe(mitBand.length);
     expect(mobilityAlle(z, ort(['KH']))).not.toContain('10 Band-Pull-Aparts');
+  });
+});
+
+describe('heuteErledigt', () => {
+  const satz = { nr: 1, wdh: 10, zeit: MI };
+  const fertig = (id: string, gestartetAm: string, saetze: number, format: Einheit['format'] = 'klassisch'): Einheit => ({
+    ...einheit(id, 'abgeschlossen', gestartetAm), gestartetAm, beendetAm: gestartetAm.replace('T18:00', 'T18:42'), format,
+    bloecke: [{ typ: 'einzeln', pauseSek: 90, positionen: [{ uebungId: 'liegestuetz', saetze, zielWdh: 10, ergebnisse: Array.from({ length: saetze }, () => satz) }] }],
+  });
+
+  it('meldet die heute beendete Einheit mit Dauer und Sätzen, auch den Testtag', () => {
+    const z = { ...zustand(), einheiten: [fertig('a', zeitpunkt(1, 18), 3), fertig('b', MI, 4)] };
+    expect(heuteErledigt(z, zeitpunkt(2, 20))).toMatchObject({ einheit: { id: 'b' }, dauerMin: 42, saetze: 4 });
+    const test = { ...zustand(), einheiten: [fertig('t', MI, 4, 'test')] };
+    expect(heuteErledigt(test, zeitpunkt(2, 20))?.einheit.id).toBe('t');
+  });
+
+  it('meldet nichts ohne heute erledigten Satz', () => {
+    const z = { ...zustand(), einheiten: [fertig('a', zeitpunkt(1, 18), 3), { ...fertig('b', MI, 0), status: 'abgebrochen' as const }] };
+    expect(heuteErledigt(z, zeitpunkt(2, 20))).toBeUndefined();
   });
 });

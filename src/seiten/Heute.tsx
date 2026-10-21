@@ -7,7 +7,7 @@ import { aendereTage, speichereTausch, verwerfeEinheit } from '../daten/speicher
 import { lokaleZeit } from '../daten/zeit';
 import { maxOffeneTage, prognoseAusTagen, vorschlagTage, wochenausblick, type AusblickTag } from '../logik/ausblick';
 import { isoWoche, wochentag } from '../logik/datum';
-import { aktuelleEinheit, backupErinnerung, naechsterMaxTest } from '../logik/heute';
+import { aktuelleEinheit, backupErinnerung, heuteErledigt, naechsterMaxTest } from '../logik/heute';
 import { erstelleEinheit, istErholungswoche, startfragen, tausche } from '../logik/planung';
 import type { AppZustand, Einheit } from '../logik/typen';
 import { uebungVon } from '../logik/verlauf';
@@ -58,11 +58,17 @@ function Inhalt({ z, jetzt }: { z: AppZustand; jetzt: string }) {
       erholungswoche: istErholungswoche(z, jetzt),
       maxTest: naechsterMaxTest(z, jetzt, fragen.ortId),
       backup: backupErinnerung(z, jetzt),
+      erledigt: heuteErledigt(z, jetzt),
     };
   }, [z, jetzt]);
-  const { fragen, aktuell, vorschau, woche, ausblick, erholungswoche, maxTest, backup } = daten;
-  const ort = z.orte.find((o) => o.id === (vorschau?.ortId ?? fragen.ortId));
-  const liste = aktuell?.status !== 'laufend' && vorschau && vorschau.bloecke.length > 0 ? vorschau : undefined;
+  const { fragen, aktuell, vorschau, woche, ausblick, erholungswoche, maxTest, backup, erledigt } = daten;
+  // Nach dem Training des Tages zeigt Heute „Heute erledigt“; „Trotzdem trainieren“ öffnet die
+  // üblichen Möglichkeiten (Entscheidung 21.10.2026).
+  const [nochmal, setNochmal] = useState(false);
+  const fertig = !aktuell && !nochmal ? erledigt : undefined;
+  const naechster = ausblick?.find((t) => (t.art === 'einheit' || t.art === 'zirkel') && t.datum > jetzt.slice(0, 10));
+  const ort = z.orte.find((o) => o.id === (fertig?.einheit.ortId ?? vorschau?.ortId ?? fragen.ortId));
+  const liste = !fertig && aktuell?.status !== 'laufend' && vorschau && vorschau.bloecke.length > 0 ? vorschau : undefined;
   // Tauschen auf Heute geht in der erstellten Einheit; die voraussichtliche wird erst vor dem Start erstellt.
   const [tausch, setTausch] = useState<{ block: number; position: number }>();
   const tauschbar = aktuell?.status === 'geplant' ? aktuell : undefined;
@@ -83,11 +89,27 @@ function Inhalt({ z, jetzt }: { z: AppZustand; jetzt: string }) {
       <section className="rounded-karte border border-rand bg-flaeche p-5">
         <div className="flex items-center justify-between gap-3">
           <p className="text-basis text-gedaempft">
-            {aktuell?.status === 'laufend' ? 'Unterbrochene Einheit' : aktuell ? 'Erstellte Einheit' : 'Nächste Einheit'}
+            {fertig ? 'Dein Training heute' : aktuell?.status === 'laufend' ? 'Unterbrochene Einheit' : aktuell ? 'Erstellte Einheit' : 'Nächste Einheit'}
           </p>
           {ort && <span className="rounded-full bg-akzent-hell px-3 py-1 text-basis font-semibold text-akzent">{ort.name}</span>}
         </div>
-        {aktuell?.status === 'laufend' ? (
+        {fertig ? (
+          <>
+            <div className="mt-3 mb-5 flex items-start gap-3">
+              <span className="mt-1 flex size-9 shrink-0 items-center justify-center rounded-full bg-akzent text-flaeche">
+                <Icon name="haken" groesse={20} />
+              </span>
+              <div>
+                <h2 className="text-titel font-extrabold">Heute erledigt</h2>
+                <p className="mt-1 text-gross text-gedaempft">
+                  {[einheitName(z, fertig.einheit), fertig.dauerMin > 0 ? `${fertig.dauerMin} Min` : '', `${fertig.saetze} Sätze`].filter(Boolean).join(' · ')}
+                </p>
+                {naechster && <p className="mt-1 text-basis">Nächstes Training: {tagText(naechster.datum, naechster.tag)}</p>}
+              </div>
+            </div>
+            <Knopf art="schlicht" onClick={() => setNochmal(true)}>Trotzdem trainieren</Knopf>
+          </>
+        ) : aktuell?.status === 'laufend' ? (
           <>
             <Titel titel={einheitName(z, aktuell)} text={`ca. ${aktuell.geschaetzteDauerMin} Min · ${gruppen(z, aktuell)}`} />
             <Knopf onClick={() => navigate(`/training/${aktuell.id}`)}>Fortsetzen</Knopf>

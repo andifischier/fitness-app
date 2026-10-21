@@ -1,16 +1,13 @@
-// Fortschritt (Mockup 8) mit Unterreitern Übersicht und Verlauf: diese Woche pro Muskel (erledigt
-// von Ziel, Entscheidung 21.10.2026: von Heute hierher verschoben), Max-Test-Verlauf je Muster, Sätze
-// pro Woche für alle Muskeln mit Entlastungswochen, Zirkel-Bestzeiten; Verlauf aller Einheiten mit
-// Detailansicht.
+// Fortschritt (Mockup 8) mit Unterreitern Übersicht und Verlauf: Sätze pro Muskel (diese Woche von
+// Ziel und die letzten 6 Wochen mit Entlastungswochen in einer Karte, Entscheidungen 21.10.2026),
+// Max-Test-Verlauf je Muster, Zirkel-Bestzeiten; Verlauf aller Einheiten mit Detailansicht.
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { lokaleZeit } from '../../daten/zeit';
 import {
-  achse, dauerSek, maxTestReihen, saetzeVon, verlauf, verlaufUebungen, wochenvolumen, zirkelBestzeiten,
+  achse, dauerSek, maxTestReihen, saetzeVon, verlauf, verlaufUebungen, wochenvolumen, zieleDieseWoche, zirkelBestzeiten,
   type MaxTestReihe, type Wochenvolumen,
 } from '../../logik/fortschritt';
-import { isoWoche } from '../../logik/datum';
-import { startfragen, wochenziele } from '../../logik/planung';
 import { MUSKELN, type AppZustand, type Einheit } from '../../logik/typen';
 import { einheitZeit, uebungVon } from '../../logik/verlauf';
 import { zirkelName } from '../../logik/workouts';
@@ -42,31 +39,71 @@ function Unterreiter({ aktiv }: { aktiv: 'uebersicht' | 'verlauf' }) {
 
 // ---------- Übersicht ----------
 
-// Sätze dieser Woche pro Muskel: erledigt von Ziel (Muskeln mit Ziel oder erledigten Sätzen).
-function DieseWoche({ z, jetzt }: { z: AppZustand; jetzt: string }) {
-  const { ziele, erledigt } = useMemo(() => {
-    const fragen = startfragen(z, jetzt);
-    const woche = z.wochen.find((w) => w.id === isoWoche(jetzt));
-    return { ziele: wochenziele(z, woche?.prognose ?? fragen.prognoseVorschlag, fragen.ortId, jetzt), erledigt: woche?.erledigt };
-  }, [z, jetzt]);
-  const muskeln = MUSKELN.filter((m) => ziele[m] > 0 || (erledigt?.[m] ?? 0) > 0);
+// Sätze pro Muskel (Entscheidung 21.10.2026: „Diese Woche“ und „Sätze pro Woche“ zusammengelegt): je
+// Muskel diese Woche erledigt von Ziel, darunter die letzten 6 Wochen; alle Balken am Ziel gemessen.
+function SaetzeProMuskel({ z, jetzt, volumen }: { z: AppZustand; jetzt: string; volumen: Wochenvolumen | null }) {
+  const ziele = useMemo(() => volumen?.ziele ?? zieleDieseWoche(z, jetzt), [z, jetzt, volumen]);
+  const wochen = volumen?.wochen ?? [];
+  const dieseWoche = wochen.find((w) => w.aktuell);
+  const muskeln = volumen?.muskeln ?? MUSKELN.filter((m) => ziele[m] > 0);
+  const verlauf = wochen.length > 1;               // eine Woche allein zeigt schon der obere Balken
+  const spalten = { gridTemplateColumns: `repeat(${wochen.length}, minmax(0, 1fr))` };
+  const entlastungen = wochen.filter((w) => w.entlastung);
   return (
-    <Karte titel="Diese Woche" hinweis="Sätze pro Muskel: erledigt von Ziel.">
+    <Karte titel="Sätze pro Muskel" hinweis={verlauf ? 'Diese Woche erledigt von Ziel, darunter die letzten Wochen.' : 'Diese Woche erledigt von Ziel.'}>
       <ul>
         {muskeln.map((m) => {
           const ziel = ziele[m];
-          const ist = erledigt?.[m] ?? 0;
+          const ist = dieseWoche?.erledigt[m] ?? 0;
+          const massstab = Math.max(ziel, 1);
           return (
-            <li key={m} className="flex min-h-[40px] items-center gap-4">
-              <span className="w-32 shrink-0 text-basis">{MUSKEL_NAMEN[m]}</span>
-              <span className="h-2 flex-1 rounded-full bg-linie">
-                <span className="block h-2 rounded-full bg-akzent" style={{ width: `${ziel > 0 ? Math.min(100, (ist / ziel) * 100) : 0}%` }} />
-              </span>
-              <span className="w-12 text-right text-basis text-gedaempft">{saetzeText(ist)}/{ziel}</span>
+            <li key={m} className="border-b border-linie py-3 first:pt-0 last:border-b-0 last:pb-0">
+              <div className="flex items-center gap-4">
+                <span className="w-32 shrink-0 text-basis font-semibold">{MUSKEL_NAMEN[m]}</span>
+                <span className="h-2 flex-1 rounded-full bg-linie">
+                  <span className="block h-2 rounded-full bg-akzent" style={{ width: `${Math.min(100, (ist / massstab) * 100)}%` }} />
+                </span>
+                <span className="w-12 text-right text-basis text-gedaempft">{saetzeText(ist)}/{ziel}</span>
+              </div>
+              {verlauf && (
+                <div className="mt-2 grid items-end gap-2" style={spalten}>
+                  {wochen.map((w) => {
+                    const wert = w.erledigt[m];
+                    return (
+                      <div key={w.woche} className="flex flex-col items-center gap-1">
+                        <div className="flex h-8 w-full items-end" aria-hidden="true">
+                          <div className={`w-full rounded-md ${wert <= 0 ? 'bg-linie' : w.aktuell ? 'bg-akzent' : 'bg-akzent/55'}`}
+                            style={{ height: wert <= 0 ? 3 : `${Math.max(8, Math.min(100, (wert / massstab) * 100))}%` }} />
+                        </div>
+                        <span className={`text-klein ${w.aktuell ? 'font-bold text-text' : 'text-gedaempft'}`}
+                          aria-label={`${kwText(w.woche)}: ${saetzeText(wert)} Sätze`}>
+                          {saetzeText(wert)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </li>
           );
         })}
       </ul>
+      {verlauf && (
+        <div className="mt-1 grid gap-2 border-t border-linie pt-2" style={spalten} aria-hidden="true">
+          {wochen.map((w) => (
+            <span key={w.woche} className={`text-center text-klein ${w.aktuell ? 'font-bold text-text' : 'text-gedaempft'}`}>
+              {kwText(w.woche)}
+            </span>
+          ))}
+        </div>
+      )}
+      {entlastungen.length > 0 && (
+        <div className="mt-3 flex flex-col gap-1">
+          {entlastungen.map((w) => (
+            <p key={w.woche} className="text-basis text-gedaempft">{entlastungText(w.woche, w.einheiten, w.erholungswoche)}</p>
+          ))}
+        </div>
+      )}
     </Karte>
   );
 }
@@ -88,13 +125,12 @@ function Uebersicht({ z, jetzt }: { z: AppZustand; jetzt: string }) {
   }), [z, jetzt]);
   const { reihen, volumen, zirkel, einheiten } = daten;
   if (einheiten === 0 && reihen.length === 0) {
-    return <>{z.orte.length > 0 && <DieseWoche z={z} jetzt={jetzt} />}<p className="text-basis text-gedaempft">{LEER}</p></>;
+    return <>{z.orte.length > 0 && <SaetzeProMuskel z={z} jetzt={jetzt} volumen={volumen} />}<p className="text-basis text-gedaempft">{LEER}</p></>;
   }
   return (
     <>
-      {z.orte.length > 0 && <DieseWoche z={z} jetzt={jetzt} />}
+      {(z.orte.length > 0 || volumen) && <SaetzeProMuskel z={z} jetzt={jetzt} volumen={volumen} />}
       {reihen.length > 0 && <MaxTests z={z} reihen={reihen} />}
-      {volumen && <SaetzeProWoche volumen={volumen} />}
       {zirkel.length > 0 && (
         <Karte titel="Zirkel-Bestzeiten">
           <ul>
@@ -181,63 +217,6 @@ function Verlaufslinie({ reihe }: { reihe: MaxTestReihe }) {
         <text key={i} x={x(i)} y={H - 8} textAnchor="middle" fontSize="12" fill="var(--color-gedaempft)">{monatKurz(p.datum)}</text>
       ))}
     </svg>
-  );
-}
-
-// Sätze pro Woche für alle Muskeln untereinander (Entscheidung 21.10.2026), je 6 Wochen; die laufende
-// Woche dunkel, Wochenbeschriftung einmal unten.
-function SaetzeProWoche({ volumen }: { volumen: Wochenvolumen }) {
-  const { wochen, ziele, muskeln } = volumen;
-  const spalten = { gridTemplateColumns: `repeat(${wochen.length}, minmax(0, 1fr))` };
-  const entlastungen = wochen.filter((w) => w.entlastung);
-  return (
-    <section className="rounded-karte border border-rand bg-flaeche p-5">
-      <h2 className="text-gross font-bold">Sätze pro Woche</h2>
-      <div className="mt-1 flex flex-col">
-        {muskeln.map((m) => {
-          const groesster = Math.max(ziele[m], ...wochen.map((w) => w.erledigt[m]), 1);
-          return (
-            <div key={m} className="border-b border-linie py-3 last:border-b-0">
-              <div className="flex items-baseline justify-between gap-3">
-                <h3 className="text-basis font-semibold">{MUSKEL_NAMEN[m]}</h3>
-                <span className="text-hinweis text-gedaempft">Ziel {ziele[m]}</span>
-              </div>
-              <div className="mt-2 grid items-end gap-2" style={spalten}>
-                {wochen.map((w) => {
-                  const wert = w.erledigt[m];
-                  return (
-                    <div key={w.woche} className="flex flex-col items-center gap-1">
-                      <div className="flex h-12 w-full items-end" aria-hidden="true">
-                        <div className={`w-full rounded-md ${wert <= 0 ? 'bg-linie' : w.aktuell ? 'bg-akzent' : 'bg-akzent/55'}`}
-                          style={{ height: wert <= 0 ? 3 : `${Math.max(8, (wert / groesster) * 100)}%` }} />
-                      </div>
-                      <span className={`text-klein ${w.aktuell ? 'font-bold text-text' : 'text-gedaempft'}`}
-                        aria-label={`${kwText(w.woche)}: ${saetzeText(wert)} Sätze`}>
-                        {saetzeText(wert)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      <div className="mt-1 grid gap-2 border-t border-linie pt-2" style={spalten} aria-hidden="true">
-        {wochen.map((w) => (
-          <span key={w.woche} className={`text-center text-klein ${w.aktuell ? 'font-bold text-text' : 'text-gedaempft'}`}>
-            {kwText(w.woche)}
-          </span>
-        ))}
-      </div>
-      {entlastungen.length > 0 && (
-        <div className="mt-3 flex flex-col gap-1">
-          {entlastungen.map((w) => (
-            <p key={w.woche} className="text-basis text-gedaempft">{entlastungText(w.woche, w.einheiten, w.erholungswoche)}</p>
-          ))}
-        </div>
-      )}
-    </section>
   );
 }
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isoWoche, wocheVerschoben } from './datum';
 import {
-  achse, dauerSek, maxTestReihen, saetzeVon, verlauf, verlaufUebungen, wochenvolumen, zieleDieseWoche, zirkelBestzeiten,
+  achse, dauerSek, maxTestReihen, saetzeVon, uebungVerlauf, verlauf, verlaufUebungen, wochenvolumen, zieleDieseWoche, zirkelBestzeiten,
 } from './fortschritt';
 import { startfragen, wochenziele } from './planung';
 import { istEntlastung, wochenSaetze } from './progression';
@@ -224,5 +224,32 @@ describe('achse', () => {
       expect(a.linien.length).toBeGreaterThanOrEqual(2);
       expect(a.linien.length).toBeLessThanOrEqual(4);
     }
+  });
+});
+
+describe('uebungVerlauf', () => {
+  const mit = (id: string, tag: number, wdh: number[], last: number, extra: Partial<Einheit> = {}) => einheit(id, {
+    erstelltAm: zeitpunkt(tag, 18), gestartetAm: zeitpunkt(tag, 18),
+    bloecke: [{ typ: 'einzeln', pauseSek: 90, positionen: [{
+      uebungId: 'kh_bankdruecken', saetze: wdh.length, zielWdh: 10, last,
+      ergebnisse: wdh.map((w, i) => ({ nr: i + 1, wdh: w, ...(i === wdh.length - 1 ? { last: last - 2 } : {}), zeit: zeitpunkt(tag, 18) })),
+    }] }],
+    ...extra,
+  });
+
+  it('zeigt die letzten 5 Einheiten neueste zuerst mit Gewicht je Satz und das nächste Ziel', () => {
+    const einheiten = [0, 1, 2, 3, 4, 5].map((t) => mit(`e${t}`, t, [10, 9], 16 + t));
+    const z: AppZustand = { ...zustand(), einheiten, varianten: [{ uebungId: 'kh_bankdruecken', last: 22, zielWdh: 11, seitSteigerung: 0, schwerSerie: 0 }] };
+    const v = uebungVerlauf(z, 'kh_bankdruecken');
+    expect(v.sitzungen.map((s) => s.datum)).toEqual([5, 4, 3, 2, 1].map((t) => zeitpunkt(t, 18).slice(0, 10)));
+    expect(v.sitzungen[0]!.saetze).toEqual([{ wert: 10, last: 21 }, { wert: 9, last: 19 }]);
+    expect(v.naechstes).toEqual({ zielWdh: 11, last: 22 });
+  });
+
+  it('ist leer ohne Training mit der Übung; Zirkel und Max-Tests zählen nicht', () => {
+    const zirkel = einheit('z', { format: 'zirkel', bloecke: [{ typ: 'zirkel', pauseSek: 0, runden: 1, positionen: [
+      { uebungId: 'kh_bankdruecken', saetze: 1, zielWdh: 10, ergebnisse: [{ nr: 1, wdh: 10, zeit: MI }] }] }] });
+    const z: AppZustand = { ...zustand(), einheiten: [zirkel] };
+    expect(uebungVerlauf(z, 'kh_bankdruecken')).toEqual({ sitzungen: [] });
   });
 });

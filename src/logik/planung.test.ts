@@ -5,6 +5,7 @@ import {
   startwerte, tausche, wochenziele, zirkelVorschlagen,
 } from './planung';
 import { absolviere, ort, setzePrognose, simuliereWoche, zeitpunkt, zustand } from './testhilfe';
+import { uebungVon } from './verlauf';
 import { MUSKELN, type AppZustand, type Einheit, type MuskelZustand, type Muskel } from './typen';
 
 const ids = (e: Einheit) => e.bloecke.flatMap((b) => b.positionen.map((p) => p.uebungId));
@@ -192,7 +193,13 @@ describe('Aufbau der Einheit', () => {
     const texte = e.aufwaermen.map((a) => a.vorgabe);
     expect(texte.slice(0, 3)).toEqual(zustand().katalog.aufwaermen.allgemein);
     expect(texte).toContain('10 Band-Pull-Aparts');
-    expect(e.aufwaermen.at(-1)).toEqual({ uebungId: e.bloecke[0]!.positionen[0]!.uebungId, vorgabe: '8 Wdh. mit 2 kg' });
+    const erste = e.bloecke[0]!.positionen[0]!;
+    const name = uebungVon(zustand(), erste.uebungId)!.name;
+    // Ohne bekannte Last folgt die Kalibrierung: kein Gewicht, das wie eine Vorgabe wirkt (Entscheidung 21.10.2026).
+    expect(e.aufwaermen.at(-1)).toEqual({ uebungId: erste.uebungId, vorgabe: `8 Wdh. ${name}: leichtes Gewicht` });
+    const mitLast = { ...zustand(), varianten: [{ uebungId: erste.uebungId, last: 16, zielWdh: 10, seitSteigerung: 3, schwerSerie: 0 }] };
+    const zweite = plane(mitLast);
+    expect(zweite.aufwaermen.at(-1)?.vorgabe).toMatch(new RegExp(`^8 Wdh\\. .+: \\d+(,\\d+)? kg$`));
     const ohneBand = plane(zustand({ orte: [ort(['KH', 'SCHRAEG', 'STANGE', 'TISCH', 'ERH'])] }));
     expect(ohneBand.aufwaermen.map((a) => a.vorgabe).join()).not.toContain('Band');
   });

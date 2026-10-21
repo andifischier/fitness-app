@@ -62,17 +62,6 @@ export function pauseNach(einheit: Einheit, i: number): number {
   return b.pauseSek;
 }
 
-// Nummer der Übung in der Einheit (1-basiert) und Zahl aller Übungen, für „Übung 1 von 7“.
-export function uebungNummer(einheit: Einheit, s: Schritt): { nr: number; von: number } {
-  let nr = 0;
-  let von = 0;
-  einheit.bloecke.forEach((b, bi) => b.positionen.forEach((_, pi) => {
-    von++;
-    if (bi === s.block && pi === s.position) nr = von;
-  }));
-  return { nr, von };
-}
-
 // Erster Satz einer Last-Übung, für die es noch keine Last gibt: Der Nutzer wählt das Gewicht,
 // Ziel ist die Untergrenze des Bereichs mit Reserve 3 (Kalibrierungssatz).
 export function istKalibrierung(z: AppZustand, einheit: Einheit, s: Schritt): boolean {
@@ -112,7 +101,7 @@ export function satzVorgabe(z: AppZustand, einheit: Einheit, s: Schritt): SatzVo
   const u = uebungVon(z, p.uebungId);
   const inSek = u?.bereich.einheit === 'Sek.';
   const bereich = u ? bereichFuer(e, u) : undefined;
-  const werte = { last: p.last, bandStufe: p.bandStufe };
+  const werte = { last: satzLast(z, einheit, s), bandStufe: p.bandStufe };
   const basis = { inSek, ...werte, kalibrierung: false, langsam: p.langsam === true };
   if (p.istMaxTest) {
     return { ...basis, art: 'maxTest', wert: 0, reserve: inSek ? 'Nur so lange, wie die Haltung sauber bleibt.' : 'Ohne Pause, nur saubere Wiederholungen.' };
@@ -154,24 +143,40 @@ export function kalibriere(z: AppZustand, ortId: string, u: Uebung, last: number
   return { last: neu, zielWdh: begrenze(wdhBei(schaetzung, neu, r), U - 1, O) };
 }
 
-// Trägt einen erledigten Satz ein (Zirkel-Station: Vorgabe). Nach dem Kalibrierungssatz bekommen
-// die restlichen Sätze Last und Ziel aus `kalibriere`.
+// Last eines Satzes: die des vorherigen Satzes, wenn der Nutzer sie geändert hat (Entscheidung
+// 21.10.2026: in jedem Satz änderbar), sonst die geplante. Nach dem Kalibrierungssatz gilt die
+// kalibrierte Last der Position.
+export function satzLast(z: AppZustand, einheit: Einheit, s: Schritt): number | undefined {
+  const p = positionVon(einheit, s);
+  const vorher = s.satz > 1 && !nachKalibrierung(z, einheit, s) ? p.ergebnisse[s.satz - 2]?.last : undefined;
+  return vorher ?? p.last;
+}
+
+// Lässt sich das Gewicht in diesem Satz wählen? Bei Last-Übungen außerhalb von Zirkel und Max-Test.
+export function lastWaehlbar(z: AppZustand, einheit: Einheit, s: Schritt): boolean {
+  const p = positionVon(einheit, s);
+  return einheit.bloecke[s.block]!.typ !== 'zirkel' && !p.istMaxTest && p.last !== undefined
+    && uebungVon(z, p.uebungId)?.lasttyp === 'Last';
+}
+
+// Trägt einen erledigten Satz ein (Zirkel-Station: Vorgabe), mit der gewählten Last. Nach dem
+// Kalibrierungssatz bekommen die restlichen Sätze Last und Ziel aus `kalibriere`.
 export function trageSatzEin(z: AppZustand, einheit: Einheit, s: Schritt, wert: number, jetzt: string, last?: number): Einheit {
   const neu = structuredClone(einheit);
   const p = positionVon(neu, s);
   const u = uebungVon(z, p.uebungId);
   const inSek = u?.bereich.einheit === 'Sek.';
   const kalibrierung = istKalibrierung(z, einheit, s);
-  const satzLast = kalibrierung && last !== undefined ? last : p.last;
+  const gewicht = last !== undefined && lastWaehlbar(z, einheit, s) ? last : satzLast(z, einheit, s);
   const ergebnis: SatzErgebnis = {
     nr: p.ergebnisse.length + 1,
     ...(inSek ? { sek: wert } : { wdh: wert }),
-    ...(satzLast !== undefined ? { last: satzLast } : {}),
+    ...(gewicht !== undefined ? { last: gewicht } : {}),
     ...(p.bandStufe ? { bandStufe: p.bandStufe } : {}),
     zeit: jetzt,
   };
   p.ergebnisse.push(ergebnis);
-  if (kalibrierung && u && satzLast !== undefined) Object.assign(p, kalibriere(z, neu.ortId, u, satzLast, wert));
+  if (kalibrierung && u && gewicht !== undefined) Object.assign(p, kalibriere(z, neu.ortId, u, gewicht, wert));
   return neu;
 }
 
@@ -223,6 +228,19 @@ export function feedbackVorschlag(z: AppZustand, einheit: Einheit, s: Stelle): F
     return feedbackVon({ ...p, ergebnisse: p.ergebnisse.slice(1) });
   }
   return feedbackVon(p);
+}
+
+// Korrigiert die Wiederholungen bzw. Sekunden eines erledigten Satzes (Entscheidung 21.10.2026:
+// Zahlen auf „Wie war die Übung?“ antippen). Last und Ziel der Position bleiben.
+export function korrigiereSatz(z: AppZustand, einheit: Einheit, s: Stelle, nr: number, wert: number): Einheit {
+  const neu = structuredClone(einheit);
+  const p = neu.bloecke[s.block]!.positionen[s.position]!;
+  const r = p.ergebnisse.find((x) => x.nr === nr);
+  if (!r) return einheit;
+  const w = Math.max(0, Math.round(wert));
+  if (uebungVon(z, p.uebungId)?.bereich.einheit === 'Sek.') r.sek = w;
+  else r.wdh = w;
+  return neu;
 }
 
 export function setzeFeedback(einheit: Einheit, s: Stelle, feedback: Feedback): Einheit {

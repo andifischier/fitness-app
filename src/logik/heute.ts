@@ -40,6 +40,20 @@ export function aktuelleEinheit(z: AppZustand, jetzt: string): Einheit | undefin
     .sort((a, b) => (a.erstelltAm < b.erstelltAm ? 1 : -1))[0];
 }
 
+// Heute schon trainiert (Entscheidung 21.10.2026: Heute zeigt dann „Heute erledigt“): die letzte heute
+// beendete Einheit mit mindestens einem Satz, auch der Testtag, mit Dauer in Minuten und Satzzahl.
+export function heuteErledigt(z: AppZustand, jetzt: string):
+  { einheit: Einheit; dauerMin: number; saetze: number } | undefined {
+  const tag = jetzt.slice(0, 10);
+  const einheit = fertigeEinheiten(z).filter((e) => einheitZeit(e).slice(0, 10) === tag && saetzeVon(e) > 0).at(-1);
+  if (!einheit) return undefined;
+  const dauerMin = einheit.gestartetAm && einheit.beendetAm
+    ? Math.max(1, Math.round(stundenZwischen(einheit.gestartetAm, einheit.beendetAm) * 60)) : 0;
+  return { einheit, dauerMin, saetze: saetzeVon(einheit) };
+}
+
+const saetzeVon = (e: Einheit) => e.bloecke.reduce((n, b) => n + b.positionen.reduce((m, p) => m + p.ergebnisse.length, 0), 0);
+
 // Nächster Max-Test am Ort: Muster, Übung und ab wann er fällig ist (Rhythmus wie `maxTestFaellig`,
 // ohne Erholungsfenster). In einer Erholungswoche frühestens am nächsten Montag.
 export function naechsterMaxTest(z: AppZustand, jetzt: string, ortId: string):
