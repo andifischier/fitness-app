@@ -1,6 +1,6 @@
 // Vor dem Start (Mockup 2): Wochenprognose (nur erste Einheit der Woche, mit Angebot einer
-// Erholungswoche), Ort, „Morgen wieder?“, „15 Min länger?“ und „Einheit erstellen“; darunter
-// „Stattdessen Zirkel“ mit der Liste der Zirkel. Alles ist vorausgefüllt.
+// Erholungswoche), Ort, Kombi oder Klassisch (Standard Kombi), „Morgen wieder?“, „15 Min länger?“
+// und „Einheit erstellen“; darunter „Stattdessen Zirkel“ mit der Liste der Zirkel. Alles ist vorausgefüllt.
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { PROFIL } from '../../konfiguration';
@@ -31,6 +31,7 @@ const GRUND_TEXT: Record<ErholungswocheGrund, string> = {
 
 const JA_NEIN = [{ wert: 'ja', text: 'Ja' }, { wert: 'nein', text: 'Nein' }] as const;
 const jaNein = (an: boolean) => (an ? 'ja' : 'nein');
+const ARTEN = [{ wert: 'kombi', text: 'Kombi' }, { wert: 'klassisch', text: 'Klassisch' }] as const;
 
 function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
   const [ortId, setOrtId] = useState(fragen.ortId);
   const [morgenWieder, setMorgenWieder] = useState(fragen.morgenWiederVorschlag);
   const [laenger, setLaenger] = useState(false);
+  const [art, setArt] = useState<'kombi' | 'klassisch'>('kombi');   // Standard Kombi (Entscheidung 21.10.2026)
   const [zirkelModus, setZirkelModus] = useState((fragen.zirkelVorschlag || params.get('zirkel') === '1') && angebot === null);
   const [fehler, setFehler] = useState(false);
   const [laeuft, setLaeuft] = useState(false);
@@ -63,6 +65,7 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
     const extra = { ...(angebot !== null ? { erholungswoche: erholung } : {}), laenger: ohneZirkel && laenger };
     const einheit = erstelleEinheit(z, {
       jetzt: zeit, ortId, prognose, morgenWieder: ohneZirkel && morgenWieder, laenger: extra.laenger, zirkelId,
+      klassisch: art === 'klassisch',
       ...(angebot !== null ? { erholungswoche: erholung } : {}),
     });
     try {
@@ -129,6 +132,12 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
           </Karte>
         ) : (
           <>
+            <Karte titel="Wie trainierst du heute?"
+              hinweis={art === 'kombi'
+                ? 'Kombi: je ein Satz jeder Übung der Runde, dann Pause. Spart Zeit.'
+                : 'Klassisch: alle Sätze einer Übung, dann die nächste.'}>
+              <Auswahl optionen={ARTEN} wert={art} spalten={2} onChange={setArt} />
+            </Karte>
             <Karte titel="Morgen wieder trainieren?"
               hinweis="Bei Ja trainierst du heute nur Ober- oder Unterkörper, damit morgen die andere Hälfte frisch ist.">
               <Auswahl optionen={JA_NEIN} wert={jaNein(morgenWieder)} spalten={2} onChange={(w) => setMorgenWieder(w === 'ja')} />

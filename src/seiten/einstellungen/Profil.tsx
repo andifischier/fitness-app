@@ -108,7 +108,7 @@ export function TrainingSeite() {
       </Karte>
       <Karte titel="Pausen" hinweis={`Zwischen den Sätzen, ${pause.min} bis ${pause.max} Sek.`}>
         <div className="flex flex-col gap-4">
-          {([['grund', 'Grundübung'], ['isolation', 'Isolation'], ['supersatz', 'Supersatz (nach dem Paar)']] as const)
+          {([['grund', 'Grundübung'], ['isolation', 'Isolation'], ['supersatz', 'Kombi (nach jeder Runde)']] as const)
             .map(([art, titel]) => (
               <div key={art} className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-basis font-semibold">{titel}</span>

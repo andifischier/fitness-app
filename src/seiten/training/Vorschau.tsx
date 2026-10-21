@@ -84,7 +84,7 @@ function Ansicht({ z, einheit }: { z: AppZustand; einheit: Einheit }) {
         )}
 
         {einheit.bloecke.map((b, bi) => {
-          const label = b.typ === 'supersatz' ? `Supersatz ${String.fromCharCode(65 + supersatz++)}`
+          const label = b.typ === 'supersatz' ? `Kombi ${String.fromCharCode(65 + supersatz++)}`
             : b.typ === 'zirkel' ? `${b.runden ?? 1} Runden` : undefined;
           return (
             <section key={bi} className="rounded-karte border border-rand bg-flaeche px-5 py-4">

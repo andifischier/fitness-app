@@ -61,8 +61,6 @@ export const ZEITBUDGET = {
   echteSatzdauerAbEinheit: 5,     // gleitender Mittelwert über die letzten 5 Einheiten je Format
   laengerMin: 15,
   laengerBisPrognose: 2,
-  // Supersatz-Anteil nach Wochenprognose (1 = so viele wie möglich)
-  supersatzAnteil: { 1: 1, 2: 1, 3: 0.5, 4: 0.3, 5: 0.3, 6: 0.3 } as Record<number, number>,
 } as const;
 
 // Wochenziel pro Muskel
@@ -97,15 +95,10 @@ export const EINHEIT = {
   zyklusWochen: 6,
 } as const;
 
-// Supersatz-Paare in der Reihenfolge der Bildung
-export const SUPERSATZ_PAARE: readonly (readonly [readonly MusterId[], readonly MusterId[]])[] = [
-  [['hDruck'], ['hZug']],
-  [['vDruck'], ['vZug']],
-  [['Bizeps'], ['Trizeps']],
-  [['Knie', 'Einbein'], ['Rumpf']],
-  [['Huefte'], ['Schulter']],
-  [['Rumpf'], ['Waden']],
-];
+// Kombi-Runden: höchstens so viele Übungen je Runde (Pause nach der Runde = Supersatz-Pause)
+export const KOMBI = {
+  maxUebungen: 3,
+} as const;
 
 // Art der Übung nach Muster: Grundübung, Isolation, Zusatz (Bauch und Waden, außerhalb des
 // Zeitbudgets) oder Kondition (nur Zirkel und Aufwärmen)
