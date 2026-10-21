@@ -291,3 +291,8 @@ export const FORTSCHRITT = {
   wochen: 6,                        // Balken je Muskel: aktuelle Woche und die 5 davor
   uebungVerlauf: 5,                 // „Dein Verlauf“ in der Übungsansicht: letzte Einheiten
 } as const;
+
+// Absturz eines Bildschirms (Entscheidung 21.10.2026): selbst neu laden, kurz danach nicht noch einmal
+export const ABSTURZ = {
+  sperreMs: 15_000,                 // zweiter Absturz innerhalb dieser Zeit ⇒ Hinweis statt Neuladen
+} as const;
