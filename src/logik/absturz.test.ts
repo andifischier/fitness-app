@@ -1,18 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import { ABSTURZ } from '../konfiguration';
-import { neuLadenErlaubt } from './absturz';
+import { absturzReaktion } from './absturz';
 
-describe('neuLadenErlaubt', () => {
-  it('lädt beim ersten Absturz neu', () => {
-    expect(neuLadenErlaubt(1_000_000, undefined)).toBe(true);
+const T = 1_000_000;
+
+describe('absturzReaktion', () => {
+  it('baut beim ersten Absturz still neu auf', () => {
+    expect(absturzReaktion(T, '#/onboarding/2', undefined)).toBe('neuAufbauen');
   });
-  it('lädt nicht erneut, wenn gerade erst neu geladen wurde', () => {
-    expect(neuLadenErlaubt(1_000_000, 1_000_000 - ABSTURZ.sperreMs + 1)).toBe(false);
+  it('steigert sich auf demselben Bildschirm: neu laden, dann Hinweis', () => {
+    expect(absturzReaktion(T, '#/a', { ms: T - 100, seite: '#/a', reaktion: 'neuAufbauen' })).toBe('neuLaden');
+    expect(absturzReaktion(T, '#/a', { ms: T - 100, seite: '#/a', reaktion: 'neuLaden' })).toBe('hinweis');
   });
-  it('lädt wieder neu, sobald die Sperre vorbei ist', () => {
-    expect(neuLadenErlaubt(1_000_000, 1_000_000 - ABSTURZ.sperreMs)).toBe(true);
+  it('beginnt beim nächsten Seitenwechsel wieder bei der ersten Stufe', () => {
+    expect(absturzReaktion(T, '#/onboarding/3', { ms: T - 100, seite: '#/onboarding/2', reaktion: 'neuLaden' })).toBe('neuAufbauen');
   });
-  it('lädt neu, wenn die Uhr zurückgestellt wurde', () => {
-    expect(neuLadenErlaubt(1_000_000, 2_000_000)).toBe(true);
+  it('beginnt nach Ablauf der Sperre wieder bei der ersten Stufe', () => {
+    expect(absturzReaktion(T, '#/a', { ms: T - ABSTURZ.sperreMs, seite: '#/a', reaktion: 'neuLaden' })).toBe('neuAufbauen');
+  });
+  it('beginnt neu, wenn die Uhr zurückgestellt wurde', () => {
+    expect(absturzReaktion(T, '#/a', { ms: T + 100, seite: '#/a', reaktion: 'neuLaden' })).toBe('neuAufbauen');
   });
 });

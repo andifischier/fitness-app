@@ -292,7 +292,7 @@ export const FORTSCHRITT = {
   uebungVerlauf: 5,                 // „Dein Verlauf“ in der Übungsansicht: letzte Einheiten
 } as const;
 
-// Absturz eines Bildschirms (Entscheidung 21.10.2026): selbst neu laden, kurz danach nicht noch einmal
+// Absturz eines Bildschirms (Entscheidungen 21.10.2026): neu aufbauen, dann neu laden, dann Hinweis
 export const ABSTURZ = {
-  sperreMs: 15_000,                 // zweiter Absturz innerhalb dieser Zeit ⇒ Hinweis statt Neuladen
+  sperreMs: 5_000,                  // erneuter Absturz desselben Bildschirms in dieser Zeit ⇒ nächste Stufe
 } as const;

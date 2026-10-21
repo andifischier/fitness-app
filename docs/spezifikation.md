@@ -630,7 +630,7 @@ Die App ist eine reine Client-Anwendung ohne eigenen Server: statisch gehostet, 
 | Tests | Vitest für Planungs- und Progressionsmodul, Testfälle aus den Python-Prototypen; fake-indexeddb als Ersatz für IndexedDB nur in Tests |
 | Hosting | GitHub Pages, automatischer Build über GitHub Actions bei jedem Push auf `main` |
 | Zielgerät | Android, Chrome; Bildschirm an über Screen Wake Lock API; Pausenende mit Ton und Vibration (Vibration API) |
-| Absturz eines Bildschirms | Keine leere Seite: Die App lädt selbst neu. Stürzt sie innerhalb von 15 Sek. erneut ab, zeigt sie „Da ging etwas schief“ mit der Fehlermeldung und „Neu laden“ (Entscheidung 21.10.2026) |
+| Absturz eines Bildschirms | Keine leere Seite: Die App baut den Bildschirm still neu auf. Stürzt derselbe Bildschirm innerhalb von 5 Sek. wieder ab, lädt sie die Seite neu; passiert es danach noch einmal, zeigt sie „Da ging etwas schief“ mit der Fehlermeldung und „Neu laden“. Ein Absturz auf einem anderen Bildschirm beginnt wieder beim stillen Neuaufbau (Entscheidungen 21.10.2026) |
 | Parameter | Alle Zahlenwerte dieses Dokuments in `src/konfiguration.ts` |
 | Mitgelieferte Dateien | `katalog.json`, `planungslogik_prototyp.py`, `progression_prototyp.py` im Ordner `docs/` |
 

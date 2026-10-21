@@ -1,53 +1,61 @@
-// Fängt den Absturz eines Bildschirms ab, statt eine leere Seite zu zeigen (Entscheidung 21.10.2026):
-// zuerst selbst neu laden, beim zweiten Absturz kurz danach ein Hinweis mit Fehlertext und Knopf.
-import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { neuLadenErlaubt } from '../logik/absturz';
+// Fängt den Absturz eines Bildschirms ab, statt eine leere Seite zu zeigen (Entscheidungen 21.10.2026):
+// zuerst still neu aufbauen, stürzt derselbe Bildschirm sofort wieder ab, die Seite neu laden, erst danach
+// ein Hinweis mit Fehlertext und Knopf.
+import { Component, Fragment, type ErrorInfo, type ReactNode } from 'react';
+import { absturzReaktion, type AbsturzReaktion, type LetzteReaktion } from '../logik/absturz';
 import { Hinweis, Karte, Knopf, Seite } from './bausteine';
 
-const SCHLUESSEL = 'fitness.letztesNeuladen';
+const LETZTE = 'fitness.absturz';
 
-function lies(): number | undefined {
+function lies(): LetzteReaktion | undefined {
   try {
-    const wert = Number(sessionStorage.getItem(SCHLUESSEL));
-    return wert > 0 ? wert : undefined;
+    const wert = sessionStorage.getItem(LETZTE);
+    return wert ? (JSON.parse(wert) as LetzteReaktion) : undefined;
   } catch {
     return undefined;
   }
 }
 
-function merke(ms: number) {
+function merke(reaktion: AbsturzReaktion) {
   try {
-    sessionStorage.setItem(SCHLUESSEL, String(ms));
+    sessionStorage.setItem(LETZTE, JSON.stringify({ ms: Date.now(), seite: location.hash, reaktion }));
   } catch {
-    // Ohne Speicher lädt die App einmal neu und zeigt beim nächsten Absturz den Hinweis.
+    // Ohne Speicher bleibt es bei der ersten Stufe; das Neuaufbauen allein kann keine Schleife bilden.
   }
 }
 
-export class Absturz extends Component<{ children: ReactNode }, { fehler?: Error; neuLaden: boolean }> {
-  state: { fehler?: Error; neuLaden: boolean } = { neuLaden: false };
+function text(fehler: Error): string {
+  return `${fehler.name}: ${fehler.message || String(fehler)}`;
+}
 
-  static getDerivedStateFromError(fehler: Error) {
-    return { fehler, neuLaden: neuLadenErlaubt(Date.now(), lies()) };
+type Zustand = { fehler?: Error; reaktion?: AbsturzReaktion; runde: number };
+
+export class Absturz extends Component<{ children: ReactNode }, Zustand> {
+  state: Zustand = { runde: 0 };
+
+  static getDerivedStateFromError(fehler: Error): Partial<Zustand> {
+    return { fehler, reaktion: absturzReaktion(Date.now(), location.hash, lies()) };
   }
 
   componentDidCatch(fehler: Error, info: ErrorInfo) {
     console.error(fehler, info.componentStack);
-    if (this.state.neuLaden) {
-      merke(Date.now());
-      window.location.reload();
-    }
+    const { reaktion } = this.state;
+    if (!reaktion) return;
+    merke(reaktion);
+    if (reaktion === 'neuAufbauen') this.setState((z) => ({ fehler: undefined, reaktion: undefined, runde: z.runde + 1 }));
+    if (reaktion === 'neuLaden') window.location.reload();
   }
 
   render() {
-    const { fehler, neuLaden } = this.state;
-    if (!fehler) return this.props.children;
-    if (neuLaden) return null;
+    const { fehler, reaktion, runde } = this.state;
+    if (!fehler) return <Fragment key={runde}>{this.props.children}</Fragment>;
+    if (reaktion !== 'hinweis') return null;
     return (
       <Seite titel="Da ging etwas schief">
         <Karte titel="Bitte lade neu" hinweis="Deine Daten sind sicher gespeichert.">
-          <Knopf onClick={() => { merke(Date.now()); window.location.reload(); }}>Neu laden</Knopf>
+          <Knopf onClick={() => window.location.reload()}>Neu laden</Knopf>
         </Karte>
-        <Hinweis>Fehler: {fehler.message || String(fehler)}</Hinweis>
+        <Hinweis>Fehler: {text(fehler)}</Hinweis>
       </Seite>
     );
   }
