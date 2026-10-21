@@ -40,8 +40,8 @@ describe('App-Rahmen', () => {
     expect(aktiv).toEqual([titel]);
   });
 
-  // Onboarding und Testtag laufen als Vollbild ohne Tab-Leiste.
-  it.each(['/onboarding/1', '/testtag'])('zeigt unter %s keine Tab-Leiste', (pfad) => {
+  // Onboarding, Testtag und Training (ab Vor dem Start) laufen als Vollbild ohne Tab-Leiste.
+  it.each(['/onboarding/1', '/testtag', '/start', '/vorschau/x', '/training/x', '/mobility'])('zeigt unter %s keine Tab-Leiste', (pfad) => {
     expect(rendere(pfad)).not.toContain('Hauptnavigation');
   });
 });

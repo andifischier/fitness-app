@@ -8,8 +8,9 @@ import { testtagEinheit } from '../logik/testtag';
 import type { Einheit } from '../logik/typen';
 import { FitnessDb, ladeZustand } from './db';
 import {
-  aendereEinstellungen, beendeOnboarding, ladeEinstellungen, loescheEigeneUebung, loescheEigenesUtensil, loescheOrt,
-  speichereEigeneUebung, speichereEigenesUtensil, speichereOrt, speichereTesttag,
+  aendereEinstellungen, aenderePrognose, beendeOnboarding, fuehreWochenabschluesseAus, ladeEinstellungen, loescheEigeneUebung,
+  loescheEigenesUtensil, loescheOrt, speichereEigeneUebung, speichereEigenesUtensil, speichereNeueEinheit, speichereOrt,
+  speichereTausch, speichereTesttag, verwerfeEinheit,
 } from './speichern';
 
 let nr = 0;
@@ -124,5 +125,52 @@ describe('Onboarding', () => {
     await beendeOnboarding(d);
     expect((await ladeEinstellungen(d)).onboardingAbgeschlossen).toBe(true);
     expect((await ladeZustand(d)).maxTests).toEqual([]);
+  });
+});
+
+describe('Einheit erstellen, tauschen, verwerfen', () => {
+  const geplant = (id: string): Einheit => ({ ...einheit('zuhause', 'kh_bankdruecken'), id, status: 'geplant' });
+
+  it('speichert die Einheit samt Woche und ersetzt ältere geplante Einheiten', async () => {
+    const d = neueDb();
+    await speichereOrt(ort(), d);
+    await d.einheiten.add(geplant('alt'));
+    await d.einheiten.add({ ...geplant('fertig'), status: 'abgeschlossen' });
+    await speichereNeueEinheit(geplant('neu'), 4, '2026-10-20T10:00:00', { erholungswoche: true, laenger: true }, d);
+    const z = await ladeZustand(d);
+    expect(z.einheiten.map((e) => e.id).sort()).toEqual(['fertig', 'neu']);
+    expect(z.wochen).toHaveLength(1);
+    expect(z.wochen[0]).toMatchObject({ id: '2026-W43', prognose: 4, einheiten: 0, erholungswoche: true, laengerAngenommen: true });
+  });
+
+  it('tauscht und verwirft nur nie gestartete Einheiten', async () => {
+    const d = neueDb();
+    await d.einheiten.add(geplant('g'));
+    await d.einheiten.add({ ...geplant('l'), status: 'laufend' });
+    expect(await speichereTausch({ ...geplant('g'), notiz: 'getauscht' }, d)).toBe(true);
+    expect(await speichereTausch({ ...geplant('l'), notiz: 'getauscht' }, d)).toBe(false);
+    expect((await d.einheiten.get('g'))?.notiz).toBe('getauscht');
+    await verwerfeEinheit('g', d);
+    await verwerfeEinheit('l', d);
+    expect((await d.einheiten.toArray()).map((e) => e.id)).toEqual(['l']);
+  });
+
+  it('ändert die Prognose auch vor der ersten Einheit der Woche', async () => {
+    const d = neueDb();
+    await speichereOrt(ort(), d);
+    await aenderePrognose(2, 'zuhause', '2026-10-19T08:00:00', d);
+    expect((await d.wochen.get('2026-W43'))).toMatchObject({ prognose: 2, einheiten: 0, erholungswoche: false });
+    await aenderePrognose(5, 'zuhause', '2026-10-20T08:00:00', d);
+    expect((await d.wochen.get('2026-W43'))?.prognose).toBe(5);
+  });
+
+  it('wertet beim Öffnen alle abgelaufenen Wochen aus', async () => {
+    const d = neueDb();
+    await speichereOrt(ort(), d);
+    await aenderePrognose(3, 'zuhause', '2026-10-12T08:00:00', d);
+    await aenderePrognose(3, 'zuhause', '2026-10-19T08:00:00', d);
+    await fuehreWochenabschluesseAus('2026-10-21T08:00:00', d);
+    const wochen = await d.wochen.toArray();
+    expect(wochen.map((w) => [w.id, w.ausgewertet ?? false])).toEqual([['2026-W42', true], ['2026-W43', false]]);
   });
 });

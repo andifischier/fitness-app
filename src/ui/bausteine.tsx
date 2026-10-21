@@ -203,6 +203,25 @@ export function Zeile({ zu, titel, wert }: { zu: string; titel: string; wert?: s
   );
 }
 
+// Abhakliste (Aufwärmen, Mobility); der Haken ist nur eine Hilfe und wird nicht gespeichert.
+export function Checkliste({ zeilen }: { zeilen: string[] }) {
+  const [an, setAn] = useState<number[]>([]);
+  return (
+    <ul className="rounded-karte border border-rand bg-flaeche px-5">
+      {zeilen.map((zeile, i) => (
+        <li key={i} className="border-b border-linie last:border-b-0">
+          <button type="button" role="checkbox" aria-checked={an.includes(i)}
+            onClick={() => setAn(an.includes(i) ? an.filter((x) => x !== i) : [...an, i])}
+            className="flex min-h-[56px] w-full items-center gap-4 py-3 text-left text-basis">
+            <Haekchen an={an.includes(i)} />
+            {zeile}
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function Laedt() {
   return <main className="mx-auto max-w-xl px-seite pt-12 text-gedaempft">Lädt …</main>;
 }

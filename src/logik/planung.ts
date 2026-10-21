@@ -371,19 +371,25 @@ function kgText(kg: number): string {
   return `${String(kg).replace('.', ',')} kg`;
 }
 
-export function aufwaermenFuer(z: AppZustand, ort: Ort, bloecke: Block[]): Einheit['aufwaermen'] {
-  const a = z.katalog.aufwaermen;
-  const zeilen = a.allgemein.map((t) => ({ uebungId: '', vorgabe: t }));
-  const uebungen = bloecke.flatMap((b) => b.positionen).map((p) => uebungVon(z, p.uebungId)).filter((u) => u !== undefined);
+// Mobility-Zeilen der Muster ohne Doppelte; Zeilen „(nur mit BAND)“ nur, wenn das Utensil am Ort ist.
+export function mobilityZeilen(z: AppZustand, ort: Ort, muster: Iterable<MusterId>): string[] {
   const mobility: string[] = [];
-  for (const muster of new Set(uebungen.map((u) => u.muster))) {
-    for (const zeile of a.mobility[muster] ?? []) {
+  for (const m of muster) {
+    for (const zeile of z.katalog.aufwaermen.mobility[m] ?? []) {
       const nurMit = /\s*\(nur mit ([A-Z]+)\)$/.exec(zeile);
       if (nurMit && !hatUtensil(ort, nurMit[1]!)) continue;
       const text = zeile.replace(/\s*\(nur mit [A-Z]+\)$/, '');
       if (!mobility.includes(text)) mobility.push(text);
     }
   }
+  return mobility;
+}
+
+export function aufwaermenFuer(z: AppZustand, ort: Ort, bloecke: Block[]): Einheit['aufwaermen'] {
+  const a = z.katalog.aufwaermen;
+  const zeilen = a.allgemein.map((t) => ({ uebungId: '', vorgabe: t }));
+  const uebungen = bloecke.flatMap((b) => b.positionen).map((p) => uebungVon(z, p.uebungId)).filter((u) => u !== undefined);
+  const mobility = mobilityZeilen(z, ort, new Set(uebungen.map((u) => u.muster)));
   zeilen.push(...mobility.slice(0, a.maxMobilityZeilen).map((t) => ({ uebungId: '', vorgabe: t })));
   const erste = bloecke.flatMap((b) => b.positionen).find((p) => {
     const u = uebungVon(z, p.uebungId);

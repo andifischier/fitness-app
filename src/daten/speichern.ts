@@ -2,6 +2,8 @@
 // Löschen prüft dort noch einmal, dass der Eintrag nie genutzt wurde.
 import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
 import { ohneUebung, ortGenutzt, uebungGenutzt, utensilGenutzt } from '../logik/einstellungen';
+import { wocheMitPrognose } from '../logik/heute';
+import { offeneWochenabschluesse, wochenabschluss } from '../logik/progression';
 import { schliesseTesttagAb } from '../logik/testtag';
 import type { Einheit, Einstellungen, Ort, Uebung, Utensil } from '../logik/typen';
 import { db, EINSTELLUNGEN_SCHLUESSEL, ladeZustand, TABELLEN, type FitnessDb } from './db';
@@ -88,4 +90,52 @@ export async function speichereTesttag(einheit: Einheit, jetzt: string, d: Fitne
 // Onboarding ohne Testtag beenden: Die Startstufen kommen aus dem Level.
 export async function beendeOnboarding(d: FitnessDb = db): Promise<void> {
   await aendereEinstellungen((e) => ({ ...e, onboardingAbgeschlossen: true }), d);
+}
+
+// ---------- Heute, Vor dem Start und Vorschau ----------
+
+// Speichert eine neu erstellte Einheit und die Woche mit der Prognose. Ältere, nie gestartete
+// Einheiten werden ersetzt; es gibt höchstens eine geplante Einheit.
+export async function speichereNeueEinheit(einheit: Einheit, prognose: number, jetzt: string,
+  extra: { erholungswoche?: boolean; laenger?: boolean } = {}, d: FitnessDb = db): Promise<void> {
+  await d.transaction('rw', TABELLEN.map((t) => d.table(t)), async () => {
+    const z = await ladeZustand(d);
+    await d.wochen.put(wocheMitPrognose(z, jetzt, prognose, einheit.ortId, extra));
+    await d.einheiten.where('status').equals('geplant').delete();
+    await d.einheiten.put(einheit);
+  });
+}
+
+// Speichert einen Tausch in der Vorschau; nur, solange die Einheit nicht gestartet ist.
+export async function speichereTausch(einheit: Einheit, d: FitnessDb = db): Promise<boolean> {
+  return d.transaction('rw', d.einheiten, async () => {
+    if ((await d.einheiten.get(einheit.id))?.status !== 'geplant' || einheit.status !== 'geplant') return false;
+    await d.einheiten.put(einheit);
+    return true;
+  });
+}
+
+// „Neu erstellen“: verwirft eine nie gestartete Einheit.
+export async function verwerfeEinheit(einheitId: string, d: FitnessDb = db): Promise<void> {
+  await d.transaction('rw', d.einheiten, async () => {
+    if ((await d.einheiten.get(einheitId))?.status === 'geplant') await d.einheiten.delete(einheitId);
+  });
+}
+
+// Prognose der Woche auf Heute ändern (Entscheidung 21.10.2026: jederzeit, auch vor der ersten Einheit).
+export async function aenderePrognose(prognose: number, ortId: string, jetzt: string, d: FitnessDb = db): Promise<void> {
+  await d.transaction('rw', TABELLEN.map((t) => d.table(t)), async () => {
+    await d.wochen.put(wocheMitPrognose(await ladeZustand(d), jetzt, prognose, ortId));
+  });
+}
+
+// Wochenabschluss beim Öffnen der App für alle abgeschlossenen, noch nicht ausgewerteten Wochen.
+export async function fuehreWochenabschluesseAus(jetzt: string, d: FitnessDb = db): Promise<void> {
+  await d.transaction('rw', TABELLEN.map((t) => d.table(t)), async () => {
+    let z = await ladeZustand(d);
+    const offen = offeneWochenabschluesse(z, jetzt);
+    if (offen.length === 0) return;
+    for (const id of offen) z = wochenabschluss(z, id);
+    for (const t of ['muskeln', 'zyklen', 'muster', 'wochen'] as const) await d.table(t).bulkPut(z[t]);
+  });
 }

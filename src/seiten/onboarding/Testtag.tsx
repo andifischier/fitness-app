@@ -8,7 +8,7 @@ import { videoLinkVon } from '../../logik/einstellungen';
 import { testtagEinheit } from '../../logik/testtag';
 import type { AppZustand, Einheit, SatzErgebnis } from '../../logik/typen';
 import { uebungVon } from '../../logik/verlauf';
-import { Haekchen, Hinweis, Knopf, Laedt } from '../../ui/bausteine';
+import { Checkliste, Hinweis, Knopf, Laedt } from '../../ui/bausteine';
 import { Icon } from '../../ui/Icon';
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
 
@@ -86,23 +86,11 @@ function Ablauf({ z, start }: { z: AppZustand; start: Einheit }) {
 }
 
 function Aufwaermen({ zeilen, weiter }: { zeilen: Einheit['aufwaermen']; weiter: () => void }) {
-  const [an, setAn] = useState<number[]>([]);
   return (
     <div className="mt-8 flex flex-1 flex-col">
       <h1 className="text-titel font-extrabold">Aufwärmen</h1>
       <Hinweis>Etwa 5 Minuten. Danach geht es mit den Tests los.</Hinweis>
-      <ul className="mt-6 rounded-karte border border-rand bg-flaeche px-5">
-        {zeilen.map((zeile, i) => (
-          <li key={i} className="border-b border-linie last:border-b-0">
-            <button type="button" role="checkbox" aria-checked={an.includes(i)}
-              onClick={() => setAn(an.includes(i) ? an.filter((x) => x !== i) : [...an, i])}
-              className="flex min-h-[56px] w-full items-center gap-4 py-3 text-left text-basis">
-              <Haekchen an={an.includes(i)} />
-              {zeile.vorgabe}
-            </button>
-          </li>
-        ))}
-      </ul>
+      <div className="mt-6"><Checkliste zeilen={zeilen.map((z) => z.vorgabe)} /></div>
       <div className="mt-auto flex flex-col gap-3 pt-8">
         <Knopf onClick={weiter}>Fertig</Knopf>
         <Knopf art="sekundaer" onClick={weiter}>Überspringen</Knopf>
