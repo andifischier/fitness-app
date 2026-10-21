@@ -227,3 +227,10 @@
   Neue Tests für alle neuen Funktionen. Acht Entscheidungen in `docs/entscheidungen.md`, Spezifikation angepasst. Keine
   neue Datenbankversion.
 - **Warum:** Wunsch des Nutzers nach einer gesamtheitlichen Prüfung von Bedienung und Funktion.
+
+## App zurücksetzen (21.10.2026)
+- **Was:** Ganz unten in den Einstellungen die Karte „Von vorn beginnen“ mit „App zurücksetzen“. Zuerst bietet die App
+  ein Backup an (In Drive sichern, Auf dem Handy speichern oder ohne Backup weiter), dann folgt „Alles löschen“ als
+  zweite Bestätigung. Gelöscht werden alle Daten in einem Schritt (`setzeZurueck` in `src/daten/speichern.ts`, mit
+  Test); danach startet das Onboarding. Drei Entscheidungen in `docs/entscheidungen.md`, Spezifikation angepasst.
+- **Warum:** Wunsch des Nutzers, die App von 0 zu starten.

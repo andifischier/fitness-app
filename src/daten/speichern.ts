@@ -91,6 +91,14 @@ export async function speichereTesttag(einheit: Einheit, jetzt: string, d: Fitne
   });
 }
 
+// App zurücksetzen (Entscheidung 21.10.2026): löscht alle Daten in einem Schritt; danach startet die
+// App wie frisch installiert mit dem Onboarding. Schlägt etwas fehl, bleibt alles wie vorher.
+export async function setzeZurueck(d: FitnessDb = db): Promise<void> {
+  await d.transaction('rw', TABELLEN.map((t) => d.table(t)), async () => {
+    for (const t of TABELLEN) await d.table(t).clear();
+  });
+}
+
 // Onboarding ohne Testtag beenden: Die Startstufen kommen aus dem Level.
 export async function beendeOnboarding(d: FitnessDb = db): Promise<void> {
   await aendereEinstellungen((e) => ({ ...e, onboardingAbgeschlossen: true }), d);
