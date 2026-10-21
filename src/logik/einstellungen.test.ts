@@ -253,7 +253,7 @@ describe('Favoriten, Ausschlüsse und Video-Links', () => {
   it('eigener Video-Link hat Vorrang vor Katalogvideo und YouTube-Suche', () => {
     const u = katalogUebung('klimmzug');
     expect(videoLinkVon(e, u)).toBe(`https://www.youtube.com/watch?v=${u.videoId}`);
-    const ohneVideo = katalogUebung('kh_curls');
+    const ohneVideo = entwurfAusVorlage(katalogUebung('kh_curls'));
     expect(videoLinkVon(e, ohneVideo)).toBe(ohneVideo.youtubeUrl);
     const mit = mitVideoLink(e, u.id, ' https://youtu.be/abc ');
     expect(videoLinkVon(mit, u)).toBe('https://youtu.be/abc');
@@ -277,7 +277,7 @@ describe('Favoriten, Ausschlüsse und Video-Links', () => {
     expect(videoIdVon(e, u)).toBe(u.videoId);
     expect(videoIdVon(mitVideoLink(e, u.id, 'https://youtu.be/abcdefghijk'), u)).toBe('abcdefghijk');
     expect(videoIdVon(mitVideoLink(e, u.id, 'https://example.org/x'), u)).toBeUndefined();
-    expect(videoIdVon(e, katalogUebung('kh_curls'))).toBeUndefined();
+    expect(videoIdVon(e, entwurfAusVorlage(katalogUebung('kh_curls')))).toBeUndefined();
   });
 
   it('eine eigene Übung übernimmt Video und Kurzanleitung der Vorlage nicht', () => {

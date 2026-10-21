@@ -26,7 +26,9 @@ const jeMuskel = (wert: number) =>
 function beispielDaten(): Tabellen {
   return {
     einstellungen: [{ ...STANDARD_EINSTELLUNGEN, favoriten: ['klimmzug'], onboardingAbgeschlossen: true,
-      einschraenkungen: [{ id: 'e1', typ: 'region', wert: 'Schulter', bis: '2026-11-30' }] }],
+      einschraenkungen: [{ id: 'e1', typ: 'region', wert: 'Schulter', bis: '2026-11-30' }],
+      workouts: [{ id: 'workout_kurz', name: 'Kurz', art: 'zirkel', runden: 3,
+        uebungen: [{ uebungId: 'burpees', saetze: 3, vorgabe: 12 }, { uebungId: 'plank', saetze: 2, vorgabe: 40 }] }] }],
     orte: [
       { id: 'zuhause', name: 'Zuhause', standard: true, equipment: [
         { utensilId: 'KH', kurzhanteln: { modus: 'verstellbar', minKg: 2.5, maxKg: 24, schrittKg: 2.5 } },
@@ -56,8 +58,8 @@ function beispielDaten(): Tabellen {
     zyklen: [{ nr: 1, start: '2026-10-19', ende: '2026-11-30', grund: 'zeitablauf' }, { nr: 2, start: '2026-11-30' }],
     einheiten: [
       { id: 'u2', woche: '2026-W43', erstelltAm: '2026-10-21T17:00:00', status: 'geplant', ortId: 'park',
-        fokus: 'oben', format: 'zirkel', geschaetzteDauerMin: 15, aufwaermen: [],
-        bloecke: [{ typ: 'zirkel', positionen: [], pauseSek: 0, zirkelId: 'sprint', runden: 4 }] },
+        fokus: 'oben', format: 'zirkel', geschaetzteDauerMin: 15, aufwaermen: [], name: 'Kurz',
+        bloecke: [{ typ: 'zirkel', positionen: [], pauseSek: 0, zirkelId: 'workout_kurz', runden: 3 }] },
       { id: 'u1', woche: '2026-W43', erstelltAm: '2026-10-19T17:55:00', gestartetAm: '2026-10-19T18:00:00',
         beendetAm: '2026-10-19T18:42:00', status: 'abgeschlossen', ortId: 'zuhause', fokus: 'ganz', format: 'mix',
         geschaetzteDauerMin: 44, aufwaermen: [{ uebungId: 'kh_bankdruecken', vorgabe: '8 Wdh. mit 8 kg' }],

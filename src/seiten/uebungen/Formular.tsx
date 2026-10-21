@@ -14,7 +14,7 @@ import {
 import { Icon } from '../../ui/Icon';
 import { LASTTYP_NAMEN, MUSKEL_NAMEN, MUSTER_NAMEN, utensilName } from '../../ui/texte';
 import { useZustand } from '../../ui/useZustand';
-import { nachMuster, suche } from './Liste';
+import { nachMuster, suche } from '../../ui/blaetter';
 
 // Schritt 1: Vorlage wählen
 export function VorlageSeite() {

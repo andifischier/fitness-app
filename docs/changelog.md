@@ -195,3 +195,15 @@
   der Backup-Datei, „Auf dem Handy speichern“ legt sie in den Download-Ordner. Als gesichert gilt es erst nach Erfolg.
   Die Backup-Seite bietet dieselben Wege; Einlesen nimmt jetzt auch .txt. Tests für Erinnerung und `merkeBackup`.
 - **Warum:** Wunsch des Nutzers nach regelmäßigem Backup außerhalb des Browsers.
+
+## Videos für alle Übungen, eigene Workouts, Anpassen und Tauschen überall (21.10.2026)
+- **Was:** Jede der 98 Katalogübungen hat jetzt ein eingebettetes Video unter „So geht's“ (88 neue, nach bester Qualität
+  gewählt, meist englisch). Neu „Meine Workouts“ im Tab Übungen: eigene Workouts als Übungsliste (Sätze je Übung, Ziel und
+  Gewicht wie gewohnt) oder Zirkel (Runden, Vorgabe je Station, Bestzeit) anlegen, bearbeiten, ersetzen mit Vorschlägen
+  derselben Art, sortieren und löschen; gestartet über „Vor dem Start“, „Eigenes Workout“. Vorschau mit „Anpassen“: Sätze
+  ändern, Übungen entfernen und hinzufügen. „Tauschen“ zusätzlich auf Heute (erstellte Einheit) und im Training bis zum
+  ersten Satz einer Übung. Neue optionale Felder `Einstellungen.workouts` und `Einheit.name` (keine neue Datenbankversion,
+  Backup-Schema ergänzt). Neue Logik `src/logik/workouts.ts` und `src/logik/anpassen.ts`, `planung.ts` mit
+  `workoutEinheit` und `kannTauschen`; Tests für Workouts, Anpassen, Tausch im Training, Speichern, Backup und Katalog.
+  Vier Entscheidungen in `docs/entscheidungen.md`, Spezifikation angepasst.
+- **Warum:** Wünsche des Nutzers: Videos für alle Übungen, eigene Workouts, bestehende bearbeiten und Übungen einfach ersetzen.

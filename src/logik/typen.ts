@@ -79,6 +79,14 @@ export interface Einstellungen {
   letztesBackup?: string;
   videoLinks?: Record<string, string>; // eigene Video-Links für Katalogübungen (eigene Übungen: eigenerVideoLink)
   bewertungen?: Record<string, Sterne>; // Sterne je Übungs-ID, letzte Bewertung zählt; fehlt sie, gilt 3
+  workouts?: EigenesWorkout[];      // eigene Workouts (Entscheidung 21.10.2026)
+}
+
+// Eigenes Workout: Übungsliste (je Übung Sätze) oder Zirkel (Runden, je Station eine Vorgabe in
+// Wdh. bzw. Sek.). Beide Angaben bleiben gespeichert, damit ein Wechsel der Art nichts verliert.
+export interface EigenesWorkout {
+  id: string; name: string; art: 'liste' | 'zirkel'; runden: number;
+  uebungen: { uebungId: string; saetze: number; vorgabe: number }[];
 }
 
 // Trainingszustand (wird nur vom Planungsmodul geschrieben)
@@ -121,6 +129,7 @@ export interface Einheit {
   geschaetzteDauerMin: number;      // inklusive Bauch- und Wadensätze
   aufwaermen: { uebungId: string; vorgabe: string }[];
   bloecke: Block[]; gesamtbewertung?: 1 | 2 | 3 | 4 | 5; notiz?: string;
+  name?: string;                    // Name des eigenen Workouts, aus dem die Einheit erstellt wurde
 }
 export interface ZirkelErgebnis { zirkelId: string; ortId: string; datum: string; zeitSek: number; varianten: string[] }
 export interface MaxTest { id: string; datum: string; muster: MusterId; uebungId: string; ergebnis: number; einheit: 'Wdh.' | 'Sek.' }

@@ -1,11 +1,15 @@
-// Übungen einer Einheit zum Lesen (Heute und Wochenausblick): Blöcke mit Kombi-Kennzeichnung,
-// je Übung Sätze, Ziel und Last wie in der Vorschau.
+// Übungen einer Einheit (Heute und Wochenausblick): Blöcke mit Kombi-Kennzeichnung, je Übung Sätze,
+// Ziel und Last wie in der Vorschau. Mit `onTauschen` bekommt jede Übung den Tausch-Knopf.
 import { zirkelVorgaben } from '../logik/heute';
+import { kannTauschen } from '../logik/planung';
 import type { AppZustand, Einheit } from '../logik/typen';
 import { uebungVon } from '../logik/verlauf';
+import { Icon } from './Icon';
 import { detailText, lastText, vorgabeText } from './texte';
 
-export function UebungsListe({ z, einheit }: { z: AppZustand; einheit: Einheit }) {
+export function UebungsListe({ z, einheit, onTauschen }: {
+  z: AppZustand; einheit: Einheit; onTauschen?: (block: number, position: number) => void;
+}) {
   const vorgaben = zirkelVorgaben(z, einheit);
   let kombi = 0;
   return (
@@ -23,9 +27,17 @@ export function UebungsListe({ z, einheit }: { z: AppZustand; einheit: Einheit }
                   ? [vorgabeText(u, vorgaben[pi]), lastText(u, p)].filter(Boolean).join(' · ')
                   : detailText(u, p);
                 return (
-                  <li key={pi} className="py-1">
-                    <span className="block text-basis font-semibold">{u.name}</span>
-                    <span className="block text-hinweis text-gedaempft">{detail}{p.langsam ? ' · 3 Sek. absenken' : ''}</span>
+                  <li key={pi} className="flex items-center gap-3 py-1">
+                    <span className="flex-1">
+                      <span className="block text-basis font-semibold">{u.name}</span>
+                      <span className="block text-hinweis text-gedaempft">{detail}{p.langsam ? ' · 3 Sek. absenken' : ''}</span>
+                    </span>
+                    {onTauschen && !p.istMaxTest && kannTauschen(einheit, bi, pi) && (
+                      <button type="button" aria-label={`${u.name} tauschen`} onClick={() => onTauschen(bi, pi)}
+                        className="flex size-touch shrink-0 items-center justify-center text-gedaempft">
+                        <Icon name="tauschen" groesse={22} />
+                      </button>
+                    )}
                   </li>
                 );
               })}

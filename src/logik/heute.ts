@@ -6,6 +6,7 @@ import { uebungErlaubt } from './equipment';
 import { istErholungswoche, mobilityZeilen, wochenziele, zirkelStation } from './planung';
 import { MUSKELN, MUSTER_IDS, type AppZustand, type Einheit, type MusterId, type Muskel, type Ort, type Woche } from './typen';
 import { einheitZeit, einstellungenVon, fertigeEinheiten, istErholt, letzterMaxTest, uebungVon } from './verlauf';
+import { workoutBestzeit, workoutsVon } from './workouts';
 
 const leer = () => Object.fromEntries(MUSKELN.map((m) => [m, 0])) as Record<Muskel, number>;
 
@@ -79,6 +80,8 @@ export function backupErinnerung(z: AppZustand, jetzt: string): boolean {
 
 // Bestzeit eines Zirkels am Ort für den Variantensatz, den er dort heute nutzen würde (Sekunden).
 export function zirkelBestzeit(z: AppZustand, zirkelId: string, ortId: string, jetzt: string): number | undefined {
+  const eigener = workoutsVon(z).find((w) => w.id === zirkelId);
+  if (eigener) return workoutBestzeit(z, eigener, ortId, jetzt);
   const zirkel = z.katalog.zirkel.find((x) => x.id === zirkelId);
   const ort = z.orte.find((o) => o.id === ortId);
   if (!zirkel || !ort) return undefined;
@@ -95,11 +98,13 @@ export function mobilityAlle(z: AppZustand, ort: Ort): string[] {
 }
 
 // Vorgabe jeder Zirkel-Station als Text aus dem Katalog (z. B. „30 Sek.“, „2-4-6-8-10“), in der
-// Reihenfolge der Positionen. Ausgelassene Stationen werden übersprungen.
+// Reihenfolge der Positionen. Ausgelassene Stationen werden übersprungen. Eigene Zirkel haben die
+// Vorgabe in der Position.
 export function zirkelVorgaben(z: AppZustand, einheit: Einheit): string[] {
   const block = einheit.bloecke.find((b) => b.typ === 'zirkel');
-  const zirkel = z.katalog.zirkel.find((x) => x.id === block?.zirkelId);
-  if (!block || !zirkel) return [];
+  if (!block) return [];
+  const zirkel = z.katalog.zirkel.find((x) => x.id === block.zirkelId);
+  if (!zirkel) return block.positionen.map((p) => String(p.zielWdh));
   let i = 0;
   return block.positionen.map((p) => {
     const muster = uebungVon(z, p.uebungId)?.muster;

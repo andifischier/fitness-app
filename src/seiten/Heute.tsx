@@ -3,17 +3,18 @@
 // steht im Tab Fortschritt. Beim ersten Start geht es direkt ins Onboarding.
 import { useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router';
-import { aendereTage, verwerfeEinheit } from '../daten/speichern';
+import { aendereTage, speichereTausch, verwerfeEinheit } from '../daten/speichern';
 import { lokaleZeit } from '../daten/zeit';
 import { maxOffeneTage, prognoseAusTagen, vorschlagTage, wochenausblick, type AusblickTag } from '../logik/ausblick';
 import { isoWoche, wochentag } from '../logik/datum';
 import { aktuelleEinheit, backupErinnerung, naechsterMaxTest } from '../logik/heute';
-import { erstelleEinheit, istErholungswoche, startfragen } from '../logik/planung';
+import { erstelleEinheit, istErholungswoche, startfragen, tausche } from '../logik/planung';
 import type { AppZustand, Einheit } from '../logik/typen';
 import { uebungVon } from '../logik/verlauf';
 import { Hinweis, Knopf, TageWahl } from '../ui/bausteine';
+import { TauschBlatt } from '../ui/blaetter';
 import { Icon } from '../ui/Icon';
-import { abText, datumLang, FOKUS_NAMEN, muskelgruppenText, tagText } from '../ui/texte';
+import { abText, datumLang, einheitName, muskelgruppenText, tagText } from '../ui/texte';
 import { kannTeilen, sichereBackup } from '../ui/backupSichern';
 import { UebungsListe } from '../ui/uebungsliste';
 import { einstellungenAus, useZustand } from '../ui/useZustand';
@@ -39,9 +40,6 @@ function OhneOrt() {
   );
 }
 
-const kurzName = (z: AppZustand, e: Einheit) =>
-  e.format === 'zirkel' ? z.katalog.zirkel.find((x) => x.id === e.bloecke[0]?.zirkelId)?.name ?? 'Zirkel' : FOKUS_NAMEN[e.fokus];
-
 const gruppen = (z: AppZustand, e: Einheit) =>
   muskelgruppenText(e.bloecke.flatMap((b) => b.positionen).flatMap((p) => uebungVon(z, p.uebungId)?.primaer ?? []));
 
@@ -65,6 +63,9 @@ function Inhalt({ z, jetzt }: { z: AppZustand; jetzt: string }) {
   const { fragen, aktuell, vorschau, woche, ausblick, erholungswoche, maxTest, backup } = daten;
   const ort = z.orte.find((o) => o.id === (vorschau?.ortId ?? fragen.ortId));
   const liste = aktuell?.status !== 'laufend' && vorschau && vorschau.bloecke.length > 0 ? vorschau : undefined;
+  // Tauschen auf Heute geht in der erstellten Einheit; die voraussichtliche wird erst vor dem Start erstellt.
+  const [tausch, setTausch] = useState<{ block: number; position: number }>();
+  const tauschbar = aktuell?.status === 'geplant' ? aktuell : undefined;
 
   const neuErstellen = async () => {
     if (aktuell) await verwerfeEinheit(aktuell.id);
@@ -88,12 +89,12 @@ function Inhalt({ z, jetzt }: { z: AppZustand; jetzt: string }) {
         </div>
         {aktuell?.status === 'laufend' ? (
           <>
-            <Titel titel={kurzName(z, aktuell)} text={`ca. ${aktuell.geschaetzteDauerMin} Min · ${gruppen(z, aktuell)}`} />
+            <Titel titel={einheitName(z, aktuell)} text={`ca. ${aktuell.geschaetzteDauerMin} Min · ${gruppen(z, aktuell)}`} />
             <Knopf onClick={() => navigate(`/training/${aktuell.id}`)}>Fortsetzen</Knopf>
           </>
         ) : aktuell ? (
           <>
-            <Titel titel={kurzName(z, aktuell)} text={`ca. ${aktuell.geschaetzteDauerMin} Min · ${gruppen(z, aktuell)}`} />
+            <Titel titel={einheitName(z, aktuell)} text={`ca. ${aktuell.geschaetzteDauerMin} Min · ${gruppen(z, aktuell)}`} />
             <div className="flex flex-col gap-2">
               <Knopf onClick={() => navigate(`/vorschau/${aktuell.id}`)}>Vorschau öffnen</Knopf>
               <Knopf art="schlicht" onClick={() => void neuErstellen()}>Neu erstellen</Knopf>
@@ -111,7 +112,7 @@ function Inhalt({ z, jetzt }: { z: AppZustand; jetzt: string }) {
         ) : (
           <>
             {vorschau
-              ? <Titel titel={kurzName(z, vorschau)} text={`ca. ${vorschau.geschaetzteDauerMin} Min · ${gruppen(z, vorschau)}`} />
+              ? <Titel titel={einheitName(z, vorschau)} text={`ca. ${vorschau.geschaetzteDauerMin} Min · ${gruppen(z, vorschau)}`} />
               : <Titel titel="Zirkel" text="Diese Woche ist ein Zirkel dran." />}
             <Knopf onClick={() => navigate('/start')}>Training starten</Knopf>
           </>
@@ -121,8 +122,12 @@ function Inhalt({ z, jetzt }: { z: AppZustand; jetzt: string }) {
             <p className="mb-2 text-hinweis text-gedaempft">
               {aktuell ? 'Übungen' : 'Voraussichtlich, mit den Standardangaben vor dem Start'}
             </p>
-            <UebungsListe z={z} einheit={liste} />
+            <UebungsListe z={z} einheit={liste} onTauschen={tauschbar ? (block, position) => setTausch({ block, position }) : undefined} />
           </div>
+        )}
+        {tausch && tauschbar && (
+          <TauschBlatt z={z} einheit={tauschbar} {...tausch} onSchliessen={() => setTausch(undefined)}
+            onWahl={(id) => { setTausch(undefined); void speichereTausch(tausche(z, tauschbar, tausch.block, tausch.position, id)); }} />
         )}
       </section>
 
@@ -216,7 +221,7 @@ function TageKarte({ z, jetzt, ortId, tage, onFertig }: {
 function AusblickZeile({ z, t }: { z: AppZustand; t: AusblickTag }) {
   const tag = tagText(t.datum, t.tag);
   if (t.art !== 'einheit' || !t.einheit) {
-    const text = t.art === 'erledigt' && t.einheit ? `${kurzName(z, t.einheit)} · erledigt`
+    const text = t.art === 'erledigt' && t.einheit ? `${einheitName(z, t.einheit)} · erledigt`
       : t.art === 'zirkel' ? 'Zirkel · Auswahl beim Start' : 'Ruhetag empfohlen';
     return (
       <li className="flex items-center gap-3 rounded-karte border border-rand bg-flaeche px-5 py-3 text-basis">
@@ -232,7 +237,7 @@ function AusblickZeile({ z, t }: { z: AppZustand; t: AusblickTag }) {
         <summary className="flex min-h-touch cursor-pointer list-none items-center gap-3 px-5 py-3 text-basis">
           <span className="w-24 shrink-0 font-semibold">{tag}</span>
           <span className="flex-1">
-            <span className="block font-semibold">{kurzName(z, e)}</span>
+            <span className="block font-semibold">{einheitName(z, e)}</span>
             <span className="block text-hinweis text-gedaempft">ca. {e.geschaetzteDauerMin} Min · {gruppen(z, e)}</span>
           </span>
           <span className="text-gedaempft"><Icon name="weiter" groesse={20} /></span>

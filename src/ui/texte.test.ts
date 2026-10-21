@@ -125,6 +125,7 @@ describe('Fortschritt und Verlauf', () => {
     };
     expect(einheitName(z, basis)).toBe('Oberkörper');
     expect(einheitName(z, { ...basis, format: 'test' })).toBe('Testtag');
+    expect(einheitName(z, { ...basis, format: 'zirkel', name: 'Kurz' })).toBe('Kurz');
     const zirkel = z.katalog.zirkel[0]!;
     expect(einheitName(z, { ...basis, format: 'zirkel', bloecke: [{ typ: 'zirkel', zirkelId: zirkel.id, pauseSek: 0, positionen: [] }] }))
       .toBe(zirkel.name);

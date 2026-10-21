@@ -145,12 +145,17 @@ describe('Einheit erstellen, tauschen, verwerfen', () => {
     expect(z.wochen[0]).toMatchObject({ id: '2026-W43', prognose: 4, einheiten: 0, erholungswoche: true, laengerAngenommen: true });
   });
 
-  it('tauscht und verwirft nur nie gestartete Einheiten', async () => {
+  it('tauscht in geplanten und laufenden Einheiten, verwirft nur nie gestartete', async () => {
     const d = neueDb();
     await d.einheiten.add(geplant('g'));
     await d.einheiten.add({ ...geplant('l'), status: 'laufend' });
+    await d.einheiten.add({ ...geplant('a'), status: 'abgeschlossen' });
     expect(await speichereTausch({ ...geplant('g'), notiz: 'getauscht' }, d)).toBe(true);
     expect(await speichereTausch({ ...geplant('l'), notiz: 'getauscht' }, d)).toBe(false);
+    expect(await speichereTausch({ ...geplant('l'), status: 'laufend', notiz: 'im Training' }, d)).toBe(true);
+    expect(await speichereTausch({ ...geplant('a'), status: 'abgeschlossen' }, d)).toBe(false);
+    expect((await d.einheiten.get('l'))?.notiz).toBe('im Training');
+    await d.einheiten.delete('a');
     expect((await d.einheiten.get('g'))?.notiz).toBe('getauscht');
     await verwerfeEinheit('g', d);
     await verwerfeEinheit('l', d);

@@ -275,6 +275,17 @@ export const BEWERTUNG = {
   tauschMinSterne: 3,
 } as const;
 
+// Eigene Workouts und Anpassen der erstellten Einheit (Entscheidungen 21.10.2026)
+export const WORKOUT = {
+  saetze: { min: 1, max: 10, standard: 3 },
+  runden: { min: 1, max: 10, standard: 3 },
+  vorgabe: { min: 1, max: 300, standardWdh: 10, standardSek: 30, schrittSek: 5 },
+  maxUebungen: 20,
+  vorschlaege: 5,                   // Vorschläge beim Ersetzen im Workout
+  nameMaxZeichen: 40,
+  stationSek: 40,                   // geschätzte Dauer je Station und Runde im eigenen Zirkel
+} as const;
+
 // Fortschritt (Paket 9)
 export const FORTSCHRITT = {
   wochen: 6,                        // Balken je Muskel: aktuelle Woche und die 5 davor
