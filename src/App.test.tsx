@@ -27,8 +27,10 @@ describe('App-Rahmen', () => {
     expect(html).toMatch(new RegExp(`aria-current="page"[^>]*>.*?</svg>${titel}</a>`));
   });
 
-  // Übungen und Einstellungen laden ihre Daten erst im Browser; der Tab ist sofort aktiv.
+  // Fortschritt, Übungen und Einstellungen laden ihre Daten erst im Browser; der Tab ist sofort aktiv.
   it.each([
+    ['/fortschritt/verlauf', 'Fortschritt'],
+    ['/fortschritt/einheit/x', 'Fortschritt'],
     ['/uebungen', 'Übungen'],
     ['/uebungen/neu', 'Übungen'],
     ['/einstellungen', 'Einstellungen'],

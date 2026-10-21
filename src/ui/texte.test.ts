@@ -3,7 +3,8 @@ import { KATALOG } from '../daten/katalog';
 import { zustand } from '../logik/testhilfe';
 import type { Einheit } from '../logik/typen';
 import {
-  abText, datumLang, feedbackOptionen, lastTeile, lastText, muskelgruppenText, naechstesMalText, rekordZeile, saetzeText, zeitText,
+  abText, datumLang, einheitName, entlastungText, feedbackOptionen, kwText, lastTeile, lastText, monatKurz,
+  muskelgruppenText, naechstesMalText, rekordZeile, saetzeText, saetzeZeile, seitStartText, zeitText,
 } from './texte';
 
 const u = (id: string) => KATALOG.uebungen.find((x) => x.id === id)!;
@@ -89,5 +90,50 @@ describe('Übungsfeedback und Abschluss', () => {
       .toEqual({ name: u('kh_rudern_einarmig').name, wert: '18 kg × 10' });
     expect(rekordZeile(z, e, { art: 'maxTest', uebungId: 'klimmzug', wert: 9, bisher: 8 }).wert).toBe('Max-Test 9 Wdh.');
     expect(rekordZeile(z, e, { art: 'sekunden', uebungId: 'plank', wert: 50, bisher: 45 }).wert).toBe('50 Sek.');
+  });
+});
+
+describe('Fortschritt und Verlauf', () => {
+  it('beschriftet Monate, Wochen und den Zuwachs seit dem ersten Test', () => {
+    expect(monatKurz('2026-03-05T10:00:00')).toBe('Mär');
+    expect(monatKurz('2026-10-20T10:00:00')).toBe('Okt');
+    expect(kwText('2026-W04')).toBe('KW 4');
+    expect(seitStartText(3, 'Wdh.')).toBe('+3 seit Start');
+    expect(seitStartText(15, 'Sek.')).toBe('+15 Sek. seit Start');
+    expect(seitStartText(-2, 'Wdh.')).toBe('−2 seit Start');
+  });
+
+  it('erklärt Entlastungswochen', () => {
+    expect(entlastungText('2026-W41', 2, false)).toBe('KW 41 nur 2 Einheiten, zählt als Entlastung.');
+    expect(entlastungText('2026-W41', 1, false)).toBe('KW 41 nur 1 Einheit, zählt als Entlastung.');
+    expect(entlastungText('2026-W41', 0, false)).toBe('KW 41 ohne Training, zählt als Entlastung.');
+    expect(entlastungText('2026-W41', 3, true)).toBe('KW 41 Erholungswoche, zählt als Entlastung.');
+  });
+
+  it('benennt Einheiten im Verlauf', () => {
+    const z = zustand({ katalog: 'voll' });
+    const basis: Einheit = {
+      id: 'e', woche: '2026-W43', erstelltAm: '2026-10-20T18:00:00', status: 'abgeschlossen', ortId: 'zuhause',
+      fokus: 'oben', format: 'mix', geschaetzteDauerMin: 40, aufwaermen: [], bloecke: [],
+    };
+    expect(einheitName(z, basis)).toBe('Oberkörper');
+    expect(einheitName(z, { ...basis, format: 'test' })).toBe('Testtag');
+    const zirkel = z.katalog.zirkel[0]!;
+    expect(einheitName(z, { ...basis, format: 'zirkel', bloecke: [{ typ: 'zirkel', zirkelId: zirkel.id, pauseSek: 0, positionen: [] }] }))
+      .toBe(zirkel.name);
+  });
+
+  it('fasst die Sätze einer Übung zusammen', () => {
+    const satz = (nr: number, wert: { wdh?: number; sek?: number; last?: number }) => ({ nr, zeit: '', ...wert });
+    expect(saetzeZeile(u('kh_bankdruecken'), {
+      uebungId: 'kh_bankdruecken', saetze: 3, zielWdh: 10, last: 16, ergebnisse: [satz(1, { wdh: 12 }), satz(2, { wdh: 11 }), satz(3, { wdh: 10 })],
+    })).toBe('16 kg je Hand · 12, 11, 10 Wdh.');
+    expect(saetzeZeile(u('kh_bankdruecken'), {
+      uebungId: 'kh_bankdruecken', saetze: 2, zielWdh: 10, last: 16, ergebnisse: [satz(1, { wdh: 15, last: 10 }), satz(2, { wdh: 10, last: 16 })],
+    })).toBe('15 Wdh. mit 10 kg je Hand, 10 Wdh. mit 16 kg je Hand');
+    expect(saetzeZeile(u('plank'), { uebungId: 'plank', saetze: 2, zielWdh: 30, ergebnisse: [satz(1, { sek: 35 }), satz(2, { sek: 30 })] }))
+      .toBe('35, 30 Sek.');
+    expect(saetzeZeile(u('liegestuetz'), { uebungId: 'liegestuetz', saetze: 1, zielWdh: 0, istMaxTest: true, ergebnisse: [satz(1, { wdh: 22 })] }))
+      .toBe('22 Wdh.');
   });
 });

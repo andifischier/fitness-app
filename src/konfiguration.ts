@@ -280,3 +280,8 @@ export const BEWERTUNG = {
   bleibtAbSterne: 4,
   tauschMinSterne: 3,
 } as const;
+
+// Fortschritt (Paket 9)
+export const FORTSCHRITT = {
+  wochen: 6,                        // Balken je Muskel: aktuelle Woche und die 5 davor
+} as const;
