@@ -145,7 +145,9 @@ describe('Endabnahme: 12 Wochen im Ablauf der App', () => {
 
     // Kein Muskel bekommt vor Ablauf seines Erholungsfensters Sätze: Die Hauptmuskeln jeder Übung
     // und beim Max-Test alle beteiligten Muskeln sind erholt (Mitbeteiligung zählt wie im Prototyp nicht).
+    // Zirkel sind ausgenommen: Die Spezifikation verlangt für sie keine Erholung, nur dass sie mitzählen.
     for (const p of protokoll) {
+      if (p.einheit.format === 'zirkel') continue;
       const erholt = (m: string) => istErholt(p.zustandVorher.muskeln.find((x) => x.muskel === m), p.jetzt);
       for (const pos of p.einheit.bloecke.flatMap((b) => b.positionen)) {
         const u = uebungVon(z, pos.uebungId)!;

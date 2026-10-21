@@ -115,6 +115,7 @@ export interface SatzErgebnis { nr: number; wdh?: number; sek?: number; last?: n
 export interface Position {
   uebungId: string; saetze: number; zielWdh: number; last?: number; bandStufe?: BandStufe;
   istMaxTest?: boolean; istErsatz?: boolean; getauschtVon?: string;
+  istLasttest?: boolean;             // Gewichtstest am Testtag (Entscheidung 21.10.2026)
   langsam?: boolean;                // 3 Sek. absenken
   ergebnisse: SatzErgebnis[]; feedback?: Feedback;
 }

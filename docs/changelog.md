@@ -250,3 +250,23 @@
   Tests, `src/ui/Absturz.tsx`, `ABSTURZ.sperreMs` = 5 Sek.). Im Browser mit künstlichem Absturz geprüft.
 - **Warum:** Rückmeldung des Nutzers: Mit der ersten Absicherung kam bei jedem „Weiter“ der Hinweis, weil die Sperre
   auch bei einem Seitenwechsel griff.
+
+## 21.10.2026: Trainingsalgorithmus überarbeitet (nach dem ersten Training)
+- **Was:**
+  - Planung: höchstens 6 Übungen pro Einheit (Bauch und Waden dazu), bis 4 Sätze je Übung (bei 1 bis 2
+    Einheiten pro Woche bis 5). Klimmzug und Rudern wechseln sich ab. Keine Mini-Übungen mit Restsätzen
+    mehr für einen schon bedienten Muskel.
+  - Pausen: Kombi 60 Sek. nach der Runde, Isolation 60 Sek. (Grundübung 90 Sek.); gespeicherte alte
+    Standardwerte werden per Datenbank-Version 2 umgestellt.
+  - Testtag: sperrt keine Muskeln mehr; zeigt vorher, welcher Test fehlt und warum, mit „Ausstattung
+    ändern“; neue Gewichtstests mit Kurzhanteln. Daraus Startgewichte für die getesteten und, als
+    Vorschlag, für verwandte Hantelübungen („etwa 8 kg je Hand“).
+  - Training: im ersten Satz „Letztes Mal 9 · heute 10“ und „Ab 12 im 1. Satz: mehr Gewicht“ mit
+    kleiner Verlaufskurve; Feedback einer Runde auf einer Seite; keine Sterne mehr im Abschluss;
+    „Vor dem Start“ als eine Zeile mit „Ändern“.
+  - Tests: Use Cases prüfen jetzt Eigenschaften statt Prototyp-Werte; neue Tests für Gewichtstests,
+    Ableitung, Hinweis, Fortschritt, Zugwechsel und Migration.
+- **Warum:** Rückmeldung nach dem ersten Training (keine Klimmzüge, lange Pausen, kein richtiges
+  Kombi-Workout, Fortschritt unklar, zu viele Rückfragen) und Abgleich mit der Studienlage
+  (Pelland 2025, Zhang 2025, Singer 2024, Behenck 2020, Kassiano 2022, ACSM 2026). Alle Punkte vom Nutzer
+  entschieden (`docs/entscheidungen.md`).

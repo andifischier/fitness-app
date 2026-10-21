@@ -1,7 +1,7 @@
 // Übungen einer Einheit (Heute und Wochenausblick): Blöcke mit Kombi-Kennzeichnung, je Übung Sätze,
 // Ziel und Last wie in der Vorschau. Mit `onTauschen` bekommt jede Übung den Tausch-Knopf.
 import { zirkelVorgaben } from '../logik/heute';
-import { kannTauschen, lastBekannt } from '../logik/planung';
+import { kannTauschen, lastAnzeige } from '../logik/planung';
 import type { AppZustand, Einheit } from '../logik/typen';
 import { uebungVon } from '../logik/verlauf';
 import { Icon } from './Icon';
@@ -25,7 +25,7 @@ export function UebungsListe({ z, einheit, onTauschen }: {
                 if (!u) return null;
                 const detail = b.typ === 'zirkel'
                   ? [vorgabeText(u, vorgaben[pi]), lastText(u, p)].filter(Boolean).join(' · ')
-                  : detailText(u, p, lastBekannt(z, u));
+                  : detailText(u, p, lastAnzeige(z, u));
                 return (
                   <li key={pi} className="flex items-center gap-3 py-1">
                     <span className="flex-1">

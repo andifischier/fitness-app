@@ -3,8 +3,11 @@ import { zirkelAnteilFuerZiele } from './einstellungen';
 import { erstelleEinheit, startfragen } from './planung';
 import { ort, zeitpunkt, zustand } from './testhilfe';
 import {
-  schliesseTesttagAb, startvariante, startvarianteLautTabelle, testtagEinheit, testtagErgebnisse, testtagTests,
+  lasttestErgebnisse, schliesseTesttagAb, startvariante, startvarianteLautTabelle, testtagAusfaelle, testtagEinheit,
+  testtagErgebnisse, testtagLasttests, testtagTests,
 } from './testtag';
+import { lastAnzeige, lastVorschlag, startwerte } from './planung';
+import { istErholt } from './verlauf';
 import type { AppZustand, Einheit, SatzErgebnis } from './typen';
 
 const MO = zeitpunkt(0, 18);
@@ -67,10 +70,17 @@ describe('Testtag', () => {
   it('erzeugt eine Test-Einheit mit Aufwärmen und je Test einem Satz ohne Ziel', () => {
     const e = testtagEinheit(neu(), 'zuhause', MO);
     expect(e.format).toBe('test');
-    expect(e.bloecke.map((b) => b.positionen[0]!.uebungId)).toEqual(['liegestuetz', 'klimmzug', 'kniebeuge', 'plank']);
-    expect(e.bloecke.every((b) => b.positionen.length === 1 && b.positionen[0]!.istMaxTest && b.positionen[0]!.zielWdh === 0)).toBe(true);
+    expect(e.bloecke.map((b) => b.positionen[0]!.uebungId)).toEqual([
+      'liegestuetz', 'klimmzug', 'kniebeuge', 'plank',
+      'kh_bankdruecken', 'kh_schulterdruecken_sitzend', 'kh_rudern_einarmig', 'goblet_squat', 'kh_rdl',
+    ]);
+    const max = e.bloecke.slice(0, 4).map((b) => b.positionen[0]!);
+    const last = e.bloecke.slice(4).map((b) => b.positionen[0]!);
+    expect(max.every((p) => p.istMaxTest && p.zielWdh === 0)).toBe(true);
+    expect(last.every((p) => p.istLasttest && !p.istMaxTest && p.last !== undefined)).toBe(true);
+    expect(last[0]!.last).toBe(6);                        // Raster 2 bis 24 kg: ein Viertel nach oben
     expect(e.aufwaermen.length).toBeGreaterThan(0);
-    expect(e.geschaetzteDauerMin).toBe(17);
+    expect(e.geschaetzteDauerMin).toBe(32);
   });
 
   it('lässt Tests weg, die am Ort nicht gehen', () => {
@@ -102,7 +112,8 @@ describe('Testtag', () => {
     ]);
     expect(n.einheiten).toHaveLength(1);
     expect(n.einheiten[0]!.status).toBe('abgeschlossen');
-    expect(n.muskeln.find((m) => m.muskel === 'Brust')!.letzteBelastung).toBe(MO);
+    // Der Testtag sperrt keine Muskeln (Entscheidung 21.10.2026).
+    expect(n.muskeln.every((m) => m.letzteBelastung === undefined && istErholt(m, MO))).toBe(true);
   });
 
   it('fasst für den Ergebnisbildschirm Ergebnis, Startübung und Startziel je Test zusammen', () => {
@@ -147,6 +158,52 @@ describe('Testtag', () => {
     const n = schliesseTesttagAb(z, e, MO);
     expect(n.muster.map((m) => m.muster)).toEqual(['hDruck']);
     expect(n.maxTests).toHaveLength(1);
+  });
+});
+
+describe('Hinweis auf ausfallende Tests', () => {
+  it('nennt Tests ohne Ausstattung und gesperrte Tests', () => {
+    expect(testtagAusfaelle(neu(['KH']), 'zuhause', MO).map((t) => [t.muster, t.grund])).toEqual([['vZug', 'ausstattung']]);
+    const z = neu();
+    const gesperrt = { ...z, einstellungen: [{ ...z.einstellungen[0]!, einschraenkungen: [{ id: 's', typ: 'region' as const, wert: 'knie' }] }] };
+    expect(testtagAusfaelle(gesperrt, 'zuhause', MO).map((t) => [t.muster, t.grund])).toEqual([['Knie', 'gesperrt']]);
+    expect(testtagAusfaelle(neu(), 'zuhause', MO)).toEqual([]);
+  });
+});
+
+describe('Gewichtstests', () => {
+  it('nimmt je Muster die erste Übung, die am Ort geht; ohne Kurzhanteln keine', () => {
+    expect(testtagLasttests(neu(['KH']), 'zuhause', MO).map((u) => u.id))
+      .toEqual(['kh_bodendruecken', 'kh_schulterdruecken_stehend', 'kh_rudern_vorgebeugt', 'goblet_squat', 'kh_rdl']);
+    expect(testtagLasttests(neu(['STANGE', 'TISCH']), 'zuhause', MO)).toEqual([]);
+  });
+
+  it('setzt Gewicht und Ziel der getesteten Übung und schlägt Gewichte für verwandte Übungen vor', () => {
+    const z = neu();
+    const e = mitErgebnissen(testtagEinheit(z, 'zuhause', MO), {
+      kh_bankdruecken: { wdh: 10, last: 16 }, kh_rudern_einarmig: { wdh: 12, last: 20 }, goblet_squat: { wdh: 15, last: 20 },
+    });
+    const n = schliesseTesttagAb(z, e, MO);
+    const o = n.orte[0]!;
+    // 16 kg × 10 mit Reserve 1: e1RM 21,9; 18 kg ließe nur 5 Wdh. zu, also 16 kg mit Ziel 10.
+    expect(n.varianten.find((v) => v.uebungId === 'kh_bankdruecken')).toMatchObject({ last: 16, zielWdh: 10 });
+    expect(startwerte(n, n.einstellungen[0]!, o, uebung(n, 'kh_bankdruecken'))).toMatchObject({ last: 16, zielWdh: 10 });
+    // 20 kg × 12 beim Rudern: 22 kg mit Ziel 8.
+    expect(n.varianten.find((v) => v.uebungId === 'kh_rudern_einarmig')).toMatchObject({ last: 22, zielWdh: 8 });
+    // Abgeleitet: Kurzhantel-Curls aus dem Rudern (20 kg × 12, Faktor 0,45, Sicherheit 0,9)
+    expect(lastVorschlag(n, n.einstellungen[0]!, o, uebung(n, 'kh_curls'))).toBe(8);
+    expect(startwerte(n, n.einstellungen[0]!, o, uebung(n, 'kh_curls')).last).toBe(8);
+    // Ohne Test für das Basis-Muster (Schulterdrücken) kein Vorschlag: kleinste Last wie bisher.
+    expect(lastVorschlag(n, n.einstellungen[0]!, o, uebung(n, 'kh_seitheben'))).toBeUndefined();
+    expect(startwerte(n, n.einstellungen[0]!, o, uebung(n, 'kh_seitheben')).last).toBe(2);
+    expect(['kh_bankdruecken', 'kh_curls', 'kh_seitheben'].map((id) => lastAnzeige(n, uebung(n, id))))
+      .toEqual(['bekannt', 'vorschlag', 'waehlen']);
+    // Gewichtstests sind keine Max-Tests.
+    expect(n.maxTests).toEqual([]);
+    expect(testtagErgebnisse(n, e)).toEqual([]);         // keine Max-Test-Ergebnisse eingetragen
+    expect(lasttestErgebnisse(n, e).map((t) => [t.uebung.id, t.last, t.wdh, t.start?.last])).toEqual([
+      ['kh_bankdruecken', 16, 10, 16], ['kh_rudern_einarmig', 20, 12, 22], ['goblet_squat', 20, 15, 22],
+    ]);
   });
 });
 

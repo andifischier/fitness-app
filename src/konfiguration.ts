@@ -33,7 +33,7 @@ export const STANDARD_EINSTELLUNGEN: Einstellungen = {
   prioritaeten: STANDARD_PRIORITAETEN,
   zielReserve: '1-3',
   zirkelAnteil: 'alle2Wochen',
-  pausenSek: { grund: 90, isolation: 75, supersatz: 75 },
+  pausenSek: { grund: 90, isolation: 60, supersatz: 60 },
   favoriten: [],
   ausgeschlossen: [],
   einschraenkungen: [],
@@ -50,6 +50,56 @@ export const TESTTAG = {
   Rumpf: { grenzen: [29, 60], varianten: ['dead_bug', 'plank', 'hollow_hold'] },
   kalibrierungReserve: 3,
   minutenProTest: 3,              // geschätzte Dauer je Test (plus Aufwärmen)
+  // Gewichtstests (Entscheidung 21.10.2026): je Muster die erste Übung, die am Ort geht. Gewicht
+  // wählen, so viele saubere Wiederholungen wie möglich; gerechnet wird mit Reserve 1.
+  lasttests: {
+    hDruck: ['kh_bankdruecken', 'kh_bodendruecken'],
+    vDruck: ['kh_schulterdruecken_sitzend', 'kh_schulterdruecken_stehend'],
+    hZug: ['kh_rudern_einarmig', 'kh_rudern_vorgebeugt'],
+    Knie: ['goblet_squat', 'kh_kniebeuge'],
+    Huefte: ['kh_rdl'],
+  } satisfies Partial<Record<MusterId, readonly string[]>>,
+  lasttestReserve: 1,
+  lasttestVorschlagAnteil: 0.25,  // vorbelegtes Gewicht: so weit oben im Lastraster
+} as const;
+
+// Startgewicht neuer Last-Übungen aus den Gewichtstests (Entscheidung 21.10.2026): Kraftschätzung
+// der getesteten Übung des Basis-Musters ÷ deren Faktor × Faktor der Zielübung × Sicherheit. Faktoren
+// sind vorsichtige Faustwerte je angezeigtem Gewicht (je Hand bzw. je Hantel); die erste Einheit bleibt
+// ein Kalibrierungssatz, der das Gewicht korrigiert.
+export const ABLEITUNG = {
+  sicherheit: 0.9,
+  faktoren: {
+    kh_bankdruecken: { basis: 'hDruck', faktor: 1 },
+    kh_bodendruecken: { basis: 'hDruck', faktor: 0.9 },
+    kh_schraegbank: { basis: 'hDruck', faktor: 0.85 },
+    kh_trizeps_liegend: { basis: 'hDruck', faktor: 0.35 },
+    kh_schulterdruecken_sitzend: { basis: 'vDruck', faktor: 1 },
+    kh_schulterdruecken_stehend: { basis: 'vDruck', faktor: 0.9 },
+    arnold_press: { basis: 'vDruck', faktor: 0.8 },
+    kb_schulterdruecken: { basis: 'vDruck', faktor: 0.9 },
+    kh_trizeps_ueberkopf: { basis: 'vDruck', faktor: 0.75 },
+    kh_kickback: { basis: 'vDruck', faktor: 0.3 },
+    kh_seitheben: { basis: 'vDruck', faktor: 0.3 },
+    kh_reverse_flys: { basis: 'vDruck', faktor: 0.25 },
+    kh_rudern_einarmig: { basis: 'hZug', faktor: 1 },
+    kh_rudern_vorgebeugt: { basis: 'hZug', faktor: 0.75 },
+    kh_rudern_brustgestuetzt: { basis: 'hZug', faktor: 0.7 },
+    kb_rudern: { basis: 'hZug', faktor: 1 },
+    kh_curls: { basis: 'hZug', faktor: 0.45 },
+    hammer_curls: { basis: 'hZug', faktor: 0.5 },
+    konzentrationscurl: { basis: 'hZug', faktor: 0.4 },
+    schraegbank_curls: { basis: 'hZug', faktor: 0.4 },
+    goblet_squat: { basis: 'Knie', faktor: 1 },
+    kh_kniebeuge: { basis: 'Knie', faktor: 0.6 },
+    kh_ausfallschritt: { basis: 'Knie', faktor: 0.45 },
+    kh_step_up: { basis: 'Knie', faktor: 0.4 },
+    bss_kh: { basis: 'Knie', faktor: 0.4 },
+    kh_wadenheben: { basis: 'Knie', faktor: 0.6 },
+    kh_rdl: { basis: 'Huefte', faktor: 1 },
+    kh_hip_thrust: { basis: 'Huefte', faktor: 1 },
+    kh_rdl_einbeinig: { basis: 'Huefte', faktor: 0.6 },
+  } satisfies Record<string, { basis: MusterId; faktor: number }>,
 } as const;
 
 // Zeitbudget pro Einheit
@@ -84,7 +134,9 @@ export const EINHEIT = {
   zuschlagGrunduebung: 0.3,
   zuschlagFavorit: 0.2,
   abschlagLetzteEinheit: 0.6,
-  saetzeProUebung: { min: 2, max: 4 },
+  abschlagGleichesMuster: 0.6,    // gleiches Muster wie zuletzt für den Hauptmuskel (Klimmzug nach Rudern)
+  maxUebungen: 6,                 // Übungen im Zeitbudget, Bauch und Waden kommen dazu
+  saetzeProUebung: { min: 2, max: 4, maxWenigEinheiten: 5, wenigBisPrognose: 2 },  // bei 1 bis 2 Einheiten bis 5 Sätze
   minOffenerBedarf: 0.25,
   maxSaetzeBauchWaden: 3,
   ruhetagUnterSaetzen: 6,
@@ -254,6 +306,7 @@ export const BACKUP = {
 // Trainings-Player (Paket 7)
 export const PLAYER = {
   pauseVerlaengernSek: 30,
+  verlaufPunkte: 8,                 // kleine Kurve im ersten Satz: so viele letzte Einheiten
   reserveHaltenSek: { von: 5, bis: 10 },     // Hinweis bei Halteübungen
   reserveLetzterIsolationssatz: { von: 0, bis: 1 },
   // Signal am Pausenende: drei kurze Töne und Vibration (Millisekunden)

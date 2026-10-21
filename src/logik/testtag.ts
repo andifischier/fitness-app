@@ -2,11 +2,11 @@
 // der Grundmuster, daraus Musterstufe, Startvariante und Startziel. Rein und deterministisch.
 import { MAXTEST, PROGRESSION, TESTTAG, ZEITBUDGET } from '../konfiguration';
 import { isoWoche } from './datum';
-import { uebungErlaubt } from './equipment';
+import { lastraster, uebungErlaubt, uebungMoeglich } from './equipment';
 import { aufwaermenFuer, bereichFuer, hauptvarianten } from './planung';
 import { schliesseEinheitAb } from './progression';
-import type { AppZustand, Block, Einheit, Einstellungen, MusterId, Ort, Uebung, VarianteZustand } from './typen';
-import { einstellungenVon, uebungVon } from './verlauf';
+import type { AppZustand, Block, Einheit, Einstellungen, MusterId, Ort, Position, Uebung, VarianteZustand } from './typen';
+import { e1rm, einstellungenVon, uebungVon, wdhBei, zielReserve } from './verlauf';
 
 export type TestMuster = 'hDruck' | 'vZug' | 'Knie' | 'Rumpf';
 
@@ -28,19 +28,57 @@ export function testtagTests(z: AppZustand, ortId: string, jetzt: string): { mus
   });
 }
 
-// Einheit mit `format: 'test'`: Aufwärmen, danach je Test ein Satz ohne Ziel.
+// Max-Tests, die am Ort ausfallen, mit Grund (Entscheidung 21.10.2026: Hinweis vor dem Testtag).
+export function testtagAusfaelle(z: AppZustand, ortId: string, jetzt: string):
+  { muster: TestMuster; uebung: Uebung; grund: 'ausstattung' | 'gesperrt' }[] {
+  const e = einstellungenVon(z);
+  const ort = ortVon(z, ortId);
+  if (!ort) return [];
+  return (MAXTEST.rotation as readonly TestMuster[]).flatMap((muster) => {
+    const id = MAXTEST.uebungen[muster];
+    const u = id ? uebungVon(z, id) : undefined;
+    if (!u || uebungErlaubt(e, ort, u, jetzt)) return [];
+    return [{ muster, uebung: u, grund: uebungMoeglich(ort, u) ? 'gesperrt' as const : 'ausstattung' as const }];
+  });
+}
+
+// Gewichtstests am Ort (Entscheidung 21.10.2026): je Muster die erste Übung aus `TESTTAG.lasttests`,
+// die dort geht.
+export function testtagLasttests(z: AppZustand, ortId: string, jetzt: string): Uebung[] {
+  const e = einstellungenVon(z);
+  const ort = ortVon(z, ortId);
+  if (!ort) return [];
+  return Object.values(TESTTAG.lasttests).flatMap((ids) => {
+    const u = ids.map((id) => uebungVon(z, id)).find((x): x is Uebung => !!x && uebungErlaubt(e, ort, x, jetzt) && lastraster(ort, x).length > 0);
+    return u ? [u] : [];
+  });
+}
+
+// Einheit mit `format: 'test'`: Aufwärmen, danach je Max-Test ein Satz ohne Ziel, zum Schluss die
+// Gewichtstests (Gewicht wählen, so viele saubere Wiederholungen wie möglich).
 export function testtagEinheit(z: AppZustand, ortId: string, jetzt: string): Einheit {
   const e = einstellungenVon(z);
   const ort = ortVon(z, ortId);
   const tests = testtagTests(z, ortId, jetzt);
-  const bloecke: Block[] = tests.map((t) => ({
-    typ: 'einzeln', pauseSek: e.pausenSek.grund,
-    positionen: [{ uebungId: t.uebung.id, saetze: 1, zielWdh: 0, istMaxTest: true, ergebnisse: [] }],
-  }));
+  const lasttests = testtagLasttests(z, ortId, jetzt);
+  const bloecke: Block[] = [
+    ...tests.map((t): Block => ({
+      typ: 'einzeln', pauseSek: e.pausenSek.grund,
+      positionen: [{ uebungId: t.uebung.id, saetze: 1, zielWdh: 0, istMaxTest: true, ergebnisse: [] }],
+    })),
+    ...lasttests.map((u): Block => {
+      const raster = ort ? lastraster(ort, u) : [];
+      const last = raster[Math.floor((raster.length - 1) * TESTTAG.lasttestVorschlagAnteil)];
+      return {
+        typ: 'einzeln', pauseSek: e.pausenSek.grund,
+        positionen: [{ uebungId: u.id, saetze: 1, zielWdh: 0, istLasttest: true, ...(last !== undefined ? { last } : {}), ergebnisse: [] }],
+      };
+    }),
+  ];
   return {
     id: `einheit-${jetzt}`, woche: isoWoche(jetzt), erstelltAm: jetzt, status: 'geplant',
     ortId, fokus: 'ganz', format: 'test',
-    geschaetzteDauerMin: ZEITBUDGET.aufwaermenMin + tests.length * TESTTAG.minutenProTest,
+    geschaetzteDauerMin: ZEITBUDGET.aufwaermenMin + bloecke.length * TESTTAG.minutenProTest,
     aufwaermen: ort ? aufwaermenFuer(z, ort, bloecke) : [],
     bloecke,
   };
@@ -91,6 +129,11 @@ export function schliesseTesttagAb(z: AppZustand, einheit: Einheit, jetzt: strin
   const ort = ortVon(neu, einheit.ortId);
   if (!ort) return neu;
   for (const p of einheit.bloecke.flatMap((b) => b.positionen)) {
+    if (p.istLasttest) {
+      const variante = lasttestVariante(neu, e, ort, p);
+      if (variante) neu = { ...neu, varianten: [...neu.varianten.filter((v) => v.uebungId !== variante.uebungId), variante] };
+      continue;
+    }
     const s = p.ergebnisse[0];
     const getestet = uebungVon(neu, p.uebungId);
     if (!s || !getestet || !p.istMaxTest || !(MAXTEST.rotation as readonly MusterId[]).includes(getestet.muster)) continue;
@@ -116,6 +159,37 @@ export function schliesseTesttagAb(z: AppZustand, einheit: Einheit, jetzt: strin
   return neu;
 }
 
+// Gewichtstest: Kraftschätzung mit Reserve 1; daraus wie nach einem Kalibrierungssatz die schwerste
+// Last am Ort, die die Untergrenze mit Ziel-Reserve zulässt, Ziel = geschätzte Wiederholungen dort.
+function lasttestVariante(z: AppZustand, e: Einstellungen, ort: Ort, p: Position): VarianteZustand | undefined {
+  const u = uebungVon(z, p.uebungId);
+  const s = p.ergebnisse[0];
+  const last = s?.last ?? p.last;
+  if (!u || !s || last === undefined || !s.wdh) return undefined;
+  const schaetzung = e1rm(last, s.wdh, TESTTAG.lasttestReserve);
+  const { von: U, bis: O } = bereichFuer(e, u);
+  const raster = lastraster(ort, u);
+  const r = zielReserve(e);
+  const neu = [...raster].reverse().find((kg) => wdhBei(schaetzung, kg, r) >= U) ?? raster[0] ?? last;
+  return {
+    ...(z.varianten.find((v) => v.uebungId === u.id) ?? { seitSteigerung: PROGRESSION.startSeitSteigerung, schwerSerie: 0 }),
+    uebungId: u.id, last: neu, zielWdh: begrenze(wdhBei(schaetzung, neu, r), U - 1, O), e1rm: schaetzung,
+  };
+}
+
+// Ergebnisse der Gewichtstests für den Ergebnisbildschirm: Test und Startwerte der Übung.
+export function lasttestErgebnisse(z: AppZustand, einheit: Einheit):
+  { uebung: Uebung; last: number; wdh: number; start?: { last: number; zielWdh: number } }[] {
+  return einheit.bloecke.flatMap((b) => b.positionen).flatMap((p) => {
+    const u = uebungVon(z, p.uebungId);
+    const s = p.ergebnisse[0];
+    const last = s?.last ?? p.last;
+    if (!p.istLasttest || !u || !s || last === undefined) return [];
+    const v = z.varianten.find((x) => x.uebungId === u.id);
+    return [{ uebung: u, last, wdh: s.wdh ?? 0, ...(v?.last !== undefined ? { start: { last: v.last, zielWdh: v.zielWdh } } : {}) }];
+  });
+}
+
 export interface TestErgebnis {
   muster: TestMuster; test: Uebung; ergebnis: number; inSek: boolean; haengenSek?: number;
   start?: { uebung: Uebung; zielWdh: number };
@@ -127,7 +201,7 @@ export function testtagErgebnisse(z: AppZustand, einheit: Einheit): TestErgebnis
   return einheit.bloecke.flatMap((b) => b.positionen).flatMap((p): TestErgebnis[] => {
     const s = p.ergebnisse[0];
     const test = uebungVon(z, p.uebungId);
-    if (!s || !test || !(MAXTEST.rotation as readonly MusterId[]).includes(test.muster)) return [];
+    if (!s || !test || !p.istMaxTest || !(MAXTEST.rotation as readonly MusterId[]).includes(test.muster)) return [];
     const muster = test.muster as TestMuster;
     const inSek = test.bereich.einheit === 'Sek.';
     const ergebnis = (inSek ? s.sek ?? s.wdh : s.wdh ?? s.sek) ?? 0;

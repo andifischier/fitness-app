@@ -1,8 +1,8 @@
 // Planungsmodul laut Spezifikation, Abschnitt „Planungslogik“. Rein und deterministisch: Die
 // aktuelle Zeit wird übergeben; der Zustand wird nur gelesen, nie verändert.
 import {
-  BEWERTUNG, ERHOLUNGSWOCHE, EINHEIT, ERSATZ, FOKUS_GRUPPEN, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
-  KOMBI, TRAININGSPAUSE, WOCHENZIEL, WORKOUT, ZEITBUDGET, ZIRKEL,
+  ABLEITUNG, BEWERTUNG, ERHOLUNGSWOCHE, EINHEIT, ERSATZ, FOKUS_GRUPPEN, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
+  KOMBI, PROGRESSION, TESTTAG, TRAININGSPAUSE, WOCHENZIEL, WORKOUT, ZEITBUDGET, ZIRKEL,
 } from '../konfiguration';
 import { isoWoche, plusTage, stundenZwischen, verbleibendeTage, wochenNummer, wochentag } from './datum';
 import {
@@ -254,15 +254,15 @@ function faellige(z: AppZustand, kandidaten: Kandidat[]): Kandidat | undefined {
 }
 
 // Je Hauptmuskel die zuletzt dafür gewählte Übung (aus der letzten Einheit mit diesem Muskel).
-function letzteUebungJeMuskel(z: AppZustand): Map<Muskel, string> {
-  const letzte = new Map<Muskel, string>();
+function letzteUebungJeMuskel(z: AppZustand): Map<Muskel, Uebung> {
+  const letzte = new Map<Muskel, Uebung>();
   for (const einheit of fertigeEinheiten(z)) {
     for (const block of einheit.bloecke) {
       if (block.typ === 'zirkel') continue;
       for (const p of block.positionen) {
         const u = uebungVon(z, p.uebungId);
         const h = u && hauptmuskel(u);
-        if (h && !p.istMaxTest) letzte.set(h, u.id);
+        if (h && !p.istMaxTest) letzte.set(h, u);
       }
     }
   }
@@ -276,6 +276,33 @@ export function bereichFuer(e: Einstellungen, u: Uebung): { von: number; bis: nu
   return u.bereich;
 }
 
+// Vorgeschlagenes Startgewicht einer neuen Last-Übung aus den Gewichtstests (Entscheidung 21.10.2026):
+// Kraftschätzung der getesteten Übung des Basis-Musters, umgerechnet über die Faktoren in `ABLEITUNG`;
+// davon die schwerste Last am Ort, die die Untergrenze mit Reserve 3 zulässt. Ohne Test: undefined.
+const FAKTOREN: Record<string, { basis: MusterId; faktor: number }> = ABLEITUNG.faktoren;
+const LASTTESTS: Partial<Record<MusterId, readonly string[]>> = TESTTAG.lasttests;
+
+// Kraftschätzung des Basis-Musters einer Übung, umgerechnet auf die getestete Übung mit Faktor 1.
+function basisKraft(z: AppZustand, u: Uebung): number | undefined {
+  const ziel = FAKTOREN[u.id];
+  if (!ziel) return undefined;
+  return (LASTTESTS[ziel.basis] ?? []).flatMap((id) => {
+    const v = z.varianten.find((x) => x.uebungId === id);
+    const f = FAKTOREN[id];
+    return v?.e1rm && f ? [v.e1rm / f.faktor] : [];
+  })[0];
+}
+
+export function lastVorschlag(z: AppZustand, e: Einstellungen, ort: Ort, u: Uebung): number | undefined {
+  const ziel = FAKTOREN[u.id];
+  const raster = lastraster(ort, u);
+  const basis = basisKraft(z, u);
+  if (!ziel || raster.length === 0 || basis === undefined) return undefined;
+  const schaetzung = basis * ziel.faktor * ABLEITUNG.sicherheit;
+  const U = bereichFuer(e, u).von;
+  return [...raster].reverse().find((kg) => wdhBei(schaetzung, kg, PROGRESSION.neueVarianteReserve) >= U) ?? raster[0];
+}
+
 export function startwerte(z: AppZustand, e: Einstellungen, ort: Ort, u: Uebung): Startwerte {
   const bereich = bereichFuer(e, u);
   const v = z.varianten.find((x) => x.uebungId === u.id);
@@ -284,7 +311,7 @@ export function startwerte(z: AppZustand, e: Einstellungen, ort: Ort, u: Uebung)
   if (u.lasttyp === 'Last') {
     const raster = lastraster(ort, u);
     if (raster.length > 0) {
-      if (v?.last === undefined) werte.last = raster[0];
+      if (v?.last === undefined) werte.last = lastVorschlag(z, e, ort, u) ?? raster[0];
       else if (raster.includes(v.last)) werte.last = v.last;
       else {
         // Fehlt die Last am Ort: nächstniedrigere, Ziel per Kraftschätzung umgerechnet.
@@ -402,6 +429,13 @@ export function lastBekannt(z: AppZustand, u: Uebung): boolean {
   return u.lasttyp !== 'Last' || z.varianten.some((v) => v.uebungId === u.id && v.last !== undefined);
 }
 
+// Wie die Last einer Übung angezeigt wird: bekannt, als Vorschlag aus den Gewichtstests (erster Satz
+// bleibt ein Kalibrierungssatz) oder „Gewicht wählst du im 1. Satz“.
+export function lastAnzeige(z: AppZustand, u: Uebung): 'bekannt' | 'vorschlag' | 'waehlen' {
+  if (lastBekannt(z, u)) return 'bekannt';
+  return basisKraft(z, u) !== undefined ? 'vorschlag' : 'waehlen';
+}
+
 export function aufwaermenFuer(z: AppZustand, ort: Ort, bloecke: Block[]): Einheit['aufwaermen'] {
   const a = z.katalog.aufwaermen;
   const zeilen = a.allgemein.map((t) => ({ uebungId: '', vorgabe: t }));
@@ -416,7 +450,7 @@ export function aufwaermenFuer(z: AppZustand, ort: Ort, bloecke: Block[]): Einhe
     const u = uebungVon(z, erste.uebungId)!;
     // Der Aufwärmsatz nennt die Übung; ohne bekannte Last (Kalibrierung folgt) „leichtes Gewicht“.
     let vorgabe = `${a.aufwaermsatz.wdh} Wdh. ${u.name}: leichtere Variante`;
-    if (erste.last !== undefined && !lastBekannt(z, u)) vorgabe = `${a.aufwaermsatz.wdh} Wdh. ${u.name}: leichtes Gewicht`;
+    if (erste.last !== undefined && lastAnzeige(z, u) === 'waehlen') vorgabe = `${a.aufwaermsatz.wdh} Wdh. ${u.name}: leichtes Gewicht`;
     else if (erste.last !== undefined) {
       const raster = lastraster(ort, u);
       const ziel = erste.last * a.aufwaermsatz.anteilLast;
@@ -492,15 +526,35 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
   const letzteJeMuskel = letzteUebungJeMuskel(z);
   const gewaehlt: Auswahl[] = [];
   const benutzt = new Set<string>();
-  const offen = () => kandidaten.filter((k) => !benutzt.has(k.uebung.id) && wert(k.uebung) > EINHEIT.minOffenerBedarf);
-  while (gesamt < budget) {
+  // Abschlag für die Übung der letzten Einheit; zusätzlich für ihr Muster, wenn der Hauptmuskel ein
+  // anderes Muster hat (z. B. Klimmzug nach Rudern; Entscheidung 21.10.2026).
+  const abschlag = (u: Uebung): number => {
+    const h = hauptmuskel(u)!;
+    const zuletzt = letzteJeMuskel.get(h);
+    if (!zuletzt) return 0;
+    const andereMuster = kandidaten.some((k) => hauptmuskel(k.uebung) === h && k.uebung.muster !== u.muster);
+    return (zuletzt.id === u.id ? EINHEIT.abschlagLetzteEinheit : 0)
+      + (zuletzt.muster === u.muster && andereMuster ? EINHEIT.abschlagGleichesMuster : 0);
+  };
+  // Eine weitere Übung für einen schon bedienten Hauptmuskel nur, wenn dafür noch mindestens die
+  // kleinste Satzzahl offen ist; sonst bleibt der Platz für andere Muskeln (höchstens 6 Übungen).
+  // Ersatzübungen (z. B. Chin-up für Bizeps) zählen für das ersetzte Muster und sind davon ausgenommen.
+  // Übungen, deren Hauptmuskeln nicht erholt sind, entfallen ganz.
+  const bedient = new Set<Muskel>();
+  const lohnt = (k: Kandidat) => {
+    const h = hauptmuskel(k.uebung)!;
+    return k.istErsatz || !bedient.has(h) || bedarf[h] - dosis[h] >= EINHEIT.saetzeProUebung.min;
+  };
+  const offen = () => kandidaten.filter((k) => !benutzt.has(k.uebung.id) && k.uebung.primaer.every((m) => erholt[m])
+    && lohnt(k) && wert(k.uebung) > EINHEIT.minOffenerBedarf);
+  while (gesamt < budget && gewaehlt.length < EINHEIT.maxUebungen) {
     const liste = offen();
     if (liste.length === 0) break;
     const punkte = (u: Uebung) => wert(u)
       + (istGrund(u) ? EINHEIT.zuschlagGrunduebung : 0)
       + (e.favoriten.includes(u.id) ? EINHEIT.zuschlagFavorit : 0)
       + BEWERTUNG.zuschlag[sterneVon(e, u.id)]
-      - (letzteJeMuskel.get(hauptmuskel(u)!) === u.id ? EINHEIT.abschlagLetzteEinheit : 0);
+      - abschlag(u);
     // Bei Gleichstand gewinnt die höhere Variantenstufe, danach die Reihenfolge der Kandidaten.
     let beste = liste[0]!;
     for (const k of liste) {
@@ -509,10 +563,12 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
     }
     benutzt.add(beste.uebung.id);
     const h = hauptmuskel(beste.uebung)!;
-    const { min, max } = EINHEIT.saetzeProUebung;
+    const { min, maxWenigEinheiten, wenigBisPrognose } = EINHEIT.saetzeProUebung;
+    const max = prognose <= wenigBisPrognose ? maxWenigEinheiten : EINHEIT.saetzeProUebung.max;
     const saetze = Math.min(Math.max(min, Math.min(max, Math.ceil(bedarf[h] - dosis[h]))), budget - gesamt);
     if (saetze <= 0) break;
     gewaehlt.push({ k: beste, saetze });
+    bedient.add(h);
     gesamt += saetze;
     for (const [m, v] of beitrag(beste.uebung)) dosis[m] += saetze * v;
   }

@@ -10,18 +10,18 @@ import { lastraster } from '../../logik/equipment';
 import { zirkelBestzeit, zirkelVorgaben } from '../../logik/heute';
 import { kannTauschen, mobilityZeilen, tausche } from '../../logik/planung';
 import {
-  aktuellerSchritt, erledigteSaetze, letztesMal, offeneFeedbacks, pauseNach, positionVon, satzVorgabe, schritte,
+  aktuellerSchritt, erledigteSaetze, fortschrittshinweis, letztesMal, offeneFeedbacks, pauseNach, positionVon, satzVorgabe, schritte,
   feedbackVorschlag, korrigiereSatz, lastWaehlbar, setzeFeedback, starte, trageSatzEin, type SatzVorgabe, type Schritt, type Stelle,
 } from '../../logik/player';
 import { vorschauNaechstesMal, type Rekord } from '../../logik/progression';
 import type { AppZustand, Einheit, Feedback, Sterne, Uebung } from '../../logik/typen';
 import { uebungVon } from '../../logik/verlauf';
-import { Checkliste, Hinweis, Knopf, Laedt, Sternwahl } from '../../ui/bausteine';
+import { Checkliste, Hinweis, Knopf, Laedt } from '../../ui/bausteine';
 import { TauschBlatt } from '../../ui/blaetter';
 import { Icon } from '../../ui/Icon';
 import { bereiteTonVor, pausenEnde, useBildschirmAn } from '../../ui/signal';
 import {
-  BAND_NAMEN, feedbackOptionen, lastTeile, lastText, naechstesMalText, rekordZeile, saetzeMitLast, zeitText,
+  BAND_NAMEN, feedbackOptionen, fortschrittZeilen, lastTeile, lastText, naechstesMalText, rekordZeile, saetzeMitLast, zeitText,
 } from '../../ui/texte';
 import { Technik } from '../../ui/technik';
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
@@ -163,8 +163,9 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
     setEinheit(neu);
   };
 
-  const bewertet = async (stelle: Stelle, feedback: Feedback, pause?: Pausenzeit) => {
-    const neu = setzeFeedback(einheit, stelle, feedback);
+  // Alle Übungen einer Runde auf einer Seite bewerten (Entscheidung 21.10.2026: weniger Rückfragen).
+  const alleBewertet = async (stellen: Stelle[], feedbacks: Feedback[], pause?: Pausenzeit) => {
+    const neu = stellen.reduce((e, s, i) => setzeFeedback(e, s, feedbacks[i]!), einheit);
     try {
       if (!(await speichereLaufendeEinheit(neu))) throw new Error('nicht gespeichert');
     } catch {
@@ -192,9 +193,10 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
       <Rahmen titel="" anteil={erledigteSaetze(einheit) / Math.max(1, liste.length)}
         start={einheit.gestartetAm} onSchliessen={() => setMenue(true)}>
         {fehler && <Speicherfehler />}
-        <UebungsFeedback key={`${offen.block}.${offen.position}`} z={z} einheit={einheit} stelle={offen}
-          onKorrektur={(nr, wert) => void korrigiert(offen, nr, wert)}
-          onWeiter={(fb) => void bewertet(offen, fb, phase.pause)} />
+        <RundenFeedback key={offen.block} z={z} einheit={einheit}
+          stellen={offeneFeedbacks(einheit).filter((x) => x.block === offen.block)}
+          onKorrektur={(stelle, nr, wert) => void korrigiert(stelle, nr, wert)}
+          onWeiter={(stellen, fbs) => void alleBewertet(stellen, fbs, phase.pause)} />
         {menue && (
           <Menue onFortsetzen={() => setMenue(false)} onSpaeter={() => navigate('/')}
             onBeenden={() => { setMenue(false); onBeenden(einheit); }} />
@@ -333,6 +335,7 @@ function Satz({ z, einheit, schritt, u, onTauschen, onErledigt }: {
   const [last, setLast] = useState(v.last);
   const ort = z.orte.find((o) => o.id === einheit.ortId);
   const letztes = letztesMal(z, u.id, einheit.id);
+  const fortschritt = useMemo(() => fortschrittshinweis(z, einheit, schritt, lokaleZeit()), [z, einheit, schritt]);
   return (
     <div className="flex flex-1 flex-col">
       <Kopf z={z} u={u} label={kennzeichnung(einheit, schritt)} onTauschen={onTauschen} />
@@ -341,7 +344,9 @@ function Satz({ z, einheit, schritt, u, onTauschen, onErledigt }: {
       {v.inSek
         ? <Stoppuhr wert={wert} onChange={setWert} />
         : <Zaehler wert={wert} onChange={setWert} />}
-      {letztes && !p.istMaxTest && <p className="mt-3 text-center text-basis text-gedaempft">Letztes Mal: {letztesText(u, letztes)}</p>}
+      {fortschritt
+        ? <Fortschritt h={fortschritt} />
+        : letztes && !p.istMaxTest && <p className="mt-3 text-center text-basis text-gedaempft">Letztes Mal: {letztesText(u, letztes)}</p>}
       <div className="mt-auto pt-8">
         <Knopf onClick={() => onErledigt(wert, last)}>{p.istMaxTest ? 'Test erledigt' : 'Satz erledigt'}</Knopf>
       </div>
@@ -410,6 +415,37 @@ function Vorgabekarte({ u, v, last, raster, onLast }: {
         </p>
       )}
     </section>
+  );
+}
+
+// Fortschritt im ersten Satz (Entscheidung 21.10.2026): letztes Mal, heute, nächster Schritt und eine
+// kleine Kurve der letzten Einheiten (Wiederholungen bzw. Kraftschätzung, erst ab 2 Einheiten).
+function Fortschritt({ h }: { h: NonNullable<ReturnType<typeof fortschrittshinweis>> }) {
+  const { jetzt, danach } = fortschrittZeilen(h);
+  return (
+    <section className="mt-3 flex items-center gap-4 rounded-karte bg-akzent-hell px-5 py-3">
+      <div className="flex-1">
+        <p className="text-basis font-semibold">{jetzt}</p>
+        <p className="text-basis text-gedaempft">{danach}</p>
+      </div>
+      {h.verlauf.length >= 2 && <Kurve werte={h.verlauf} />}
+    </section>
+  );
+}
+
+function Kurve({ werte }: { werte: number[] }) {
+  const b = 72;
+  const hoehe = 28;
+  const min = Math.min(...werte);
+  const spanne = Math.max(...werte) - min || 1;
+  const punkte = werte.map((w, i) => [(i / (werte.length - 1)) * (b - 4) + 2, hoehe - 2 - ((w - min) / spanne) * (hoehe - 4)] as const);
+  const letzter = punkte.at(-1)!;
+  return (
+    <svg width={b} height={hoehe} viewBox={`0 0 ${b} ${hoehe}`} aria-label="Verlauf der letzten Einheiten" role="img" className="shrink-0">
+      <polyline points={punkte.map(([x, y]) => `${x},${y}`).join(' ')} fill="none" strokeWidth="2" strokeLinejoin="round"
+        strokeLinecap="round" className="stroke-akzent" />
+      <circle cx={letzter[0]} cy={letzter[1]} r="3" className="fill-akzent" />
+    </svg>
   );
 }
 
@@ -522,20 +558,45 @@ function Menue({ onFortsetzen, onSpaeter, onBeenden }: { onFortsetzen: () => voi
   );
 }
 
-// Übungsfeedback (Mockup 6): geschaffte Wiederholungen, drei Buttons mit Definition und die Folge
-// für die nächste Einheit. Vorausgewählt ist „zu schwer“, wenn der erste Satz das Ziel verfehlt.
-function UebungsFeedback({ z, einheit, stelle, onKorrektur, onWeiter }: {
-  z: AppZustand; einheit: Einheit; stelle: Stelle; onKorrektur: (nr: number, wert: number) => void; onWeiter: (fb: Feedback) => void;
+// Übungsfeedback (Mockup 6), seit 21.10.2026 eine Seite je Runde: je Übung die geschafften Zahlen
+// (antippen zum Korrigieren), drei Knöpfe und die Folge für die nächste Einheit. Vorausgewählt ist
+// „zu schwer“, wenn der erste Satz das Ziel verfehlt, sonst „passend“; meist genügt „Weiter“.
+function RundenFeedback({ z, einheit, stellen, onKorrektur, onWeiter }: {
+  z: AppZustand; einheit: Einheit; stellen: Stelle[];
+  onKorrektur: (stelle: Stelle, nr: number, wert: number) => void; onWeiter: (stellen: Stelle[], feedbacks: Feedback[]) => void;
+}) {
+  const [gewaehlt, setGewaehlt] = useState<Record<number, Feedback>>({});
+  const wahl = (s: Stelle) => gewaehlt[s.position] ?? feedbackVorschlag(z, einheit, s);
+  const inSek = stellen.every((s) => uebungVon(z, positionVon(einheit, { ...s, satz: 1 }).uebungId)?.bereich.einheit === 'Sek.');
+  return (
+    <div className="flex flex-1 flex-col">
+      <h1 className="mt-6 text-titel leading-tight font-extrabold">{stellen.length > 1 ? 'Wie waren die Übungen?' : 'Wie war die Übung?'}</h1>
+      <ul className="mt-2 text-hinweis text-gedaempft">
+        {feedbackOptionen(inSek).map((o) => <li key={o.wert}><span className="font-semibold">{o.titel}:</span> {o.text}</li>)}
+      </ul>
+      <div className="mt-4 flex flex-col gap-3">
+        {stellen.map((s) => (
+          <FeedbackKarte key={`${s.block}.${s.position}`} z={z} einheit={einheit} stelle={s} wahl={wahl(s)}
+            onWahl={(fb) => setGewaehlt({ ...gewaehlt, [s.position]: fb })}
+            onKorrektur={(nr, wert) => onKorrektur(s, nr, wert)} />
+        ))}
+      </div>
+      <div className="mt-auto pt-8">
+        <Knopf onClick={() => onWeiter(stellen, stellen.map(wahl))}>Weiter</Knopf>
+      </div>
+    </div>
+  );
+}
+
+function FeedbackKarte({ z, einheit, stelle, wahl, onWahl, onKorrektur }: {
+  z: AppZustand; einheit: Einheit; stelle: Stelle; wahl: Feedback; onWahl: (fb: Feedback) => void;
+  onKorrektur: (nr: number, wert: number) => void;
 }) {
   const p = einheit.bloecke[stelle.block]!.positionen[stelle.position]!;
   const u = uebungVon(z, p.uebungId);
-  const vorschlag = feedbackVorschlag(z, einheit, stelle);
-  const [gewaehlt, setGewaehlt] = useState<Feedback>();
-  const wahl = gewaehlt ?? vorschlag;                   // folgt einer Korrektur, bis selbst gewählt wurde
-  const setWahl = setGewaehlt;
   const [korrektur, setKorrektur] = useState<{ nr: number; wert: number }>();
   const vorschau = useMemo(() => vorschauNaechstesMal(z, einheit, { ...p, feedback: wahl }, lokaleZeit()), [z, einheit, p, wahl]);
-  if (!u) return <Knopf onClick={() => onWeiter(wahl)}>Weiter</Knopf>;
+  if (!u) return null;
   const inSek = u.bereich.einheit === 'Sek.';
   // Mit wechselndem Gewicht steht unter den Zahlen, welches Gewicht in welchem Satz galt.
   const lasten = new Set(p.ergebnisse.map((r) => lastText(u, { last: r.last ?? p.last, bandStufe: r.bandStufe ?? p.bandStufe })));
@@ -545,62 +606,56 @@ function UebungsFeedback({ z, einheit, stelle, onKorrektur, onWeiter }: {
     : undefined;
   const naechste = vorschau && uebungVon(z, vorschau.uebungId);
   return (
-    <div className="flex flex-1 flex-col">
-      <p className="mt-6 text-basis font-semibold text-gedaempft">{[u.name, last].filter(Boolean).join(' · ')}</p>
-      <h1 className="mt-1 text-titel leading-tight font-extrabold">Wie war die Übung?</h1>
-      <div className="mt-4 flex flex-wrap items-center gap-2">
+    <section className="rounded-karte border border-rand bg-flaeche p-4">
+      <p className="text-gross font-bold">{u.name}</p>
+      {last && <p className="text-basis text-gedaempft">{last}</p>}
+      <div className="mt-2 flex flex-wrap items-center gap-2">
         {p.ergebnisse.map((r) => (
-          <button key={r.nr} type="button" aria-label={`Satz ${r.nr} ändern`}
+          <button key={r.nr} type="button" aria-label={`${u.name}: Satz ${r.nr} ändern`}
             onClick={() => setKorrektur({ nr: r.nr, wert: (inSek ? r.sek : r.wdh) ?? 0 })}
             className={`flex min-h-touch min-w-touch items-center justify-center rounded-full bg-flaeche px-3 text-gross font-semibold ${korrektur?.nr === r.nr ? 'border-2 border-akzent' : 'border border-rand'}`}>
             {(inSek ? r.sek : r.wdh) ?? 0}
           </button>
         ))}
-        <span className="text-basis text-gedaempft">{inSek ? 'Sekunden' : 'Wiederholungen'}</span>
+        <span className="text-basis text-gedaempft">{inSek ? 'Sek.' : 'Wdh.'}</span>
       </div>
       {jeSatz && <p className="mt-2 text-basis text-gedaempft">{jeSatz}</p>}
-      {korrektur ? (
-        <section className="mt-4 rounded-karte border border-rand bg-flaeche p-5">
+      {korrektur && (
+        <div className="mt-3">
           <p className="text-basis font-semibold">Satz {korrektur.nr} ändern</p>
           <Zaehler wert={korrektur.wert} onChange={(wert) => setKorrektur({ ...korrektur, wert })} einheit={inSek ? 'Sekunden' : 'Wiederholungen'} />
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="mt-3 grid grid-cols-2 gap-3">
             <Knopf art="sekundaer" onClick={() => setKorrektur(undefined)}>Abbrechen</Knopf>
             <Knopf onClick={() => { onKorrektur(korrektur.nr, korrektur.wert); setKorrektur(undefined); }}>Übernehmen</Knopf>
           </div>
-        </section>
-      ) : (
-        <p className="mt-2 text-hinweis text-gedaempft">Vertippt? Tipp auf eine Zahl, um sie zu ändern.</p>
+        </div>
       )}
-      <div role="radiogroup" aria-label="Wie war die Übung?" className="mt-6 flex flex-col gap-3">
+      <div role="radiogroup" aria-label={`Wie war ${u.name}?`} className="mt-3 grid grid-cols-3 gap-2">
         {feedbackOptionen(inSek).map((o) => (
-          <button key={o.wert} type="button" role="radio" aria-checked={wahl === o.wert} onClick={() => setWahl(o.wert)}
-            className={`rounded-karte bg-flaeche px-5 py-4 text-left ${wahl === o.wert ? 'border-2 border-akzent' : 'border border-rand'}`}>
-            <span className="block text-gross font-bold">{o.titel}</span>
-            <span className="block text-basis text-gedaempft">{o.text}</span>
+          <button key={o.wert} type="button" role="radio" aria-checked={wahl === o.wert} onClick={() => onWahl(o.wert)}
+            className={`min-h-touch rounded-xl px-2 text-basis ${wahl === o.wert
+              ? 'border-2 border-akzent bg-akzent-hell font-bold text-akzent' : 'border border-rand bg-flaeche font-semibold'}`}>
+            {o.titel}
           </button>
         ))}
       </div>
       {vorschau && naechste && (
-        <p className="mt-6 flex items-start gap-3 rounded-karte bg-akzent-hell px-5 py-4 text-basis">
-          <span className="text-akzent"><Icon name="pfeil" groesse={20} /></span>
+        <p className="mt-3 flex items-start gap-2 text-basis text-gedaempft">
+          <span className="text-akzent"><Icon name="pfeil" groesse={18} /></span>
           {naechstesMalText(naechste, vorschau)}
         </p>
       )}
-      <div className="mt-auto pt-8">
-        <Knopf onClick={() => onWeiter(wahl)}>Weiter</Knopf>
-      </div>
-    </div>
+    </section>
   );
 }
 
 // Abschluss (Mockup 7): Dauer, Sätze, Rekorde, Gesamtanstrengung (freiwillig, nichts vorausgewählt),
-// Sterne je Übung (vorausgefüllt mit der letzten Bewertung), Notiz und optional Abkühlen.
+// Notiz und optional Abkühlen. Sterne vergibt der Nutzer im Tab Übungen (Entscheidung 21.10.2026).
 function Abschluss({ z, schluss }: { z: AppZustand; schluss: Schluss }) {
   const navigate = useNavigate();
   const e = schluss.einheit;
   const [anstrengung, setAnstrengung] = useState<Sterne>();
   const [notiz, setNotiz] = useState('');
-  const [sterne, setSterne] = useState<Record<string, Sterne>>({});
   const [abkuehlen, setAbkuehlen] = useState(false);
   const [fehler, setFehler] = useState(false);
   if (schluss.fehler) {
@@ -612,7 +667,6 @@ function Abschluss({ z, schluss }: { z: AppZustand; schluss: Schluss }) {
     );
   }
   if (!e) return <Laedt />;
-  const einst = einstellungenAus(z);
   const sek = e.gestartetAm && e.beendetAm ? Math.max(0, Math.round((msVon(e.beendetAm) - msVon(e.gestartetAm)) / 1000)) : 0;
   const zirkel = e.format === 'zirkel';
   const bisher = schluss.bestzeit;
@@ -624,20 +678,15 @@ function Abschluss({ z, schluss }: { z: AppZustand; schluss: Schluss }) {
   const uebungen = [...new Set(e.bloecke.flatMap((b) => b.positionen)
     .filter((p) => !p.istMaxTest && p.ergebnisse.length > 0).map((p) => p.uebungId))]
     .map((id) => uebungVon(z, id)).filter((u): u is Uebung => u !== undefined);
-  const sterneFuer = (id: string): Sterne | undefined => sterne[id] ?? einst.bewertungen?.[id];
   const ort = z.orte.find((o) => o.id === e.ortId);
   const mobility = ort
     ? mobilityZeilen(z, ort, new Set(uebungen.map((u) => u.muster))).slice(0, z.katalog.aufwaermen.maxMobilityZeilen)
     : [];
 
   const speichern = async () => {
-    const bewertungen: Record<string, Sterne> = {};
-    for (const u of uebungen) {
-      const s = sterneFuer(u.id);
-      if (s !== undefined && s !== einst.bewertungen?.[u.id]) bewertungen[u.id] = s;
-    }
+    // Sterne gibt es seit 21.10.2026 nur noch im Tab Übungen (weniger Rückfragen).
     try {
-      await speichereAbschluss(e.id, { ...(anstrengung ? { gesamtbewertung: anstrengung } : {}), notiz, bewertungen }, lokaleZeit());
+      await speichereAbschluss(e.id, { ...(anstrengung ? { gesamtbewertung: anstrengung } : {}), notiz, bewertungen: {} }, lokaleZeit());
       navigate('/', { replace: true });
     } catch {
       setFehler(true);
@@ -688,24 +737,6 @@ function Abschluss({ z, schluss }: { z: AppZustand; schluss: Schluss }) {
         ))}
       </div>
       <div className="mt-2 flex justify-between text-hinweis text-gedaempft"><span>sehr leicht</span><span>am Limit</span></div>
-
-      {uebungen.length > 0 && (
-        <>
-          <h2 className="mt-7 text-gross font-bold">Wie gefallen dir die Übungen?</h2>
-          <Hinweis>Freiwillig. Mehr Sterne: kommt öfter dran. 1 Stern: wird ab der nächsten Einheit ersetzt, wenn es eine Alternative gibt.</Hinweis>
-          <ul className="mt-3 rounded-karte border border-rand bg-flaeche px-5">
-            {uebungen.map((u) => (
-              <li key={u.id} className="border-b border-linie pt-3 pb-1 last:border-b-0">
-                <p className="text-basis font-semibold">{u.name}</p>
-                <div className="-ml-2.5">
-                  <Sternwahl label={`Bewertung ${u.name}`} wert={sterneFuer(u.id)}
-                    onChange={(n) => setSterne({ ...sterne, [u.id]: n })} />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
 
       <label className="mt-7 block">
         <span className="mb-2 block text-basis font-semibold text-gedaempft">Notiz (optional)</span>

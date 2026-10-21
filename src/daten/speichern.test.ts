@@ -6,6 +6,7 @@ import { entwurfAusVorlage, fertigeUebung, mitFavorit, mitVideoLink, neuesUtensi
 import { ort } from '../logik/testhilfe';
 import { testtagEinheit } from '../logik/testtag';
 import type { Einheit } from '../logik/typen';
+import { Dexie } from 'dexie';
 import { FitnessDb, ladeZustand } from './db';
 import {
   aendereEinstellungen, aendereTage, beendeEinheit, beendeOnboarding, fuehreWochenabschluesseAus, ladeEinstellungen, loescheEigeneUebung,
@@ -296,5 +297,19 @@ describe('App zurücksetzen', () => {
     for (const t of ['einstellungen', 'orte', 'eigeneUebungen', 'eigeneUtensilien', 'varianten', 'muster', 'muskeln',
       'wochen', 'zyklen', 'einheiten', 'zirkelErgebnisse', 'maxTests'] as const) expect(z[t]).toEqual([]);
     expect(await ladeEinstellungen(d)).toEqual(STANDARD_EINSTELLUNGEN);
+  });
+});
+
+describe('Datenbank Version 2', () => {
+  it('stellt die alten Standardpausen (75 Sek.) auf 60 Sek. um, eigene Werte bleiben', async () => {
+    const name = `migration-${Math.random()}`;
+    const alt = new Dexie(name);
+    alt.version(1).stores({ einstellungen: '' });
+    await alt.table('einstellungen').put({ ...STANDARD_EINSTELLUNGEN, pausenSek: { grund: 120, isolation: 75, supersatz: 90 } }, 1);
+    alt.close();
+    const d = new FitnessDb(name);
+    const e = (await d.einstellungen.toArray())[0]!;
+    expect(e.pausenSek).toEqual({ grund: 120, isolation: 60, supersatz: 90 });
+    d.close();
   });
 });

@@ -1,5 +1,6 @@
 // Vor dem Start (Mockup 2): Trainingstage der Woche (nur, solange keine gewählt sind, mit Angebot
-// einer Erholungswoche; Entscheidung 21.10.2026), Ort, Kombi oder Klassisch (Standard Kombi), „Morgen wieder?“, „15 Min länger?“
+// einer Erholungswoche; Entscheidung 21.10.2026), eine Zeile mit Ort, Kombi oder Klassisch (Standard
+// Kombi) und „Morgen wieder?“, die „Ändern“ aufklappt (Entscheidung 21.10.2026), „15 Min länger?“
 // und „Einheit erstellen“; darunter „Stattdessen Zirkel“ mit der Liste der Zirkel und „Eigenes Workout“
 // mit der Liste der eigenen Workouts (Entscheidung 21.10.2026). Alles ist vorausgefüllt.
 import { useMemo, useState } from 'react';
@@ -60,6 +61,7 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
   const workouts = workoutsVon(z);
   const [fehler, setFehler] = useState(false);
   const [laeuft, setLaeuft] = useState(false);
+  const [details, setDetails] = useState(false);
   const mitZirkel = !(angebot !== null && erholung);
   // Ist die Woche schon gespeichert, fragt die App nur wegen der Pacing-Korrektur erneut.
   const nachPause = z.wochen.some((w) => w.id === isoWoche(jetzt));
@@ -124,9 +126,11 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
               onChange={(w) => { setErholung(w === 'ja'); if (w === 'ja' && zirkelModus) setZirkelModus(false); }} />
           </Karte>
         )}
-        <Karte titel="Wo trainierst du?">
-          <Auswahl optionen={z.orte.map((o) => ({ wert: o.id, text: o.name }))} wert={ortId} onChange={setOrtId} />
-        </Karte>
+        {(modus !== 'kraft' || details) && (
+          <Karte titel="Wo trainierst du?">
+            <Auswahl optionen={z.orte.map((o) => ({ wert: o.id, text: o.name }))} wert={ortId} onChange={setOrtId} />
+          </Karte>
+        )}
         {modus === 'workout' ? (
           <>
             <Karte titel="Welches Workout?">
@@ -192,6 +196,26 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
               })}
             </ul>
           </Karte>
+        ) : !details ? (
+          <>
+            {/* Eine Zeile statt drei Fragen (Entscheidung 21.10.2026); „Ändern“ zeigt die Auswahl. */}
+            <section className="flex items-center gap-3 rounded-karte border border-rand bg-flaeche px-5 py-4">
+              <p className="flex-1 text-gross font-semibold">
+                {[
+                  z.orte.find((o) => o.id === ortId)?.name,
+                  art === 'kombi' ? 'Kombi' : 'Klassisch',
+                  morgenWieder ? 'morgen wieder' : 'morgen frei',
+                ].filter(Boolean).join(' · ')}
+              </p>
+              <button type="button" onClick={() => setDetails(true)}
+                className="flex min-h-touch items-center text-basis font-semibold text-akzent">Ändern</button>
+            </section>
+            {fragen.laengerAnbieten && (
+              <Karte titel="15 Min länger?" hinweis="Diese Woche hast du wenige Einheiten. Mit 15 Min mehr schaffst du mehr Sätze.">
+                <Auswahl optionen={JA_NEIN} wert={jaNein(laenger)} spalten={2} onChange={(w) => setLaenger(w === 'ja')} />
+              </Karte>
+            )}
+          </>
         ) : (
           <>
             <Karte titel="Wie trainierst du heute?"

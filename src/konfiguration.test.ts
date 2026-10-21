@@ -8,12 +8,12 @@ describe('Konfiguration', () => {
     expect(einstellungenSchema.safeParse(STANDARD_EINSTELLUNGEN).success).toBe(true);
   });
 
-  it('mittlere Satzdauer passt zur Spezifikation (rund 129 bzw. 83 Sek.)', () => {
+  it('mittlere Satzdauer passt zur Spezifikation (rund 123 bzw. 75 Sek.)', () => {
     const { grund, isolation, supersatz } = STANDARD_EINSTELLUNGEN.pausenSek;
     const arbeit = ZEITBUDGET.satzArbeitSek;
     const klassisch = arbeit + ZEITBUDGET.anteilGrundpause * grund + ZEITBUDGET.anteilIsolationspause * isolation;
-    expect(Math.round(klassisch)).toBe(129);
-    expect(Math.round((2 * arbeit + supersatz) / 2)).toBe(83);
+    expect(Math.round(klassisch)).toBe(123);
+    expect(Math.round((2 * arbeit + supersatz) / 2)).toBe(75);
   });
 
   it('Startvarianten des Testtags stehen im Katalog', () => {

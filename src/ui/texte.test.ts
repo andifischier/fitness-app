@@ -3,7 +3,7 @@ import { KATALOG } from '../daten/katalog';
 import { zustand } from '../logik/testhilfe';
 import type { Einheit } from '../logik/typen';
 import {
-  abText, datumLang, detailText, einheitName, kleinerAnfang, entlastungText, feedbackOptionen, kwText, lastTeile, lastText, monatKurz,
+  abText, datumLang, detailText, einheitName, fortschrittZeilen, kleinerAnfang, entlastungText, feedbackOptionen, kwText, lastTeile, lastText, monatKurz,
   muskelgruppenText, naechstesMalText, rekordZeile, saetzeMitLast, saetzeText, saetzeZeile, seitStartText, zeitText,
 } from './texte';
 
@@ -28,7 +28,8 @@ describe('Lastanzeige', () => {
   it('nennt bei unbekannter Last statt einer Zahl die Wahl im ersten Satz', () => {
     const p = { uebungId: 'kh_bankdruecken', saetze: 3, zielWdh: 8, last: 2, ergebnisse: [] };
     expect(detailText(u('kh_bankdruecken'), p)).toBe('3 × Ziel 8 · 2 kg je Hand');
-    expect(detailText(u('kh_bankdruecken'), p, false)).toBe('3 × Ziel 8 · Gewicht wählst du im 1. Satz');
+    expect(detailText(u('kh_bankdruecken'), p, 'waehlen')).toBe('3 × Ziel 8 · Gewicht wählst du im 1. Satz');
+    expect(detailText(u('kh_bankdruecken'), p, 'vorschlag')).toBe('3 × Ziel 8 · etwa 2 kg je Hand');
   });
 
   it('fasst Sätze mit gleicher Last für „Dein Verlauf“ zusammen', () => {
@@ -155,5 +156,14 @@ describe('Fortschritt und Verlauf', () => {
       .toBe('35, 30 Sek.');
     expect(saetzeZeile(u('liegestuetz'), { uebungId: 'liegestuetz', saetze: 1, zielWdh: 0, istMaxTest: true, ergebnisse: [satz(1, { wdh: 22 })] }))
       .toBe('22 Wdh.');
+  });
+});
+
+describe('Fortschritt im ersten Satz', () => {
+  it('nennt letztes Mal, heute und den nächsten Schritt', () => {
+    expect(fortschrittZeilen({ inSek: false, letztesMal: 9, heute: 10, ab: 12, schritt: 'gewicht', verlauf: [] }))
+      .toEqual({ jetzt: 'Letztes Mal 9 · heute 10', danach: 'Ab 12 im 1. Satz: mehr Gewicht' });
+    expect(fortschrittZeilen({ inSek: true, heute: 30, ab: 60, schritt: 'variante', naechste: 'Hollow Hold', verlauf: [] }))
+      .toEqual({ jetzt: 'Erstes Mal · heute 30 Sek.', danach: 'Ab 60 Sek. im 1. Satz: Hollow Hold' });
   });
 });

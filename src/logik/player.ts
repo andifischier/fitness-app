@@ -4,9 +4,12 @@
 // Neustart der App am richtigen Satz fort.
 import { MUSTER_ART, PLAYER, PROGRESSION } from '../konfiguration';
 import { lastraster } from './equipment';
-import { bereichFuer } from './planung';
+import { bereichFuer, lastAnzeige } from './planung';
 import type { AppZustand, BandStufe, Block, Einheit, Feedback, Position, SatzErgebnis, Uebung } from './typen';
-import { e1rm, einstellungenVon, feedbackVon, fertigeEinheiten, uebungVon, wdhBei, zielReserve } from './verlauf';
+import { naechsteVariante } from './progression';
+import {
+  e1rm, einstellungenVon, ersterSatz, feedbackVon, fertigeEinheiten, leistungswert, sitzungen, uebungVon, wdhBei, zielReserve,
+} from './verlauf';
 
 // Ein Schritt ist ein Satz (bzw. eine Zirkel-Station in einer Runde).
 export interface Schritt { block: number; position: number; satz: number }
@@ -109,7 +112,9 @@ export function satzVorgabe(z: AppZustand, einheit: Einheit, s: Schritt): SatzVo
   if (b.typ === 'zirkel') return { ...basis, art: 'station', wert: p.zielWdh, reserve: '' };
   const kalibrierung = istKalibrierung(z, einheit, s);
   const reserve = kalibrierung
-    ? `Wähle ein Gewicht für etwa ${bereich!.von} Wiederholungen. Aufhören, wenn noch ${PROGRESSION.neueVarianteReserve} gingen.`
+    ? `${u && lastAnzeige(z, u) === 'vorschlag'
+      ? `Vorschlag aus deinem Testtag für etwa ${bereich!.von} Wiederholungen; passt es nicht, ändere es.`
+      : `Wähle ein Gewicht für etwa ${bereich!.von} Wiederholungen.`} Aufhören, wenn noch ${PROGRESSION.neueVarianteReserve} gingen.`
     : reserveText(e.zielReserve, inSek, letzterIsolationssatz(u, p, s));
   if (s.satz === 1 || nachKalibrierung(z, einheit, s)) {
     return { ...basis, art: 'ziel', wert: kalibrierung ? bereich!.von : p.zielWdh, bereich, reserve, kalibrierung };
@@ -259,4 +264,43 @@ export function starte(einheit: Einheit, jetzt: string): Einheit {
 export function beende(einheit: Einheit, jetzt: string): Einheit {
   const fertig = aktuellerSchritt(einheit) >= schritte(einheit).length;
   return { ...einheit, status: fertig ? 'abgeschlossen' : 'abgebrochen', beendetAm: jetzt };
+}
+
+// ---------- Fortschritt im Training (Entscheidung 21.10.2026) ----------
+
+export interface Fortschrittshinweis {
+  inSek: boolean;
+  letztesMal?: number;                // erster Satz der letzten Einheit dieser Übung
+  heute: number;                      // Ziel im ersten Satz
+  ab: number;                         // so viel im ersten Satz, dann folgt der nächste Schritt
+  schritt: 'gewicht' | 'variante' | 'langsam' | 'band' | 'bandLeichter';
+  naechste?: string;                  // Name der nächsten Variante
+  verlauf: number[];                  // Leistung der letzten Einheiten, älteste zuerst (höchstens 8)
+}
+
+// Für den ersten Satz einer Übung (nach einer Kalibrierung den zweiten): was beim letzten Mal ging,
+// das Ziel heute und ab wann die nächste Stufe kommt (Obergrenze des Bereichs, wie in der Progression).
+export function fortschrittshinweis(z: AppZustand, einheit: Einheit, s: Schritt, jetzt: string): Fortschrittshinweis | undefined {
+  const b = einheit.bloecke[s.block]!;
+  const p = positionVon(einheit, s);
+  const u = uebungVon(z, p.uebungId);
+  if (!u || b.typ === 'zirkel' || p.istMaxTest || istKalibrierung(z, einheit, s)) return undefined;
+  if (s.satz !== 1 && !nachKalibrierung(z, einheit, s)) return undefined;
+  const e = einstellungenVon(z);
+  const ort = z.orte.find((o) => o.id === einheit.ortId);
+  const bisher = sitzungen(z, u.id).filter((x) => x.einheit.id !== einheit.id);
+  const letzte = bisher.at(-1);
+  const letztesMal = letzte ? ersterSatz(letzte.position) : undefined;
+  const verlauf = bisher.map((x) => leistungswert(e, u, x.position)).filter((w): w is number => w !== undefined)
+    .slice(-PLAYER.verlaufPunkte);
+  const { bis } = bereichFuer(e, u);
+  const naechste = ort && (u.lasttyp === 'KG' || u.lasttyp === 'Zeit') ? naechsteVariante(z, ort, u, jetzt) : undefined;
+  // Großer Sprung zur nächsten Variante: erst langsames Absenken (Zwischenstufe wie in der Progression).
+  const zwischenstufe = naechste !== undefined && !p.langsam && naechste.stufe - u.stufe >= PROGRESSION.zwischenstufeAbStufen;
+  const schritt: Fortschrittshinweis['schritt'] = u.lasttyp === 'Last' ? 'gewicht'
+    : u.lasttyp === 'Band' ? (u.unterstuetzend ? 'bandLeichter' : 'band') : zwischenstufe ? 'langsam' : 'variante';
+  return {
+    inSek: u.bereich.einheit === 'Sek.', heute: p.zielWdh, ab: Math.max(bis, p.zielWdh), schritt, verlauf,
+    ...(letztesMal !== undefined ? { letztesMal } : {}), ...(naechste && !zwischenstufe ? { naechste: naechste.name } : {}),
+  };
 }
