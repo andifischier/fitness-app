@@ -6,7 +6,7 @@ import { OnboardingSeite } from './seiten/onboarding/Onboarding';
 import { TesttagSeite } from './seiten/onboarding/Testtag';
 import { MobilitySeite } from './seiten/training/Mobility';
 import { StartSeite } from './seiten/training/Start';
-import { TrainingPlatzhalter } from './seiten/training/Training';
+import { TrainingSeite as PlayerSeite } from './seiten/training/Training';
 import { VorschauSeite } from './seiten/training/Vorschau';
 import { BackupSeite } from './seiten/einstellungen/Backup';
 import { EinschraenkungenSeite } from './seiten/einstellungen/Einschraenkungen';
@@ -25,7 +25,7 @@ export function App() {
       <Route path="/testtag" element={<TesttagSeite />} />
       <Route path="/start" element={<StartSeite />} />
       <Route path="/vorschau/:id" element={<VorschauSeite />} />
-      <Route path="/training/:id" element={<TrainingPlatzhalter />} />
+      <Route path="/training/:id" element={<PlayerSeite />} />
       <Route path="/mobility" element={<MobilitySeite />} />
       <Route element={<Rahmen />}>
         <Route path="/" element={<HeuteSeite />} />

@@ -3,7 +3,8 @@
 import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
 import { ohneUebung, ortGenutzt, uebungGenutzt, utensilGenutzt } from '../logik/einstellungen';
 import { wocheMitPrognose } from '../logik/heute';
-import { offeneWochenabschluesse, wochenabschluss } from '../logik/progression';
+import { beende, erledigteSaetze, starte } from '../logik/player';
+import { offeneWochenabschluesse, schliesseEinheitAb, wochenabschluss } from '../logik/progression';
 import { schliesseTesttagAb } from '../logik/testtag';
 import type { Einheit, Einstellungen, Ort, Uebung, Utensil } from '../logik/typen';
 import { db, EINSTELLUNGEN_SCHLUESSEL, ladeZustand, TABELLEN, type FitnessDb } from './db';
@@ -137,5 +138,45 @@ export async function fuehreWochenabschluesseAus(jetzt: string, d: FitnessDb = d
     if (offen.length === 0) return;
     for (const id of offen) z = wochenabschluss(z, id);
     for (const t of ['muskeln', 'zyklen', 'muster', 'wochen'] as const) await d.table(t).bulkPut(z[t]);
+  });
+}
+
+// ---------- Trainings-Player ----------
+
+// Nach dem Aufwärmen: Die Einheit läuft (im Zirkel startet die Stoppuhr). Nur aus „geplant“ oder
+// beim Fortsetzen einer laufenden Einheit.
+export async function starteEinheit(einheitId: string, jetzt: string, d: FitnessDb = db): Promise<boolean> {
+  return d.transaction('rw', d.einheiten, async () => {
+    const e = await d.einheiten.get(einheitId);
+    if (!e || (e.status !== 'geplant' && e.status !== 'laufend')) return false;
+    await d.einheiten.put(starte(e, jetzt));
+    return true;
+  });
+}
+
+// Speichert die laufende Einheit nach jedem Satz, damit ein Neustart am richtigen Satz fortsetzt.
+export async function speichereLaufendeEinheit(einheit: Einheit, d: FitnessDb = db): Promise<boolean> {
+  return d.transaction('rw', d.einheiten, async () => {
+    if ((await d.einheiten.get(einheit.id))?.status !== 'laufend' || einheit.status !== 'laufend') return false;
+    await d.einheiten.put(einheit);
+    return true;
+  });
+}
+
+// Beendet die laufende Einheit: abgeschlossen, wenn alle Sätze erledigt sind, sonst abgebrochen mit
+// allen erledigten Sätzen. Danach schreibt `schliesseEinheitAb` Progression, Erholung und Woche fort.
+// Ohne einen erledigten Satz wird die Einheit wieder „geplant“ (es gibt nichts zu speichern).
+export async function beendeEinheit(einheit: Einheit, jetzt: string, d: FitnessDb = db): Promise<Einheit | undefined> {
+  return d.transaction('rw', TABELLEN.map((t) => d.table(t)), async () => {
+    if ((await d.einheiten.get(einheit.id))?.status !== 'laufend') return undefined;
+    if (erledigteSaetze(einheit) === 0) {
+      const geplant: Einheit = { ...einheit, status: 'geplant' };
+      delete geplant.gestartetAm;
+      await d.einheiten.put(geplant);
+      return undefined;
+    }
+    const neu = schliesseEinheitAb(await ladeZustand(d), beende(einheit, jetzt), jetzt);
+    for (const t of [...TRAININGSTABELLEN, 'zirkelErgebnisse'] as const) await d.table(t).bulkPut(neu[t]);
+    return neu.einheiten.find((x) => x.id === einheit.id);
   });
 }

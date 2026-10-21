@@ -110,3 +110,20 @@
   Spezifikation angepasst.
 - **Warum:** Arbeitspaket 6 der Spezifikation; „Los geht's“ führt vorerst auf einen Platzhalter, den
   Trainings-Player baut Paket 7.
+
+## Paket 7: Trainings-Player (21.10.2026)
+- **Was:** Training Schritt für Schritt nach Mockup 4 und 5: Aufwärmen als Checkliste, Max-Test mit
+  Zähler bzw. Stoppuhr, Satz-Bildschirm mit Ziel und Bereich im ersten Satz, Vorgabe ab Satz 2, Last,
+  Hinweis zur Reserve, Zähler, „Letztes Mal“ und Video-Link; Pause mit Timer-Ring, „+30 Sek.“,
+  Überspringen, „Als Nächstes“, Ton und Vibration am Ende; Supersätze (A1, A2, dann Pause);
+  Zirkel-Modus mit laufender Stoppuhr, Runden und „Weiter“; Bildschirm bleibt an. Jeder Satz wird
+  sofort gespeichert, ein Neustart setzt am richtigen Satz fort; das Kreuz bietet „Weiter
+  trainieren“, „Später fortsetzen“ und „Training beenden“ (erledigte Sätze bleiben). Kalibrierungssatz
+  mit Gewichtswahl bei neuen Last-Übungen. Bis Paket 8 endet das Training mit einer kurzen
+  Zusammenfassung. Neue Logik `src/logik/player.ts`, Speicherfunktionen, jeweils mit Tests;
+  `werteUebungAus` misst nach einer Kalibrierung am zweiten Satz; ein abgebrochener Zirkel zählt nur
+  erledigte Runden.
+- **Bewertung der Übungen:** Auf Wunsch des Nutzers sind 1 bis 5 Sterne je Übung in Spezifikation und
+  Entscheidungen festgelegt (umgesetzt mit Paket 8).
+- **Warum:** Arbeitspaket 7 der Spezifikation; Wunsch des Nutzers nach einer Bewertung der Übungen.
+
