@@ -1,18 +1,21 @@
-// Heute (Mockup 1): nächste Einheit als Vorschau, Wochenfortschritt pro Muskel, Wochenprognose mit
-// „ändern“ und nächster Max-Test. Beim ersten Start geht es direkt ins Onboarding.
+// Heute (Mockup 1): nächste Einheit als Vorschau mit allen Übungen, Wochenausblick mit den gewählten
+// Trainingstagen (Entscheidung 21.10.2026) und nächster Max-Test. Der Wochenfortschritt pro Muskel
+// steht im Tab Fortschritt. Beim ersten Start geht es direkt ins Onboarding.
 import { useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router';
-import { aenderePrognose, verwerfeEinheit } from '../daten/speichern';
+import { aendereTage, verwerfeEinheit } from '../daten/speichern';
 import { lokaleZeit } from '../daten/zeit';
-import { isoWoche } from '../logik/datum';
+import { maxOffeneTage, prognoseAusTagen, vorschlagTage, wochenausblick, type AusblickTag } from '../logik/ausblick';
+import { isoWoche, wochentag } from '../logik/datum';
 import { aktuelleEinheit, backupErinnerung, naechsterMaxTest } from '../logik/heute';
-import { erstelleEinheit, istErholungswoche, startfragen, wochenziele } from '../logik/planung';
-import { MUSKELN, type AppZustand, type Einheit } from '../logik/typen';
+import { erstelleEinheit, istErholungswoche, startfragen } from '../logik/planung';
+import type { AppZustand, Einheit } from '../logik/typen';
 import { uebungVon } from '../logik/verlauf';
-import { PROFIL } from '../konfiguration';
-import { Auswahl, Knopf } from '../ui/bausteine';
+import { Hinweis, Knopf, TageWahl } from '../ui/bausteine';
 import { Icon } from '../ui/Icon';
-import { abText, datumLang, FOKUS_NAMEN, MUSKEL_NAMEN, muskelgruppenText, saetzeText } from '../ui/texte';
+import { abText, datumLang, FOKUS_NAMEN, muskelgruppenText, tagText } from '../ui/texte';
+import { kannTeilen, sichereBackup } from '../ui/backupSichern';
+import { UebungsListe } from '../ui/uebungsliste';
 import { einstellungenAus, useZustand } from '../ui/useZustand';
 
 export function HeuteSeite() {
@@ -51,17 +54,17 @@ function Inhalt({ z, jetzt }: { z: AppZustand; jetzt: string }) {
       jetzt, ortId: fragen.ortId, prognose: fragen.prognoseVorschlag, morgenWieder: fragen.morgenWiederVorschlag, laenger: false,
     }));
     const woche = z.wochen.find((w) => w.id === isoWoche(jetzt));
-    const prognose = woche?.prognose ?? fragen.prognoseVorschlag;
     return {
-      fragen, aktuell, vorschau, woche, prognose,
-      ziele: wochenziele(z, prognose, fragen.ortId, jetzt),
+      fragen, aktuell, vorschau, woche,
+      ausblick: woche?.tage ? wochenausblick(z, jetzt, woche.tage) : undefined,
       erholungswoche: istErholungswoche(z, jetzt),
       maxTest: naechsterMaxTest(z, jetzt, fragen.ortId),
       backup: backupErinnerung(z, jetzt),
     };
   }, [z, jetzt]);
-  const { fragen, aktuell, vorschau, woche, prognose, ziele, erholungswoche, maxTest, backup } = daten;
+  const { fragen, aktuell, vorschau, woche, ausblick, erholungswoche, maxTest, backup } = daten;
   const ort = z.orte.find((o) => o.id === (vorschau?.ortId ?? fragen.ortId));
+  const liste = aktuell?.status !== 'laufend' && vorschau && vorschau.bloecke.length > 0 ? vorschau : undefined;
 
   const neuErstellen = async () => {
     if (aktuell) await verwerfeEinheit(aktuell.id);
@@ -113,10 +116,17 @@ function Inhalt({ z, jetzt }: { z: AppZustand; jetzt: string }) {
             <Knopf onClick={() => navigate('/start')}>Training starten</Knopf>
           </>
         )}
+        {liste && (
+          <div className="mt-5 border-t border-linie pt-4">
+            <p className="mb-2 text-hinweis text-gedaempft">
+              {aktuell ? 'Übungen' : 'Voraussichtlich, mit den Standardangaben vor dem Start'}
+            </p>
+            <UebungsListe z={z} einheit={liste} />
+          </div>
+        )}
       </section>
 
-      <Woche ortId={fragen.ortId} einheiten={woche?.einheiten ?? 0} prognose={prognose}
-        ziele={ziele} erledigt={woche?.erledigt} />
+      <Woche z={z} jetzt={jetzt} ortId={fragen.ortId} tage={woche?.tage} einheiten={woche?.einheiten ?? 0} ausblick={ausblick} />
 
       {maxTest && (
         <p className="flex items-center gap-3 text-basis text-gedaempft">
@@ -125,15 +135,7 @@ function Inhalt({ z, jetzt }: { z: AppZustand; jetzt: string }) {
         </p>
       )}
 
-      {backup && (
-        <Link to="/einstellungen/backup" className="flex items-center gap-3 rounded-karte border border-rand bg-flaeche p-5">
-          <span className="flex-1">
-            <span className="block text-gross font-semibold">Zeit für ein Backup</span>
-            <span className="block text-hinweis text-gedaempft">Sichere deine Daten alle 4 Wochen in einer Datei.</span>
-          </span>
-          <span className="text-gedaempft"><Icon name="weiter" groesse={20} /></span>
-        </Link>
-      )}
+      {backup && <WochenBackup />}
     </div>
   );
 }
@@ -147,48 +149,127 @@ function Titel({ titel, text }: { titel: string; text: string }) {
   );
 }
 
-function Woche({ ortId, einheiten, prognose, ziele, erledigt }: {
-  ortId: string; einheiten: number; prognose: number;
-  ziele: Record<string, number>; erledigt?: Record<string, number>;
+// Diese Woche: Trainingstage wählen und je Tag die voraussichtliche Einheit (Wochenausblick).
+function Woche({ z, jetzt, ortId, tage, einheiten, ausblick }: {
+  z: AppZustand; jetzt: string; ortId: string; tage?: number[]; einheiten: number; ausblick?: AusblickTag[];
 }) {
   const [aendern, setAendern] = useState(false);
-  const { min, max } = PROFIL.einheitenProWoche;
-  const optionen = Array.from({ length: max - min + 1 }, (_, i) => min + i)
-    .filter((n) => n >= einheiten).map((n) => ({ wert: n, text: String(n) }));
-  const muskeln = MUSKELN.filter((m) => ziele[m]! > 0 || (erledigt?.[m] ?? 0) > 0);
+  const heute = wochentag(jetzt);
+  const zeigeWahl = aendern || !tage;
+  const tageText = tage && tage.length > 0 ? tage.map((t) => ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'][t]).join(', ') : 'keine Tage';
+  const kommend = ausblick?.filter((t) => t.art === 'erledigt' || t.tag !== heute) ?? [];
   return (
     <section>
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="text-screen font-extrabold">Diese Woche</h2>
+        {tage && (
+          <p className="text-basis text-gedaempft">
+            {einheiten} von {prognoseAusTagen(z, jetzt, tage)} Einheiten
+          </p>
+        )}
+      </div>
+      {zeigeWahl ? (
+        <TageKarte z={z} jetzt={jetzt} ortId={ortId} tage={tage} onFertig={() => setAendern(false)} />
+      ) : (
         <p className="text-basis text-gedaempft">
-          {einheiten} von {prognose} Einheiten ·{' '}
-          <button type="button" className="min-h-touch font-semibold text-akzent underline" onClick={() => setAendern(!aendern)}>
+          Trainingstage: {tageText} ·{' '}
+          <button type="button" className="min-h-touch font-semibold text-akzent underline" onClick={() => setAendern(true)}>
             ändern
           </button>
         </p>
-      </div>
-      {aendern && (
-        <div className="mb-4 rounded-karte border border-rand bg-flaeche p-5">
-          <p className="mb-3 text-basis font-semibold">Wie oft schaffst du es diese Woche?</p>
-          <Auswahl optionen={optionen} wert={prognose} spalten={6}
-            onChange={(n) => { void aenderePrognose(n, ortId, lokaleZeit()); setAendern(false); }} />
-        </div>
       )}
-      <ul className="mt-2 rounded-karte border border-rand bg-flaeche px-5 py-3">
-        {muskeln.map((m) => {
-          const ziel = ziele[m] ?? 0;
-          const ist = erledigt?.[m] ?? 0;
-          return (
-            <li key={m} className="flex min-h-[40px] items-center gap-4">
-              <span className="w-40 shrink-0 text-basis">{MUSKEL_NAMEN[m]}</span>
-              <span className="h-2 flex-1 rounded-full bg-linie">
-                <span className="block h-2 rounded-full bg-akzent" style={{ width: `${ziel > 0 ? Math.min(100, (ist / ziel) * 100) : 0}%` }} />
-              </span>
-              <span className="w-12 text-right text-basis text-gedaempft">{saetzeText(ist)}/{ziel}</span>
-            </li>
-          );
-        })}
-      </ul>
+      {!zeigeWahl && kommend.length > 0 && (
+        <ul className="mt-2 flex flex-col gap-2">
+          {kommend.map((t) => <AusblickZeile key={`${t.datum}-${t.art}-${t.einheit?.id ?? ''}`} z={z} t={t} />)}
+        </ul>
+      )}
+      {!zeigeWahl && kommend.some((t) => t.art !== 'erledigt') && (
+        <div className="mt-2"><Hinweis>Schätzung: Jede Einheit wird erst vor dem Start erstellt und passt sich an.</Hinweis></div>
+      )}
+    </section>
+  );
+}
+
+function TageKarte({ z, jetzt, ortId, tage, onFertig }: {
+  z: AppZustand; jetzt: string; ortId: string; tage?: number[]; onFertig: () => void;
+}) {
+  const heute = wochentag(jetzt);
+  const [wahl, setWahl] = useState(() => tage?.filter((t) => t >= heute) ?? vorschlagTage(z, jetzt));
+  const speichern = async () => {
+    // Vergangene Tage bleiben gespeichert, damit der Ausblick die Woche vollständig kennt.
+    await aendereTage([...(tage?.filter((t) => t < heute) ?? []), ...wahl], ortId, lokaleZeit());
+    onFertig();
+  };
+  return (
+    <div className="mt-2 rounded-karte border border-rand bg-flaeche p-5">
+      <p className="text-basis font-semibold">An welchen Tagen trainierst du diese Woche?</p>
+      <p className="mb-3 text-hinweis text-gedaempft">Danach siehst du für jeden Tag, was geplant ist.</p>
+      <TageWahl wert={wahl} onChange={setWahl} ab={heute} max={maxOffeneTage(z, jetzt)} />
+      <div className="mt-4 flex flex-col gap-2">
+        <Knopf onClick={() => void speichern()}>Übernehmen</Knopf>
+        {tage && <Knopf art="schlicht" onClick={onFertig}>Abbrechen</Knopf>}
+      </div>
+    </div>
+  );
+}
+
+function AusblickZeile({ z, t }: { z: AppZustand; t: AusblickTag }) {
+  const tag = tagText(t.datum, t.tag);
+  if (t.art !== 'einheit' || !t.einheit) {
+    const text = t.art === 'erledigt' && t.einheit ? `${kurzName(z, t.einheit)} · erledigt`
+      : t.art === 'zirkel' ? 'Zirkel · Auswahl beim Start' : 'Ruhetag empfohlen';
+    return (
+      <li className="flex items-center gap-3 rounded-karte border border-rand bg-flaeche px-5 py-3 text-basis">
+        <span className="w-24 shrink-0 font-semibold">{tag}</span>
+        <span className="text-gedaempft">{text}</span>
+      </li>
+    );
+  }
+  const e = t.einheit;
+  return (
+    <li className="rounded-karte border border-rand bg-flaeche">
+      <details>
+        <summary className="flex min-h-touch cursor-pointer list-none items-center gap-3 px-5 py-3 text-basis">
+          <span className="w-24 shrink-0 font-semibold">{tag}</span>
+          <span className="flex-1">
+            <span className="block font-semibold">{kurzName(z, e)}</span>
+            <span className="block text-hinweis text-gedaempft">ca. {e.geschaetzteDauerMin} Min · {gruppen(z, e)}</span>
+          </span>
+          <span className="text-gedaempft"><Icon name="weiter" groesse={20} /></span>
+        </summary>
+        <div className="px-5 pb-4"><UebungsListe z={z} einheit={e} /></div>
+      </details>
+    </li>
+  );
+}
+
+// Wochen-Backup: einmal pro Woche vorgeschlagen; ein Tipp sichert in Drive (Teilen) oder als Datei.
+function WochenBackup() {
+  const [laeuft, setLaeuft] = useState(false);
+  const [fehler, setFehler] = useState(false);
+  const sichern = async (art: 'teilen' | 'speichern') => {
+    setLaeuft(true);
+    setFehler(false);
+    try {
+      await sichereBackup(art);
+    } catch {
+      setFehler(true);
+    }
+    setLaeuft(false);
+  };
+  return (
+    <section className="rounded-karte border border-rand bg-flaeche p-5">
+      <p className="text-gross font-semibold">Zeit für dein Wochen-Backup</p>
+      <p className="mb-4 text-hinweis text-gedaempft">
+        Sichere deine Daten außerhalb der App. Im Teilen-Menü wählst du z. B. Google Drive.
+      </p>
+      <div className="flex flex-col gap-2">
+        {kannTeilen() && <Knopf onClick={() => void sichern('teilen')} deaktiviert={laeuft}>In Drive sichern</Knopf>}
+        <Knopf art={kannTeilen() ? 'sekundaer' : 'primaer'} onClick={() => void sichern('speichern')} deaktiviert={laeuft}>
+          Auf dem Handy speichern
+        </Knopf>
+      </div>
+      {fehler && <p role="alert" className="mt-3 text-hinweis font-semibold">Das Backup hat nicht geklappt. Bitte versuche es noch einmal.</p>}
     </section>
   );
 }

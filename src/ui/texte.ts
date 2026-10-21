@@ -256,3 +256,24 @@ export function saetzeZeile(u: Uebung, p: Position): string {
   if (lasten.every((l) => l === lasten[0])) return [lasten[0], `${werte.join(', ')} ${einheit}`].filter(Boolean).join(' · ');
   return werte.map((w, i) => `${w} ${einheit}${lasten[i] ? ` mit ${lasten[i]}` : ''}`).join(', ');
 }
+
+// „3 × Ziel 10 · 16 kg je Hand“; Halteübungen in Sekunden, Max-Test ohne Ziel.
+export function detailText(u: Uebung, p: Position): string {
+  if (p.istMaxTest) return u.bereich.einheit === 'Sek.' ? 'Max-Test · so lange wie möglich' : 'Max-Test · so viele wie möglich';
+  const ziel = u.bereich.einheit === 'Sek.' ? `Ziel ${p.zielWdh} Sek.` : `Ziel ${p.zielWdh}`;
+  return [`${p.saetze} × ${ziel}`, lastText(u, p)].filter(Boolean).join(' · ');
+}
+
+// Zirkel-Vorgabe aus dem Katalog; reine Zahlen bekommen die Einheit der Übung.
+export function vorgabeText(u: Uebung, vorgabe: string | undefined): string {
+  if (!vorgabe) return '';
+  return /^\d+$/.test(vorgabe) ? `${vorgabe} ${u.bereich.einheit}` : vorgabe;
+}
+
+export const TAGE_KURZ = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+
+// „2026-10-21“ (Wochentag 2) → „Mi, 21.10.“
+export function tagText(datum: string, tag: number): string {
+  const [, m, t] = datum.slice(0, 10).split('-');
+  return `${TAGE_KURZ[tag]}, ${t}.${m}.`;
+}

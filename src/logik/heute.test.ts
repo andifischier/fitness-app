@@ -101,15 +101,15 @@ describe('keinMuskelErholt', () => {
 describe('backupErinnerung', () => {
   const fertig = (zeit: string) => ({ ...einheit(zeit, 'abgeschlossen', zeit), gestartetAm: zeit });
 
-  it('erinnert 4 Wochen nach dem letzten Backup bzw. nach der ersten Einheit', () => {
+  it('schlägt 1 Woche nach dem letzten Backup bzw. nach der ersten Einheit ein Backup vor', () => {
     const z = zustand();
     expect(backupErinnerung(z, MI)).toBe(false);
     const mitEinheit = { ...z, einheiten: [fertig('2026-09-20T10:00:00')] };
-    expect(backupErinnerung(mitEinheit, '2026-10-17T10:00:00')).toBe(false);
-    expect(backupErinnerung(mitEinheit, '2026-10-18T10:00:00')).toBe(true);
+    expect(backupErinnerung(mitEinheit, '2026-09-27T09:00:00')).toBe(false);
+    expect(backupErinnerung(mitEinheit, '2026-09-27T10:00:00')).toBe(true);
     const mitBackup = { ...mitEinheit, einstellungen: [{ ...mitEinheit.einstellungen[0]!, letztesBackup: '2026-10-01T10:00:00' }] };
-    expect(backupErinnerung(mitBackup, '2026-10-28T10:00:00')).toBe(false);
-    expect(backupErinnerung(mitBackup, '2026-10-29T10:00:00')).toBe(true);
+    expect(backupErinnerung(mitBackup, '2026-10-08T09:00:00')).toBe(false);
+    expect(backupErinnerung(mitBackup, '2026-10-08T10:00:00')).toBe(true);
   });
 });
 

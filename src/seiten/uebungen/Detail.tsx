@@ -10,7 +10,7 @@ import {
 import { uebungVon } from '../../logik/verlauf';
 import type { AppZustand, Uebung } from '../../logik/typen';
 import { Fehler, Hinweis, Karte, Knopf, Laedt, Schalter, Seite, Sternwahl, Textfeld } from '../../ui/bausteine';
-import { Icon } from '../../ui/Icon';
+import { Technik } from '../../ui/technik';
 import { equipmentText, LASTTYP_NAMEN, MUSKEL_NAMEN, MUSTER_NAMEN } from '../../ui/texte';
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
 
@@ -83,15 +83,15 @@ function UebungAnsicht({ z, u, zurueck }: { z: AppZustand; u: Uebung; zurueck: s
         {eigene && <Angabe titel="Herkunft" wert="Eigene Übung" />}
       </Karte>
 
-      <Karte titel="Video">
+      <Karte titel="So geht's">
+        <Technik key={`${u.id}|${videoLinkVon(e, u)}`} e={e} u={u} offen />
+      </Karte>
+
+      <Karte titel="Eigenes Video">
         <div className="flex flex-col gap-3">
-          <a href={videoLinkVon(e, u)} target="_blank" rel="noreferrer"
-            className="flex min-h-touch items-center gap-2 text-basis font-semibold text-akzent">
-            <Icon name="video" groesse={22} /> Video ansehen
-          </a>
           <Textfeld typ="url" label="Eigener Video-Link" wert={link} platzhalter="https://…"
             onChange={(t) => { setLink(t); setLinkMeldung(undefined); }} />
-          <Hinweis>Ohne eigenen Link öffnet sich eine YouTube-Suche.</Hinweis>
+          <Hinweis>Ein eigener YouTube-Link wird hier abgespielt. Ohne eigenen Link gilt das Video aus der App, sonst eine YouTube-Suche.</Hinweis>
           {linkFehler && <Fehler meldungen={[linkFehler]} />}
           {linkMeldung && <p role="status" className="text-hinweis font-semibold text-akzent">{linkMeldung}</p>}
           <div className="flex gap-3">

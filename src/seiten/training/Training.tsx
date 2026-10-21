@@ -6,7 +6,6 @@ import { Navigate, useNavigate, useParams } from 'react-router';
 import { beendeEinheit, speichereAbschluss, speichereLaufendeEinheit, starteEinheit } from '../../daten/speichern';
 import { lokaleZeit } from '../../daten/zeit';
 import { PLAYER, PROGRESSION } from '../../konfiguration';
-import { videoLinkVon } from '../../logik/einstellungen';
 import { lastraster } from '../../logik/equipment';
 import { zirkelBestzeit, zirkelVorgaben } from '../../logik/heute';
 import { mobilityZeilen } from '../../logik/planung';
@@ -23,6 +22,7 @@ import { bereiteTonVor, pausenEnde, useBildschirmAn } from '../../ui/signal';
 import {
   BAND_NAMEN, feedbackOptionen, lastTeile, lastText, naechstesMalText, rekordZeile, zeitText,
 } from '../../ui/texte';
+import { Technik } from '../../ui/technik';
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
 import { Stoppuhr, Zaehler } from '../../ui/zaehler';
 
@@ -260,10 +260,7 @@ function Kopf({ z, u, label }: { z: AppZustand; u: Uebung; label?: string }) {
     <>
       {label && <p className="mt-6 text-hinweis font-bold tracking-wide text-akzent uppercase">{label}</p>}
       <h1 className={`${label ? 'mt-1' : 'mt-6'} text-titel leading-tight font-extrabold`}>{u.name}</h1>
-      <a href={videoLinkVon(einstellungenAus(z), u)} target="_blank" rel="noreferrer"
-        className="mt-2 flex min-h-touch items-center gap-2 text-gross font-semibold text-akzent">
-        <Icon name="video" groesse={22} /> Technik auf YouTube
-      </a>
+      <Technik key={u.id} e={einstellungenAus(z)} u={u} />
     </>
   );
 }

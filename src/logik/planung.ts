@@ -4,7 +4,7 @@ import {
   BEWERTUNG, ERHOLUNGSWOCHE, EINHEIT, ERSATZ, FOKUS_GRUPPEN, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
   KOMBI, TRAININGSPAUSE, WOCHENZIEL, ZEITBUDGET, ZIRKEL,
 } from '../konfiguration';
-import { isoWoche, plusTage, stundenZwischen, verbleibendeTage, wochenNummer } from './datum';
+import { isoWoche, plusTage, stundenZwischen, verbleibendeTage, wochenNummer, wochentag } from './datum';
 import {
   alleUebungen, bandStufen, hatAktiveSperre, hatUtensil, istGesperrt, lastraster, uebungErlaubt, uebungMoeglich,
 } from './equipment';
@@ -702,6 +702,15 @@ export function startfragen(z: AppZustand, jetzt: string): StartfragenErgebnis {
   const letzte = letzteEinheitZeit(z);
   const langePause = letzte !== undefined && stundenZwischen(letzte, jetzt) >= WOCHENZIEL.pacingAbStunden;
 
+  // Gewählte Trainingstage (Wochenausblick): Prognose = erledigte + diese + noch folgende Tage;
+  // „Morgen wieder?“ folgt den Tagen. Eine Pacing-Korrektur braucht es dann nicht.
+  if (woche?.tage) {
+    const heute = wochentag(jetzt);
+    const { min, max } = PROFIL.einheitenProWoche;
+    const prognose = begrenze(erledigteEinheiten + 1 + woche.tage.filter((t) => t > heute).length, min, max);
+    return fragenErgebnis(z, e, jetzt, ort?.id ?? '', prognose, woche.tage.includes(heute + 1), false);
+  }
+
   let prognoseAbfragen = !woche;
   let prognose = woche ? Math.max(woche.prognose, erledigteEinheiten + 1) : prognoseDurchschnitt(z, e, jetzt);
   if (woche && langePause) {
@@ -713,7 +722,11 @@ export function startfragen(z: AppZustand, jetzt: string): StartfragenErgebnis {
   }
   const nachHeute = prognose - erledigteEinheiten - 1;
   const morgenWiederVorschlag = !langePause && nachHeute > 0 && nachHeute >= (tage - 1) / 2;
-  const ortId = ort?.id ?? '';
+  return fragenErgebnis(z, e, jetzt, ort?.id ?? '', prognose, morgenWiederVorschlag, prognoseAbfragen);
+}
+
+function fragenErgebnis(z: AppZustand, e: Einstellungen, jetzt: string, ortId: string, prognose: number,
+  morgenWiederVorschlag: boolean, prognoseAbfragen: boolean): StartfragenErgebnis {
   const probe = plane(z, { jetzt, ortId, prognose, morgenWieder: morgenWiederVorschlag, laenger: false });
   const ruhetagEmpfohlen = probe.budgetSaetze < EINHEIT.ruhetagUnterSaetzen;
   return {

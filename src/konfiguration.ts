@@ -248,7 +248,7 @@ export const MAXTEST = {
 export const BACKUP = {
   format: 'fitness-app-backup',
   schemaVersion: 1,
-  erinnerungWochen: 4,
+  erinnerungWochen: 1,             // Wochen-Backup (Entscheidung 21.10.2026)
 } as const;
 
 // Trainings-Player (Paket 7)

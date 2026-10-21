@@ -5,7 +5,7 @@ import {
   entwurfAusVorlage, fehlendeMuster, fertigeUebung, hantelbank, leseZahl, leseZahlen, mitAusschluss, mitDetails,
   mitEinschraenkung, mitFavorit, mitHantelbank, mitStandard, mitUtensil, mitVideoLink, moeglicheUebungen, neueId,
   neuerOrt, neuesUtensil, normalisiereUebung, ohneEinschraenkung, ohneUebung, ortGenutzt, pruefeEigeneUebung,
-  pruefeOrt, pruefeUtensilName, sperreAktiv, uebungGenutzt, utensilGenutzt, videoLinkVon, youtubeSuche, zahlText,
+  pruefeOrt, pruefeUtensilName, sperreAktiv, uebungGenutzt, utensilGenutzt, videoLinkVon, videoIdVon, youtubeId, youtubeSuche, zahlText,
 } from './einstellungen';
 import { erstelleEinheit } from './planung';
 import { ort, zeitpunkt, zustand } from './testhilfe';
@@ -250,15 +250,40 @@ describe('Favoriten, Ausschlüsse und Video-Links', () => {
     expect(mitFavorit(fav, 'klimmzug', false).favoriten).toEqual([]);
   });
 
-  it('eigener Video-Link hat Vorrang vor der YouTube-Suche', () => {
+  it('eigener Video-Link hat Vorrang vor Katalogvideo und YouTube-Suche', () => {
     const u = katalogUebung('klimmzug');
-    expect(videoLinkVon(e, u)).toBe(u.youtubeUrl);
+    expect(videoLinkVon(e, u)).toBe(`https://www.youtube.com/watch?v=${u.videoId}`);
+    const ohneVideo = katalogUebung('kh_curls');
+    expect(videoLinkVon(e, ohneVideo)).toBe(ohneVideo.youtubeUrl);
     const mit = mitVideoLink(e, u.id, ' https://youtu.be/abc ');
     expect(videoLinkVon(mit, u)).toBe('https://youtu.be/abc');
     const ohne = mitVideoLink(mit, u.id, undefined);
     expect(ohne.videoLinks).toBeUndefined();
     const eigene = { ...entwurfAusVorlage(u), eigenerVideoLink: 'https://example.org/x' };
     expect(videoLinkVon(e, eigene)).toBe('https://example.org/x');
+  });
+
+  it('liest die Video-ID aus YouTube-Links', () => {
+    expect(youtubeId('https://www.youtube.com/watch?v=X1qbPKGDuKM&t=10')).toBe('X1qbPKGDuKM');
+    expect(youtubeId('https://youtu.be/X1qbPKGDuKM')).toBe('X1qbPKGDuKM');
+    expect(youtubeId('https://m.youtube.com/shorts/he3qQBQTn-4')).toBe('he3qQBQTn-4');
+    expect(youtubeId('https://www.youtube.com/results?search_query=x')).toBeUndefined();
+    expect(youtubeId('https://example.org/watch?v=X1qbPKGDuKM')).toBeUndefined();
+    expect(youtubeId('kein Link')).toBeUndefined();
+  });
+
+  it('bettet ein eigenes YouTube-Video vor dem Katalogvideo ein, andere Links nicht', () => {
+    const u = katalogUebung('klimmzug');
+    expect(videoIdVon(e, u)).toBe(u.videoId);
+    expect(videoIdVon(mitVideoLink(e, u.id, 'https://youtu.be/abcdefghijk'), u)).toBe('abcdefghijk');
+    expect(videoIdVon(mitVideoLink(e, u.id, 'https://example.org/x'), u)).toBeUndefined();
+    expect(videoIdVon(e, katalogUebung('kh_curls'))).toBeUndefined();
+  });
+
+  it('eine eigene Übung übernimmt Video und Kurzanleitung der Vorlage nicht', () => {
+    const entwurf = entwurfAusVorlage(katalogUebung('klimmzug'));
+    expect(entwurf.videoId).toBeUndefined();
+    expect(entwurf.anleitung).toBeUndefined();
   });
 
   it('räumt Verweise auf eine gelöschte Übung auf', () => {

@@ -1,20 +1,9 @@
 import { useRef, useState } from 'react';
-import { backupDateiname, exportiere, importiere, pruefeBackup, type BackupZusammenfassung } from '../../daten/backup';
-import { lokaleZeit } from '../../daten/zeit';
+import { importiere, pruefeBackup, type BackupZusammenfassung } from '../../daten/backup';
+import { kannTeilen, sichereBackup } from '../../ui/backupSichern';
 import { Fehler, Hinweis, Karte, Knopf, Laedt, Seite } from '../../ui/bausteine';
 import { datumText } from '../../ui/texte';
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
-
-function speichereDatei(blob: Blob, name: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
 
 const einheitenText = (n: number) => (n === 1 ? '1 Einheit' : `${n} Einheiten`);
 
@@ -28,10 +17,12 @@ export function BackupSeite() {
   if (!z) return <Laedt />;
   const e = einstellungenAus(z);
 
-  const exportieren = async () => {
-    const jetzt = lokaleZeit();
-    speichereDatei(await exportiere(jetzt), backupDateiname(jetzt));
-    setMeldung('Backup gespeichert. Bewahre die Datei außerhalb des Handys auf, z. B. in deiner Cloud.');
+  const exportieren = async (art: 'teilen' | 'speichern') => {
+    setFehler(undefined);
+    setMeldung(undefined);
+    const ergebnis = await sichereBackup(art);
+    if (ergebnis === 'geteilt') setMeldung('Backup gesichert.');
+    if (ergebnis === 'gespeichert') setMeldung('Backup im Download-Ordner gespeichert. Am sichersten ist eine Kopie außerhalb des Handys, z. B. in Google Drive.');
   };
 
   const gewaehlt = async (f: File | undefined) => {
@@ -62,12 +53,13 @@ export function BackupSeite() {
       <Karte titel="Backup speichern"
         hinweis={e.letztesBackup ? `Letztes Backup: ${datumText(e.letztesBackup)}` : 'Noch kein Backup gespeichert.'}>
         <div className="flex flex-col gap-3">
-          <Hinweis>Speichert alle deine Daten als Datei auf dem Handy.</Hinweis>
-          <Knopf onClick={() => void exportieren()}>Backup speichern</Knopf>
+          <Hinweis>Sichert alle deine Daten als Datei. Heute schlägt das jede Woche vor.</Hinweis>
+          {kannTeilen() && <Knopf onClick={() => void exportieren('teilen')}>In Drive sichern</Knopf>}
+          <Knopf art={kannTeilen() ? 'sekundaer' : 'primaer'} onClick={() => void exportieren('speichern')}>Auf dem Handy speichern</Knopf>
         </div>
       </Karte>
       <Karte titel="Backup einlesen" hinweis="Ersetzt alle Daten in der App durch die Daten aus der Datei.">
-        <input ref={eingabe} type="file" accept="application/json,.json" className="hidden"
+        <input ref={eingabe} type="file" accept="application/json,.json,text/plain,.txt" className="hidden"
           onChange={(ev) => { void gewaehlt(ev.target.files?.[0]); ev.target.value = ''; }} />
         {!vorschau && <Knopf art="sekundaer" onClick={() => eingabe.current?.click()}>Datei auswählen</Knopf>}
         {vorschau && (

@@ -9,11 +9,11 @@ import { einheitZeit, einstellungenVon, fertigeEinheiten, istErholt, letzterMaxT
 
 const leer = () => Object.fromEntries(MUSKELN.map((m) => [m, 0])) as Record<Muskel, number>;
 
-// Woche mit der Prognose des Nutzers (Frage vor dem Start oder „ändern“ auf Heute). Erledigtes bleibt;
+// Woche mit der Prognose des Nutzers (Trainingstage vor dem Start oder auf Heute). Erledigtes bleibt;
 // die Prognose liegt nie unter den schon erledigten Einheiten. Eine gespeicherte Antwort zur
-// Erholungswoche bleibt; „15 Min länger“ wird nur ergänzt.
+// Erholungswoche bleibt; „15 Min länger“ wird nur ergänzt; neu gewählte Tage ersetzen die alten.
 export function wocheMitPrognose(z: AppZustand, jetzt: string, prognose: number, ortId: string,
-  extra: { erholungswoche?: boolean; laenger?: boolean } = {}): Woche {
+  extra: { erholungswoche?: boolean; laenger?: boolean; tage?: number[] } = {}): Woche {
   const id = isoWoche(jetzt);
   const alt = z.wochen.find((w) => w.id === id);
   const { min, max } = PROFIL.einheitenProWoche;
@@ -26,6 +26,7 @@ export function wocheMitPrognose(z: AppZustand, jetzt: string, prognose: number,
     ziele: wochenziele(z, p, ortId, jetzt, erholungswoche),
     erholungswoche,
     laengerAngenommen: (alt?.laengerAngenommen ?? false) || (extra.laenger ?? false),
+    ...(extra.tage ? { tage: [...new Set(extra.tage)].sort((a, b) => a - b) } : {}),
   };
 }
 
@@ -68,7 +69,7 @@ export function keinMuskelErholt(z: AppZustand, jetzt: string): boolean {
   return MUSKELN.every((m) => !istErholt(z.muskeln.find((x) => x.muskel === m), jetzt));
 }
 
-// Erinnerung an ein Backup: alle 4 Wochen seit dem letzten Export bzw. seit der ersten Einheit.
+// Vorschlag eines Backups: jede Woche (7 Tage) seit dem letzten Backup bzw. seit der ersten Einheit.
 export function backupErinnerung(z: AppZustand, jetzt: string): boolean {
   const erste = fertigeEinheiten(z)[0];
   if (!erste) return false;

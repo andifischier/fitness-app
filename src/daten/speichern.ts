@@ -2,6 +2,7 @@
 // Löschen prüft dort noch einmal, dass der Eintrag nie genutzt wurde.
 import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
 import { mitBewertungen, ohneUebung, ortGenutzt, uebungGenutzt, utensilGenutzt } from '../logik/einstellungen';
+import { prognoseAusTagen } from '../logik/ausblick';
 import { wocheMitPrognose } from '../logik/heute';
 import { beende, erledigteSaetze, starte } from '../logik/player';
 import {
@@ -100,7 +101,7 @@ export async function beendeOnboarding(d: FitnessDb = db): Promise<void> {
 // Speichert eine neu erstellte Einheit und die Woche mit der Prognose. Ältere, nie gestartete
 // Einheiten werden ersetzt; es gibt höchstens eine geplante Einheit.
 export async function speichereNeueEinheit(einheit: Einheit, prognose: number, jetzt: string,
-  extra: { erholungswoche?: boolean; laenger?: boolean } = {}, d: FitnessDb = db): Promise<void> {
+  extra: { erholungswoche?: boolean; laenger?: boolean; tage?: number[] } = {}, d: FitnessDb = db): Promise<void> {
   await d.transaction('rw', TABELLEN.map((t) => d.table(t)), async () => {
     const z = await ladeZustand(d);
     await d.wochen.put(wocheMitPrognose(z, jetzt, prognose, einheit.ortId, extra));
@@ -125,10 +126,12 @@ export async function verwerfeEinheit(einheitId: string, d: FitnessDb = db): Pro
   });
 }
 
-// Prognose der Woche auf Heute ändern (Entscheidung 21.10.2026: jederzeit, auch vor der ersten Einheit).
-export async function aenderePrognose(prognose: number, ortId: string, jetzt: string, d: FitnessDb = db): Promise<void> {
+// Trainingstage der Woche auf Heute wählen (jederzeit, auch vor der ersten Einheit; Entscheidungen
+// 21.10.2026 und 21.10.2026). Die Prognose folgt aus erledigten Einheiten und anstehenden Tagen.
+export async function aendereTage(tage: number[], ortId: string, jetzt: string, d: FitnessDb = db): Promise<void> {
   await d.transaction('rw', TABELLEN.map((t) => d.table(t)), async () => {
-    await d.wochen.put(wocheMitPrognose(await ladeZustand(d), jetzt, prognose, ortId));
+    const z = await ladeZustand(d);
+    await d.wochen.put(wocheMitPrognose(z, jetzt, prognoseAusTagen(z, jetzt, tage), ortId, { tage }));
   });
 }
 

@@ -59,6 +59,28 @@ export function Chip({ aktiv, onClick, children, label }: {
   );
 }
 
+// Trainingstage Mo bis So als Chips; Tage vor `ab` sind vorbei und nicht wählbar. Mehr als `max`
+// Tage lassen sich nicht wählen.
+export function TageWahl({ wert, onChange, ab, max }: {
+  wert: readonly number[]; onChange: (tage: number[]) => void; ab: number; max: number;
+}) {
+  return (
+    <div className="grid grid-cols-7 gap-1" role="group" aria-label="Trainingstage">
+      {['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map((name, tag) => {
+        const an = wert.includes(tag);
+        const vorbei = tag < ab;
+        return (
+          <button key={tag} type="button" aria-pressed={an} disabled={vorbei || (!an && wert.length >= max)}
+            onClick={() => onChange(an ? wert.filter((t) => t !== tag) : [...wert, tag].sort((a, b) => a - b))}
+            className={`${chip(an)} px-0 disabled:opacity-40`}>
+            {name}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // Einfachauswahl als Chips; spalten = 0 lässt die Chips umbrechen.
 export function Auswahl<T extends string | number>({ optionen, wert, onChange, spalten = 0 }: {
   optionen: readonly { wert: T; text: string }[]; wert: T; onChange: (w: T) => void; spalten?: number;

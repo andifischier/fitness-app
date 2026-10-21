@@ -8,7 +8,7 @@ import { testtagEinheit } from '../logik/testtag';
 import type { Einheit } from '../logik/typen';
 import { FitnessDb, ladeZustand } from './db';
 import {
-  aendereEinstellungen, aenderePrognose, beendeEinheit, beendeOnboarding, fuehreWochenabschluesseAus, ladeEinstellungen, loescheEigeneUebung,
+  aendereEinstellungen, aendereTage, beendeEinheit, beendeOnboarding, fuehreWochenabschluesseAus, ladeEinstellungen, loescheEigeneUebung,
   loescheEigenesUtensil, loescheOrt, speichereEigeneUebung, speichereEigenesUtensil, speichereNeueEinheit, speichereOrt,
   speichereAbschluss, speichereBewertung, speichereLaufendeEinheit, speichereTausch, speichereTesttag, starteEinheit,
   verwerfeEinheit,
@@ -157,20 +157,20 @@ describe('Einheit erstellen, tauschen, verwerfen', () => {
     expect((await d.einheiten.toArray()).map((e) => e.id)).toEqual(['l']);
   });
 
-  it('ändert die Prognose auch vor der ersten Einheit der Woche', async () => {
+  it('speichert die Trainingstage auch vor der ersten Einheit; die Prognose folgt daraus', async () => {
     const d = neueDb();
     await speichereOrt(ort(), d);
-    await aenderePrognose(2, 'zuhause', '2026-10-19T08:00:00', d);
-    expect((await d.wochen.get('2026-W43'))).toMatchObject({ prognose: 2, einheiten: 0, erholungswoche: false });
-    await aenderePrognose(5, 'zuhause', '2026-10-20T08:00:00', d);
-    expect((await d.wochen.get('2026-W43'))?.prognose).toBe(5);
+    await aendereTage([4, 0], 'zuhause', '2026-10-19T08:00:00', d);
+    expect((await d.wochen.get('2026-W43'))).toMatchObject({ prognose: 2, einheiten: 0, erholungswoche: false, tage: [0, 4] });
+    await aendereTage([1, 2, 3, 4, 5], 'zuhause', '2026-10-20T08:00:00', d);
+    expect((await d.wochen.get('2026-W43'))).toMatchObject({ prognose: 5, tage: [1, 2, 3, 4, 5] });
   });
 
   it('wertet beim Öffnen alle abgelaufenen Wochen aus', async () => {
     const d = neueDb();
     await speichereOrt(ort(), d);
-    await aenderePrognose(3, 'zuhause', '2026-10-12T08:00:00', d);
-    await aenderePrognose(3, 'zuhause', '2026-10-19T08:00:00', d);
+    await aendereTage([0, 2, 4], 'zuhause', '2026-10-12T08:00:00', d);
+    await aendereTage([0, 2, 4], 'zuhause', '2026-10-19T08:00:00', d);
     await fuehreWochenabschluesseAus('2026-10-21T08:00:00', d);
     const wochen = await d.wochen.toArray();
     expect(wochen.map((w) => [w.id, w.ausgewertet ?? false])).toEqual([['2026-W42', true], ['2026-W43', false]]);

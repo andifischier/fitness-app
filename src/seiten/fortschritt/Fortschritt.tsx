@@ -1,4 +1,5 @@
-// Fortschritt (Mockup 8) mit Unterreitern Übersicht und Verlauf: Max-Test-Verlauf je Muster, Sätze
+// Fortschritt (Mockup 8) mit Unterreitern Übersicht und Verlauf: diese Woche pro Muskel (erledigt
+// von Ziel, Entscheidung 21.10.2026: von Heute hierher verschoben), Max-Test-Verlauf je Muster, Sätze
 // pro Woche für alle Muskeln mit Entlastungswochen, Zirkel-Bestzeiten; Verlauf aller Einheiten mit
 // Detailansicht.
 import { useMemo, useState } from 'react';
@@ -8,7 +9,9 @@ import {
   achse, dauerSek, maxTestReihen, saetzeVon, verlauf, verlaufUebungen, wochenvolumen, zirkelBestzeiten,
   type MaxTestReihe, type Wochenvolumen,
 } from '../../logik/fortschritt';
-import type { AppZustand, Einheit } from '../../logik/typen';
+import { isoWoche } from '../../logik/datum';
+import { startfragen, wochenziele } from '../../logik/planung';
+import { MUSKELN, type AppZustand, type Einheit } from '../../logik/typen';
 import { einheitZeit, uebungVon } from '../../logik/verlauf';
 import { Chip, Hinweis, Karte, Laedt, Seite } from '../../ui/bausteine';
 import { Icon } from '../../ui/Icon';
@@ -38,6 +41,35 @@ function Unterreiter({ aktiv }: { aktiv: 'uebersicht' | 'verlauf' }) {
 
 // ---------- Übersicht ----------
 
+// Sätze dieser Woche pro Muskel: erledigt von Ziel (Muskeln mit Ziel oder erledigten Sätzen).
+function DieseWoche({ z, jetzt }: { z: AppZustand; jetzt: string }) {
+  const { ziele, erledigt } = useMemo(() => {
+    const fragen = startfragen(z, jetzt);
+    const woche = z.wochen.find((w) => w.id === isoWoche(jetzt));
+    return { ziele: wochenziele(z, woche?.prognose ?? fragen.prognoseVorschlag, fragen.ortId, jetzt), erledigt: woche?.erledigt };
+  }, [z, jetzt]);
+  const muskeln = MUSKELN.filter((m) => ziele[m] > 0 || (erledigt?.[m] ?? 0) > 0);
+  return (
+    <Karte titel="Diese Woche" hinweis="Sätze pro Muskel: erledigt von Ziel.">
+      <ul>
+        {muskeln.map((m) => {
+          const ziel = ziele[m];
+          const ist = erledigt?.[m] ?? 0;
+          return (
+            <li key={m} className="flex min-h-[40px] items-center gap-4">
+              <span className="w-32 shrink-0 text-basis">{MUSKEL_NAMEN[m]}</span>
+              <span className="h-2 flex-1 rounded-full bg-linie">
+                <span className="block h-2 rounded-full bg-akzent" style={{ width: `${ziel > 0 ? Math.min(100, (ist / ziel) * 100) : 0}%` }} />
+              </span>
+              <span className="w-12 text-right text-basis text-gedaempft">{saetzeText(ist)}/{ziel}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </Karte>
+  );
+}
+
 export function FortschrittSeite() {
   const z = useZustand();
   const [jetzt] = useState(lokaleZeit);
@@ -54,9 +86,12 @@ function Uebersicht({ z, jetzt }: { z: AppZustand; jetzt: string }) {
     reihen: maxTestReihen(z), volumen: wochenvolumen(z, jetzt), zirkel: zirkelBestzeiten(z), einheiten: verlauf(z).length,
   }), [z, jetzt]);
   const { reihen, volumen, zirkel, einheiten } = daten;
-  if (einheiten === 0 && reihen.length === 0) return <p className="text-basis text-gedaempft">{LEER}</p>;
+  if (einheiten === 0 && reihen.length === 0) {
+    return <>{z.orte.length > 0 && <DieseWoche z={z} jetzt={jetzt} />}<p className="text-basis text-gedaempft">{LEER}</p></>;
+  }
   return (
     <>
+      {z.orte.length > 0 && <DieseWoche z={z} jetzt={jetzt} />}
       {reihen.length > 0 && <MaxTests z={z} reihen={reihen} />}
       {volumen && <SaetzeProWoche volumen={volumen} />}
       {zirkel.length > 0 && (
