@@ -48,6 +48,9 @@ export const ZIRKEL_ANTEIL_NAMEN: Record<Einstellungen['zirkelAnteil'], string> 
   aus: 'Aus', alle2Wochen: 'Alle 2 Wochen', '1proWoche': '1x pro Woche', '2proWoche': '2x pro Woche',
 };
 
+// Erster Buchstabe klein, Rest unverändert („Alle 2 Wochen“ wird „alle 2 Wochen“).
+export const kleinerAnfang = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
+
 export const RESERVE_NAMEN: Record<Einstellungen['zielReserve'], string> = {
   '1-3': '1 bis 3 Wdh. (Standard)', '2-3': '2 bis 3 Wdh. (schonender)',
 };

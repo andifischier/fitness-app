@@ -340,6 +340,22 @@ describe('Zirkel', () => {
     expect(dosisProMuskel(z, e).Quadrizeps).toBe(2.5);
   });
 
+  it('bevorzugte Übung aus dem Hinweis der Station, wenn am Ort möglich (Entscheidung 21.10.2026)', () => {
+    const z = zustand({ katalog: 'voll' });
+    const stationen = (zz: AppZustand, zirkelId: string, ortId = 'zuhause') =>
+      ids(erstelleEinheit(zz, { jetzt: MO, ortId, prognose: 3, morgenWieder: false, laenger: false, zirkelId }));
+    expect(stationen(z, 'sprint')).toEqual(['burpees', expect.any(String), expect.any(String), 'mountain_climbers']);
+    expect(stationen(z, 'fundament')[3]).toBe('plank');
+    expect(stationen(z, 'ausdauer')[0]).toBe('hampelmann');
+    expect(stationen(z, 'ausdauer').at(-1)).toBe('seitstuetz');
+    expect(stationen(z, 'kraftprobe')).toContain('kh_thruster');
+    const ohneKh = { ...z, orte: [ort(['TISCH', 'ERH'])] };
+    expect(stationen(ohneKh, 'kraftprobe')).toContain('sprung_kniebeuge');
+    // Ausgeschlossen: wieder die Variante nach Musterstufe
+    const ohneBurpees = { ...z, einstellungen: [{ ...z.einstellungen[0]!, ausgeschlossen: ['burpees'] }] };
+    expect(stationen(ohneBurpees, 'sprint')[0]).not.toBe('burpees');
+  });
+
   it('Fälligkeit und Vorschlag', () => {
     const di = zeitpunkt(1, 18); // ISO-Woche 43 ist ungerade
     expect(zirkelVorschlagen(zustand(), di, 3, 'zuhause')).toBe(false);

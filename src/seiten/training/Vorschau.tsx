@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { speichereTausch } from '../../daten/speichern';
-import { zirkelVorgaben } from '../../logik/heute';
+import { keinMuskelErholt, zirkelVorgaben } from '../../logik/heute';
 import { alternativen, tausche } from '../../logik/planung';
 import type { AppZustand, Einheit, Position, Uebung } from '../../logik/typen';
 import { uebungVon } from '../../logik/verlauf';
@@ -75,7 +75,13 @@ function Ansicht({ z, einheit }: { z: AppZustand; einheit: Einheit }) {
           )}
         </section>
 
-        {einheit.bloecke.length === 0 && <Hinweis>Für heute passt keine Übung. Ändere den Ort oder deine Einschränkungen.</Hinweis>}
+        {einheit.bloecke.length === 0 && (
+          <Hinweis>
+            {keinMuskelErholt(z, einheit.erstelltAm)
+              ? 'Heute ist noch kein Muskel erholt. Mach einen Zirkel oder Mobility, oder trainiere morgen.'
+              : 'Für heute passt keine Übung. Ändere den Ort oder deine Einschränkungen.'}
+          </Hinweis>
+        )}
 
         {einheit.bloecke.map((b, bi) => {
           const label = b.typ === 'supersatz' ? `Supersatz ${String.fromCharCode(65 + supersatz++)}`

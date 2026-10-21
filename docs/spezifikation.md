@@ -333,7 +333,7 @@ Die Frage „Morgen wieder?“ ist der Schlüssel für Tage am Stück: Sie läss
 7. **Bauch und Waden:** Haben sie offenen Bedarf und sind erholt, kommen je eine Übung mit höchstens 3 Sätzen zusätzlich zum Zeitbudget dazu (siehe Zeitbudget). Sie sind normale Übungen und laufen einzeln oder in einem Supersatz-Paar laut Schritt 8.
 8. **Reihenfolge und Paare:** Max-Test (falls fällig), Grundübungen, Isolationsübungen. Supersatz-Paare werden aus dieser Liste gebildet, der Reihe nach: hDruck + hZug, vDruck + vZug, Bizeps + Trizeps, Knie oder Einbein + Rumpf, Huefte + Schulter, Rumpf + Waden. Jede Übung steht in höchstens einem Paar; es gibt nur Zweierblöcke. Bauch wird also nie mit einer Oberkörperübung gepaart, sondern mit Beinen oder Waden oder läuft einzeln. Gepaart wird, bis der Supersatz-Anteil der Woche (Anteil der Arbeitssätze in Paaren) erreicht ist. Format der Einheit: keine Paare = klassisch, alle möglichen Paare gebildet = supersatz, sonst mix.
 9. **Zeit passt nicht:** Die App bietet vor dem Start „15 Min länger?“ nur an, wenn die Prognose 1 bis 2 ist, die Einstellung „Längere Einheiten anbieten“ an ist und nach vollem Budget noch Bedarf offen ist. Bleiben 3 oder mehr Sätze Budget frei, zeigt sie die kürzere Dauer an; einen Zirkel-Finisher bietet Version 1 nicht an (Entscheidung 21.10.2026).
-10. **Ruhetag empfohlen:** Hätte die erzeugte Einheit weniger als 6 Arbeitssätze, empfiehlt die App einen Ruhetag und bietet an: trotzdem trainieren, Zirkel oder Mobility (die Aufwärm-Mobility aller Muster, ca. 10 Min). Mobility wird nur angezeigt (Checkliste wie beim Aufwärmen), nicht als Einheit gespeichert und erscheint nicht im Verlauf.
+10. **Ruhetag empfohlen:** Hätte die erzeugte Einheit weniger als 6 Arbeitssätze, empfiehlt die App einen Ruhetag und bietet an: trotzdem trainieren, Zirkel oder Mobility (die Aufwärm-Mobility aller Muster, ca. 10 Min). Mobility wird nur angezeigt (Checkliste wie beim Aufwärmen), nicht als Einheit gespeichert und erscheint nicht im Verlauf. Ist kein Muskel erholt und bleibt die Einheit nach „trotzdem trainieren“ leer, zeigt die Vorschau „Heute ist noch kein Muskel erholt. Mach einen Zirkel oder Mobility, oder trainiere morgen.“ (Entscheidung 21.10.2026).
 11. **Fixieren:** Die Einheit wird gespeichert und ist bis zum Ende unveränderlich (Ausnahme: manueller Tausch vor dem Start innerhalb desselben Musters).
 
 ### Erholungsfenster pro Muskel
@@ -349,6 +349,8 @@ Ein Muskel gilt als erholt, wenn seit seiner letzten Belastung mindestens diese 
 | Zusätzlich, wenn eine Übung dieses Muskels „zu schwer“ war | +24 Std. |
 
 Zirkel zählen für das Erholungsfenster mit demselben Volumen wie für das Wochenvolumen (siehe Formate).
+
+„Belastet“ heißt hier: Ein nicht erholter Muskel bekommt keinen Bedarf und damit keine eigenen Sätze. Als mitbeteiligter Muskel einer Übung für einen anderen Muskel darf er mitarbeiten (wie im Prototyp; Entscheidung 21.10.2026). Für Max-Tests gilt das Fenster aller beteiligten Muskeln.
 
 ### Hauptvarianten und Abwechslung
 
@@ -369,7 +371,7 @@ Zirkel zählen für das Erholungsfenster mit demselben Volumen wie für das Woch
 - **Fälligkeit:** „alle 2 Wochen“ = 1 Zirkel in Wochen mit gerader ISO-Wochennummer; „1x pro Woche“ = 1; „2x pro Woche“ = 2.
 - **Vorschlag:** Ein fälliger Zirkel wird bei Prognose 3 oder mehr vorgeschlagen, sobald die hoch priorisierten Muskeln mindestens 70 % ihres Wochenziels haben oder laut Prognose nur noch eine Einheit bleibt. Der Nutzer kann jederzeit „Stattdessen Zirkel“ bzw. „Doch Krafteinheit“ wählen.
 - **Volumen:** je Runde und Station 0,5 fraktionelle Sätze für Primärmuskeln, 0,25 für Sekundärmuskeln. Das gilt für Wochenvolumen und Erholungsfenster.
-- **Stationen:** Jede Station nutzt die Variante „Musterstufe − 2“. Fehlt sie: nächstniedrigere zirkel-geeignete Variante; sonst niedrigste zirkel-geeignete; sonst irgendeine Variante des Musters; sonst wird die Station ausgelassen.
+- **Stationen:** Nennt der Hinweis der Station eine bevorzugte Übung (z. B. „Burpees bevorzugt“, „Thruster, ohne Kurzhanteln Sprung-Kniebeuge“), nimmt die App die zuerst genannte, die am Ort möglich, nicht gesperrt und nicht ausgeschlossen ist (Entscheidung 21.10.2026). Sonst nutzt jede Station die Variante „Musterstufe − 2“. Fehlt sie: nächstniedrigere zirkel-geeignete Variante; sonst niedrigste zirkel-geeignete; sonst irgendeine Variante des Musters; sonst wird die Station ausgelassen.
 - Jeder Zirkel hat einen festen Namen und eine feste Zusammensetzung; Varianten passen sich dem Ort an. Bestzeiten gelten pro Zirkel, Ort und Variantensatz.
 
 ### Wiederholungsbereiche und Intensität
