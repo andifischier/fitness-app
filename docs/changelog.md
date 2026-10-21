@@ -242,3 +242,11 @@
   „Neu laden“. Im Browser mit künstlichem Absturz geprüft. Entscheidung in `docs/entscheidungen.md`, Spezifikation ergänzt.
 - **Warum:** Fehlerbericht: Im Onboarding war nach jedem „Weiter“ die Seite leer, erst Neuladen half. Die Ursache ließ
   sich hier nicht nachstellen; die Absicherung macht genau das Neuladen automatisch.
+
+## Absturz-Absicherung in drei Stufen (21.10.2026)
+- **Was:** Bei einem Absturz baut die App den Bildschirm zuerst still neu auf, ohne Neuladen. Nur wenn derselbe
+  Bildschirm innerhalb von 5 Sek. wieder abstürzt, lädt sie neu, danach erst der Hinweis „Da ging etwas schief“. Ein
+  Absturz auf dem nächsten Bildschirm beginnt wieder bei Stufe 1 (`absturzReaktion` in `src/logik/absturz.ts` mit
+  Tests, `src/ui/Absturz.tsx`, `ABSTURZ.sperreMs` = 5 Sek.). Im Browser mit künstlichem Absturz geprüft.
+- **Warum:** Rückmeldung des Nutzers: Mit der ersten Absicherung kam bei jedem „Weiter“ der Hinweis, weil die Sperre
+  auch bei einem Seitenwechsel griff.
