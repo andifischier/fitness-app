@@ -11,7 +11,7 @@ import {
   aendereEinstellungen, aendereTage, beendeEinheit, beendeOnboarding, fuehreWochenabschluesseAus, ladeEinstellungen, loescheEigeneUebung,
   loescheEigenesUtensil, loescheOrt, speichereEigeneUebung, speichereEigenesUtensil, speichereNeueEinheit, speichereOrt,
   speichereAbschluss, speichereBewertung, speichereLaufendeEinheit, speichereTausch, speichereTesttag, starteEinheit,
-  verwerfeEinheit,
+  setzeZurueck, verwerfeEinheit,
 } from './speichern';
 import { schritte, trageSatzEin } from '../logik/player';
 
@@ -281,5 +281,20 @@ describe('Abschluss und Bewertung', () => {
     await speichereBewertung(eigene.id, 4, '2026-10-20T10:00:00', d);
     expect(await loescheEigeneUebung(eigene.id, d)).toBe(true);
     expect((await ladeEinstellungen(d)).bewertungen).toEqual({ kh_curls: 2 });
+  });
+});
+
+describe('App zurücksetzen', () => {
+  it('löscht alle Daten; danach gelten die Standardwerte und das Onboarding beginnt neu', async () => {
+    const d = neueDb();
+    await speichereOrt(ort(), d);
+    await speichereTesttag({ ...testtagEinheit({ ...(await ladeZustand(d)) }, 'zuhause', '2026-10-20T10:00:00'), status: 'abgeschlossen' }, '2026-10-20T10:00:00', d);
+    await aendereEinstellungen((e) => mitFavorit(e, 'klimmzug', true), d);
+    expect((await ladeEinstellungen(d)).onboardingAbgeschlossen).toBe(true);
+    await setzeZurueck(d);
+    const z = await ladeZustand(d);
+    for (const t of ['einstellungen', 'orte', 'eigeneUebungen', 'eigeneUtensilien', 'varianten', 'muster', 'muskeln',
+      'wochen', 'zyklen', 'einheiten', 'zirkelErgebnisse', 'maxTests'] as const) expect(z[t]).toEqual([]);
+    expect(await ladeEinstellungen(d)).toEqual(STANDARD_EINSTELLUNGEN);
   });
 });

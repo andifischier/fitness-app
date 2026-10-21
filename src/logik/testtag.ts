@@ -115,3 +115,29 @@ export function schliesseTesttagAb(z: AppZustand, einheit: Einheit, jetzt: strin
   }
   return neu;
 }
+
+export interface TestErgebnis {
+  muster: TestMuster; test: Uebung; ergebnis: number; inSek: boolean; haengenSek?: number;
+  start?: { uebung: Uebung; zielWdh: number };
+}
+
+// Ergebnisbildschirm nach dem Testtag (Entscheidung 21.10.2026): je Test das Ergebnis und, aus dem
+// fortgeschriebenen Zustand, Startübung (Hauptvariante A) und Startziel.
+export function testtagErgebnisse(z: AppZustand, einheit: Einheit): TestErgebnis[] {
+  return einheit.bloecke.flatMap((b) => b.positionen).flatMap((p): TestErgebnis[] => {
+    const s = p.ergebnisse[0];
+    const test = uebungVon(z, p.uebungId);
+    if (!s || !test || !(MAXTEST.rotation as readonly MusterId[]).includes(test.muster)) return [];
+    const muster = test.muster as TestMuster;
+    const inSek = test.bereich.einheit === 'Sek.';
+    const ergebnis = (inSek ? s.sek ?? s.wdh : s.wdh ?? s.sek) ?? 0;
+    const haengenSek = !inSek && ergebnis <= 0 && s.sek !== undefined ? s.sek : undefined;
+    const startId = z.muster.find((m) => m.muster === muster)?.hauptvarianten[0];
+    const uebung = startId ? uebungVon(z, startId) : undefined;
+    const zielWdh = z.varianten.find((v) => v.uebungId === startId)?.zielWdh;
+    return [{
+      muster, test, ergebnis, inSek, ...(haengenSek !== undefined ? { haengenSek } : {}),
+      ...(uebung && zielWdh !== undefined ? { start: { uebung, zielWdh } } : {}),
+    }];
+  });
+}

@@ -1,10 +1,12 @@
 // Testtag als Vollbild: Aufwärmen als Checkliste, dann je Test ein Bildschirm mit Zähler bzw.
-// Stoppuhr (Mockup 4). Beim Klimmzug mit 0 Wdh. folgen die Sekunden im Hängen.
+// Stoppuhr (Mockup 4). Beim Klimmzug mit 0 Wdh. folgen die Sekunden im Hängen. Am Ende zeigt ein
+// Ergebnisbildschirm Startübung und Startziel je Test (Entscheidung 21.10.2026).
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { speichereTesttag } from '../../daten/speichern';
 import { lokaleZeit } from '../../daten/zeit';
-import { testtagEinheit } from '../../logik/testtag';
+import { lastBekannt } from '../../logik/planung';
+import { testtagEinheit, testtagErgebnisse, type TestErgebnis } from '../../logik/testtag';
 import type { AppZustand, Einheit, Einstellungen, SatzErgebnis, Uebung } from '../../logik/typen';
 import { uebungVon } from '../../logik/verlauf';
 import { Checkliste, Hinweis, Knopf, Laedt } from '../../ui/bausteine';
@@ -35,6 +37,7 @@ function Ablauf({ z, start }: { z: AppZustand; start: Einheit }) {
   const [gestartetAm] = useState(lokaleZeit);
   const [ergebnisse, setErgebnisse] = useState<Ergebnis[]>([]);
   const [fehler, setFehler] = useState(false);
+  const [gespeichert, setGespeichert] = useState<Einheit>();
   const positionen = start.bloecke.map((b) => b.positionen[0]!);
 
   const fertig = async (alle: Ergebnis[]) => {
@@ -47,7 +50,7 @@ function Ablauf({ z, start }: { z: AppZustand; start: Einheit }) {
     };
     try {
       await speichereTesttag(einheit, jetzt);
-      navigate('/', { replace: true });
+      setGespeichert(einheit);
     } catch {
       setFehler(true);
     }
@@ -59,6 +62,7 @@ function Ablauf({ z, start }: { z: AppZustand; start: Einheit }) {
     else void fertig(alle);
   };
 
+  if (gespeichert) return <Ergebnis z={z} einheit={gespeichert} onWeiter={() => navigate('/', { replace: true })} />;
   const p = schritt >= 0 ? positionen[schritt] : undefined;
   const u = p ? uebungVon(z, p.uebungId) : undefined;
   return (
@@ -132,5 +136,39 @@ function Test({ u, e, inSek, mitHaengen, onErledigt }: {
         <Knopf onClick={erledigt}>Test erledigt</Knopf>
       </div>
     </div>
+  );
+}
+
+function ergebnisText(t: TestErgebnis): string {
+  if (t.haengenSek !== undefined) return `0 Wdh., ${t.haengenSek} Sek. hängen`;
+  return `${t.ergebnis} ${t.inSek ? 'Sek.' : 'Wdh.'}`;
+}
+
+// Ergebnis des Testtags: je Test das Ergebnis, darunter Startübung und Startziel.
+function Ergebnis({ z, einheit, onWeiter }: { z: AppZustand; einheit: Einheit; onWeiter: () => void }) {
+  const liste = testtagErgebnisse(z, einheit);
+  return (
+    <main className="mx-auto flex min-h-dvh max-w-xl flex-col px-seite pt-12 pb-8">
+      <p className="text-basis font-semibold text-akzent">Testtag erledigt</p>
+      <h1 className="text-titel font-extrabold">Dein Start steht</h1>
+      <ul className="mt-6 flex flex-col gap-3">
+        {liste.map((t) => (
+          <li key={t.muster} className="rounded-karte border border-rand bg-flaeche p-5">
+            <p className="flex items-baseline justify-between gap-3 text-basis">
+              <span className="font-semibold">{t.test.name}</span>
+              <span className="shrink-0 text-gross font-extrabold">{ergebnisText(t)}</span>
+            </p>
+            {t.start && (
+              <p className="mt-2 text-basis text-gedaempft">
+                Start: {t.start.uebung.name} · Ziel {t.start.zielWdh}{t.start.uebung.bereich.einheit === 'Sek.' ? ' Sek.' : ''}
+                {!lastBekannt(z, t.start.uebung) ? ' · Gewicht wählst du im 1. Satz' : ''}
+              </p>
+            )}
+          </li>
+        ))}
+      </ul>
+      <div className="mt-4"><Hinweis>Erste Einheit ab morgen. Deine Woche planst du auf Heute.</Hinweis></div>
+      <div className="mt-auto pt-8"><Knopf onClick={onWeiter}>Zu Heute</Knopf></div>
+    </main>
   );
 }

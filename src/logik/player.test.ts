@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   aktuellerSchritt, beende, erledigteSaetze, feedbackVorschlag, istKalibrierung, kalibriere, letztesMal, offeneFeedbacks, pauseNach,
-  satzVorgabe, schritte, setzeFeedback, starte, trageSatzEin, uebungNummer,
+  korrigiereSatz, lastWaehlbar, satzVorgabe, schritte, setzeFeedback, starte, trageSatzEin,
 } from './player';
+import { bereichFuer } from './planung';
 import { werteUebungAus } from './progression';
 import { zustand } from './testhilfe';
 import type { AppZustand, Einheit, Position } from './typen';
@@ -61,10 +62,57 @@ describe('Reihenfolge der Sätze', () => {
     expect(schritte(zirkel).map((s) => `${s.position}.${s.satz}`)).toEqual(['0.1', '1.1', '0.2', '1.2']);
     expect(schritte(zirkel).map((_, i) => pauseNach(zirkel, i))).toEqual([0, 0, 0, 0]);
   });
+});
 
-  it('zählt die Übungen für „Übung x von y“', () => {
-    const liste = schritte(MIX);
-    expect(uebungNummer(MIX, liste[2]!)).toEqual({ nr: 3, von: 4 });
+describe('Gewicht in jedem Satz (Entscheidung 21.10.2026)', () => {
+  const z = mitVarianten(zustand());
+  const e = einheit([{ typ: 'einzeln', pauseSek: 90, positionen: [pos('kh_bankdruecken', 3, { last: 16 })] }]);
+  const [s1, s2, s3] = schritte(e);
+  const jetzt = '2026-10-20T18:20:00';
+
+  it('ist bei Last-Übungen wählbar, nicht im Max-Test oder Zirkel', () => {
+    expect(lastWaehlbar(z, e, s1!)).toBe(true);
+    expect(lastWaehlbar(z, MIX, schritte(MIX)[0]!)).toBe(false);
+    const zirkel = einheit([{ typ: 'zirkel', pauseSek: 0, runden: 1, zirkelId: 'z', positionen: [pos('kh_curls', 1, { last: 8 })] }], { format: 'zirkel' });
+    expect(lastWaehlbar(z, zirkel, schritte(zirkel)[0]!)).toBe(false);
+  });
+
+  it('speichert das gewählte Gewicht und übernimmt es für die folgenden Sätze', () => {
+    let x = trageSatzEin(z, e, s1!, 10, jetzt);
+    expect(x.bloecke[0]!.positionen[0]!.ergebnisse[0]).toMatchObject({ last: 16 });
+    x = trageSatzEin(z, x, s2!, 9, jetzt, 14);
+    expect(x.bloecke[0]!.positionen[0]!.ergebnisse[1]).toMatchObject({ last: 14 });
+    expect(satzVorgabe(z, x, s3!)).toMatchObject({ last: 14 });
+    expect(x.bloecke[0]!.positionen[0]!.last).toBe(16);           // geplante Last bleibt
+  });
+
+  it('rechnet nach einem anderen Gewicht im ersten Satz das Ziel wie nach der Kalibrierung', () => {
+    let x = trageSatzEin(z, e, s1!, 12, jetzt, 14);
+    x = trageSatzEin(z, x, s2!, 11, jetzt);
+    x = trageSatzEin(z, x, s3!, 10, jetzt);
+    const { variante } = werteUebungAus(z, x.bloecke[0]!.positionen[0]!, jetzt, 'zuhause');
+    // 14 kg × 12, passend (Reserve 2): Schätzung 20,5 kg; bei 14 kg gehen mit Reserve 1 noch 13
+    const { bis } = bereichFuer(z.einstellungen[0]!, uebungVon(z, 'kh_bankdruecken')!);
+    expect(variante).toMatchObject({ last: 14, zielWdh: Math.min(bis, 13) });
+  });
+
+  it('ändert die Progression nicht, wenn erst ein späterer Satz leichter war', () => {
+    const ohne = schritte(e).reduce((x, s) => trageSatzEin(z, x, s, 10, jetzt), e);
+    let mit = trageSatzEin(z, e, s1!, 10, jetzt);
+    mit = trageSatzEin(z, mit, s2!, 10, jetzt, 14);
+    mit = trageSatzEin(z, mit, s3!, 10, jetzt);
+    const a = werteUebungAus(z, ohne.bloecke[0]!.positionen[0]!, jetzt, 'zuhause').variante;
+    const b = werteUebungAus(z, mit.bloecke[0]!.positionen[0]!, jetzt, 'zuhause').variante;
+    expect(b.last).toBe(16);
+    expect(b.zielWdh).toBe(a.zielWdh);
+  });
+
+  it('korrigiert die Wiederholungen eines erledigten Satzes', () => {
+    const x = schritte(e).reduce((y, s) => trageSatzEin(z, y, s, 10, jetzt), e);
+    const k = korrigiereSatz(z, x, { block: 0, position: 0 }, 2, 7);
+    expect(k.bloecke[0]!.positionen[0]!.ergebnisse.map((r) => r.wdh)).toEqual([10, 7, 10]);
+    expect(x.bloecke[0]!.positionen[0]!.ergebnisse[1]!.wdh).toBe(10);
+    expect(korrigiereSatz(z, x, { block: 0, position: 0 }, 9, 7)).toBe(x);
   });
 });
 
