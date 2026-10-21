@@ -619,8 +619,10 @@ function geschaetzteDauer(z: AppZustand, einheit: Einheit): number {
 
 // ---------- Zirkel ----------
 
-export function zirkelStation(z: AppZustand, e: Einstellungen, ort: Ort, muster: MusterId, jetzt: string): Uebung | undefined {
+export function zirkelStation(z: AppZustand, e: Einstellungen, ort: Ort, muster: MusterId, jetzt: string, hinweis = ''): Uebung | undefined {
   const varianten = alleUebungen(z).filter((u) => u.muster === muster && uebungErlaubt(e, ort, u, jetzt));
+  const bevorzugt = bevorzugteStation(varianten, hinweis);
+  if (bevorzugt) return bevorzugt;
   const ziel = musterstufe(z, e, muster) - ZIRKEL.stationStufenUnterMuster;
   const geeignet = varianten.filter((u) => u.zirkelGeeignet);
   const exakt = varianten.filter((u) => u.stufe === ziel);
@@ -630,10 +632,26 @@ export function zirkelStation(z: AppZustand, e: Einstellungen, ort: Ort, muster:
   return exakt.find((u) => u.zirkelGeeignet) ?? exakt[0] ?? hoechste(niedriger) ?? niedrigste(geeignet) ?? niedrigste(varianten);
 }
 
+// Bevorzugte Übung aus dem Hinweis der Station (z. B. „Burpees bevorzugt“, „Thruster, ohne
+// Kurzhanteln Sprung-Kniebeuge“): die am Ort mögliche Variante, deren Name bzw. ein Namensteil ab
+// 5 Buchstaben im Hinweis am weitesten vorne steht (Entscheidung 21.10.2026).
+function bevorzugteStation(varianten: Uebung[], hinweis: string): Uebung | undefined {
+  const text = hinweis.toLowerCase();
+  if (text === '') return undefined;
+  const stelle = (u: Uebung) => {
+    const teile = [u.name, ...u.name.split(/[^\p{L}]+/u).filter((t) => t.length >= ZIRKEL.hinweisMinBuchstaben)];
+    const fund = teile.map((t) => text.indexOf(t.toLowerCase())).filter((i) => i >= 0);
+    return fund.length > 0 ? Math.min(...fund) : Infinity;
+  };
+  let beste: Uebung | undefined;
+  for (const u of varianten) if (stelle(u) < (beste ? stelle(beste) : Infinity)) beste = u;
+  return beste;
+}
+
 function zirkelEinheit(z: AppZustand, e: Einstellungen, ort: Ort, zirkel: Zirkel, eing: EinheitEingabe): Einheit {
   const positionen: Position[] = [];
   for (const s of zirkel.stationen) {
-    const u = zirkelStation(z, e, ort, s.muster, eing.jetzt);
+    const u = zirkelStation(z, e, ort, s.muster, eing.jetzt, s.hinweis);
     if (!u) continue;
     const vorgabe = typeof s.vorgabe === 'number' ? s.vorgabe : Number.parseInt(s.vorgabe, 10) || 0;
     positionen.push({ ...neuePosition({ z, e, ort, jetzt: eing.jetzt }, { uebung: u, istErsatz: false }, zirkel.runden), zielWdh: vorgabe });

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { isoWoche } from './datum';
 import {
-  aktuelleEinheit, backupErinnerung, mobilityAlle, naechsterMaxTest, wocheMitPrognose, zirkelBestzeit, zirkelVorgaben,
+  aktuelleEinheit, backupErinnerung, keinMuskelErholt, mobilityAlle, naechsterMaxTest, wocheMitPrognose, zirkelBestzeit, zirkelVorgaben,
 } from './heute';
 import { erstelleEinheit, wochenziele } from './planung';
 import { ort, setzePrognose, zeitpunkt, zustand } from './testhilfe';
-import type { AppZustand, Einheit } from './typen';
+import { MUSKELN, type AppZustand, type Einheit } from './typen';
 
 const MI = zeitpunkt(2, 18);
 const voll = (opt: Parameters<typeof zustand>[0] = {}) => zustand({ katalog: 'voll', ...opt });
@@ -79,6 +79,22 @@ describe('naechsterMaxTest', () => {
     const erholung = setzePrognose(z, MI, 3);
     erholung.wochen = erholung.wochen.map((w) => ({ ...w, erholungswoche: true }));
     expect(naechsterMaxTest(erholung, MI, 'zuhause')).toEqual({ muster: 'Knie', uebungId: 'kniebeuge', ab: '2026-10-26T00:00:00' });
+  });
+});
+
+describe('keinMuskelErholt', () => {
+  it('erkennt, wenn kein Muskel erholt ist; die Einheit bleibt dann leer', () => {
+    const z: AppZustand = {
+      ...voll(),
+      muskeln: MUSKELN.map((muskel) => ({
+        muskel, letzteBelastung: zeitpunkt(0, 18), letzteDosis: 3, letzteSchwer: false, persoenlicheGrenze: 12, gleichWochen: 0, leistung: [],
+      })),
+    };
+    const dienstag = zeitpunkt(1, 17);   // 23 Std. später, Fenster 24 Std.
+    expect(keinMuskelErholt(z, dienstag)).toBe(true);
+    expect(erstelleEinheit(z, { jetzt: dienstag, ortId: 'zuhause', prognose: 3, morgenWieder: false, laenger: false }).bloecke).toEqual([]);
+    expect(keinMuskelErholt(z, zeitpunkt(1, 18))).toBe(false);
+    expect(keinMuskelErholt(voll(), dienstag)).toBe(false);
   });
 });
 

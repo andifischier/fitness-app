@@ -3,7 +3,7 @@ import { sperreAktiv } from '../../logik/einstellungen';
 import { MUSKELN } from '../../logik/typen';
 import { lokaleZeit } from '../../daten/zeit';
 import { Karte, Laedt, Seite, Zeile } from '../../ui/bausteine';
-import { datumText, LEVEL_NAMEN, ZIEL_NAMEN, ZIRKEL_ANTEIL_NAMEN } from '../../ui/texte';
+import { datumText, kleinerAnfang, LEVEL_NAMEN, ZIEL_NAMEN, ZIRKEL_ANTEIL_NAMEN } from '../../ui/texte';
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
 
 export function EinstellungenSeite() {
@@ -26,7 +26,7 @@ export function EinstellungenSeite() {
         <Zeile zu="/einstellungen/prioritaeten" titel="Muskelprioritäten"
           wert={standardPrio ? 'Oberkörper betont' : 'Angepasst'} />
         <Zeile zu="/einstellungen/training" titel="Dauer, Zirkel und Pausen"
-          wert={`${e.standardDauerMin} Min · Zirkel ${ZIRKEL_ANTEIL_NAMEN[e.zirkelAnteil].toLowerCase()}`} />
+          wert={`${e.standardDauerMin} Min · Zirkel ${kleinerAnfang(ZIRKEL_ANTEIL_NAMEN[e.zirkelAnteil])}`} />
         <Zeile zu="/einstellungen/einschraenkungen" titel="Einschränkungen"
           wert={aktiv === 0 ? 'Keine aktiv' : aktiv === 1 ? '1 aktiv' : `${aktiv} aktiv`} />
         <Zeile zu="/einstellungen/backup" titel="Backup"

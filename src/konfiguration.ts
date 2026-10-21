@@ -171,6 +171,7 @@ export const ZIRKEL = {
   abPrognose: 3,
   vorschlagAbAnteilZiel: 0.7,
   stationStufenUnterMuster: 2,
+  hinweisMinBuchstaben: 5,     // Namensteile ab dieser Länge zählen beim Hinweis „… bevorzugt“
   proWoche: { aus: 0, alle2Wochen: 1, '1proWoche': 1, '2proWoche': 2 },
 } as const;
 

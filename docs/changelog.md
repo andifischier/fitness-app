@@ -157,3 +157,15 @@
   `istEntlastung` in `progression.ts` (Verhalten des Erholungswochen-Angebots unverändert), Texthilfen in
   `texte.ts`, jeweils mit Tests. Drei Entscheidungen in `docs/entscheidungen.md`, Spezifikation angepasst.
 - **Warum:** Arbeitspaket 9 der Spezifikation.
+
+## Paket 10: Feinschliff und Endabnahme (21.10.2026)
+- **Was:** Endabnahme als automatischer Test (`src/daten/abnahme.test.ts`): 12 Wochen im echten Ablauf der App
+  (Testtag, Startfragen, Einheit, jeder Satz, Feedback, Abschluss, Wochenabschluss, Backup) prüfen Wochenfrage,
+  Erholungsfenster, Fokus-Einheiten an Folgetagen, Max-Tests, Zirkel und Bestzeiten je Ort, Ortswechsel, Tausch,
+  Wirkung des Feedbacks, Erholungswochen und Export/Import. Zusätzlich ein Durchlauf im Browser (Handygröße):
+  Onboarding, Testtag, Krafteinheit mit Kalibrierung und Supersatz, Zirkel, Fortschritt, Backup, Flugmodus.
+  Gefunden und behoben: Zirkel-Stationen beachten jetzt die bevorzugte Übung aus dem Katalog (z. B. Burpees);
+  eine leere Einheit, weil kein Muskel erholt ist, nennt den richtigen Grund; Einstellungen zeigen „Zirkel alle
+  2 Wochen“ statt „alle 2 wochen“. Drei Entscheidungen in `docs/entscheidungen.md`, Spezifikation angepasst
+  (Ruhetag, Erholungsfenster, Zirkel-Stationen).
+- **Warum:** Arbeitspaket 10 der Spezifikation; letzte Prüfung vor Version 1.

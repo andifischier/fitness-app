@@ -3,9 +3,16 @@ import { KATALOG } from '../daten/katalog';
 import { zustand } from '../logik/testhilfe';
 import type { Einheit } from '../logik/typen';
 import {
-  abText, datumLang, einheitName, entlastungText, feedbackOptionen, kwText, lastTeile, lastText, monatKurz,
+  abText, datumLang, einheitName, kleinerAnfang, entlastungText, feedbackOptionen, kwText, lastTeile, lastText, monatKurz,
   muskelgruppenText, naechstesMalText, rekordZeile, saetzeText, saetzeZeile, seitStartText, zeitText,
 } from './texte';
+
+describe('kleinerAnfang', () => {
+  it('macht nur den ersten Buchstaben klein', () => {
+    expect(kleinerAnfang('Alle 2 Wochen')).toBe('alle 2 Wochen');
+    expect(kleinerAnfang('1x pro Woche')).toBe('1x pro Woche');
+  });
+});
 
 const u = (id: string) => KATALOG.uebungen.find((x) => x.id === id)!;
 

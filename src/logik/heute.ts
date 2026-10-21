@@ -5,7 +5,7 @@ import { isoWoche, plusTage, stundenZwischen, wocheStart, wocheVerschoben } from
 import { uebungErlaubt } from './equipment';
 import { istErholungswoche, mobilityZeilen, wochenziele, zirkelStation } from './planung';
 import { MUSKELN, MUSTER_IDS, type AppZustand, type Einheit, type MusterId, type Muskel, type Ort, type Woche } from './typen';
-import { einheitZeit, einstellungenVon, fertigeEinheiten, letzterMaxTest, uebungVon } from './verlauf';
+import { einheitZeit, einstellungenVon, fertigeEinheiten, istErholt, letzterMaxTest, uebungVon } from './verlauf';
 
 const leer = () => Object.fromEntries(MUSKELN.map((m) => [m, 0])) as Record<Muskel, number>;
 
@@ -62,6 +62,12 @@ export function naechsterMaxTest(z: AppZustand, jetzt: string, ortId: string):
   return erster ? { muster: erster.muster, uebungId: erster.uebungId, ab: erster.ab } : null;
 }
 
+// Ist zum Zeitpunkt kein einziger Muskel erholt? Dann bleibt „Trotzdem trainieren“ leer, und die
+// Vorschau nennt den Grund (Entscheidung 21.10.2026).
+export function keinMuskelErholt(z: AppZustand, jetzt: string): boolean {
+  return MUSKELN.every((m) => !istErholt(z.muskeln.find((x) => x.muskel === m), jetzt));
+}
+
 // Erinnerung an ein Backup: alle 4 Wochen seit dem letzten Export bzw. seit der ersten Einheit.
 export function backupErinnerung(z: AppZustand, jetzt: string): boolean {
   const erste = fertigeEinheiten(z)[0];
@@ -76,7 +82,7 @@ export function zirkelBestzeit(z: AppZustand, zirkelId: string, ortId: string, j
   const ort = z.orte.find((o) => o.id === ortId);
   if (!zirkel || !ort) return undefined;
   const e = einstellungenVon(z);
-  const varianten = zirkel.stationen.map((s) => zirkelStation(z, e, ort, s.muster, jetzt)?.id).filter((id) => id !== undefined).join();
+  const varianten = zirkel.stationen.map((s) => zirkelStation(z, e, ort, s.muster, jetzt, s.hinweis)?.id).filter((id) => id !== undefined).join();
   const zeiten = z.zirkelErgebnisse.filter((r) => r.zirkelId === zirkelId && r.ortId === ortId && r.varianten.join() === varianten)
     .map((r) => r.zeitSek);
   return zeiten.length > 0 ? Math.min(...zeiten) : undefined;
