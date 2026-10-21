@@ -88,8 +88,9 @@ function wechsle(muster: MusterZustand, von: string, zu: string) {
 
 // Schreibt Ziel, Last bzw. Band und Kraftschätzung der Variante fort (alle Regeln am ersten Satz).
 // `ortId` ist der Ort der Einheit; er bestimmt Lastraster, Bänder und die nächste Variante.
-export function werteUebungAus(z: AppZustand, p: Position, jetzt: string, ortId: string): { variante: VarianteZustand; muster: MusterZustand } {
+export function werteUebungAus(z: AppZustand, position: Position, jetzt: string, ortId: string): { variante: VarianteZustand; muster: MusterZustand } {
   const e = einstellungenVon(z);
+  let p = position;
   const u = uebungVon(z, p.uebungId);
   const ort = ortVon(z, ortId);
   if (!u || !ort) throw new Error(`Übung ${p.uebungId} oder Ort ${ortId} fehlt.`);
@@ -98,6 +99,21 @@ export function werteUebungAus(z: AppZustand, p: Position, jetzt: string, ortId:
     uebungId: u.id, zielWdh: p.zielWdh, seitSteigerung: PROGRESSION.startSeitSteigerung, schwerSerie: 0,
   };
   const muster = musterZustand(z, e, u.muster);
+
+  // Kalibrierungssatz (erste Nutzung einer Last-Variante, Trainings-Player): Er legt Last und Ziel der
+  // restlichen Sätze fest; die Regeln messen am ersten Satz danach. Gibt es keinen, gelten die
+  // kalibrierten Werte.
+  const kalibrierung = p.ergebnisse[0];
+  if (u.lasttyp === 'Last' && alt?.last === undefined && !p.istMaxTest && p.last !== undefined && kalibrierung?.last !== undefined) {
+    if (p.ergebnisse.length === 1) {
+      const variante: VarianteZustand = {
+        ...v, last: p.last, zielWdh: p.zielWdh, zuletzt: jetzt,
+        e1rm: e1rm(kalibrierung.last, kalibrierung.wdh ?? 0, PROGRESSION.neueVarianteReserve),
+      };
+      return { variante, muster };
+    }
+    p = { ...p, ergebnisse: p.ergebnisse.slice(1) };
+  }
   const erster = ersterSatz(p);
   if (erster === undefined) return { variante: alt ?? v, muster };
   const { von: U, bis: O } = bereichFuer(e, u);

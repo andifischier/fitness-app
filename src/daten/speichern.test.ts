@@ -8,10 +8,11 @@ import { testtagEinheit } from '../logik/testtag';
 import type { Einheit } from '../logik/typen';
 import { FitnessDb, ladeZustand } from './db';
 import {
-  aendereEinstellungen, aenderePrognose, beendeOnboarding, fuehreWochenabschluesseAus, ladeEinstellungen, loescheEigeneUebung,
+  aendereEinstellungen, aenderePrognose, beendeEinheit, beendeOnboarding, fuehreWochenabschluesseAus, ladeEinstellungen, loescheEigeneUebung,
   loescheEigenesUtensil, loescheOrt, speichereEigeneUebung, speichereEigenesUtensil, speichereNeueEinheit, speichereOrt,
-  speichereTausch, speichereTesttag, verwerfeEinheit,
+  speichereLaufendeEinheit, speichereTausch, speichereTesttag, starteEinheit, verwerfeEinheit,
 } from './speichern';
+import { schritte, trageSatzEin } from '../logik/player';
 
 let nr = 0;
 const offen: FitnessDb[] = [];
@@ -172,5 +173,59 @@ describe('Einheit erstellen, tauschen, verwerfen', () => {
     await fuehreWochenabschluesseAus('2026-10-21T08:00:00', d);
     const wochen = await d.wochen.toArray();
     expect(wochen.map((w) => [w.id, w.ausgewertet ?? false])).toEqual([['2026-W42', true], ['2026-W43', false]]);
+  });
+});
+
+describe('Trainings-Player speichern', () => {
+  const geplant = (): Einheit => {
+    const e: Einheit = { ...einheit('zuhause', 'kh_bankdruecken'), id: 't', status: 'geplant' };
+    e.bloecke[0]!.positionen[0]!.last = 2;
+    return e;
+  };
+
+  it('startet nach dem Aufwärmen, speichert jeden Satz und schließt am Ende ab', async () => {
+    const d = neueDb();
+    await speichereOrt(ort(), d);
+    await d.einheiten.add(geplant());
+    expect(await starteEinheit('t', '2026-10-20T18:05:00', d)).toBe(true);
+    let e = (await d.einheiten.get('t'))!;
+    expect(e).toMatchObject({ status: 'laufend', gestartetAm: '2026-10-20T18:05:00' });
+    const z = await ladeZustand(d);
+    for (const s of schritte(e)) {
+      e = trageSatzEin(z, e, s, 10, '2026-10-20T18:10:00', 12);
+      expect(await speichereLaufendeEinheit(e, d)).toBe(true);
+    }
+    expect((await d.einheiten.get('t'))?.bloecke[0]!.positionen[0]!.ergebnisse).toHaveLength(3);
+    const fertig = await beendeEinheit(e, '2026-10-20T18:40:00', d);
+    expect(fertig).toMatchObject({ status: 'abgeschlossen', beendetAm: '2026-10-20T18:40:00' });
+    const nachher = await ladeZustand(d);
+    expect(nachher.wochen[0]).toMatchObject({ id: '2026-W43', einheiten: 1 });
+    expect(nachher.varianten.find((v) => v.uebungId === 'kh_bankdruecken')?.last).toBe(12);
+    // ein zweites Beenden ändert nichts mehr
+    expect(await beendeEinheit(e, '2026-10-20T18:41:00', d)).toBeUndefined();
+    expect(await speichereLaufendeEinheit(e, d)).toBe(false);
+  });
+
+  it('speichert bei einem Abbruch die erledigten Sätze', async () => {
+    const d = neueDb();
+    await speichereOrt(ort(), d);
+    await d.einheiten.add(geplant());
+    await starteEinheit('t', '2026-10-20T18:05:00', d);
+    const e = trageSatzEin(await ladeZustand(d), (await d.einheiten.get('t'))!, { block: 0, position: 0, satz: 1 }, 9, '2026-10-20T18:10:00', 12);
+    await speichereLaufendeEinheit(e, d);
+    const fertig = await beendeEinheit(e, '2026-10-20T18:15:00', d);
+    expect(fertig?.status).toBe('abgebrochen');
+    expect(fertig?.bloecke[0]!.positionen[0]!.ergebnisse).toHaveLength(1);
+  });
+
+  it('macht eine Einheit ohne erledigten Satz wieder zur geplanten', async () => {
+    const d = neueDb();
+    await d.einheiten.add(geplant());
+    await starteEinheit('t', '2026-10-20T18:05:00', d);
+    expect(await beendeEinheit((await d.einheiten.get('t'))!, '2026-10-20T18:06:00', d)).toBeUndefined();
+    const e = (await d.einheiten.get('t'))!;
+    expect(e.status).toBe('geplant');
+    expect(e.gestartetAm).toBeUndefined();
+    expect(await d.wochen.count()).toBe(0);
   });
 });

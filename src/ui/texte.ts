@@ -127,6 +127,20 @@ export function lastText(u: Uebung, werte: { last?: number; bandStufe?: BandStuf
   return u.anzahlGewichte === 2 ? `${kg} je Hand` : kg;
 }
 
+// Lastanzeige zweigeteilt für das Training: große Zahl und Zusatz („16 kg“ und „je Hand“).
+export function lastTeile(u: Uebung, werte: { last?: number; bandStufe?: BandStufe }):
+  { titel: string; gross: string; klein?: string } | undefined {
+  if (werte.bandStufe) {
+    return { titel: 'Band', gross: BAND_NAMEN[werte.bandStufe], ...(u.unterstuetzend ? { klein: 'zur Unterstützung' } : {}) };
+  }
+  const text = lastText(u, werte);
+  if (!text) return undefined;
+  const [gross, ...rest] = text.split(' kg');
+  const klein = rest.join(' kg').trim();
+  if (gross!.startsWith('+')) return { titel: 'Gewicht', gross: `${gross} kg`, klein: 'zusätzlich' };
+  return { titel: 'Gewicht', gross: `${gross} kg`, ...(klein ? { klein } : {}) };
+}
+
 // Muskelgruppen einer Einheit für die Kurzbeschreibung („Brust, Rücken, Beine, Arme“)
 const GRUPPEN: [string, Muskel[]][] = [
   ['Brust', ['Brust']], ['Rücken', ['Ruecken']], ['Schultern', ['Schultern']], ['Arme', ['Bizeps', 'Trizeps']],

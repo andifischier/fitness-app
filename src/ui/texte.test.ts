@@ -1,10 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { KATALOG } from '../daten/katalog';
-import { abText, datumLang, lastText, muskelgruppenText, saetzeText, zeitText } from './texte';
+import { abText, datumLang, lastTeile, lastText, muskelgruppenText, saetzeText, zeitText } from './texte';
 
 const u = (id: string) => KATALOG.uebungen.find((x) => x.id === id)!;
 
 describe('Lastanzeige', () => {
+  it('teilt die Last fürs Training in Zahl und Zusatz', () => {
+    expect(lastTeile(u('kh_bankdruecken'), { last: 16 })).toEqual({ titel: 'Gewicht', gross: '16 kg', klein: 'je Hand' });
+    expect(lastTeile(u('goblet_squat'), { last: 12.5 })).toEqual({ titel: 'Gewicht', gross: '12,5 kg' });
+    expect(lastTeile(u('klimmzug_gewicht'), { last: 8 })).toEqual({ titel: 'Gewicht', gross: '+8 kg', klein: 'zusätzlich' });
+    expect(lastTeile(u('klimmzug_band'), { bandStufe: 'mittel' })).toEqual({ titel: 'Band', gross: 'mittel', klein: 'zur Unterstützung' });
+    expect(lastTeile(u('liegestuetz'), {})).toBeUndefined();
+  });
+
   it('zeigt Last je nach Gerät und Zahl der Hanteln', () => {
     expect(lastText(u('kh_bankdruecken'), { last: 16 })).toBe('16 kg je Hand');
     expect(lastText(u('goblet_squat'), { last: 12.5 })).toBe('12,5 kg');

@@ -191,6 +191,7 @@ interface Einstellungen {
   onboardingAbgeschlossen: boolean;
   letztesBackup?: string;
   videoLinks?: Record<string, string>; // eigene Video-Links für Katalogübungen (eigene Übungen: eigenerVideoLink)
+  bewertungen?: Record<string, 1|2|3|4|5>; // Sterne je Übungs-ID, letzte Bewertung zählt; fehlt sie, gilt 3 (ab Paket 8)
 }
 
 // Trainingszustand (wird nur vom Planungsmodul geschrieben)
@@ -328,7 +329,7 @@ Die Frage „Morgen wieder?“ ist der Schlüssel für Tage am Stück: Sie läss
 3. **„Morgen wieder trainieren?“** Vorausgefüllt mit Ja, wenn nach heute noch Einheiten geplant sind und deren Zahl mindestens halb so groß ist wie die Zahl der verbleibenden Tage nach heute. Immer Nein, wenn die letzte Einheit 72 Std. oder länger zurückliegt. Ein Tipp ändert die Antwort.
 4. **Fokus:** Bei Nein entsteht eine Ganzkörper-Einheit. Bei Ja eine Fokus-Einheit für Oberkörper (Brust, Rücken, Schultern, Bizeps, Trizeps) oder Unterkörper (Quadrizeps, Gesäß, hintere Oberschenkel, Waden); Bauch ist immer erlaubt. Gewählt wird die Gruppe, deren letzte Belastung länger zurückliegt; bei Gleichstand die mit dem größeren gewichteten Restbedarf. Ist kein Muskel dieser Gruppe erholt, wird die andere gewählt.
 5. **Bedarf pro Muskel:** Rest = Wochenziel minus erledigt. Ganzkörper: Rest ÷ n. Fokus: Rest ÷ aufgerundet(n ÷ 2) für Muskeln der Fokusgruppe, 0 für die anderen. Aufrunden, höchstens 10, und 0 für nicht erholte Muskeln.
-6. **Übungen wählen (gierig):** Kandidaten sind die Hauptvarianten A und B aller Muster außer Rumpf, Waden und Kondition (siehe Hauptvarianten und Abwechslung); beide dürfen in derselben Einheit vorkommen, abgewechselt wird über den Abschlag unten (Entscheidung 20.10.2026). Für jede Kandidatenübung wird ihr Wert berechnet: Summe über ihre Muskeln von min(offener Bedarf, Beitrag pro Satz) × Gewicht. Zuschläge: Grundübung +0,3, Favorit +0,2. Abschlag −0,6, wenn sie für ihren Hauptmuskel schon in der letzten Einheit gewählt wurde. Die beste Übung wird übernommen (bei Gleichstand die höhere Variantenstufe), mit Sätzen = offener Bedarf des Hauptmuskels, aufgerundet, 2 bis 4, höchstens das restliche Zeitbudget. Wiederholen, bis das Zeitbudget voll ist oder kein Bedarf über 0,25 bleibt.
+6. **Übungen wählen (gierig):** Kandidaten sind die Hauptvarianten A und B aller Muster außer Rumpf, Waden und Kondition (siehe Hauptvarianten und Abwechslung); beide dürfen in derselben Einheit vorkommen, abgewechselt wird über den Abschlag unten (Entscheidung 20.10.2026). Für jede Kandidatenübung wird ihr Wert berechnet: Summe über ihre Muskeln von min(offener Bedarf, Beitrag pro Satz) × Gewicht. Zuschläge: Grundübung +0,3, Favorit +0,2, Bewertung 5 Sterne +0,2, 4 Sterne +0,1, 2 Sterne −0,2 (siehe Bewertung der Übungen). Abschlag −0,6, wenn sie für ihren Hauptmuskel schon in der letzten Einheit gewählt wurde. Die beste Übung wird übernommen (bei Gleichstand die höhere Variantenstufe), mit Sätzen = offener Bedarf des Hauptmuskels, aufgerundet, 2 bis 4, höchstens das restliche Zeitbudget. Wiederholen, bis das Zeitbudget voll ist oder kein Bedarf über 0,25 bleibt.
 7. **Bauch und Waden:** Haben sie offenen Bedarf und sind erholt, kommen je eine Übung mit höchstens 3 Sätzen zusätzlich zum Zeitbudget dazu (siehe Zeitbudget). Sie sind normale Übungen und laufen einzeln oder in einem Supersatz-Paar laut Schritt 8.
 8. **Reihenfolge und Paare:** Max-Test (falls fällig), Grundübungen, Isolationsübungen. Supersatz-Paare werden aus dieser Liste gebildet, der Reihe nach: hDruck + hZug, vDruck + vZug, Bizeps + Trizeps, Knie oder Einbein + Rumpf, Huefte + Schulter, Rumpf + Waden. Jede Übung steht in höchstens einem Paar; es gibt nur Zweierblöcke. Bauch wird also nie mit einer Oberkörperübung gepaart, sondern mit Beinen oder Waden oder läuft einzeln. Gepaart wird, bis der Supersatz-Anteil der Woche (Anteil der Arbeitssätze in Paaren) erreicht ist. Format der Einheit: keine Paare = klassisch, alle möglichen Paare gebildet = supersatz, sonst mix.
 9. **Zeit passt nicht:** Die App bietet vor dem Start „15 Min länger?“ nur an, wenn die Prognose 1 bis 2 ist, die Einstellung „Längere Einheiten anbieten“ an ist und nach vollem Budget noch Bedarf offen ist. Bleiben 3 oder mehr Sätze Budget frei, zeigt sie die kürzere Dauer an; einen Zirkel-Finisher bietet Version 1 nicht an (Entscheidung 21.10.2026).
@@ -352,8 +353,13 @@ Zirkel zählen für das Erholungsfenster mit demselben Volumen wie für das Woch
 ### Hauptvarianten und Abwechslung
 
 - Pro Muster und Zyklus (6 Wochen oder bis zur nächsten Erholungswoche) legt die App bis zu zwei Hauptvarianten A und B fest (z. B. Kurzhantel-Bankdrücken und Schrägbankdrücken), bestimmt bei Zyklusbeginn bzw. bei der ersten Nutzung des Musters am Ort. A und B wechseln sich von Einheit zu Einheit ab. Jede führt ihren eigenen Progressionsverlauf.
-- **Auswahl:** Kandidaten sind Varianten, die am Ort möglich, nicht gesperrt und nicht ausgeschlossen sind. Rangfolge: Favorit; dann Abstand zur Musterstufe (bei Lasttyp Last zählt nur, wie weit die Stufe über der Musterstufe liegt, weil die Last den Rest regelt); dann Lasttyp Last vor Band vor KG vor Zeit; dann Katalogreihenfolge. A = beste Variante, B = nächstbeste Variante mit anderer ID, bevorzugt mit anderem Equipment.
-- Zu Beginn eines neuen Zyklus werden Nebenübungen bevorzugt gegen Varianten gleicher Stufe getauscht; Favoriten bleiben.
+- **Auswahl:** Kandidaten sind Varianten, die am Ort möglich, nicht gesperrt und nicht ausgeschlossen sind. Rangfolge: Favorit; dann Varianten mit 1 Stern ans Ende; dann Abstand zur Musterstufe (bei Lasttyp Last zählt nur, wie weit die Stufe über der Musterstufe liegt, weil die Last den Rest regelt); dann Bewertung (mehr Sterne zuerst); dann Lasttyp Last vor Band vor KG vor Zeit; dann Katalogreihenfolge. A = beste Variante, B = nächstbeste Variante mit anderer ID, bevorzugt mit anderem Equipment.
+- Zu Beginn eines neuen Zyklus werden Nebenübungen bevorzugt gegen Varianten gleicher Stufe getauscht; Favoriten bleiben. Varianten mit 4 oder 5 Sternen bleiben ebenfalls, Varianten mit 1 oder 2 Sternen werden zuerst getauscht.
+- **Bewertung der Übungen** (Entscheidung 21.10.2026, umgesetzt mit Paket 8): Am Ende einer Einheit kann der Nutzer jede Übung mit 1 bis 5 Sternen bewerten. Die Bewertung ist freiwillig und mit der letzten Bewertung der Übung vorausgefüllt; es zählt immer die letzte. Ohne Bewertung gilt 3 (neutral). Im Tab Übungen lässt sie sich jederzeit ändern. Wirkung („ausgewogen“):
+  - **1 Stern:** Ist die Übung Hauptvariante, wird sie ab der nächsten Einheit ersetzt, sofern am Ort eine Alternative desselben Musters mit höchstens 1 Stufe Abstand und mindestens 2 Sternen möglich ist (Auswahl nach der Rangfolge oben). Gibt es keine, bleibt sie.
+  - **2 Sterne:** seltener (Abschlag in Schritt 6, beim Zyklusbeginn zuerst getauscht).
+  - **4 und 5 Sterne:** häufiger (Zuschlag in Schritt 6, Vorrang in der Rangfolge bei gleichem Abstand zur Musterstufe, bleiben beim Zyklusbeginn).
+  - Die Bewertung ändert nie das Volumen pro Muskel, nur welche Übung es liefert. Max-Tests (immer dieselbe Übung) und Zirkel-Stationen bleiben unberührt. Für „nie wieder“ gibt es weiter den Ausschluss im Tab Übungen.
 - Ein Ortswechsel wählt die passende Variante des Musters an diesem Ort, ohne den Zyklus zu beenden.
 
 ### Formate
@@ -416,6 +422,7 @@ Die Anpassung folgt einer doppelten Progression: erst mehr Wiederholungen im Zie
 | Satz | Nach jedem Satz | Geschaffte Wiederholungen (vorausgefüllt mit Zielwert) bzw. Sekunden |
 | Übung | Nach dem letzten Satz der Übung | **Zu leicht** = 4 oder mehr Wiederholungen wären noch gegangen · **Passend** = 1 bis 3 wären noch gegangen · **Zu schwer** = Ziel nicht geschafft oder Technik brach ein. Die Definition steht als Hilfetext direkt unter den Buttons. |
 | Workout | Am Ende | Gesamtanstrengung 1 bis 5 (1 = sehr leicht, 5 = am Limit), optional Notiz |
+| Gefallen je Übung | Am Ende | 1 bis 5 Sterne pro Übung, freiwillig, vorausgefüllt mit der letzten Bewertung (siehe Bewertung der Übungen; ab Paket 8) |
 
 ### Progression pro Übung
 
@@ -453,7 +460,7 @@ Ziel und Last werden pro Variante fortgeschrieben. Das Wiederholungsziel gilt f�
 - Jede Variante speichert ihren eigenen Verlauf (letzte Last bzw. Bandstufe, Wiederholungen, Bewertung). Progression findet immer innerhalb einer Variante statt.
 - Die **Musterstufe** ist die Stufe (1 bis 10) der schwersten Variante des Musters, die zuletzt im Zielbereich mit „passend“ oder „zu leicht“ bewältigt wurde. Sie dient nur dazu, an einem neuen Ort die passende Variante zu wählen.
 - Wird eine bereits genutzte Variante gewählt, startet sie mit ihren letzten Werten.
-- Wird eine Variante zum ersten Mal genutzt, gilt als Ziel das untere Ende des Bereichs mit Reserve 3. Der erste Satz ist ein Kalibrierungssatz; die geschafften Wiederholungen legen Last bzw. Ziel der restlichen Sätze dieser Einheit fest.
+- Wird eine Variante zum ersten Mal genutzt, gilt als Ziel das untere Ende des Bereichs mit Reserve 3. Der erste Satz ist ein Kalibrierungssatz; die geschafften Wiederholungen legen Last bzw. Ziel der restlichen Sätze dieser Einheit fest. Bei Varianten mit Last wählt der Nutzer das Gewicht im Kalibrierungssatz selbst; danach gilt die schwerste Last am Ort, bei der die Kraftschätzung (Reserve 3) noch U Wiederholungen mit Ziel-Reserve zulässt, Ziel = geschätzte Wiederholungen dort (U − 1 bis O). Der zweite Satz zeigt dieses Ziel; die Regeln der Progression messen an ihm statt am Kalibrierungssatz.
 - Erreicht der erste Satz einer Körpergewichts-, Band- oder Zeitvariante O, wechselt die nächste Einheit zur nächstschwereren Variante, Ziel U der neuen Variante.
 - **Zwischenstufe:** Liegt die nächste am Ort mögliche Variante 2 oder mehr Stufen über der aktuellen, trainiert die App zuerst die aktuelle Variante mit langsamem Absenken (3 Sek.), Ziel U. Erreicht der erste Satz damit wieder O, folgt die nächste Variante. Band-Varianten sind bereits eigene Stufen der Leiter und brauchen keine Sonderregel.
 
@@ -525,11 +532,11 @@ Das Training läuft geführt Schritt für Schritt: eine Übung pro Bildschirm, S
 5. **Übungsbildschirme:** Name, YouTube-Link, Satz x von y, Zielwiederholungen, Last, Feld für geschaffte Wiederholungen, Button „Satz erledigt“. Danach startet der Pausentimer (Ton und Vibration am Ende, Pause verlängern oder überspringen möglich). Bei Supersätzen wechselt der Bildschirm zwischen den beiden Übungen in der Reihenfolge A1 Satz 1, A2 Satz 1, Pause, A1 Satz 2, A2 Satz 2, Pause usw.; Pause nur nach dem Paar, „Als Nächstes“ nach A1 ist immer A2.
    **Ziel und Vorgabe:** Das Ziel ist eine einzelne Zahl (`zielWdh`) und gilt für den ersten Satz. Die UI zeigt „Ziel 10“, darunter klein „Bereich 8 bis 12“. Folgesätze zeigen „Vorgabe 9“ = geschaffte Wiederholungen des vorherigen Satzes. (Bereiche wie „8 bis 10“ als Ziel in den Mockups 3 bis 5 sind falsch.)
 6. **Übungsfeedback:** Nach dem letzten Satz: zu leicht / passend / zu schwer. Darunter der Folgetext nach dem Muster „Nächstes Mal: 16 kg, Ziel 11 im ersten Satz“ (ein „Ziel in allen Sätzen“ gibt es nicht).
-7. **Abschluss:** Gesamtbewertung 1 bis 5, optionale Notiz, Zusammenfassung mit Dauer, Volumen und neuen Rekorden. Optional Abkühlen: zeigt die Mobility-Zeilen des Aufwärmens erneut, ca. 3 Min.
+7. **Abschluss:** Gesamtbewertung 1 bis 5, optionale Notiz, Sterne 1 bis 5 je Übung (freiwillig), Zusammenfassung mit Dauer, Volumen und neuen Rekorden. Optional Abkühlen: zeigt die Mobility-Zeilen des Aufwärmens erneut, ca. 3 Min.
 
 **Zirkel-Modus:** Laufende Stoppuhr für das ganze Workout, Übungen nacheinander mit Tipp auf „weiter“, Rundenanzeige, am Ende Vergleich mit der Bestzeit an diesem Ort.
 
-**Unterbrechung:** Wird die App geschlossen, bleibt die Einheit gespeichert und lässt sich fortsetzen. Ein Abbruch speichert alle bis dahin erledigten Sätze.
+**Unterbrechung:** Wird die App geschlossen, bleibt die Einheit gespeichert und lässt sich fortsetzen; es geht mit dem nächsten offenen Satz weiter, eine angefangene Pause entfällt. Das Kreuz oben bietet „Weiter trainieren“, „Später fortsetzen“ und „Training beenden“. Ein Abbruch speichert alle bis dahin erledigten Sätze (ein abgebrochener Zirkel zählt nur die erledigten Runden); ohne erledigten Satz bleibt die Einheit als erstellte Einheit bestehen.
 
 ### Gestaltung
 
@@ -562,9 +569,9 @@ Navigation unten mit 4 Tabs: Heute, Fortschritt (mit Unterreiter Verlauf), Übun
 | Satz | Übung, YouTube-Link, Satz x von y, „Ziel 10“ mit „Bereich 8 bis 12“ bzw. „Vorgabe 9“ ab Satz 2, Last, Zähler für geschaffte Wdh., „Letztes Mal“ (aus der letzten abgeschlossenen Position derselben Übung), Hinweis zur Reserve | Max-Test: Zähler ohne Ziel · Halteübung: Stoppuhr · Supersatz: Kennzeichnung A1/A2 |
 | Pause | Timer-Ring, +30 Sek., Überspringen, „Als Nächstes“ (im Supersatz nach A1 immer A2, Pause nur nach dem Paar) | Ton und Vibration am Ende; Bildschirm bleibt an |
 | Übungsfeedback | 3 Buttons mit Definition, geschaffte Wiederholungen, Vorschau der Folge („Nächstes Mal: 16 kg, Ziel 11 im ersten Satz“) | „Zu schwer“ vorausgewählt, wenn der erste Satz das Ziel verfehlt |
-| Abschluss | Dauer, Sätze, Rekorde, Gesamtanstrengung 1 bis 5, Notiz, optional Abkühlen | Zirkel: Zeit und Bestzeit-Vergleich |
+| Abschluss | Dauer, Sätze, Rekorde, Gesamtanstrengung 1 bis 5, Sterne je Übung, Notiz, optional Abkühlen | Zirkel: Zeit und Bestzeit-Vergleich |
 | Fortschritt | Max-Test-Verlauf pro Muster (Chips für alle getesteten Muster inklusive Plank in Sekunden), Sätze pro Woche pro Muskel mit Hinweis „zählt als Entlastung“ bei Wochen unter 60 % des üblichen Volumens, eigene Karte Zirkel-Bestzeiten (Zirkel, Ort, Bestzeit, Datum); Unterreiter Verlauf mit allen Einheiten. Tipp auf eine Einheit zeigt Datum, Ort, Dauer, alle Übungen mit Sätzen, Last, Feedback, Gesamtanstrengung und Notiz | Leer: „Nach deiner ersten Einheit siehst du hier deinen Fortschritt.“ |
-| Übungen | Suche, Filter nach Muster und Ort, Favorit/Ausschluss, eigene Übung anlegen (ähnliche Übung als Vorlage, alle Angaben vorausgefüllt und änderbar), eigener Video-Link | Eigene Übung lässt sich nur löschen, solange sie nie trainiert wurde (Entscheidung 20.10.2026) |
+| Übungen | Suche, Filter nach Muster und Ort, Favorit/Ausschluss, Sterne 1 bis 5 (ab Paket 8), eigene Übung anlegen (ähnliche Übung als Vorlage, alle Angaben vorausgefüllt und änderbar), eigener Video-Link | Eigene Übung lässt sich nur löschen, solange sie nie trainiert wurde (Entscheidung 20.10.2026) |
 | Einstellungen | Orte und Equipment (Mockup 9, Regeln siehe Orte), Profil, Prioritäten, Dauer, Zirkel-Anteil, Pausen, Einschränkungen, Backup (Export/Import) | Ort ohne Pflichtangaben lässt sich nicht speichern · Ort lässt sich nur löschen, solange dort nie trainiert wurde (Entscheidung 20.10.2026) |
 
 Texte sind auf Deutsch, Du-Form, kurz. Zahlen mit deutschem Dezimalkomma (2,5 kg).
@@ -670,7 +677,7 @@ Der Agent arbeitet die Pakete in dieser Reihenfolge ab, je Paket eine Sitzung. E
 | 5 | Onboarding und Testtag | Neuer Nutzer kommt in unter 5 Minuten vom ersten Öffnen zur ersten Einheit; Testergebnisse setzen Musterstufen und Startvarianten |
 | 6 | Heute, Vor dem Start, Vorschau mit Tausch (Mockups 1 bis 3) | Startfragen vorausgefüllt; Tausch zeigt nur Alternativen desselben Musters, die am Ort möglich sind |
 | 7 | Trainings-Player: Aufwärmen, Max-Test, Satz, Pause, Supersatz, Zirkel-Modus, Unterbrechen und Fortsetzen (Mockups 4 und 5) | Ganze Einheit ohne Netz durchführbar; Bildschirm bleibt an; Ton und Vibration am Pausenende; App-Neustart mitten im Training setzt am richtigen Satz fort |
-| 8 | Übungsfeedback und Abschluss (Mockups 6 und 7) mit Rückschreiben in den Trainingszustand | Nächste Einheit zeigt die laut Progression erwarteten Ziele und Lasten |
+| 8 | Übungsfeedback und Abschluss (Mockups 6 und 7) mit Rückschreiben in den Trainingszustand; Bewertung der Übungen mit 1 bis 5 Sternen (Abschluss und Tab Übungen) samt Wirkung auf die Auswahl | Nächste Einheit zeigt die laut Progression erwarteten Ziele und Lasten; 1 Stern ersetzt die Hauptvariante ab der nächsten Einheit (falls Alternative am Ort), 2, 4 und 5 Sterne wirken laut „Bewertung der Übungen“ (Tests) |
 | 9 | Fortschritt und Verlauf (Mockup 8) | Max-Tests, Wochenvolumen pro Muskel und Zirkel-Bestzeiten werden korrekt dargestellt; leere Zustände vorhanden |
 | 10 | Feinschliff und Endabnahme | Alle Punkte unter „Abnahmekriterien Version 1“ erfüllt; Test auf einem Android-Handy in Chrome |
 

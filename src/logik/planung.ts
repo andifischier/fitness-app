@@ -160,7 +160,8 @@ export function dosisProMuskel(z: AppZustand, einheit: Einheit): ProMuskel {
       const u = uebungVon(z, p.uebungId);
       if (!u) continue;
       if (block.typ === 'zirkel') {
-        const runden = block.runden ?? p.saetze;
+        // Ein abgebrochener Zirkel zählt nur die erledigten Runden.
+        const runden = einheit.status === 'abgebrochen' ? p.ergebnisse.length : block.runden ?? p.saetze;
         for (const [m, v] of beitrag(u, ZIRKEL.volumenPrimaer, ZIRKEL.volumenSekundaer)) dosis[m] += runden * v;
       } else {
         const saetze = einheit.status === 'geplant' ? p.saetze : p.ergebnisse.length;
