@@ -234,3 +234,11 @@
   zweite Bestätigung. Gelöscht werden alle Daten in einem Schritt (`setzeZurueck` in `src/daten/speichern.ts`, mit
   Test); danach startet das Onboarding. Drei Entscheidungen in `docs/entscheidungen.md`, Spezifikation angepasst.
 - **Warum:** Wunsch des Nutzers, die App von 0 zu starten.
+
+## Kein leerer Bildschirm mehr nach einem Absturz (21.10.2026)
+- **Was:** Neue Absicherung um die ganze App (`src/ui/Absturz.tsx`, Logik `src/logik/absturz.ts` mit Test, Zahl
+  `ABSTURZ.sperreMs` in `src/konfiguration.ts`): Stürzt ein Bildschirm ab, lädt die App selbst neu, statt eine leere
+  Seite zu zeigen. Passiert es innerhalb von 15 Sek. erneut, erscheint „Da ging etwas schief“ mit Fehlermeldung und
+  „Neu laden“. Im Browser mit künstlichem Absturz geprüft. Entscheidung in `docs/entscheidungen.md`, Spezifikation ergänzt.
+- **Warum:** Fehlerbericht: Im Onboarding war nach jedem „Weiter“ die Seite leer, erst Neuladen half. Die Ursache ließ
+  sich hier nicht nachstellen; die Absicherung macht genau das Neuladen automatisch.
