@@ -16,6 +16,7 @@ import { EinstellungenSeite } from './seiten/einstellungen/Uebersicht';
 import { UebungSeite } from './seiten/uebungen/Detail';
 import { BearbeitenSeite, NeueUebungSeite, VorlageSeite } from './seiten/uebungen/Formular';
 import { UebungenSeite } from './seiten/uebungen/Liste';
+import { WorkoutSeite, WorkoutsSeite } from './seiten/workouts/Workouts';
 
 export function App() {
   return (
@@ -37,6 +38,9 @@ export function App() {
         <Route path="/uebungen/neu/:vorlageId" element={<NeueUebungSeite />} />
         <Route path="/uebungen/:id" element={<UebungSeite />} />
         <Route path="/uebungen/:id/bearbeiten" element={<BearbeitenSeite />} />
+        <Route path="/uebungen/workouts" element={<WorkoutsSeite />} />
+        <Route path="/uebungen/workouts/neu" element={<WorkoutSeite />} />
+        <Route path="/uebungen/workouts/:id" element={<WorkoutSeite />} />
         <Route path="/einstellungen" element={<EinstellungenSeite />} />
         <Route path="/einstellungen/orte" element={<OrteSeite />} />
         <Route path="/einstellungen/profil" element={<ProfilSeite />} />

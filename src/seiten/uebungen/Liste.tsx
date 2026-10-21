@@ -5,24 +5,13 @@ import { aendereEinstellungen } from '../../daten/speichern';
 import { alleUtensilien, mitFavorit } from '../../logik/einstellungen';
 import { alleUebungen, uebungMoeglich } from '../../logik/equipment';
 import { MUSTER_IDS, type AppZustand, type Uebung } from '../../logik/typen';
+import { nachMuster, suche } from '../../ui/blaetter';
 import { Hinweis, Laedt, Seite } from '../../ui/bausteine';
 import { Icon } from '../../ui/Icon';
 import { equipmentText, MUSTER_NAMEN } from '../../ui/texte';
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
 
 const auswahlStil = 'min-h-touch w-full rounded-xl border border-rand bg-flaeche px-3 text-basis';
-
-export function suche(liste: Uebung[], text: string): Uebung[] {
-  const t = text.trim().toLowerCase();
-  return t === '' ? liste : liste.filter((u) => u.name.toLowerCase().includes(t));
-}
-
-// Übungen je Muster in der Reihenfolge der Muster, innerhalb nach Stufe (Katalogreihenfolge bei Gleichstand).
-export function nachMuster(liste: Uebung[]): [Uebung['muster'], Uebung[]][] {
-  return MUSTER_IDS
-    .map((m) => [m, liste.filter((u) => u.muster === m).sort((a, b) => a.stufe - b.stufe)] as [Uebung['muster'], Uebung[]])
-    .filter(([, l]) => l.length > 0);
-}
 
 export function UebungenSeite() {
   const z = useZustand();
@@ -46,6 +35,13 @@ export function UebungenSeite() {
 
   return (
     <Seite titel="Übungen">
+      <Link to="/uebungen/workouts" className="flex min-h-touch items-center gap-3 rounded-karte border border-rand bg-flaeche px-5 py-3">
+        <span className="flex-1">
+          <span className="block text-gross font-semibold">Meine Workouts</span>
+          <span className="block text-hinweis text-gedaempft">Eigene Übungslisten und Zirkel anlegen und bearbeiten</span>
+        </span>
+        <span className="text-gedaempft"><Icon name="weiter" groesse={20} /></span>
+      </Link>
       <label className="relative block">
         <span className="sr-only">Übung suchen</span>
         <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gedaempft"><Icon name="suche" groesse={20} /></span>

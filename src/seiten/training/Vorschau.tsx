@@ -1,16 +1,20 @@
 // Vorschau (Mockup 3): Aufwärmen, Blöcke mit Übungen, Sätzen, Zielen und Last; „Tauschen“ zeigt nur
-// Alternativen desselben Musters, die am Ort möglich sind. Zurück behält die Einheit (Entscheidung
-// 21.10.2026); „Los geht's“ öffnet das Training.
+// Alternativen desselben Musters, die am Ort möglich sind. „Anpassen“ ändert Sätze, entfernt und fügt
+// Übungen hinzu (nicht im Zirkel). Zurück behält die Einheit (Entscheidungen 21.10.2026); „Los geht's“
+// öffnet das Training.
 import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { speichereTausch } from '../../daten/speichern';
+import { WORKOUT } from '../../konfiguration';
+import { entferneUebung, fuegeUebungHinzu, hinzufuegbar, kannAnpassen, setzeSaetze } from '../../logik/anpassen';
 import { keinMuskelErholt, zirkelVorgaben } from '../../logik/heute';
-import { alternativen, tausche } from '../../logik/planung';
+import { tausche } from '../../logik/planung';
 import type { AppZustand, Einheit } from '../../logik/typen';
 import { uebungVon } from '../../logik/verlauf';
-import { Hinweis, Knopf, Laedt } from '../../ui/bausteine';
+import { Hinweis, Knopf, Laedt, Stepper } from '../../ui/bausteine';
+import { TauschBlatt, UebungWahl } from '../../ui/blaetter';
 import { Icon } from '../../ui/Icon';
-import { detailText, FOKUS_NAMEN, lastText, vorgabeText } from '../../ui/texte';
+import { detailText, einheitName, lastText, vorgabeText } from '../../ui/texte';
 import { useZustand } from '../../ui/useZustand';
 
 export function VorschauSeite() {
@@ -28,10 +32,12 @@ function Ansicht({ z, einheit }: { z: AppZustand; einheit: Einheit }) {
   const navigate = useNavigate();
   const [tausch, setTausch] = useState<{ block: number; position: number }>();
   const [aufwaermenOffen, setAufwaermenOffen] = useState(false);
+  const [anpassen, setAnpassen] = useState(false);
+  const [waehlen, setWaehlen] = useState(false);
   const ort = z.orte.find((o) => o.id === einheit.ortId);
   const zirkelBlock = einheit.bloecke.find((b) => b.typ === 'zirkel');
-  const zirkel = z.katalog.zirkel.find((x) => x.id === zirkelBlock?.zirkelId);
-  const titel = zirkel ? zirkel.name : FOKUS_NAMEN[einheit.fokus];
+  const titel = einheitName(z, einheit);
+  const anpassbar = kannAnpassen(einheit);
   const kopf = zirkelBlock
     ? `ca. ${einheit.geschaetzteDauerMin} Min · ${zirkelBlock.runden ?? 1} Runden · ${zirkelBlock.positionen.length} Stationen`
     : `ca. ${einheit.geschaetzteDauerMin} Min · ${satzZahl(einheit)} Sätze`;
@@ -43,6 +49,7 @@ function Ansicht({ z, einheit }: { z: AppZustand; einheit: Einheit }) {
     await speichereTausch(tausche(z, einheit, tausch.block, tausch.position, uebungId));
     setTausch(undefined);
   };
+  const aendere = (neu: Einheit) => void speichereTausch(neu);
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col px-seite pt-8 pb-8">
@@ -50,7 +57,13 @@ function Ansicht({ z, einheit }: { z: AppZustand; einheit: Einheit }) {
         <Link to="/" aria-label="Zurück" className="-ml-3 flex size-touch items-center justify-center text-text">
           <Icon name="zurueck" />
         </Link>
-        <h1 className="text-screen font-extrabold">{titel}</h1>
+        <h1 className="flex-1 text-screen font-extrabold">{titel}</h1>
+        {anpassbar && (
+          <button type="button" aria-pressed={anpassen} onClick={() => setAnpassen(!anpassen)}
+            className="min-h-touch px-2 text-basis font-semibold text-akzent">
+            {anpassen ? 'Fertig' : 'Anpassen'}
+          </button>
+        )}
       </header>
       <p className="mt-1 mb-5 text-basis text-gedaempft">{kopf}{ort ? ` · ${ort.name}` : ''}</p>
 
@@ -93,19 +106,32 @@ function Ansicht({ z, einheit }: { z: AppZustand; einheit: Einheit }) {
                     p.istErsatz && 'Ersatz', p.getauschtVon && 'Getauscht', p.langsam && '3 Sek. absenken',
                   ].filter(Boolean);
                   return (
-                    <li key={pi} className="flex items-center gap-3 py-2">
-                      <span className="flex-1">
-                        <span className="block text-gross font-semibold">{u.name}</span>
-                        <span className="block text-basis text-gedaempft">
-                          {detail}
+                    <li key={pi} className="py-2">
+                      <div className="flex items-center gap-3">
+                        <span className="flex-1">
+                          <span className="block text-gross font-semibold">{u.name}</span>
+                          <span className="block text-basis text-gedaempft">
+                            {detail}
+                          </span>
+                          {merkmale.length > 0 && <span className="block text-hinweis font-semibold text-akzent">{merkmale.join(' · ')}</span>}
                         </span>
-                        {merkmale.length > 0 && <span className="block text-hinweis font-semibold text-akzent">{merkmale.join(' · ')}</span>}
-                      </span>
-                      {!p.istMaxTest && (
-                        <button type="button" aria-label={`${u.name} tauschen`} onClick={() => setTausch({ block: bi, position: pi })}
-                          className="flex size-touch shrink-0 items-center justify-center text-gedaempft">
-                          <Icon name="tauschen" groesse={24} />
-                        </button>
+                        {anpassen && anpassbar ? (
+                          <button type="button" aria-label={`${u.name} entfernen`} onClick={() => aendere(entferneUebung(z, einheit, bi, pi))}
+                            className="flex size-touch shrink-0 items-center justify-center text-gedaempft">
+                            <Icon name="kreuz" groesse={22} />
+                          </button>
+                        ) : !p.istMaxTest && (
+                          <button type="button" aria-label={`${u.name} tauschen`} onClick={() => setTausch({ block: bi, position: pi })}
+                            className="flex size-touch shrink-0 items-center justify-center text-gedaempft">
+                            <Icon name="tauschen" groesse={24} />
+                          </button>
+                        )}
+                      </div>
+                      {anpassen && anpassbar && !p.istMaxTest && (
+                        <div className="mt-2">
+                          <Stepper label={`Sätze ${u.name}`} wert={p.saetze} min={WORKOUT.saetze.min} max={WORKOUT.saetze.max}
+                            einheit={p.saetze === 1 ? 'Satz' : 'Sätze'} onChange={(n) => aendere(setzeSaetze(z, einheit, bi, pi, n))} />
+                        </div>
                       )}
                     </li>
                   );
@@ -114,6 +140,9 @@ function Ansicht({ z, einheit }: { z: AppZustand; einheit: Einheit }) {
             </section>
           );
         })}
+        {anpassen && anpassbar && (
+          <Knopf art="sekundaer" onClick={() => setWaehlen(true)}>+ Übung hinzufügen</Knopf>
+        )}
       </div>
 
       <div className="mt-auto pt-8">
@@ -121,44 +150,11 @@ function Ansicht({ z, einheit }: { z: AppZustand; einheit: Einheit }) {
       </div>
 
       {tausch && <TauschBlatt z={z} einheit={einheit} {...tausch} onWahl={(id) => void waehle(id)} onSchliessen={() => setTausch(undefined)} />}
+      {waehlen && (
+        <UebungWahl titel="Übung hinzufügen" hinweis="Nur Übungen, die hier möglich sind. Ziel und Last wie gewohnt."
+          uebungen={hinzufuegbar(z, einheit)} onSchliessen={() => setWaehlen(false)}
+          onWahl={(id) => { setWaehlen(false); aendere(fuegeUebungHinzu(z, einheit, id)); }} />
+      )}
     </main>
-  );
-}
-
-function TauschBlatt({ z, einheit, block, position, onWahl, onSchliessen }: {
-  z: AppZustand; einheit: Einheit; block: number; position: number; onWahl: (uebungId: string) => void; onSchliessen: () => void;
-}) {
-  const p = einheit.bloecke[block]!.positionen[position]!;
-  const aktuell = uebungVon(z, p.uebungId);
-  const liste = alternativen(z, einheit, block, position);
-  return (
-    <div className="fixed inset-0 z-10 flex items-end bg-text/40" onClick={onSchliessen}>
-      <section role="dialog" aria-modal="true" aria-label="Übung tauschen" onClick={(ev) => ev.stopPropagation()}
-        className="mx-auto max-h-[80dvh] w-full max-w-xl overflow-y-auto rounded-t-karte bg-flaeche px-seite pt-5 pb-[calc(20px+env(safe-area-inset-bottom))]">
-        <div className="flex items-center gap-3">
-          <h2 className="flex-1 text-screen font-extrabold">Tauschen</h2>
-          <button type="button" aria-label="Schließen" onClick={onSchliessen} className="flex size-touch items-center justify-center">
-            <Icon name="kreuz" />
-          </button>
-        </div>
-        <Hinweis>Statt {aktuell?.name}. Nur Übungen derselben Art, die hier möglich sind.</Hinweis>
-        {liste.length === 0 && <p className="mt-4 text-basis">Hier gibt es keine Alternative.</p>}
-        <ul className="mt-3">
-          {liste.map((a) => {
-            const u = uebungVon(z, a.uebungId);
-            if (!u) return null;
-            const ziel = u.bereich.einheit === 'Sek.' ? `Ziel ${a.zielWdh} Sek.` : `Ziel ${a.zielWdh}`;
-            return (
-              <li key={a.uebungId} className="border-b border-linie last:border-b-0">
-                <button type="button" onClick={() => onWahl(a.uebungId)} className="flex min-h-[60px] w-full flex-col justify-center py-3 text-left">
-                  <span className="text-gross font-semibold">{u.name}</span>
-                  <span className="text-basis text-gedaempft">{[ziel, lastText(u, a)].filter(Boolean).join(' · ')}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-    </div>
   );
 }

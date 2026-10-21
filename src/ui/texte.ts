@@ -5,6 +5,7 @@ import type {
   AppZustand, BandStufe, Einheit, Einstellungen, Feedback, MusterId, Muskel, Position, Prioritaet, Uebung, Utensil,
 } from '../logik/typen';
 import { uebungVon } from '../logik/verlauf';
+import { zirkelName } from '../logik/workouts';
 
 export const MUSKEL_NAMEN: Record<Muskel, string> = {
   Brust: 'Brust', Ruecken: 'Rücken', Schultern: 'Schultern', Bizeps: 'Bizeps', Trizeps: 'Trizeps',
@@ -191,7 +192,7 @@ const kgZahl = (kg: number) => `${String(Math.round(kg * 100) / 100).replace('.'
 // Zeile eines Rekords im Abschluss: Name und Wert („18 kg × 10“, „12 Wdh.“, „Max-Test 25 Wdh.“, „11:40“).
 export function rekordZeile(z: AppZustand, einheit: Einheit, r: Rekord): { name: string; wert: string } {
   if (r.art === 'zirkel') {
-    return { name: z.katalog.zirkel.find((x) => x.id === r.zirkelId)?.name ?? 'Zirkel', wert: zeitText(r.wert) };
+    return { name: einheit.name ?? zirkelName(z, r.zirkelId) ?? 'Zirkel', wert: zeitText(r.wert) };
   }
   const u = r.uebungId ? uebungVon(z, r.uebungId) : undefined;
   const name = u?.name ?? r.uebungId ?? '';
@@ -239,10 +240,11 @@ export function entlastungText(wocheId: string, einheiten: number, erholungswoch
   return `${kw} nur ${einheiten} ${einheiten === 1 ? 'Einheit' : 'Einheiten'}, zählt als Entlastung.`;
 }
 
-// Name einer Einheit im Verlauf: Zirkelname, „Testtag“ oder Fokus („Ganzkörper“)
+// Name einer Einheit: eigenes Workout, Zirkelname, „Testtag“ oder Fokus („Ganzkörper“)
 export function einheitName(z: AppZustand, e: Einheit): string {
+  if (e.name) return e.name;
   if (e.format === 'test') return 'Testtag';
-  if (e.format === 'zirkel') return z.katalog.zirkel.find((x) => x.id === e.bloecke[0]?.zirkelId)?.name ?? 'Zirkel';
+  if (e.format === 'zirkel') return zirkelName(z, e.bloecke[0]?.zirkelId) ?? 'Zirkel';
   return FOKUS_NAMEN[e.fokus];
 }
 

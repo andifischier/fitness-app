@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isoWoche, plusTage, wochentag } from './datum';
 import {
-  alternativen, dosisProMuskel, erholungsfenster, erstelleEinheit, hauptvarianten, istErholt, startfragen,
+  alternativen, dosisProMuskel, erholungsfenster, erstelleEinheit, hauptvarianten, istErholt, kannTauschen, startfragen,
   startwerte, tausche, wochenziele, zirkelVorschlagen,
 } from './planung';
 import { absolviere, ort, setzePrognose, simuliereWoche, zeitpunkt, zustand } from './testhilfe';
@@ -327,7 +327,7 @@ describe('Tausch vor dem Start', () => {
     }));
   });
 
-  it('Tausch ersetzt die Übung, merkt das Original und ist nach dem Start gesperrt', () => {
+  it('Tausch ersetzt die Übung, merkt das Original und geht im Training nur vor dem ersten Satz', () => {
     const z = zustand({ katalog: 'voll' });
     const e = plane(z);
     const alt = e.bloecke[0]!.positionen[0]!;
@@ -337,7 +337,16 @@ describe('Tausch vor dem Start', () => {
     expect(e.bloecke[0]!.positionen[0]!.uebungId).toBe(alt.uebungId);
     const zurueck = tausche(z, neu, 0, 0, alt.uebungId);
     expect(zurueck.bloecke[0]!.positionen[0]!.getauschtVon).toBeUndefined();
-    expect(() => tausche(z, { ...e, status: 'laufend' }, 0, 0, ziel.uebungId)).toThrow();
+    const laufend: Einheit = { ...e, status: 'laufend' };
+    expect(kannTauschen(laufend, 0, 0)).toBe(true);
+    const imTraining = tausche(z, laufend, 0, 0, ziel.uebungId);
+    expect(imTraining.bloecke[0]!.positionen[0]!.uebungId).toBe(ziel.uebungId);
+    expect(imTraining.aufwaermen).toEqual(e.aufwaermen);
+    const begonnen = structuredClone(laufend);
+    begonnen.bloecke[0]!.positionen[0]!.ergebnisse.push({ nr: 1, wdh: 8, zeit: '2026-10-21T10:05:00' });
+    expect(kannTauschen(begonnen, 0, 0)).toBe(false);
+    expect(() => tausche(z, begonnen, 0, 0, ziel.uebungId)).toThrow();
+    expect(kannTauschen({ ...e, status: 'abgeschlossen' }, 0, 0)).toBe(false);
     expect(() => tausche(z, e, 0, 0, 'kh_curls')).toThrow();
   });
 });

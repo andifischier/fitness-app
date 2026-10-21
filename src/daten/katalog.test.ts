@@ -14,15 +14,13 @@ describe('Katalog', () => {
     expect(KATALOG.uebungen.filter((u) => u.anzahlGewichte !== undefined)).toHaveLength(33);
   });
 
-  it('hat für jede Übung eine Kurzanleitung und für 10 Übungen ein festes Video', () => {
+  it('hat für jede Übung eine Kurzanleitung und ein eigenes festes Video', () => {
     for (const u of KATALOG.uebungen) {
       expect(u.anleitung?.length, u.id).toBeGreaterThanOrEqual(3);
       for (const zeile of u.anleitung!) expect(zeile, u.id).not.toMatch(/[–—]/);
+      expect(u.videoId, u.id).toMatch(/^[\w-]{11}$/);
     }
-    expect(KATALOG.uebungen.filter((u) => u.videoId).map((u) => u.id).sort()).toEqual([
-      'bss_kg', 'goblet_squat', 'kh_bankdruecken', 'kh_rdl', 'kh_rudern_einarmig', 'kh_schulterdruecken_stehend',
-      'klimmzug', 'kniebeuge', 'liegestuetz', 'plank',
-    ]);
+    expect(new Set(KATALOG.uebungen.map((u) => u.videoId)).size).toBe(KATALOG.uebungen.length);
   });
 
   it('lehnt eine doppelte Übungs-ID ab', () => {

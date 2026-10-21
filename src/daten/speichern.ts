@@ -110,10 +110,12 @@ export async function speichereNeueEinheit(einheit: Einheit, prognose: number, j
   });
 }
 
-// Speichert einen Tausch in der Vorschau; nur, solange die Einheit nicht gestartet ist.
+// Speichert einen Tausch oder eine Anpassung der Einheit (Vorschau, Heute oder im Training); nur,
+// solange die Einheit geplant ist bzw. läuft und sich ihr Status nicht geändert hat.
 export async function speichereTausch(einheit: Einheit, d: FitnessDb = db): Promise<boolean> {
   return d.transaction('rw', d.einheiten, async () => {
-    if ((await d.einheiten.get(einheit.id))?.status !== 'geplant' || einheit.status !== 'geplant') return false;
+    const status = (await d.einheiten.get(einheit.id))?.status;
+    if (status !== einheit.status || (status !== 'geplant' && status !== 'laufend')) return false;
     await d.einheiten.put(einheit);
     return true;
   });

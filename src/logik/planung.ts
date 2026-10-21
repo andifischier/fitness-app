@@ -2,20 +2,21 @@
 // aktuelle Zeit wird übergeben; der Zustand wird nur gelesen, nie verändert.
 import {
   BEWERTUNG, ERHOLUNGSWOCHE, EINHEIT, ERSATZ, FOKUS_GRUPPEN, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
-  KOMBI, TRAININGSPAUSE, WOCHENZIEL, ZEITBUDGET, ZIRKEL,
+  KOMBI, TRAININGSPAUSE, WOCHENZIEL, WORKOUT, ZEITBUDGET, ZIRKEL,
 } from '../konfiguration';
 import { isoWoche, plusTage, stundenZwischen, verbleibendeTage, wochenNummer, wochentag } from './datum';
 import {
   alleUebungen, bandStufen, hatAktiveSperre, hatUtensil, istGesperrt, lastraster, uebungErlaubt, uebungMoeglich,
 } from './equipment';
 import {
-  BAND_STUFEN, MUSKELN, MUSTER_IDS, type AppZustand, type BandStufe, type Block, type Einheit, type Einstellungen,
-  type Muskel, type MusterId, type Ort, type Position, type Uebung, type Zirkel,
+  BAND_STUFEN, MUSKELN, MUSTER_IDS, type AppZustand, type BandStufe, type Block, type EigenesWorkout, type Einheit,
+  type Einstellungen, type Muskel, type MusterId, type Ort, type Position, type Uebung, type Zirkel,
 } from './typen';
 import {
   einstellungenVon, faelligerMaxTest, fertigeEinheiten, istErholt, letzteEinheitZeit, seitRueckkehrTrainiert,
   sterneVon, trainingspause, uebungVon, wdhBei, zielReserve, type Pause,
 } from './verlauf';
+import { workoutAmOrt } from './workouts';
 
 export { einstellungenVon, erholungsfenster, istErholt } from './verlauf';
 
@@ -600,7 +601,7 @@ function vertragenSich(a: Uebung, b: Uebung): boolean {
   return !a.primaer.some((m) => alle(b).includes(m)) && !b.primaer.some((m) => alle(a).includes(m));
 }
 
-function geschaetzteDauer(z: AppZustand, einheit: Einheit): number {
+export function geschaetzteDauer(z: AppZustand, einheit: Einheit): number {
   const saetze = einheit.bloecke.reduce((s, b) => s + b.positionen.reduce((t, p) => t + p.saetze, 0), 0);
   const echte = echteSatzdauer(z, einheit.format);
   let sek = 0;
@@ -660,6 +661,37 @@ function zirkelEinheit(z: AppZustand, e: Einstellungen, ort: Ort, zirkel: Zirkel
   const minuten = Number.parseInt(/\d+/.exec(zirkel.dauerHinweis)?.[0] ?? '0', 10);
   const aufwaermen = aufwaermenFuer(z, ort, bloecke).filter((a) => a.uebungId === '');
   return { ...leereEinheit(eing, 'zirkel'), aufwaermen, bloecke, geschaetzteDauerMin: ZEITBUDGET.aufwaermenMin + minuten };
+}
+
+// ---------- Eigene Workouts (Entscheidung 21.10.2026) ----------
+
+// Einheit aus einem eigenen Workout. Übungen, die am Ort nicht gehen oder gesperrt sind, entfallen.
+// Übungsliste: Ziele und Lasten wie in jeder Einheit, Kombi oder Klassisch wie gewählt. Zirkel: je
+// Station die Vorgabe des Workouts, Runden und Stoppuhr wie bei den Katalog-Zirkeln.
+export function workoutEinheit(z: AppZustand, w: EigenesWorkout, eing: EinheitEingabe): Einheit {
+  const e = einstellungenVon(z);
+  const ort = z.orte.find((o) => o.id === eing.ortId);
+  if (!ort) return { ...leereEinheit(eing), name: w.name };
+  const c: Kontext = { z, e, ort, jetzt: eing.jetzt, pause: trainingspause(z, eing.jetzt) };
+  const eintraege = workoutAmOrt(z, w, ort.id, eing.jetzt).eintraege;
+  if (w.art === 'zirkel') {
+    const positionen = eintraege.map(({ eintrag, uebung }) =>
+      ({ ...neuePosition(c, { uebung, istErsatz: false }, w.runden), zielWdh: eintrag.vorgabe }));
+    const bloecke: Block[] = positionen.length > 0
+      ? [{ typ: 'zirkel', positionen, pauseSek: 0, zirkelId: w.id, runden: w.runden }]
+      : [];
+    const minuten = Math.round((w.runden * positionen.length * WORKOUT.stationSek) / 60);
+    const aufwaermen = aufwaermenFuer(z, ort, bloecke).filter((a) => a.uebungId === '');
+    return {
+      ...leereEinheit(eing, 'zirkel'), name: w.name, aufwaermen, bloecke,
+      geschaetzteDauerMin: positionen.length > 0 ? ZEITBUDGET.aufwaermenMin + minuten : 0,
+    };
+  }
+  const liste: Auswahl[] = eintraege.map(({ eintrag, uebung }) => ({ k: { uebung, istErsatz: false }, saetze: eintrag.saetze }));
+  const { bloecke, format } = bildeBloecke(c, liste, eing.klassisch === true);
+  const einheit: Einheit = { ...leereEinheit(eing, format), name: w.name, aufwaermen: aufwaermenFuer(z, ort, bloecke), bloecke };
+  einheit.geschaetzteDauerMin = geschaetzteDauer(z, einheit);
+  return einheit;
 }
 
 // Fälliger Zirkel bei Prognose ab 3: sobald die hoch priorisierten Muskeln 70 % ihres Ziels haben
@@ -757,8 +789,17 @@ export function alternativen(z: AppZustand, einheit: Einheit, block: number, pos
     .map((v) => ({ uebungId: v.id, ...startwerte(z, e, ort, v) }));
 }
 
+// Getauscht werden kann vor dem Start und im Training jede Übung, solange ihr erster Satz offen ist
+// (Entscheidung 21.10.2026); Max-Tests nur vor dem Start.
+export function kannTauschen(einheit: Einheit, block: number, position: number): boolean {
+  const p = einheit.bloecke[block]?.positionen[position];
+  if (!p) return false;
+  if (einheit.status === 'geplant') return true;
+  return einheit.status === 'laufend' && !p.istMaxTest && p.ergebnisse.length === 0 && p.feedback === undefined;
+}
+
 export function tausche(z: AppZustand, einheit: Einheit, block: number, position: number, uebungId: string): Einheit {
-  if (einheit.status !== 'geplant') throw new Error('Tauschen geht nur vor dem Start.');
+  if (!kannTauschen(einheit, block, position)) throw new Error('Tauschen geht nur vor dem ersten Satz der Übung.');
   if (!alternativen(z, einheit, block, position).some((a) => a.uebungId === uebungId)) {
     throw new Error(`Übung ${uebungId} ist hier keine Alternative.`);
   }
@@ -768,13 +809,15 @@ export function tausche(z: AppZustand, einheit: Einheit, block: number, position
   const ort = z.orte.find((o) => o.id === einheit.ortId)!;
   const u = uebungVon(z, uebungId)!;
   const urspruenglich = alt.getauschtVon ?? alt.uebungId;
+  // Im Zirkel bleibt die Vorgabe der Station.
+  const zirkel = neu.bloecke[block]!.typ === 'zirkel';
   const ersetzt: Position = {
-    uebungId, saetze: alt.saetze, ...startwerte(z, e, ort, u),
+    uebungId, saetze: alt.saetze, ...startwerte(z, e, ort, u), ...(zirkel ? { zielWdh: alt.zielWdh } : {}),
     ...(alt.istMaxTest ? { istMaxTest: true } : {}),
     ...(urspruenglich !== uebungId ? { getauschtVon: urspruenglich } : {}),
     ergebnisse: [],
   };
   neu.bloecke[block]!.positionen[position] = ersetzt;
-  if (neu.format !== 'zirkel') neu.aufwaermen = aufwaermenFuer(z, ort, neu.bloecke);
+  if (neu.format !== 'zirkel' && neu.status === 'geplant') neu.aufwaermen = aufwaermenFuer(z, ort, neu.bloecke);
   return neu;
 }

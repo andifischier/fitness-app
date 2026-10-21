@@ -17,7 +17,7 @@ Gebaut wird eine persönliche Trainings-App als Web-App (PWA), die einen adaptiv
 | Nutzer | Nur eine Person, kein Login, kein Store-Release |
 | Plattform | PWA, auf dem Handy installierbar, offline nutzbar |
 | Daten | Nur lokal auf dem Gerät, Backup als Export/Import-Datei; wöchentlicher Vorschlag mit Sichern in Drive per Teilen-Menü (Entscheidung 21.10.2026) |
-| Übungsvideos | Keine eigenen Videos, pro Übung ein YouTube-Link und eine Kurzanleitung; ausgewählte Übungen mit fest eingebettetem YouTube-Video (Entscheidung 21.10.2026) |
+| Übungsvideos | Keine eigenen Videos, pro Übung eine Kurzanleitung und ein fest eingebettetes YouTube-Video (alle Katalogübungen, Entscheidung 21.10.2026) |
 | Sprache | Deutsch |
 | Einheiten | kg |
 
@@ -155,7 +155,7 @@ interface Uebung {
   zirkelGeeignet: boolean;
   youtubeUrl: string;               // Standard: YouTube-Suche
   eigenerVideoLink?: string;        // vom Nutzer, hat Vorrang
-  videoId?: string;                 // festes YouTube-Video zum Einbetten (ausgewählte Katalogübungen)
+  videoId?: string;                 // festes YouTube-Video zum Einbetten (alle Katalogübungen)
   anleitung?: string[];             // Kurzanleitung in Stichpunkten (jede Katalogübung)
   herkunft: 'katalog'|'eigene';
 }
@@ -194,7 +194,11 @@ interface Einstellungen {
   letztesBackup?: string;
   videoLinks?: Record<string, string>; // eigene Video-Links für Katalogübungen (eigene Übungen: eigenerVideoLink)
   bewertungen?: Record<string, 1|2|3|4|5>; // Sterne je Übungs-ID, letzte Bewertung zählt; fehlt sie, gilt 3
+  workouts?: EigenesWorkout[];      // eigene Workouts (Entscheidung 21.10.2026)
 }
+// Übungsliste: je Übung Sätze; Zirkel: Runden und je Station eine Vorgabe (Wdh. bzw. Sek.)
+interface EigenesWorkout { id: string; name: string; art: 'liste'|'zirkel'; runden: number;
+  uebungen: { uebungId: string; saetze: number; vorgabe: number }[] }
 
 // Trainingszustand (wird nur vom Planungsmodul geschrieben)
 interface VarianteZustand { uebungId: string; last?: number; bandStufe?: BandStufe;
@@ -222,7 +226,8 @@ interface Einheit { id: string; woche: string; erstelltAm: string; gestartetAm?:
   ortId: string; fokus: 'ganz'|'oben'|'unten'; format: 'klassisch'|'supersatz'|'mix'|'zirkel'|'test';
   geschaetzteDauerMin: number;      // inklusive Bauch- und Wadensätze, kann über der Standarddauer liegen
   aufwaermen: { uebungId: string; vorgabe: string }[];
-  bloecke: Block[]; gesamtbewertung?: 1|2|3|4|5; notiz?: string }
+  bloecke: Block[]; gesamtbewertung?: 1|2|3|4|5; notiz?: string;
+  name?: string }                   // Name des eigenen Workouts, aus dem die Einheit erstellt wurde
 interface ZirkelErgebnis { zirkelId: string; ortId: string; datum: string; zeitSek: number; varianten: string[] }
 interface MaxTest { id: string; datum: string; muster: MusterId; uebungId: string; ergebnis: number; einheit: 'Wdh.'|'Sek.' }
 ```
@@ -340,7 +345,7 @@ Die Frage „Morgen wieder?“ ist der Schlüssel für Tage am Stück: Sie läss
 8. **Reihenfolge und Kombi-Runden:** Max-Test (falls fällig, immer einzeln), Grundübungen, Isolationsübungen, Bauch und Waden. Klassisch läuft jede Übung einzeln. Kombi (Standard) bildet aus dieser Liste der Reihe nach Runden aus 2 bis 3 Übungen (`KOMBI.maxUebungen`): Je Runde läuft ein Satz jeder Übung, danach die Supersatz-Pause. In eine Runde kommen nur Übungen, die sich nicht überschneiden: Ein Muskel, der in einer Übung Hauptmuskel ist, darf in keiner anderen Übung der Runde arbeiten. Bauch und Waden dürfen mit allem kombiniert werden, das diese Regel erfüllt. Bevorzugt kommen Übungen mit gleicher Satzzahl zusammen; die Rundengröße richtet sich nach den übrigen Übungen, damit möglichst keine allein bleibt (bei 4 übrigen Übungen 2 + 2). Format der Einheit: keine Runden = klassisch, alle Übungen in Runden = supersatz, sonst mix (Entscheidung 21.10.2026).
 9. **Zeit passt nicht:** Die App bietet vor dem Start „15 Min länger?“ nur an, wenn die Prognose 1 bis 2 ist, die Einstellung „Längere Einheiten anbieten“ an ist und nach vollem Budget noch Bedarf offen ist. Bleiben 3 oder mehr Sätze Budget frei, zeigt sie die kürzere Dauer an; einen Zirkel-Finisher bietet Version 1 nicht an (Entscheidung 21.10.2026).
 10. **Ruhetag empfohlen:** Hätte die erzeugte Einheit weniger als 6 Arbeitssätze, empfiehlt die App einen Ruhetag und bietet an: trotzdem trainieren, Zirkel oder Mobility (die Aufwärm-Mobility aller Muster, ca. 10 Min). Mobility wird nur angezeigt (Checkliste wie beim Aufwärmen), nicht als Einheit gespeichert und erscheint nicht im Verlauf. Ist kein Muskel erholt und bleibt die Einheit nach „trotzdem trainieren“ leer, zeigt die Vorschau „Heute ist noch kein Muskel erholt. Mach einen Zirkel oder Mobility, oder trainiere morgen.“ (Entscheidung 21.10.2026).
-11. **Fixieren:** Die Einheit wird gespeichert und ist bis zum Ende unveränderlich (Ausnahme: manueller Tausch vor dem Start innerhalb desselben Musters).
+11. **Fixieren:** Die Einheit wird gespeichert. Ausnahmen (Entscheidungen 21.10.2026): vor dem Start Tausch innerhalb desselben Musters und Anpassen (Sätze ändern, Übungen entfernen oder hinzufügen); im Training Tausch einer Übung, solange ihr erster Satz offen ist.
 
 ### Erholungsfenster pro Muskel
 
@@ -529,20 +534,29 @@ Die Stufen ab 8 Tagen sind vorsichtige Startwerte, die Studienlage zu längeren 
 
 ## Trainingsablauf und Screens
 
-Das Training läuft geführt Schritt für Schritt: eine Übung pro Bildschirm, Satz abhaken, der Pausentimer startet automatisch. Änderungen am Plan sind nur vor dem Start möglich.
+Das Training läuft geführt Schritt für Schritt: eine Übung pro Bildschirm, Satz abhaken, der Pausentimer startet automatisch. Anpassen geht vor dem Start; im Training lässt sich eine Übung nur tauschen, solange ihr erster Satz offen ist (Entscheidung 21.10.2026).
 
 ### Ablauf einer Einheit
 
-1. **Startbildschirm:** Bei der ersten Einheit der Woche, solange keine Tage gewählt sind, die Frage „An welchen Tagen trainierst du diese Woche?“ (vorausgefüllt, heute immer dabei). Danach vorausgefüllte Angaben, je mit einem Tipp änderbar: Ort, „Wie trainierst du heute?“ (Kombi oder Klassisch, vorbelegt Kombi), „Morgen wieder trainieren?“ und gegebenenfalls „15 Min länger?“. Erst dann wird die Einheit erzeugt und mit Format, geschätzter Dauer und Muskelgruppen angezeigt. Alternativ: unter „Einheit erstellen“ ein zweiter, schlichter Button „Stattdessen Zirkel“; er öffnet die Liste der 5 Zirkel mit Dauer und Bestzeit am gewählten Ort.
-2. **Vorschau:** Liste aller Übungen mit Sätzen, Zielwiederholungen und Last. Die Satzzahl umfasst alle Sätze inklusive Bauch und Waden. Pro Übung „Tauschen“: Die App zeigt nur Alternativen desselben Musters, die am Ort möglich sind, mit passender Zielvorgabe. Der Tausch wird gespeichert und fließt in den Verlauf des Musters ein. „Zurück“ behält die erstellte Einheit samt Tausch; Heute zeigt dann „Vorschau öffnen“ und „Neu erstellen“ (verwirft sie) (Entscheidung 21.10.2026).
+1. **Startbildschirm:** Bei der ersten Einheit der Woche, solange keine Tage gewählt sind, die Frage „An welchen Tagen trainierst du diese Woche?“ (vorausgefüllt, heute immer dabei). Danach vorausgefüllte Angaben, je mit einem Tipp änderbar: Ort, „Wie trainierst du heute?“ (Kombi oder Klassisch, vorbelegt Kombi), „Morgen wieder trainieren?“ und gegebenenfalls „15 Min länger?“. Erst dann wird die Einheit erzeugt und mit Format, geschätzter Dauer und Muskelgruppen angezeigt. Alternativ: unter „Einheit erstellen“ ein zweiter, schlichter Button „Stattdessen Zirkel“; er öffnet die Liste der 5 Zirkel mit Dauer und Bestzeit am gewählten Ort. Ein dritter, „Eigenes Workout“, öffnet die Liste der eigenen Workouts (siehe „Eigene Workouts“).
+2. **Vorschau:** Liste aller Übungen mit Sätzen, Zielwiederholungen und Last. Die Satzzahl umfasst alle Sätze inklusive Bauch und Waden. Pro Übung „Tauschen“: Die App zeigt nur Alternativen desselben Musters, die am Ort möglich sind, mit passender Zielvorgabe. Der Tausch wird gespeichert und fließt in den Verlauf des Musters ein. „Anpassen“ (nicht im Zirkel, Entscheidung 21.10.2026): Sätze je Übung ändern (1 bis 10), Übungen entfernen und „+ Übung hinzufügen“ (alle am Ort möglichen, nicht gesperrten oder ausgeschlossenen Übungen, die noch nicht in der Einheit sind; neu am Ende als einzelne Übung mit 3 Sätzen und Ziel und Last wie gewohnt). Bleibt in einer Kombi-Runde nur eine Übung, wird sie zur einzelnen Übung; Dauer und Aufwärmen passen sich an. Ob damit das Wochenziel erreicht wird, prüft die App nicht. „Zurück“ behält die erstellte Einheit samt Tausch und Anpassungen; Heute zeigt dann „Vorschau öffnen“, „Neu erstellen“ (verwirft sie) und die Übungen mit Tausch-Knopf (Entscheidungen 21.10.2026).
 3. **Aufwärmen (ca. 5 Min):** 2 Min allgemein (z. B. Hampelmann, Armkreisen), 2 Min Mobility für die Muster des Tages, 1 Aufwärmsatz der ersten Grundübung mit etwa 50 % Last bzw. leichterer Variante. Angezeigt als Checkliste auf einem Screen mit „Fertig“ und „Überspringen“.
 4. **Max-Test (falls geplant):** Eigener Bildschirm mit Zähler bzw. Stoppuhr.
-5. **Übungsbildschirme:** Name, „So geht's“ (aufklappbar: Kurzanleitung, eingebettetes Video falls vorhanden, Link zu YouTube), Satz x von y, Zielwiederholungen, Last, Feld für geschaffte Wiederholungen, Button „Satz erledigt“. Danach startet der Pausentimer (Ton und Vibration am Ende, Pause verlängern oder überspringen möglich). In Kombi-Runden wechselt der Bildschirm zwischen den Übungen der Runde in der Reihenfolge A1 Satz 1, A2 Satz 1, A3 Satz 1, Pause, A1 Satz 2 usw.; Pause nur nach der Runde, „Als Nächstes“ ist innerhalb der Runde immer die nächste Übung. Kennzeichnung „Kombi A · Übung 1 von 3“.
+5. **Übungsbildschirme:** Name, „So geht's“ (aufklappbar: Kurzanleitung, eingebettetes Video, Link zu YouTube), „Tauschen“ (nur solange der erste Satz der Übung offen ist, nicht beim Max-Test; gleiche Alternativen wie in der Vorschau, die neue Übung bekommt Ziel und Last wie gewohnt; im Zirkel bleibt die Vorgabe der Station; Entscheidung 21.10.2026), Satz x von y, Zielwiederholungen, Last, Feld für geschaffte Wiederholungen, Button „Satz erledigt“. Danach startet der Pausentimer (Ton und Vibration am Ende, Pause verlängern oder überspringen möglich). In Kombi-Runden wechselt der Bildschirm zwischen den Übungen der Runde in der Reihenfolge A1 Satz 1, A2 Satz 1, A3 Satz 1, Pause, A1 Satz 2 usw.; Pause nur nach der Runde, „Als Nächstes“ ist innerhalb der Runde immer die nächste Übung. Kennzeichnung „Kombi A · Übung 1 von 3“.
    **Ziel und Vorgabe:** Das Ziel ist eine einzelne Zahl (`zielWdh`) und gilt für den ersten Satz. Die UI zeigt „Ziel 10“, darunter klein „Bereich 8 bis 12“. Folgesätze zeigen „Vorgabe 9“ = geschaffte Wiederholungen des vorherigen Satzes. (Bereiche wie „8 bis 10“ als Ziel in den Mockups 3 bis 5 sind falsch.)
 6. **Übungsfeedback:** Nach dem letzten Satz (in einer Kombi-Runde nach der ganzen Runde): zu leicht / passend / zu schwer. Darunter der Folgetext nach dem Muster „Nächstes Mal: 16 kg, Ziel 11 im ersten Satz“ (ein „Ziel in allen Sätzen“ gibt es nicht).
 7. **Abschluss:** Gesamtbewertung 1 bis 5 (freiwillig, nichts vorausgewählt), optionale Notiz, Sterne 1 bis 5 je Übung (freiwillig), Zusammenfassung mit Dauer, Volumen und neuen Rekorden. Optional Abkühlen: zeigt die Mobility-Zeilen des Aufwärmens erneut, ca. 3 Min.
 
 **Zirkel-Modus:** Laufende Stoppuhr für das ganze Workout, Übungen nacheinander mit Tipp auf „weiter“, Rundenanzeige, am Ende Vergleich mit der Bestzeit an diesem Ort.
+
+### Eigene Workouts (Entscheidungen 21.10.2026)
+
+Im Tab Übungen unter „Meine Workouts“ legt der Nutzer eigene Workouts an, bearbeitet und löscht sie. Ein Workout hat einen Namen (eindeutig) und eine Art:
+
+- **Übungsliste:** Übungen in fester Reihenfolge, je Übung 1 bis 10 Sätze (Standard 3). Ziel und Last rechnet die App wie in jeder Einheit (Progression, Kalibrierung, erste Einheit nach einer Pause leichter). Beim Start gilt „Kombi oder Klassisch“ wie bei der Einheit der App; Kombi bildet die Runden nach denselben Regeln.
+- **Zirkel:** Stationen in fester Reihenfolge, 1 bis 10 Runden (Standard 3), je Station eine Vorgabe in Wdh. bzw. Sek. (Standard 10 Wdh. bzw. 30 Sek.). Ablauf, Stoppuhr und Bestzeit je Ort wie bei den 5 Zirkeln; geschätzte Dauer: Aufwärmen plus 40 Sek. je Station und Runde.
+
+Bearbeiten: Name, Art, Runden, Übung hinzufügen (Suche, alle nicht ausgeschlossenen Übungen), Reihenfolge ändern, entfernen und ersetzen. Beim Ersetzen stehen oben bis zu 5 Vorschläge derselben Art, die mit der ähnlichsten Stufe zuerst, darunter alle Übungen mit Suche. Ein Wechsel der Art behält Sätze und Vorgaben. Gestartet wird auf „Vor dem Start“ mit „Eigenes Workout“: Liste mit Name, Art, Zahl der Übungen, Hinweis „2 Übungen gehen hier nicht“ und bei Zirkeln der Bestzeit am gewählten Ort; dazu „+ Neues Workout“ und „Workouts bearbeiten“. Übungen, die am Ort nicht gehen oder gesperrt sind, entfallen; geht keine, lässt sich das Workout dort nicht starten. Eine Einheit aus einem Workout heißt wie das Workout (`Einheit.name`), zählt wie jede Einheit für Woche, Erholung, Progression und Verlauf und lässt sich in der Vorschau tauschen und anpassen. Ein Max-Test wird nicht eingeplant. Gelöschte Workouts bleiben im Verlauf mit ihrem Namen erhalten.
 
 **Unterbrechung:** Wird die App geschlossen, bleibt die Einheit gespeichert und lässt sich fortsetzen; es geht mit dem nächsten offenen Satz weiter, eine angefangene Pause entfällt. Das Kreuz oben bietet „Weiter trainieren“, „Später fortsetzen“ und „Training beenden“. Ein Abbruch speichert alle bis dahin erledigten Sätze (ein abgebrochener Zirkel zählt nur die erledigten Runden); ohne erledigten Satz bleibt die Einheit als erstellte Einheit bestehen.
 
@@ -572,14 +586,14 @@ Navigation unten mit 4 Tabs: Heute, Fortschritt (mit Unterreiter Verlauf), Übun
 | Screen | Inhalt | Besondere Zustände |
 | --- | --- | --- |
 | Heute | Nächste Einheit mit Ort und Dauer als Vorschau (`erstelleEinheit` mit den Vorschlägen aus `startfragen`, nur zur Anzeige, ohne zu speichern; nach den Startfragen wird neu erzeugt), Start-Button, darunter alle Übungen der Vorschau mit Sätzen, Ziel und Last („Voraussichtlich, mit den Standardangaben vor dem Start“); „Diese Woche“: „x von y Einheiten“, Trainingstage mit „ändern“ und Wochenausblick je Tag (aufklappbar mit allen Übungen); nächster Max-Test. Der Wochenfortschritt pro Muskel steht im Tab Fortschritt (Entscheidung 21.10.2026) | Noch keine Tage gewählt: Karte „An welchen Tagen trainierst du diese Woche?“ mit Vorschlag und „Übernehmen“ · Erster Start: Weiter zum Onboarding · Erholungswoche: Hinweisband · erstellte, noch nicht gestartete Einheit: „Vorschau öffnen“ und „Neu erstellen“ · Ruhetag empfohlen: Hinweis plus „trotzdem trainieren“, „Zirkel“, „Mobility“ (Mobility nur als Checkliste, ohne Speichern) · unterbrochene Einheit: „Fortsetzen“ statt Start |
-| Vor dem Start | Trainingstage (nur erste Einheit der Woche, solange keine gewählt sind; heute immer dabei), Ort, Kombi oder Klassisch (vorbelegt Kombi), „Morgen wieder?“, „15 Min länger?“ (nur bei Prognose 1 bis 2, Einstellung an und offenem Bedarf), Button „Einheit erstellen“, darunter schlicht „Stattdessen Zirkel“ | Alle Felder vorausgefüllt; Start mit einem Tipp möglich · Zirkel vorgeschlagen: „Doch Krafteinheit“ |
-| Vorschau | Blöcke mit Übungen, Sätzen (alle, inklusive Bauch und Waden), Zielen, Last, geschätzte Dauer; Tausch-Button pro Übung; Aufwärmen oben | Tausch-Blatt mit Alternativen desselben Musters · Ersatz-Markierung |
-| Satz | Übung, „So geht's“ (Kurzanleitung, Video, YouTube-Link), Satz x von y, „Ziel 10“ mit „Bereich 8 bis 12“ bzw. „Vorgabe 9“ ab Satz 2, Last, Zähler für geschaffte Wdh., „Letztes Mal“ (aus der letzten abgeschlossenen Position derselben Übung), Hinweis zur Reserve | Max-Test: Zähler ohne Ziel · Halteübung: Stoppuhr · Supersatz: Kennzeichnung A1/A2 |
+| Vor dem Start | Trainingstage (nur erste Einheit der Woche, solange keine gewählt sind; heute immer dabei), Ort, Kombi oder Klassisch (vorbelegt Kombi), „Morgen wieder?“, „15 Min länger?“ (nur bei Prognose 1 bis 2, Einstellung an und offenem Bedarf), Button „Einheit erstellen“, darunter schlicht „Stattdessen Zirkel“ und „Eigenes Workout“ | Alle Felder vorausgefüllt; Start mit einem Tipp möglich · Zirkel vorgeschlagen: „Doch Krafteinheit“ · Eigenes Workout: Liste der Workouts, „Doch Einheit der App“ |
+| Vorschau | Blöcke mit Übungen, Sätzen (alle, inklusive Bauch und Waden), Zielen, Last, geschätzte Dauer; Tausch-Button pro Übung; „Anpassen“ oben rechts; Aufwärmen oben | Tausch-Blatt mit Alternativen desselben Musters · Ersatz-Markierung · Anpassen: Sätze je Übung, Entfernen, „+ Übung hinzufügen“ (nicht im Zirkel) |
+| Satz | Übung, „So geht's“ (Kurzanleitung, Video, YouTube-Link), „Tauschen“ bis zum ersten Satz der Übung, Satz x von y, „Ziel 10“ mit „Bereich 8 bis 12“ bzw. „Vorgabe 9“ ab Satz 2, Last, Zähler für geschaffte Wdh., „Letztes Mal“ (aus der letzten abgeschlossenen Position derselben Übung), Hinweis zur Reserve | Max-Test: Zähler ohne Ziel · Halteübung: Stoppuhr · Supersatz: Kennzeichnung A1/A2 |
 | Pause | Timer-Ring, +30 Sek., Überspringen, „Als Nächstes“ (in einer Kombi-Runde die nächste Übung der Runde, Pause nur nach der Runde) | Ton und Vibration am Ende; Bildschirm bleibt an |
 | Übungsfeedback | 3 Buttons mit Definition (Halteübungen in Sekunden), geschaffte Wiederholungen, Vorschau der Folge („Nächstes Mal: 16 kg, Ziel 11 im ersten Satz“) | „Zu schwer“ vorausgewählt, wenn der erste Satz das Ziel verfehlt |
 | Abschluss | Dauer, Sätze, Rekorde, Gesamtanstrengung 1 bis 5 (nicht vorausgewählt), Sterne je Übung, Notiz, optional Abkühlen | Zirkel: Zeit und Bestzeit-Vergleich |
 | Fortschritt | Karte „Diese Woche“: Sätze pro Muskel, erledigt von Ziel (von Heute hierher verschoben, Entscheidung 21.10.2026); Max-Test-Verlauf pro Muster (Chips für alle getesteten Muster inklusive Plank in Sekunden), Sätze pro Woche für alle Muskeln untereinander, je die letzten 6 Wochen (Entscheidung 21.10.2026), mit Hinweis „zählt als Entlastung“ bei abgeschlossenen Wochen unter 60 % des üblichen Volumens oder Erholungswochen, eigene Karte Zirkel-Bestzeiten (Zirkel, Ort, Bestzeit, Datum; eine Zeile je Übungsauswahl, abweichende Übungen werden genannt, Entscheidung 21.10.2026); Unterreiter Verlauf mit allen Einheiten. Tipp auf eine Einheit zeigt Datum, Ort, Dauer, alle Übungen mit Sätzen, Last, Feedback, Gesamtanstrengung und Notiz | Leer: „Nach deiner ersten Einheit siehst du hier deinen Fortschritt.“ |
-| Übungen | Suche, Filter nach Muster und Ort, Favorit/Ausschluss, Sterne 1 bis 5, eigene Übung anlegen (ähnliche Übung als Vorlage, alle Angaben vorausgefüllt und änderbar; Kurzanleitung und festes Video der Vorlage werden nicht übernommen), Detail mit „So geht's“ (Kurzanleitung, Video), eigener Video-Link (ein YouTube-Link wird in der App abgespielt) | Eigene Übung lässt sich nur löschen, solange sie nie trainiert wurde (Entscheidung 20.10.2026) |
+| Übungen | Oben „Meine Workouts“ (Liste, „Neues Workout“, Editor; siehe „Eigene Workouts“), Suche, Filter nach Muster und Ort, Favorit/Ausschluss, Sterne 1 bis 5, eigene Übung anlegen (ähnliche Übung als Vorlage, alle Angaben vorausgefüllt und änderbar; Kurzanleitung und festes Video der Vorlage werden nicht übernommen), Detail mit „So geht's“ (Kurzanleitung, Video), eigener Video-Link (ein YouTube-Link wird in der App abgespielt) | Eigene Übung lässt sich nur löschen, solange sie nie trainiert wurde (Entscheidung 20.10.2026) |
 | Einstellungen | Orte und Equipment (Mockup 9, Regeln siehe Orte), Profil, Prioritäten, Dauer, Zirkel-Anteil, Pausen, Einschränkungen, Backup (Export/Import) | Ort ohne Pflichtangaben lässt sich nicht speichern · Ort lässt sich nur löschen, solange dort nie trainiert wurde (Entscheidung 20.10.2026) |
 
 Texte sind auf Deutsch, Du-Form, kurz. Zahlen mit deutschem Dezimalkomma (2,5 kg).
@@ -634,7 +648,17 @@ erstelleEinheit(z: AppZustand, e: { jetzt: string; ortId: string; prognose: numb
   klassisch?: boolean }): Einheit;        // Klassisch statt Kombi (Standard Kombi)
 alternativen(z: AppZustand, einheit: Einheit, block: number, position: number):
   { uebungId: string; zielWdh: number; last?: number; bandStufe?: BandStufe }[];
+kannTauschen(einheit: Einheit, block: number, position: number): boolean;  // geplant, oder laufend vor dem ersten Satz
 tausche(z: AppZustand, einheit: Einheit, block: number, position: number, uebungId: string): Einheit;
+workoutEinheit(z: AppZustand, w: EigenesWorkout, e: <wie erstelleEinheit>): Einheit;   // eigenes Workout
+
+// src/logik/anpassen.ts (erstellte Einheit vor dem Start, nicht im Zirkel)
+setzeSaetze(z, einheit, block, position, saetze): Einheit;
+entferneUebung(z, einheit, block, position): Einheit;
+hinzufuegbar(z, einheit): Uebung[];
+fuegeUebungHinzu(z, einheit, uebungId): Einheit;
+
+// src/logik/workouts.ts: Prüfen, Speichern in Einstellungen.workouts, Vorschläge zum Ersetzen, Übungen am Ort, Bestzeit
 
 // src/logik/progression.ts
 werteUebungAus(z: AppZustand, p: Position, jetzt: string, ortId: string): { variante: VarianteZustand; muster: MusterZustand };
@@ -661,7 +685,8 @@ importiere(datei: Blob): Promise<{ ok: true } | { ok: false; fehler: string }>;
 
 - [ ] Onboarding inkl. Testtag führt direkt zur ersten Einheit; die Wochenprognose (1 bis 6) wird bei der ersten Einheit jeder Woche abgefragt.
 - [ ] Ortswechsel vor dem Training tauscht alle Übungen innerhalb ihrer Muster, ohne die Progression zurückzusetzen.
-- [ ] Manueller Tausch einer Übung vor dem Start zeigt nur Alternativen desselben Musters.
+- [ ] Manueller Tausch einer Übung vor dem Start, auf Heute und im Training bis zum ersten Satz der Übung zeigt nur Alternativen desselben Musters.
+- [ ] Eigene Workouts (Übungsliste und Zirkel) lassen sich anlegen, bearbeiten, löschen und starten; die erstellte Einheit lässt sich vor dem Start anpassen.
 - [ ] Feedback pro Satz, Übung und Workout verändert die nächste Einheit gemäß den Regeln im Abschnitt Progression.
 - [ ] Kein Muskel wird vor Ablauf seines Erholungsfensters erneut belastet; Tage am Stück liefern dank Fokus-Einheiten trotzdem volle Einheiten.
 - [ ] Max-Tests erscheinen nur am Anfang einer Einheit und nach dem festgelegten Rhythmus.

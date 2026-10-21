@@ -95,6 +95,10 @@ export const einstellungenSchema = z.object({
   letztesBackup: z.string().optional(),
   videoLinks: z.record(z.string(), z.string()).optional(),
   bewertungen: z.record(z.string(), sterne).optional(),
+  workouts: z.array(z.object({
+    id: z.string().min(1), name: z.string().min(1), art: z.enum(['liste', 'zirkel']), runden: ganzzahl.positive(),
+    uebungen: z.array(z.object({ uebungId: z.string().min(1), saetze: ganzzahl.positive(), vorgabe: zahl.positive() })),
+  })).optional(),
 });
 
 export const varianteSchema = z.object({
@@ -151,6 +155,7 @@ export const einheitSchema = z.object({
   })),
   gesamtbewertung: sterne.optional(),
   notiz: z.string().optional(),
+  name: z.string().optional(),
 });
 
 export const zirkelErgebnisSchema = z.object({

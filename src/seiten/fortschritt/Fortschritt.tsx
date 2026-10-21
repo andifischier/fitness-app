@@ -13,6 +13,7 @@ import { isoWoche } from '../../logik/datum';
 import { startfragen, wochenziele } from '../../logik/planung';
 import { MUSKELN, type AppZustand, type Einheit } from '../../logik/typen';
 import { einheitZeit, uebungVon } from '../../logik/verlauf';
+import { zirkelName } from '../../logik/workouts';
 import { Chip, Hinweis, Karte, Laedt, Seite } from '../../ui/bausteine';
 import { Icon } from '../../ui/Icon';
 import {
@@ -101,7 +102,7 @@ function Uebersicht({ z, jetzt }: { z: AppZustand; jetzt: string }) {
               <li key={`${b.zirkelId}|${b.ortId}|${b.varianten.join()}`}
                 className="flex items-center justify-between gap-4 border-b border-linie py-3 first:pt-0 last:border-b-0 last:pb-0">
                 <span className="min-w-0">
-                  <span className="block text-basis font-semibold">{z.katalog.zirkel.find((x) => x.id === b.zirkelId)?.name ?? 'Zirkel'}</span>
+                  <span className="block text-basis font-semibold">{zirkelName(z, b.zirkelId) ?? 'Eigener Zirkel'}</span>
                   <span className="block text-hinweis text-gedaempft">
                     {z.orte.find((o) => o.id === b.ortId)?.name ?? 'Gelöschter Ort'} · {datumText(b.datum)}
                   </span>

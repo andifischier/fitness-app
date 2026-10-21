@@ -8,7 +8,7 @@ import { lokaleZeit } from '../../daten/zeit';
 import { PLAYER, PROGRESSION } from '../../konfiguration';
 import { lastraster } from '../../logik/equipment';
 import { zirkelBestzeit, zirkelVorgaben } from '../../logik/heute';
-import { mobilityZeilen } from '../../logik/planung';
+import { kannTauschen, mobilityZeilen, tausche } from '../../logik/planung';
 import {
   aktuellerSchritt, erledigteSaetze, letztesMal, offeneFeedbacks, pauseNach, positionVon, satzVorgabe, schritte,
   feedbackVorschlag, setzeFeedback, starte, trageSatzEin, uebungNummer, type SatzVorgabe, type Schritt, type Stelle,
@@ -17,6 +17,7 @@ import { vorschauNaechstesMal, type Rekord } from '../../logik/progression';
 import type { AppZustand, Einheit, Feedback, Sterne, Uebung } from '../../logik/typen';
 import { uebungVon } from '../../logik/verlauf';
 import { Checkliste, Hinweis, Knopf, Laedt, Sternwahl } from '../../ui/bausteine';
+import { TauschBlatt } from '../../ui/blaetter';
 import { Icon } from '../../ui/Icon';
 import { bereiteTonVor, pausenEnde, useBildschirmAn } from '../../ui/signal';
 import {
@@ -74,6 +75,7 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
     art: start.status === 'geplant' ? 'aufwaermen' : offeneFeedbacks(start).length > 0 ? 'feedback' : 'satz',
   });
   const [menue, setMenue] = useState(false);
+  const [tauschen, setTauschen] = useState(false);
   const [fehler, setFehler] = useState(false);
   const liste = useMemo(() => schritte(einheit), [einheit]);
   const index = aktuellerSchritt(einheit);
@@ -115,6 +117,20 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
     if (offeneFeedbacks(neu).length > 0) setPhase({ art: 'feedback', pause: zeit });
     else if (ende) onBeenden(neu);
     else setPhase(zeit ? { art: 'pause', ...zeit } : { art: 'satz' });
+  };
+
+  // Tauschen vor dem ersten Satz einer Übung (Entscheidung 21.10.2026); Ziel und Last der neuen Übung.
+  const getauscht = async (s: Schritt, uebungId: string) => {
+    setTauschen(false);
+    const neu = tausche(z, einheit, s.block, s.position, uebungId);
+    try {
+      if (!(await speichereLaufendeEinheit(neu))) throw new Error('nicht gespeichert');
+    } catch {
+      setFehler(true);
+      return;
+    }
+    setFehler(false);
+    setEinheit(neu);
   };
 
   const bewertet = async (stelle: Stelle, feedback: Feedback, pause?: Pausenzeit) => {
@@ -160,6 +176,8 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
 
   const anteil = erledigteSaetze(einheit) / Math.max(1, liste.length);
   const u = uebungVon(z, positionVon(einheit, schritt).uebungId);
+  const tauschbar = kannTauschen(einheit, schritt.block, schritt.position);
+  const onTauschen = tauschbar ? () => setTauschen(true) : undefined;
   const titel = zirkel
     ? `Runde ${schritt.satz} von ${einheit.bloecke[schritt.block]?.runden ?? 1}`
     : (() => { const n = uebungNummer(einheit, schritt); return `Übung ${n.nr} von ${n.von}`; })();
@@ -171,9 +189,14 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
           onAendern={(ende, dauer) => setPhase({ art: 'pause', ende, dauer })} onWeiter={() => setPhase({ art: 'satz' })} />
       )}
       {phase.art === 'satz' && u && (zirkel
-        ? <Station key={index} z={z} einheit={einheit} schritt={schritt} u={u} letzte={index === liste.length - 1}
-            onWeiter={() => void erledigt(positionVon(einheit, schritt).zielWdh)} />
-        : <Satz key={index} z={z} einheit={einheit} schritt={schritt} u={u} onErledigt={(w, l) => void erledigt(w, l)} />)}
+        ? <Station key={`${index}-${u.id}`} z={z} einheit={einheit} schritt={schritt} u={u} letzte={index === liste.length - 1}
+            onTauschen={onTauschen} onWeiter={() => void erledigt(positionVon(einheit, schritt).zielWdh)} />
+        : <Satz key={`${index}-${u.id}`} z={z} einheit={einheit} schritt={schritt} u={u} onTauschen={onTauschen}
+            onErledigt={(w, l) => void erledigt(w, l)} />)}
+      {tauschen && tauschbar && (
+        <TauschBlatt z={z} einheit={einheit} block={schritt.block} position={schritt.position}
+          onWahl={(id) => void getauscht(schritt, id)} onSchliessen={() => setTauschen(false)} />
+      )}
       {menue && (
         <Menue onFortsetzen={() => setMenue(false)} onSpaeter={() => navigate('/')}
           onBeenden={() => { setMenue(false); onBeenden(einheit); }} />
@@ -255,18 +278,24 @@ function kennzeichnung(einheit: Einheit, s: Schritt): string | undefined {
   return `Kombi ${buchstabe} · Übung ${s.position + 1} von ${b.positionen.length}`;
 }
 
-function Kopf({ z, u, label }: { z: AppZustand; u: Uebung; label?: string }) {
+// Name, „So geht's“ und, solange der erste Satz der Übung offen ist, „Tauschen“.
+function Kopf({ z, u, label, onTauschen }: { z: AppZustand; u: Uebung; label?: string; onTauschen?: () => void }) {
   return (
     <>
       {label && <p className="mt-6 text-hinweis font-bold tracking-wide text-akzent uppercase">{label}</p>}
       <h1 className={`${label ? 'mt-1' : 'mt-6'} text-titel leading-tight font-extrabold`}>{u.name}</h1>
       <Technik key={u.id} e={einstellungenAus(z)} u={u} />
+      {onTauschen && (
+        <button type="button" onClick={onTauschen} className="flex min-h-touch items-center gap-2 self-start text-gross font-semibold text-akzent">
+          <Icon name="tauschen" groesse={22} /> Tauschen
+        </button>
+      )}
     </>
   );
 }
 
-function Satz({ z, einheit, schritt, u, onErledigt }: {
-  z: AppZustand; einheit: Einheit; schritt: Schritt; u: Uebung; onErledigt: (wert: number, last?: number) => void;
+function Satz({ z, einheit, schritt, u, onTauschen, onErledigt }: {
+  z: AppZustand; einheit: Einheit; schritt: Schritt; u: Uebung; onTauschen?: () => void; onErledigt: (wert: number, last?: number) => void;
 }) {
   const p = positionVon(einheit, schritt);
   const v = satzVorgabe(z, einheit, schritt);
@@ -276,7 +305,7 @@ function Satz({ z, einheit, schritt, u, onErledigt }: {
   const letztes = letztesMal(z, u.id, einheit.id);
   return (
     <div className="flex flex-1 flex-col">
-      <Kopf z={z} u={u} label={kennzeichnung(einheit, schritt)} />
+      <Kopf z={z} u={u} label={kennzeichnung(einheit, schritt)} onTauschen={onTauschen} />
       {!p.istMaxTest && <Satzpunkte satz={schritt.satz} von={p.saetze} />}
       <Vorgabekarte u={u} v={v} last={last} raster={v.kalibrierung && ort ? lastraster(ort, u) : []} onLast={setLast} />
       {v.inSek
@@ -416,8 +445,8 @@ function Pause({ z, einheit, schritt, ende, dauer, onAendern, onWeiter }: {
 }
 
 // Zirkel-Station: Vorgabe aus dem Katalog, „Weiter“ ohne Pause; die Stoppuhr läuft im Kopf.
-function Station({ z, einheit, schritt, u, letzte, onWeiter }: {
-  z: AppZustand; einheit: Einheit; schritt: Schritt; u: Uebung; letzte: boolean; onWeiter: () => void;
+function Station({ z, einheit, schritt, u, letzte, onTauschen, onWeiter }: {
+  z: AppZustand; einheit: Einheit; schritt: Schritt; u: Uebung; letzte: boolean; onTauschen?: () => void; onWeiter: () => void;
 }) {
   const b = einheit.bloecke[schritt.block]!;
   const p = positionVon(einheit, schritt);
@@ -426,7 +455,7 @@ function Station({ z, einheit, schritt, u, letzte, onWeiter }: {
   const last = lastText(u, p);
   return (
     <div className="flex flex-1 flex-col">
-      <Kopf z={z} u={u} label={`Station ${schritt.position + 1} von ${b.positionen.length}`} />
+      <Kopf z={z} u={u} label={`Station ${schritt.position + 1} von ${b.positionen.length}`} onTauschen={onTauschen} />
       <section className="mt-5 rounded-karte border border-rand bg-flaeche p-5">
         <p className="text-basis text-gedaempft">Vorgabe</p>
         <p className="text-titel leading-tight font-extrabold">{text}</p>
