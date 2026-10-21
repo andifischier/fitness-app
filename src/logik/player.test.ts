@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  aktuellerSchritt, beende, erledigteSaetze, istKalibrierung, kalibriere, letztesMal, pauseNach, satzVorgabe,
-  schritte, starte, trageSatzEin, uebungNummer,
+  aktuellerSchritt, beende, erledigteSaetze, feedbackVorschlag, istKalibrierung, kalibriere, letztesMal, offeneFeedbacks, pauseNach,
+  satzVorgabe, schritte, setzeFeedback, starte, trageSatzEin, uebungNummer,
 } from './player';
 import { werteUebungAus } from './progression';
 import { zustand } from './testhilfe';
@@ -170,5 +170,52 @@ describe('Letztes Mal', () => {
     const mitAlt = { ...z, einheiten: [{ ...alt, status: 'abgeschlossen' as const }, MIX] };
     expect(letztesMal(mitAlt, 'kh_bankdruecken', MIX.id)).toEqual({ last: 16, bandStufe: undefined, werte: [9, 9, 8], inSek: false });
     expect(letztesMal(mitAlt, 'kh_curls', MIX.id)).toBeUndefined();
+  });
+});
+
+describe('Übungsfeedback', () => {
+  const erledige = (z: AppZustand, e: Einheit, bis: number) => schritte(e).slice(0, bis)
+    .reduce((x, s) => trageSatzEin(z, x, s, 10, '2026-10-20T18:10:00'), e);
+
+  it('fragt erst, wenn alle Sätze der Übung erledigt sind; nie beim Max-Test', () => {
+    const z = mitVarianten(zustand());
+    expect(offeneFeedbacks(erledige(z, MIX, 1))).toEqual([]);
+    // Supersatz: Rudern ist nach Runde 2 fertig, gefragt wird aber erst nach dem ganzen Paar.
+    expect(offeneFeedbacks(erledige(z, MIX, 5))).toEqual([]);
+    expect(offeneFeedbacks(erledige(z, MIX, 6))).toEqual([{ block: 1, position: 0 }, { block: 1, position: 1 }]);
+    expect(offeneFeedbacks(erledige(z, MIX, 8))).toEqual([{ block: 1, position: 0 }, { block: 1, position: 1 }, { block: 2, position: 0 }]);
+  });
+
+  it('speichert das Feedback in der Position; danach ist es erledigt', () => {
+    const z = mitVarianten(zustand());
+    let e = erledige(z, MIX, 6);
+    e = setzeFeedback(e, { block: 1, position: 0 }, 'leicht');
+    expect(e.bloecke[1]!.positionen[0]!.feedback).toBe('leicht');
+    expect(MIX.bloecke[1]!.positionen[0]!.feedback).toBeUndefined();
+    expect(offeneFeedbacks(e)).toEqual([{ block: 1, position: 1 }]);
+  });
+
+  it('schlägt „zu schwer“ vor, wenn der erste Satz das Ziel verfehlt; nach der Kalibrierung zählt Satz 2', () => {
+    const z = mitVarianten(zustand());
+    const s = { block: 2, position: 0 };
+    const mit = (wdh: number[]) => wdh.reduce((e, w, i) => trageSatzEin(z, e, { ...s, satz: i + 1 }, w, '2026-10-20T18:10:00'), MIX);
+    expect(feedbackVorschlag(z, mit([12, 9]), s)).toBe('passend');
+    expect(feedbackVorschlag(z, mit([11, 12]), s)).toBe('schwer');
+    // Neue Last-Variante: Satz 1 kalibriert, Satz 2 misst am berechneten Ziel.
+    const neu = zustand();
+    const curls = einheit([{ typ: 'einzeln', pauseSek: 60, positionen: [pos('kh_curls', 3, { last: 2, zielWdh: 10 })] }]);
+    let e = trageSatzEin(neu, curls, { block: 0, position: 0, satz: 1 }, 10, '2026-10-20T18:10:00', 8);
+    const ziel = e.bloecke[0]!.positionen[0]!.zielWdh;
+    e = trageSatzEin(neu, e, { block: 0, position: 0, satz: 2 }, ziel, '2026-10-20T18:12:00');
+    expect(feedbackVorschlag(neu, e, { block: 0, position: 0 })).toBe('passend');
+    e = trageSatzEin(neu, curls, { block: 0, position: 0, satz: 1 }, 10, '2026-10-20T18:10:00', 8);
+    e = trageSatzEin(neu, e, { block: 0, position: 0, satz: 2 }, ziel - 1, '2026-10-20T18:12:00');
+    expect(feedbackVorschlag(neu, e, { block: 0, position: 0 })).toBe('schwer');
+  });
+
+  it('fragt im Zirkel nicht', () => {
+    const z = zustand();
+    const zirkel = einheit([{ typ: 'zirkel', pauseSek: 0, runden: 1, zirkelId: 'z', positionen: [pos('kh_curls', 1)] }], { format: 'zirkel' });
+    expect(offeneFeedbacks(erledige(z, zirkel, 1))).toEqual([]);
   });
 });

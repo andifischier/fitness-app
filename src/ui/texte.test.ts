@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { KATALOG } from '../daten/katalog';
-import { abText, datumLang, lastTeile, lastText, muskelgruppenText, saetzeText, zeitText } from './texte';
+import { zustand } from '../logik/testhilfe';
+import type { Einheit } from '../logik/typen';
+import {
+  abText, datumLang, feedbackOptionen, lastTeile, lastText, muskelgruppenText, naechstesMalText, rekordZeile, saetzeText, zeitText,
+} from './texte';
 
 const u = (id: string) => KATALOG.uebungen.find((x) => x.id === id)!;
 
@@ -51,5 +55,39 @@ describe('Datum und Zahlen', () => {
 
   it('fasst Muskeln zu Gruppen zusammen', () => {
     expect(muskelgruppenText(['Bizeps', 'Quadrizeps', 'Brust', 'Ruecken', 'Waden'])).toBe('Brust, Rücken, Arme, Beine');
+  });
+});
+
+describe('Übungsfeedback und Abschluss', () => {
+  it('erklärt die Buttons bei Halteübungen in Sekunden', () => {
+    expect(feedbackOptionen(false).map((o) => o.text)[1]).toBe('1 bis 3 Wiederholungen wären noch gegangen');
+    expect(feedbackOptionen(true).map((o) => o.text)).toEqual([
+      'Mehr als 10 Sekunden wären noch gegangen', 'Bis 10 Sekunden wären noch gegangen', 'Ziel nicht geschafft oder Haltung brach ein',
+    ]);
+  });
+
+  it('beschreibt die nächste Einheit', () => {
+    const basis = { neueVariante: false, kalibrierung: false };
+    expect(naechstesMalText(u('kh_bankdruecken'), { ...basis, uebungId: 'kh_bankdruecken', zielWdh: 11, last: 16 }))
+      .toBe('Nächstes Mal: 16 kg je Hand, Ziel 11 im ersten Satz.');
+    expect(naechstesMalText(u('plank'), { ...basis, uebungId: 'plank', zielWdh: 45 })).toBe('Nächstes Mal: Ziel 45 Sek. im ersten Satz.');
+    expect(naechstesMalText(u('liegestuetz'), { ...basis, uebungId: 'liegestuetz', zielWdh: 8, langsam: true }))
+      .toBe('Nächstes Mal: Ziel 8 im ersten Satz. 3 Sek. absenken.');
+    expect(naechstesMalText(u('klimmzug'), { ...basis, uebungId: 'klimmzug', zielWdh: 5, neueVariante: true }))
+      .toBe(`Nächstes Mal: ${u('klimmzug').name}, Ziel 5 im ersten Satz.`);
+    expect(naechstesMalText(u('goblet_squat'), { ...basis, uebungId: 'goblet_squat', zielWdh: 8, neueVariante: true, kalibrierung: true }))
+      .toBe(`Nächstes Mal: ${u('goblet_squat').name}, das Gewicht wählst du im ersten Satz.`);
+  });
+
+  it('zeigt Rekorde mit dem besten Satz', () => {
+    const z = zustand();
+    const e = {
+      bloecke: [{ typ: 'einzeln', pauseSek: 90, positionen: [{ uebungId: 'kh_rudern_einarmig', saetze: 2, zielWdh: 10, last: 18,
+        ergebnisse: [{ nr: 1, wdh: 10, zeit: '' }, { nr: 2, wdh: 12, last: 16, zeit: '' }] }] }],
+    } as unknown as Einheit;
+    expect(rekordZeile(z, e, { art: 'kraft', uebungId: 'kh_rudern_einarmig', wert: 25, bisher: 24 }))
+      .toEqual({ name: u('kh_rudern_einarmig').name, wert: '18 kg × 10' });
+    expect(rekordZeile(z, e, { art: 'maxTest', uebungId: 'klimmzug', wert: 9, bisher: 8 }).wert).toBe('Max-Test 9 Wdh.');
+    expect(rekordZeile(z, e, { art: 'sekunden', uebungId: 'plank', wert: 50, bisher: 45 }).wert).toBe('50 Sek.');
   });
 });

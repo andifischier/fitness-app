@@ -225,3 +225,18 @@ export function Checkliste({ zeilen }: { zeilen: string[] }) {
 export function Laedt() {
   return <main className="mx-auto max-w-xl px-seite pt-12 text-gedaempft">Lädt …</main>;
 }
+
+// Bewertung mit 1 bis 5 Sternen; ohne Wert ist kein Stern gefüllt.
+export function Sternwahl({ wert, onChange, label }: { wert?: number; onChange: (sterne: 1 | 2 | 3 | 4 | 5) => void; label: string }) {
+  return (
+    <div role="radiogroup" aria-label={label} className="flex">
+      {([1, 2, 3, 4, 5] as const).map((n) => (
+        <button key={n} type="button" role="radio" aria-checked={wert === n} aria-label={n === 1 ? '1 Stern' : `${n} Sterne`}
+          onClick={() => onChange(n)}
+          className={`flex size-touch items-center justify-center ${wert !== undefined && n <= wert ? 'text-akzent' : 'text-rand'}`}>
+          <Icon name="stern" groesse={24} gefuellt={wert !== undefined && n <= wert} />
+        </button>
+      ))}
+    </div>
+  );
+}

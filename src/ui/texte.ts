@@ -1,5 +1,10 @@
 // Anzeigenamen für IDs aus Datenmodell und Konfiguration (Deutsch, kurz).
-import type { BandStufe, Einstellungen, MusterId, Muskel, Prioritaet, Uebung, Utensil } from '../logik/typen';
+import { PLAYER, PROGRESSION } from '../konfiguration';
+import type { NaechstesMal, Rekord } from '../logik/progression';
+import type {
+  AppZustand, BandStufe, Einheit, Einstellungen, Feedback, MusterId, Muskel, Prioritaet, Uebung, Utensil,
+} from '../logik/typen';
+import { uebungVon } from '../logik/verlauf';
 
 export const MUSKEL_NAMEN: Record<Muskel, string> = {
   Brust: 'Brust', Ruecken: 'Rücken', Schultern: 'Schultern', Bizeps: 'Bizeps', Trizeps: 'Trizeps',
@@ -150,4 +155,53 @@ const GRUPPEN: [string, Muskel[]][] = [
 export function muskelgruppenText(muskeln: Iterable<Muskel>): string {
   const alle = new Set(muskeln);
   return GRUPPEN.filter(([, ms]) => ms.some((m) => alle.has(m))).map(([name]) => name).join(', ');
+}
+
+// ---------- Übungsfeedback und Abschluss (Paket 8) ----------
+
+// Die drei Buttons mit Definition; Halteübungen in Sekunden (Entscheidung 21.10.2026).
+export function feedbackOptionen(inSek: boolean): { wert: Feedback; titel: string; text: string }[] {
+  const h = PLAYER.reserveHaltenSek.bis;
+  return inSek
+    ? [
+      { wert: 'leicht', titel: 'Zu leicht', text: `Mehr als ${h} Sekunden wären noch gegangen` },
+      { wert: 'passend', titel: 'Passend', text: `Bis ${h} Sekunden wären noch gegangen` },
+      { wert: 'schwer', titel: 'Zu schwer', text: 'Ziel nicht geschafft oder Haltung brach ein' },
+    ]
+    : [
+      { wert: 'leicht', titel: 'Zu leicht', text: '4 oder mehr Wiederholungen wären noch gegangen' },
+      { wert: 'passend', titel: 'Passend', text: '1 bis 3 Wiederholungen wären noch gegangen' },
+      { wert: 'schwer', titel: 'Zu schwer', text: 'Ziel nicht geschafft oder Technik brach ein' },
+    ];
+}
+
+// Folgetext unter dem Feedback: „Nächstes Mal: 16 kg je Hand, Ziel 11 im ersten Satz.“
+export function naechstesMalText(u: Uebung, n: NaechstesMal): string {
+  if (n.kalibrierung) return `Nächstes Mal: ${u.name}, das Gewicht wählst du im ersten Satz.`;
+  const ziel = `Ziel ${n.zielWdh}${u.bereich.einheit === 'Sek.' ? ' Sek.' : ''} im ersten Satz`;
+  const teile = [n.neueVariante ? u.name : undefined, lastText(u, n), ziel].filter(Boolean).join(', ');
+  return `Nächstes Mal: ${teile}.${n.langsam ? ` ${PROGRESSION.tempoAbsenkenSek} Sek. absenken.` : ''}`;
+}
+
+const kgZahl = (kg: number) => `${String(Math.round(kg * 100) / 100).replace('.', ',')} kg`;
+
+// Zeile eines Rekords im Abschluss: Name und Wert („18 kg × 10“, „12 Wdh.“, „Max-Test 25 Wdh.“, „11:40“).
+export function rekordZeile(z: AppZustand, einheit: Einheit, r: Rekord): { name: string; wert: string } {
+  if (r.art === 'zirkel') {
+    return { name: z.katalog.zirkel.find((x) => x.id === r.zirkelId)?.name ?? 'Zirkel', wert: zeitText(r.wert) };
+  }
+  const u = r.uebungId ? uebungVon(z, r.uebungId) : undefined;
+  const name = u?.name ?? r.uebungId ?? '';
+  const einheitText = u?.bereich.einheit ?? 'Wdh.';
+  if (r.art === 'maxTest') return { name, wert: `Max-Test ${r.wert} ${einheitText}` };
+  if (r.art === 'kraft') {
+    // Bester Satz: höchste Kraftschätzung (die Reserve ist für alle Sätze einer Übung gleich).
+    const p = einheit.bloecke.flatMap((b) => b.positionen).find((x) => x.uebungId === r.uebungId && !x.istMaxTest);
+    const saetze = (p?.ergebnisse ?? []).map((s) => ({ kg: s.last ?? p?.last, wdh: s.wdh ?? 0 }))
+      .filter((s): s is { kg: number; wdh: number } => s.kg !== undefined);
+    const bester = saetze.reduce<{ kg: number; wdh: number } | undefined>(
+      (b, s) => (!b || s.kg * (1 + s.wdh / PROGRESSION.e1rmTeiler) > b.kg * (1 + b.wdh / PROGRESSION.e1rmTeiler) ? s : b), undefined);
+    return { name, wert: bester ? `${kgZahl(bester.kg)} × ${bester.wdh}` : kgZahl(r.wert) };
+  }
+  return { name, wert: `${r.wert} ${r.art === 'sekunden' ? 'Sek.' : 'Wdh.'}` };
 }

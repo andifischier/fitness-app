@@ -1,12 +1,14 @@
 // Schreibzugriffe der Screens Einstellungen und Übungen. Jede Änderung läuft in einer Transaktion;
 // Löschen prüft dort noch einmal, dass der Eintrag nie genutzt wurde.
 import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
-import { ohneUebung, ortGenutzt, uebungGenutzt, utensilGenutzt } from '../logik/einstellungen';
+import { mitBewertungen, ohneUebung, ortGenutzt, uebungGenutzt, utensilGenutzt } from '../logik/einstellungen';
 import { wocheMitPrognose } from '../logik/heute';
 import { beende, erledigteSaetze, starte } from '../logik/player';
-import { offeneWochenabschluesse, schliesseEinheitAb, wochenabschluss } from '../logik/progression';
+import {
+  neueRekorde, offeneWochenabschluesse, schliesseEinheitAb, uebernimmBewertungen, wochenabschluss, type Rekord,
+} from '../logik/progression';
 import { schliesseTesttagAb } from '../logik/testtag';
-import type { Einheit, Einstellungen, Ort, Uebung, Utensil } from '../logik/typen';
+import type { Einheit, Einstellungen, Ort, Sterne, Uebung, Utensil } from '../logik/typen';
 import { db, EINSTELLUNGEN_SCHLUESSEL, ladeZustand, TABELLEN, type FitnessDb } from './db';
 
 export async function ladeEinstellungen(d: FitnessDb = db): Promise<Einstellungen> {
@@ -164,9 +166,11 @@ export async function speichereLaufendeEinheit(einheit: Einheit, d: FitnessDb = 
 }
 
 // Beendet die laufende Einheit: abgeschlossen, wenn alle Sätze erledigt sind, sonst abgebrochen mit
-// allen erledigten Sätzen. Danach schreibt `schliesseEinheitAb` Progression, Erholung und Woche fort.
-// Ohne einen erledigten Satz wird die Einheit wieder „geplant“ (es gibt nichts zu speichern).
-export async function beendeEinheit(einheit: Einheit, jetzt: string, d: FitnessDb = db): Promise<Einheit | undefined> {
+// allen erledigten Sätzen. Danach schreibt `schliesseEinheitAb` Progression, Erholung und Woche fort;
+// die neuen Rekorde werden vorher ermittelt. Ohne einen erledigten Satz wird die Einheit wieder
+// „geplant“ (es gibt nichts zu speichern).
+export async function beendeEinheit(einheit: Einheit, jetzt: string, d: FitnessDb = db):
+  Promise<{ einheit: Einheit; rekorde: Rekord[] } | undefined> {
   return d.transaction('rw', TABELLEN.map((t) => d.table(t)), async () => {
     if ((await d.einheiten.get(einheit.id))?.status !== 'laufend') return undefined;
     if (erledigteSaetze(einheit) === 0) {
@@ -175,8 +179,47 @@ export async function beendeEinheit(einheit: Einheit, jetzt: string, d: FitnessD
       await d.einheiten.put(geplant);
       return undefined;
     }
-    const neu = schliesseEinheitAb(await ladeZustand(d), beende(einheit, jetzt), jetzt);
+    const z = await ladeZustand(d);
+    const beendet = beende(einheit, jetzt);
+    const rekorde = neueRekorde(z, beendet);
+    const neu = schliesseEinheitAb(z, beendet, jetzt);
     for (const t of [...TRAININGSTABELLEN, 'zirkelErgebnisse'] as const) await d.table(t).bulkPut(neu[t]);
-    return neu.einheiten.find((x) => x.id === einheit.id);
+    return { einheit: neu.einheiten.find((x) => x.id === einheit.id)!, rekorde };
   });
+}
+
+// ---------- Abschluss und Bewertung der Übungen ----------
+
+// Speichert Gesamtanstrengung und Notiz einer beendeten Einheit sowie die Sterne je Übung. Eine
+// Bewertung mit 1 Stern ersetzt die Hauptvariante ab der nächsten Einheit (falls am Ort möglich).
+export async function speichereAbschluss(einheitId: string, angaben: {
+  gesamtbewertung?: Sterne; notiz?: string; bewertungen: Record<string, Sterne>;
+}, jetzt: string, d: FitnessDb = db): Promise<boolean> {
+  return d.transaction('rw', TABELLEN.map((t) => d.table(t)), async () => {
+    const alt = await d.einheiten.get(einheitId);
+    if (!alt || (alt.status !== 'abgeschlossen' && alt.status !== 'abgebrochen')) return false;
+    const einheit: Einheit = { ...alt };
+    delete einheit.gesamtbewertung;
+    delete einheit.notiz;
+    if (angaben.gesamtbewertung) einheit.gesamtbewertung = angaben.gesamtbewertung;
+    const notiz = angaben.notiz?.trim();
+    if (notiz) einheit.notiz = notiz;
+    await d.einheiten.put(einheit);
+    await bewerte(angaben.bewertungen, einheit.ortId, jetzt, d);
+    return true;
+  });
+}
+
+// Bewertung im Tab Übungen (undefined entfernt sie); der Ersatz bei 1 Stern gilt für den Standardort.
+export async function speichereBewertung(uebungId: string, sterne: Sterne | undefined, jetzt: string, d: FitnessDb = db): Promise<void> {
+  await d.transaction('rw', TABELLEN.map((t) => d.table(t)), async () => {
+    const ort = (await d.orte.toArray()).find((o) => o.standard);
+    await bewerte({ [uebungId]: sterne }, ort?.id ?? '', jetzt, d);
+  });
+}
+
+async function bewerte(bewertungen: Record<string, Sterne | undefined>, ortId: string, jetzt: string, d: FitnessDb): Promise<void> {
+  if (Object.keys(bewertungen).length === 0) return;
+  await d.einstellungen.put(mitBewertungen(await ladeEinstellungen(d), bewertungen), EINSTELLUNGEN_SCHLUESSEL);
+  await d.muster.bulkPut(uebernimmBewertungen(await ladeZustand(d), ortId, jetzt).muster);
 }

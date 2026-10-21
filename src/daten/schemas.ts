@@ -12,6 +12,7 @@ const musterId = z.enum(MUSTER_IDS);
 const muskel = z.enum(MUSKELN);
 const bandStufe = z.enum(BAND_STUFEN);
 const zahl = z.number().finite();
+const sterne = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]);
 const ganzzahl = z.number().int();
 const muskelWerte = <T extends z.ZodType>(wert: T) =>
   z.object(Object.fromEntries(MUSKELN.map((m) => [m, wert])) as Record<(typeof MUSKELN)[number], T>);
@@ -91,6 +92,7 @@ export const einstellungenSchema = z.object({
   onboardingAbgeschlossen: z.boolean(),
   letztesBackup: z.string().optional(),
   videoLinks: z.record(z.string(), z.string()).optional(),
+  bewertungen: z.record(z.string(), sterne).optional(),
 });
 
 export const varianteSchema = z.object({
@@ -144,7 +146,7 @@ export const einheitSchema = z.object({
     typ: z.enum(['einzeln', 'supersatz', 'zirkel']), positionen: z.array(positionSchema),
     pauseSek: zahl.nonnegative(), zirkelId: z.string().optional(), runden: ganzzahl.positive().optional(),
   })),
-  gesamtbewertung: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]).optional(),
+  gesamtbewertung: sterne.optional(),
   notiz: z.string().optional(),
 });
 

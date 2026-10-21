@@ -266,3 +266,17 @@ export const PLAYER = {
   ton: { frequenzHz: 880, dauerMs: 180, abstandMs: 120, anzahl: 3, lautstaerke: 0.3 },
   vibration: [200, 100, 200, 100, 400],
 } as const;
+
+// Bewertung der Übungen mit 1 bis 5 Sternen (Entscheidung 21.10.2026, „ausgewogen“)
+export const BEWERTUNG = {
+  neutral: 3,                       // ohne Bewertung
+  // Zu- und Abschlag in Schritt 6 der Übungswahl
+  zuschlag: { 1: 0, 2: -0.2, 3: 0, 4: 0.1, 5: 0.2 },
+  // 1 Stern: Ersatz der Hauptvariante mit höchstens 1 Stufe Abstand und mindestens 2 Sternen
+  ersatzMaxStufen: 1,
+  ersatzMinSterne: 2,
+  // Zyklusbeginn: ab 4 Sternen bleibt die Nebenübung; ein Tausch nur gegen mindestens 3 Sterne
+  // (bei einer Übung mit 1 oder 2 Sternen genügen 2)
+  bleibtAbSterne: 4,
+  tauschMinSterne: 3,
+} as const;

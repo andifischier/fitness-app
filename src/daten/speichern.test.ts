@@ -10,7 +10,8 @@ import { FitnessDb, ladeZustand } from './db';
 import {
   aendereEinstellungen, aenderePrognose, beendeEinheit, beendeOnboarding, fuehreWochenabschluesseAus, ladeEinstellungen, loescheEigeneUebung,
   loescheEigenesUtensil, loescheOrt, speichereEigeneUebung, speichereEigenesUtensil, speichereNeueEinheit, speichereOrt,
-  speichereLaufendeEinheit, speichereTausch, speichereTesttag, starteEinheit, verwerfeEinheit,
+  speichereAbschluss, speichereBewertung, speichereLaufendeEinheit, speichereTausch, speichereTesttag, starteEinheit,
+  verwerfeEinheit,
 } from './speichern';
 import { schritte, trageSatzEin } from '../logik/player';
 
@@ -196,7 +197,7 @@ describe('Trainings-Player speichern', () => {
       expect(await speichereLaufendeEinheit(e, d)).toBe(true);
     }
     expect((await d.einheiten.get('t'))?.bloecke[0]!.positionen[0]!.ergebnisse).toHaveLength(3);
-    const fertig = await beendeEinheit(e, '2026-10-20T18:40:00', d);
+    const fertig = (await beendeEinheit(e, '2026-10-20T18:40:00', d))?.einheit;
     expect(fertig).toMatchObject({ status: 'abgeschlossen', beendetAm: '2026-10-20T18:40:00' });
     const nachher = await ladeZustand(d);
     expect(nachher.wochen[0]).toMatchObject({ id: '2026-W43', einheiten: 1 });
@@ -213,7 +214,7 @@ describe('Trainings-Player speichern', () => {
     await starteEinheit('t', '2026-10-20T18:05:00', d);
     const e = trageSatzEin(await ladeZustand(d), (await d.einheiten.get('t'))!, { block: 0, position: 0, satz: 1 }, 9, '2026-10-20T18:10:00', 12);
     await speichereLaufendeEinheit(e, d);
-    const fertig = await beendeEinheit(e, '2026-10-20T18:15:00', d);
+    const fertig = (await beendeEinheit(e, '2026-10-20T18:15:00', d))?.einheit;
     expect(fertig?.status).toBe('abgebrochen');
     expect(fertig?.bloecke[0]!.positionen[0]!.ergebnisse).toHaveLength(1);
   });
@@ -227,5 +228,53 @@ describe('Trainings-Player speichern', () => {
     expect(e.status).toBe('geplant');
     expect(e.gestartetAm).toBeUndefined();
     expect(await d.wochen.count()).toBe(0);
+  });
+});
+
+describe('Abschluss und Bewertung', () => {
+  const beendet = (): Einheit => {
+    const e: Einheit = { ...einheit('zuhause', 'kh_bankdruecken'), id: 'a', gestartetAm: '2026-10-20T18:00:00', beendetAm: '2026-10-20T18:40:00' };
+    e.bloecke[0]!.positionen[0]!.ergebnisse = [{ nr: 1, wdh: 10, last: 16, zeit: '2026-10-20T18:10:00' }];
+    return e;
+  };
+
+  it('speichert Gesamtanstrengung, Notiz und Sterne; 1 Stern ersetzt die Hauptvariante', async () => {
+    const d = neueDb();
+    await speichereOrt(ort(), d);
+    await d.einheiten.add(beendet());
+    await d.muster.put({ muster: 'hDruck', stufe: 5, hauptvarianten: ['kh_bankdruecken', 'kh_bodendruecken'] });
+    expect(await speichereAbschluss('a', { gesamtbewertung: 4, notiz: '  Schulter ok ', bewertungen: { kh_bankdruecken: 1 } }, '2026-10-20T18:41:00', d)).toBe(true);
+    const e = (await d.einheiten.get('a'))!;
+    expect(e).toMatchObject({ gesamtbewertung: 4, notiz: 'Schulter ok' });
+    expect((await ladeEinstellungen(d)).bewertungen).toEqual({ kh_bankdruecken: 1 });
+    expect((await d.muster.get('hDruck'))?.hauptvarianten).toEqual(['kh_schraegbank', 'kh_bodendruecken']);
+  });
+
+  it('lässt Gesamtanstrengung und Notiz weg, wenn nichts angegeben ist', async () => {
+    const d = neueDb();
+    await d.einheiten.add(beendet());
+    await speichereAbschluss('a', { notiz: ' ', bewertungen: {} }, '2026-10-20T18:41:00', d);
+    const e = (await d.einheiten.get('a'))!;
+    expect('gesamtbewertung' in e || 'notiz' in e).toBe(false);
+    expect((await ladeEinstellungen(d)).bewertungen).toBeUndefined();
+  });
+
+  it('speichert nichts für eine noch nicht beendete Einheit', async () => {
+    const d = neueDb();
+    await d.einheiten.add({ ...beendet(), status: 'laufend' });
+    expect(await speichereAbschluss('a', { gesamtbewertung: 3, bewertungen: {} }, '2026-10-20T18:41:00', d)).toBe(false);
+  });
+
+  it('ändert die Bewertung im Tab Übungen und entfernt sie mit der eigenen Übung', async () => {
+    const d = neueDb();
+    await speichereOrt(ort(), d);
+    await speichereBewertung('kh_curls', 5, '2026-10-20T10:00:00', d);
+    await speichereBewertung('kh_curls', 2, '2026-10-20T10:00:00', d);
+    expect((await ladeEinstellungen(d)).bewertungen).toEqual({ kh_curls: 2 });
+    const eigene = fertigeUebung(await ladeZustand(d), { ...entwurfAusVorlage(KATALOG.uebungen[0]!), name: 'Test' });
+    await speichereEigeneUebung(eigene, d);
+    await speichereBewertung(eigene.id, 4, '2026-10-20T10:00:00', d);
+    expect(await loescheEigeneUebung(eigene.id, d)).toBe(true);
+    expect((await ladeEinstellungen(d)).bewertungen).toEqual({ kh_curls: 2 });
   });
 });
