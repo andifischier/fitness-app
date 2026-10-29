@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  aktuellerBlock, aktuellerSchritt, balkenAbschnitte, beende, blockwechselNach, erledigteSaetze, feedbackVorschlag, fortschrittshinweis, istKalibrierung, kalibriere, letztesMal, offeneFeedbacks, pauseNach,
+  aktuellerBlock, aktuellerSchritt, balkenAbschnitte, beende, bewerteAlle, letzterSatzAm, blockwechselNach, erledigteSaetze, feedbackVorschlag, fortschrittshinweis, istKalibrierung, kalibriere, letztesMal, offeneFeedbacks, pauseNach,
   korrigiereSatz, lastWaehlbar, messSatz, satzVorgabe, schritte, setzeFeedback, starte, trageSatzEin,
 } from './player';
 import { bereichFuer } from './planung';
@@ -177,6 +177,16 @@ describe('Fortsetzen nach Neustart', () => {
     expect(erledigteSaetze(fertig)).toBe(1);
   });
 
+  it('endet mit dem zuletzt erledigten Satz, nicht mit dem Speichern der Abschlussseite', () => {
+    const z = mitVarianten(zustand());
+    const [a, b, c] = schritte(MIX);
+    let e = trageSatzEin(z, MIX, a!, 7, '2026-10-20T18:10:00');
+    e = trageSatzEin(z, e, b!, 10, '2026-10-20T18:20:00');
+    e = trageSatzEin(z, e, c!, 10, '2026-10-20T18:19:00');
+    expect(letzterSatzAm(e)).toBe('2026-10-20T18:20:00');
+    expect(letzterSatzAm(MIX)).toBeUndefined();
+  });
+
   it('startet nach dem Aufwärmen und behält den ersten Startzeitpunkt', () => {
     const geplant = einheit([], { status: 'geplant', gestartetAm: undefined });
     const gestartet = starte(geplant, '2026-10-20T18:06:00');
@@ -279,6 +289,16 @@ describe('Übungsfeedback', () => {
     expect(offeneFeedbacks(erledige(z, MIX, 5))).toEqual([{ block: 1, position: 1 }]);
     expect(offeneFeedbacks(erledige(z, MIX, 6))).toEqual([{ block: 1, position: 0 }, { block: 1, position: 1 }]);
     expect(offeneFeedbacks(erledige(z, MIX, 8))).toEqual([{ block: 1, position: 0 }, { block: 1, position: 1 }, { block: 2, position: 0 }]);
+  });
+
+  it('bewertet alle Übungen auf einmal; bei „zu schwer“ mit dem Geschafften im ersten Satz', () => {
+    const z = mitVarianten(zustand());
+    const e = bewerteAlle(z, erledige(z, MIX, 8), [{ block: 1, position: 0 }, { block: 2, position: 0 }], ['passend', 'schwer'], [undefined, 7]);
+    expect(e.bloecke[1]!.positionen[0]!).toMatchObject({ feedback: 'passend' });
+    expect(e.bloecke[1]!.positionen[0]!.ergebnisse[0]!.wdh).toBe(10);
+    expect(e.bloecke[2]!.positionen[0]!).toMatchObject({ feedback: 'schwer' });
+    expect(e.bloecke[2]!.positionen[0]!.ergebnisse.map((r) => r.wdh)).toEqual([7, 10]);
+    expect(offeneFeedbacks(e)).toEqual([{ block: 1, position: 1 }]);
   });
 
   it('speichert das Feedback in der Position; danach ist es erledigt', () => {

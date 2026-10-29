@@ -289,6 +289,15 @@ export function setzeFeedback(einheit: Einheit, s: Stelle, feedback: Feedback): 
   return neu;
 }
 
+// Feedback aller Übungen der Abschlussseite auf einmal (Entscheidung 29.10.2026); bei „zu schwer“ mit dem
+// Geschafften im Messsatz (`messwerte`, undefined = unverändert).
+export function bewerteAlle(z: AppZustand, einheit: Einheit, stellen: Stelle[], feedbacks: Feedback[], messwerte: (number | undefined)[]): Einheit {
+  return stellen.reduce((e, s, i) => {
+    const wert = messwerte[i];
+    return setzeFeedback(wert === undefined ? e : korrigiereSatz(z, e, s, messSatz(z, e, s), wert), s, feedbacks[i]!);
+  }, einheit);
+}
+
 // Beginn des Trainings nach dem Aufwärmen; im Zirkel startet damit die Stoppuhr.
 export function starte(einheit: Einheit, jetzt: string): Einheit {
   return { ...einheit, status: 'laufend', gestartetAm: einheit.gestartetAm ?? jetzt };
@@ -299,6 +308,13 @@ export function starte(einheit: Einheit, jetzt: string): Einheit {
 export function beende(einheit: Einheit, jetzt: string): Einheit {
   const fertig = aktuellerSchritt(einheit) >= schritte(einheit).length;
   return { ...einheit, status: fertig ? 'abgeschlossen' : 'abgebrochen', beendetAm: jetzt };
+}
+
+// Zeitpunkt des zuletzt erledigten Satzes; damit endet das Training, auch wenn die Abschlussseite
+// länger offen bleibt (Entscheidung 29.10.2026: Bewertung und Abschluss auf einer Seite).
+export function letzterSatzAm(einheit: Einheit): string | undefined {
+  const zeiten = einheit.bloecke.flatMap((b) => b.positionen.flatMap((p) => p.ergebnisse.map((r) => r.zeit)));
+  return zeiten.reduce<string | undefined>((a, b) => (a === undefined || new Date(b) > new Date(a) ? b : a), undefined);
 }
 
 // ---------- Fortschritt im Training (Entscheidung 21.10.2026) ----------

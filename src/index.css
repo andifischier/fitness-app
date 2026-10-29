@@ -41,6 +41,13 @@
   --color-akzent: #0f766e;
   --color-akzent-hell: #e6f2f1;
   --color-linie: #eeefec;
+  /* Farben der Blöcke im Training, der Reihe nach (Entscheidung 29.10.2026); Block 1 = Akzent */
+  --color-block2: #4338ca;
+  --color-block2-hell: #ecebfb;
+  --color-block3: #b45309;
+  --color-block3-hell: #fbf0e4;
+  --color-block4: #be185d;
+  --color-block4-hell: #fbe9f1;
 
   --font-sans: 'Manrope', system-ui, sans-serif;
 
@@ -56,6 +63,8 @@
   --text-hinweis--line-height: 1.4;
   --text-klein: 12px;
   --text-klein--line-height: 1.4;
+  --text-uhr: 40px;
+  --text-uhr--line-height: 1;
   --text-zahl: 56px;
   --text-zahl--line-height: 1;
 
