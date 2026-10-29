@@ -33,6 +33,16 @@ describe('Zahlen mit Dezimalkomma', () => {
     expect(leseZahlen('0, 5')).toBeUndefined();
   });
 
+  it('liest Listen mit Dezimalpunkt oder ohne Leerzeichen', () => {
+    expect(leseZahlen('4.5,6.8,9.1,11.3,13.6,15.9,18.1,20.4,22.7,24.9'))
+      .toEqual([4.5, 6.8, 9.1, 11.3, 13.6, 15.9, 18.1, 20.4, 22.7, 24.9]);
+    expect(leseZahlen('4.5, 6.8; 9.1')).toEqual([4.5, 6.8, 9.1]);
+    expect(leseZahlen('8,12,16')).toEqual([8, 12, 16]);
+    expect(leseZahlen('12,5')).toEqual([12.5]);
+    expect(leseZahlen('4,5 6,8')).toEqual([4.5, 6.8]);
+    expect(leseZahlen('4.5.6')).toBeUndefined();
+  });
+
   it('schreibt Zahlen mit Dezimalkomma', () => {
     expect(zahlText(2.5)).toBe('2,5');
     expect(zahlText(24)).toBe('24');

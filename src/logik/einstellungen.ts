@@ -19,9 +19,12 @@ export function leseZahl(text: string): number | undefined {
 }
 
 // Liste wie „5, 10, 12,5, 20“: Ein Komma zwischen zwei Ziffern ist ein Dezimalkomma, sonst trennen
-// Komma, Semikolon oder Leerzeichen. Leer oder ungültig → undefined. Ergebnis aufsteigend, ohne Doppelte.
+// Komma, Semikolon oder Leerzeichen. Kommas sind nur Trenner, wenn ein Punkt vorkommt („4.5,6.8“) oder
+// mehrere Kommas ohne Leerzeichen stehen („8,12,16“). Leer oder ungültig → undefined. Ergebnis
+// aufsteigend, ohne Doppelte.
 export function leseZahlen(text: string): number[] | undefined {
-  const teile = text.replace(/(\d),(\d)/g, '$1.$2').split(/[;,\s]+/).filter((t) => t !== '');
+  const nurTrenner = text.includes('.') || (!/[;\s]/.test(text.trim()) && (text.match(/,/g)?.length ?? 0) > 1);
+  const teile = (nurTrenner ? text : text.replace(/(\d),(\d)/g, '$1.$2')).split(/[;,\s]+/).filter((t) => t !== '');
   if (teile.length === 0) return undefined;
   const zahlen = teile.map(leseZahl);
   if (zahlen.some((z) => z === undefined || z <= 0)) return undefined;
