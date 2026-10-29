@@ -74,7 +74,8 @@ export function OrteBearbeiten({ z, titel = 'Orte und Equipment', zurueck = '/ei
   const [auswahl, setAuswahl] = useState<string>(startOrt?.id ?? NEU);
   const [entwurf, setEntwurf] = useState<Ort>(startOrt ?? neuerOrt(z, 'Zuhause'));
   const [geaendert, setGeaendert] = useState(false);
-  const [details, setDetails] = useState<string>();
+  // Offene Detailfenster; mehrere gleichzeitig, z. B. Kurzhanteln und Band.
+  const [details, setDetails] = useState<string[]>([]);
   const [versuch, setVersuch] = useState(false);
   const [meldung, setMeldung] = useState<string>();
   const [version, setVersion] = useState(0);         // setzt Eingabefelder beim Ortswechsel zurück
@@ -95,22 +96,23 @@ export function OrteBearbeiten({ z, titel = 'Orte und Equipment', zurueck = '/ei
     setAuswahl(id);
     setEntwurf(o);
     setGeaendert(false);
-    setDetails(undefined);
+    setDetails([]);
     setVersuch(false);
     setMeldung(undefined);
     setVersion((v) => v + 1);
   };
+  const zeigeDetailsVon = (id: string, offen: boolean) =>
+    setDetails((d) => (offen ? (d.includes(id) ? d : [...d, id]) : d.filter((x) => x !== id)));
   const umschalten = (u: Utensil | typeof BANKZEILE) => {
     if (u === BANKZEILE) {
       const an = hantelbank(entwurf) !== 'keine';
       aendere(mitHantelbank(entwurf, an ? 'keine' : 'flach'));
-      setDetails(an ? undefined : BANKZEILE);
+      zeigeDetailsVon(BANKZEILE, !an);
       return;
     }
     const an = !!equipmentVon(entwurf, u.id);
     aendere(mitUtensil(entwurf, u.id, !an));
-    if (!an && hatDetails(u.id)) setDetails(u.id);
-    if (an && details === u.id) setDetails(undefined);
+    zeigeDetailsVon(u.id, !an && hatDetails(u.id));
   };
   const speichern = async () => {
     if (weiter && !geaendert && gespeichert) { weiter(); return; }
@@ -133,7 +135,7 @@ export function OrteBearbeiten({ z, titel = 'Orte und Equipment', zurueck = '/ei
       setGeaendert(false);
       setAuswahl(naechster?.id ?? NEU);
       setEntwurf(naechster ?? neuerOrt({ ...z, orte: [] }, ''));
-      setDetails(undefined);
+      setDetails([]);
       setVersion((v) => v + 1);
     }
   };
@@ -149,8 +151,8 @@ export function OrteBearbeiten({ z, titel = 'Orte und Equipment', zurueck = '/ei
   };
 
   const ortChips = [...z.orte].sort((a, b) => Number(b.standard) - Number(a.standard));
-  const detailUtensil = details && details !== BANKZEILE ? z.katalog.utensilien.find((u) => u.id === details) : undefined;
-  const detailEquipment = details ? equipmentVon(entwurf, details) : undefined;
+  // Detailfenster in der Reihenfolge der Liste, nicht des Anklickens.
+  const detailUtensilien = z.katalog.utensilien.filter((u) => details.includes(u.id) && equipmentVon(entwurf, u.id));
 
   return (
     <Seite titel={titel} zurueck={zurueck}>
@@ -205,7 +207,7 @@ export function OrteBearbeiten({ z, titel = 'Orte und Equipment', zurueck = '/ei
                   </span>
                 </button>
                 {zeigeDetails && (
-                  <Knopf art="schlicht" onClick={() => setDetails(details === id ? undefined : id)}>Details</Knopf>
+                  <Knopf art="schlicht" onClick={() => zeigeDetailsVon(id, !details.includes(id))}>Details</Knopf>
                 )}
                 {loeschbar && (
                   <Knopf art="schlicht" onClick={() => void loescheEigenesUtensil(u.id)}>Löschen</Knopf>
@@ -216,18 +218,18 @@ export function OrteBearbeiten({ z, titel = 'Orte und Equipment', zurueck = '/ei
         </ul>
       </section>
 
-      {details === BANKZEILE && hantelbank(entwurf) !== 'keine' && (
+      {details.includes(BANKZEILE) && hantelbank(entwurf) !== 'keine' && (
         <Karte titel="Hantelbank, Details" hinweis="Eine verstellbare Bank kann auch flach genutzt werden.">
           <Auswahl spalten={2} wert={hantelbank(entwurf)} onChange={(w) => aendere(mitHantelbank(entwurf, w))}
             optionen={[{ wert: 'flach', text: 'Flach' }, { wert: 'verstellbar', text: 'Verstellbar' }]} />
         </Karte>
       )}
-      {detailUtensil && detailEquipment && (
-        <Karte titel={`${utensilName(detailUtensil)}, Details`}>
-          <Details key={`${version}-${detailUtensil.id}`} e={detailEquipment}
-            onChange={(teil) => aendere(mitDetails(entwurf, detailUtensil.id, teil))} />
+      {detailUtensilien.map((u) => (
+        <Karte key={`${version}-${u.id}`} titel={`${utensilName(u)}, Details`}>
+          <Details e={equipmentVon(entwurf, u.id)!}
+            onChange={(teil) => aendere(mitDetails(entwurf, u.id, teil))} />
         </Karte>
-      )}
+      ))}
 
       <div className="flex flex-wrap items-center justify-between gap-x-3">
         <Hinweis>{anzahl === 1 ? '1 Übung' : `${anzahl} Übungen`} an diesem Ort möglich</Hinweis>
