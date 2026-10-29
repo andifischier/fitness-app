@@ -311,3 +311,14 @@
     fertigen Übungen ab, „Weiter trainieren“ führt zurück.
   - Countdown und Stoppuhr mit 5 Sek. Vorlauf „Bereit machen“ und Ton zum Start (`PLAYER.vorlaufSek`).
 - **Warum:** Wunsch des Nutzers, klarer durchs Training geführt zu werden (Entscheidungen 29.10.2026).
+
+## 29.10.2026: Eine Abschlussseite, große Trainingszeit, Farbe je Block
+- **Was:**
+  - Übungsfeedback und Abschluss sind eine Seite: Zusammenfassung, „Wie waren die Übungen?“,
+    Gesamtanstrengung, Notiz, Abkühlen und ein „Speichern“; danach Heute. Neu in `logik/player.ts`:
+    `bewerteAlle` und `letzterSatzAm` (Ende der Einheit = letzter Satz), mit Tests.
+  - Die Trainingszeit steht groß und mittig unter der Kopfzeile.
+  - Jeder Block hat eine eigene Farbe (Akzent, Blau, Orange, Pink) für Kennzeichnung, Balken,
+    Satzpunkte, Zielkarte, Pausenring, „Als Nächstes“ und den Blockwechsel; auf der Abschlussseite
+    ein Farbstreifen je Übung.
+- **Warum:** Wunsch des Nutzers (Entscheidungen 29.10.2026).
