@@ -38,7 +38,19 @@ export function ProfilSeite() {
       <Karte titel="Ziel-Reserve" hinweis="So viele Wiederholungen sollten am Ende eines Satzes noch gehen.">
         <Auswahl optionen={optionen(RESERVE_NAMEN)} wert={e.zielReserve} onChange={(zielReserve) => void setze({ zielReserve })} />
       </Karte>
+      <PlatzKarte e={e} />
     </Seite>
+  );
+}
+
+// Platz zum Gehen (Entscheidung 29.10.2026, Standard aus); auch im Onboarding genutzt.
+export function PlatzKarte({ e }: { e: Einstellungen }) {
+  return (
+    <Karte>
+      <Schalter titel="Platz zum Gehen" an={e.platzZumGehen === true}
+        hinweis="Etwa 10 Schritte am Stück, z. B. für Ausfallschritte gehend. Ohne Platz plant die App solche Übungen nicht ein."
+        onChange={(an) => void setze({ platzZumGehen: an })} />
+    </Karte>
   );
 }
 

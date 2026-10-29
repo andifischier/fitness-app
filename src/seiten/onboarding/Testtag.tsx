@@ -1,4 +1,4 @@
-// Testtag als Vollbild: Aufwärmen als Ablaufliste, dann je Test ein Bildschirm mit Zähler bzw.
+// Testtag als Vollbild: Aufwärmen Schritt für Schritt, dann je Test ein Bildschirm mit Zähler bzw.
 // Stoppuhr (Mockup 4). Beim Klimmzug mit 0 Wdh. folgen die Sekunden im Hängen. Danach die
 // Gewichtstests: Gewicht wählen, so viele saubere Wiederholungen wie möglich. Am Ende zeigt ein
 // Ergebnisbildschirm Startübung und Startziel je Test (Entscheidungen 21.10.2026).
@@ -11,7 +11,8 @@ import { bereichFuer, lastAnzeige } from '../../logik/planung';
 import { lasttestErgebnisse, testtagEinheit, testtagErgebnisse, type TestErgebnis } from '../../logik/testtag';
 import type { AppZustand, Einheit, Einstellungen, Position, SatzErgebnis, Uebung } from '../../logik/typen';
 import { uebungVon } from '../../logik/verlauf';
-import { Ablaufliste, Hinweis, Knopf, Laedt } from '../../ui/bausteine';
+import { AufwaermSchritte } from '../../ui/aufwaermen';
+import { Hinweis, Knopf, Laedt } from '../../ui/bausteine';
 import { Icon } from '../../ui/Icon';
 import { Technik } from '../../ui/technik';
 import { lastTeile } from '../../ui/texte';
@@ -37,6 +38,7 @@ type Ergebnis = Omit<SatzErgebnis, 'nr' | 'zeit'>;
 function Ablauf({ z, start }: { z: AppZustand; start: Einheit }) {
   const navigate = useNavigate();
   const [schritt, setSchritt] = useState(-1);          // −1 = Aufwärmen
+  const [aufwaermNr, setAufwaermNr] = useState(0);
   const [gestartetAm] = useState(lokaleZeit);
   const [ergebnisse, setErgebnisse] = useState<Ergebnis[]>([]);
   const [fehler, setFehler] = useState(false);
@@ -84,7 +86,10 @@ function Ablauf({ z, start }: { z: AppZustand; start: Einheit }) {
         <div className="h-1 rounded-full bg-akzent" style={{ width: `${((schritt + 1) / (positionen.length + 1)) * 100}%` }} />
       </div>
       {fehler && <p role="alert" className="mt-4 font-semibold">Speichern hat nicht geklappt. Bitte versuche es noch einmal.</p>}
-      {schritt < 0 && <Aufwaermen zeilen={start.aufwaermen} weiter={() => setSchritt(0)} />}
+      {schritt < 0 && (
+        <AufwaermSchritte key={aufwaermNr} zeilen={start.aufwaermen} nr={aufwaermNr} onNr={setAufwaermNr}
+          onFertig={() => setSchritt(0)} hinweisEnde="Danach geht es mit den Tests los." />
+      )}
       {p && u && !p.istLasttest && (
         <Test key={schritt} u={u} e={einstellungenAus(z)}
           inSek={u.bereich.einheit === 'Sek.'} mitHaengen={u.muster === 'vZug'} onErledigt={erledigt} />
@@ -93,20 +98,6 @@ function Ablauf({ z, start }: { z: AppZustand; start: Einheit }) {
         <Lasttest key={schritt} z={z} ortId={start.ortId} p={p} u={u} onErledigt={erledigt} />
       )}
     </main>
-  );
-}
-
-function Aufwaermen({ zeilen, weiter }: { zeilen: Einheit['aufwaermen']; weiter: () => void }) {
-  return (
-    <div className="mt-8 flex flex-1 flex-col">
-      <h1 className="text-titel font-extrabold">Aufwärmen</h1>
-      <Hinweis>Etwa 5 Minuten. Danach geht es mit den Tests los.</Hinweis>
-      <div className="mt-6"><Ablaufliste zeilen={zeilen.map((z) => z.vorgabe)} /></div>
-      <div className="mt-auto flex flex-col gap-3 pt-8">
-        <Knopf onClick={weiter}>Fertig</Knopf>
-        <Knopf art="sekundaer" onClick={weiter}>Überspringen</Knopf>
-      </div>
-    </div>
   );
 }
 

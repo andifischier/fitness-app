@@ -2,7 +2,7 @@
 // Vorgabe je Station. Rein und deterministisch; gespeichert werden sie in `Einstellungen.workouts`.
 import { WORKOUT } from '../konfiguration';
 import { neueId } from './einstellungen';
-import { alleUebungen, istGesperrt, uebungMoeglich } from './equipment';
+import { alleUebungen, istGesperrt, platzReicht, uebungMoeglich } from './equipment';
 import type { AppZustand, EigenesWorkout, Einstellungen, Uebung } from './typen';
 import { einstellungenVon, uebungVon } from './verlauf';
 
@@ -92,7 +92,7 @@ export function ohneWorkout(e: Einstellungen, id: string): Einstellungen {
   return neu;
 }
 
-// Einträge, die am Ort gehen (Equipment vorhanden, nicht gesperrt), und die Übungen, die fehlen.
+// Einträge, die am Ort gehen (Equipment vorhanden, Platz reicht, nicht gesperrt), und die Übungen, die fehlen.
 export function workoutAmOrt(z: AppZustand, w: EigenesWorkout, ortId: string, jetzt: string):
   { eintraege: { eintrag: WorkoutEintrag; uebung: Uebung }[]; fehlen: Uebung[] } {
   const e = einstellungenVon(z);
@@ -102,7 +102,7 @@ export function workoutAmOrt(z: AppZustand, w: EigenesWorkout, ortId: string, je
   for (const eintrag of w.uebungen) {
     const uebung = uebungVon(z, eintrag.uebungId);
     if (!uebung) continue;
-    if (ort && uebungMoeglich(ort, uebung) && !istGesperrt(e, uebung, jetzt)) eintraege.push({ eintrag, uebung });
+    if (ort && uebungMoeglich(ort, uebung) && platzReicht(e, uebung) && !istGesperrt(e, uebung, jetzt)) eintraege.push({ eintrag, uebung });
     else fehlen.push(uebung);
   }
   return { eintraege, fehlen };

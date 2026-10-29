@@ -35,6 +35,7 @@ export interface Uebung {
   eigenerVideoLink?: string;        // vom Nutzer, hat Vorrang
   videoId?: string;                 // festes YouTube-Video zum Einbetten (nur ausgewählte Katalogübungen)
   anleitung?: string[];             // Kurzanleitung in Stichpunkten (alle Katalogübungen)
+  brauchtPlatz?: boolean;           // braucht Platz zum Gehen (z. B. Ausfallschritt gehend)
   herkunft: 'katalog' | 'eigene';
 }
 export interface Zirkel {
@@ -76,6 +77,7 @@ export interface Einstellungen {
   favoriten: string[]; ausgeschlossen: string[];
   einschraenkungen: { id: string; typ: 'region' | 'muster'; wert: string; bis?: string }[];
   onboardingAbgeschlossen: boolean;
+  platzZumGehen?: boolean;          // fehlt: kein Platz (Entscheidung 29.10.2026)
   letztesBackup?: string;
   videoLinks?: Record<string, string>; // eigene Video-Links für Katalogübungen (eigene Übungen: eigenerVideoLink)
   bewertungen?: Record<string, Sterne>; // Sterne je Übungs-ID, letzte Bewertung zählt; fehlt sie, gilt 3

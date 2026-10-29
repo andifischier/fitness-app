@@ -358,3 +358,13 @@
   „4.5,6.8,9.1“ oder „8,12,16“ an. Deutsche Eingaben wie „5, 10, 12,5, 20“ gelten weiter.
 - **Warum:** Fehler gemeldet vom Nutzer: Eine Liste mit Dezimalpunkten wurde als eine ungültige Zahl
   gelesen, die App verlangte trotzdem Gewichte.
+
+## 29.10.2026: Aufwärmen Schritt für Schritt, Platz zum Gehen
+- **Was:** Das Aufwärmen vor dem Training und vor dem Testtag läuft jetzt wie die Übungen: je Übung ein
+  Bildschirm mit Ziel, „Weiter“ bzw. am Ende „Fertig“ und „Aufwärmen überspringen“; Dehnungen mit
+  Countdown. Aufwärmvorgaben ohne Halten sind Wiederholungen (50 Hampelmann, 10 Armkreisen je Richtung).
+  Neu im Profil und im Onboarding (Schritt 1): Schalter „Platz zum Gehen“, Standard aus; ohne Platz plant
+  die App den Kurzhantel-Ausfallschritt gehend nicht ein. Neu: `logik/aufwaermen.ts`, `ui/aufwaermen.tsx`,
+  `platzReicht` (`equipment.ts`), Katalogfeld `brauchtPlatz`; Tests in `aufwaermen.test.ts` und
+  `equipment.test.ts`.
+- **Warum:** Rückmeldungen des Nutzers nach dem Testen (Entscheidungen 29.10.2026).
