@@ -48,19 +48,26 @@ export function pausenEnde(): void {
   } catch {
     // Vibration nicht verfügbar
   }
+  const { dauerMs, abstandMs, anzahl } = PLAYER.ton;
+  for (let i = 0; i < anzahl; i++) ton((i * (dauerMs + abstandMs)) / 1000, dauerMs);
+}
+
+// Ein Ton am Ende des Vorlaufs: Jetzt geht die Zeit los.
+export function vorlaufEnde(): void {
+  ton(0, PLAYER.startTonMs);
+}
+
+function ton(nachSek: number, dauerMs: number): void {
   if (!audio) return;
-  const { frequenzHz, dauerMs, abstandMs, anzahl, lautstaerke } = PLAYER.ton;
-  const start = audio.currentTime;
-  for (let i = 0; i < anzahl; i++) {
-    const beginn = start + (i * (dauerMs + abstandMs)) / 1000;
-    const ende = beginn + dauerMs / 1000;
-    const ton = audio.createOscillator();
-    const laut = audio.createGain();
-    ton.frequency.value = frequenzHz;
-    laut.gain.setValueAtTime(lautstaerke, beginn);
-    laut.gain.exponentialRampToValueAtTime(0.001, ende);
-    ton.connect(laut).connect(audio.destination);
-    ton.start(beginn);
-    ton.stop(ende);
-  }
+  const { frequenzHz, lautstaerke } = PLAYER.ton;
+  const beginn = audio.currentTime + nachSek;
+  const ende = beginn + dauerMs / 1000;
+  const o = audio.createOscillator();
+  const laut = audio.createGain();
+  o.frequency.value = frequenzHz;
+  laut.gain.setValueAtTime(lautstaerke, beginn);
+  laut.gain.exponentialRampToValueAtTime(0.001, ende);
+  o.connect(laut).connect(audio.destination);
+  o.start(beginn);
+  o.stop(ende);
 }
