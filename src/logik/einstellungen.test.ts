@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { KATALOG } from '../daten/katalog';
-import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
+import { STANDARD_EINSTELLUNGEN, STANDARD_PRIORITAETEN } from '../konfiguration';
 import {
+  grenzenNachPrioritaeten,
   entwurfAusVorlage, fehlendeMuster, fertigeUebung, hantelbank, leseZahl, leseZahlen, mitAusschluss, mitDetails,
   mitEinschraenkung, mitFavorit, mitHantelbank, mitStandard, mitUtensil, mitVideoLink, moeglicheUebungen, neueId,
   neuerOrt, neuesUtensil, normalisiereUebung, ohneEinschraenkung, ohneUebung, ortGenutzt, pruefeEigeneUebung,
   pruefeOrt, pruefeUtensilName, sperreAktiv, uebungGenutzt, utensilGenutzt, videoLinkVon, videoIdVon, youtubeId, youtubeSuche, zahlText,
 } from './einstellungen';
 import { erstelleEinheit } from './planung';
-import { ort, zeitpunkt, zustand } from './testhilfe';
-import type { AppZustand, Einheit, Ort, Uebung } from './typen';
+import { OBERKOERPER_BETONT, ort, zeitpunkt, zustand } from './testhilfe';
+import type { AppZustand, Einheit, Muskel, MuskelZustand, Ort, Uebung } from './typen';
 
 const katalogUebung = (id: string): Uebung => KATALOG.uebungen.find((u) => u.id === id)!;
 const leer = (): AppZustand => zustand({ katalog: 'voll', orte: [] });
@@ -307,5 +308,24 @@ describe('Einschränkungen', () => {
     expect(sperreAktiv(s, '2026-12-01T08:00:00')).toBe(false);
     expect(sperreAktiv(e.einschraenkungen[1]!, '2030-01-01T00:00:00')).toBe(true);
     expect(ohneEinschraenkung(e, 'sperre_knie').einschraenkungen).toHaveLength(1);
+  });
+});
+
+describe('Muskelprioritäten (Entscheidung 29.10.2026)', () => {
+  const muskel = (m: Muskel, persoenlicheGrenze: number): MuskelZustand =>
+    ({ muskel: m, letzteDosis: 0, letzteSchwer: false, persoenlicheGrenze, gleichWochen: 0, leistung: [] });
+  const grenzen = (l: MuskelZustand[]) => Object.fromEntries(l.map((m) => [m.muskel, m.persoenlicheGrenze]));
+
+  it('gleicht die Grenzen beim Wechsel auf alle normal an und behält den Fortschritt', () => {
+    const vorher = [muskel('Brust', 12), muskel('Bizeps', 16), muskel('Quadrizeps', 10), muskel('Bauch', 6), muskel('Waden', 4), muskel('Ruecken', 8)];
+    expect(grenzen(grenzenNachPrioritaeten(vorher, OBERKOERPER_BETONT, STANDARD_PRIORITAETEN)))
+      .toEqual({ Brust: 10, Bizeps: 14, Quadrizeps: 10, Bauch: 10, Waden: 10, Ruecken: 6 });
+  });
+
+  it('begrenzt auf Untergrenze + 2 und Obergrenze der neuen Priorität; unveränderte Muskeln bleiben', () => {
+    const hoch = { ...STANDARD_PRIORITAETEN, Brust: 'hoch' as const, Bauch: 'sehrNiedrig' as const };
+    const neu = grenzenNachPrioritaeten([muskel('Brust', 16), muskel('Bauch', 6), muskel('Waden', 7)], STANDARD_PRIORITAETEN, hoch);
+    expect(grenzen(neu)).toEqual({ Brust: 18, Bauch: 4, Waden: 7 });
+    expect(grenzen(grenzenNachPrioritaeten([muskel('Brust', 16)], STANDARD_PRIORITAETEN, { ...hoch, Brust: 'niedrig' }))).toEqual({ Brust: 10 });
   });
 });

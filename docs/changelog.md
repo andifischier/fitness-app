@@ -322,3 +322,26 @@
     Satzpunkte, Zielkarte, Pausenring, „Als Nächstes“ und den Blockwechsel; auf der Abschlussseite
     ein Farbstreifen je Übung.
 - **Warum:** Wunsch des Nutzers (Entscheidungen 29.10.2026).
+
+## 29.10.2026: Sterne am Ende, Lieblinge mit Pause, eine neue Übung je Zyklus
+- **Was:** Die Abschlussseite fragt wieder nach Sternen („Wie gefallen dir die Übungen?“), aber nur für
+  höchstens 2 Übungen: neue ohne Bewertung (ohne Antwort höchstens 2-mal) und solche, deren Bewertung
+  6 Wochen alt ist; vorausgefüllt und freiwillig. Beim Zyklusbeginn setzen Lieblings-Nebenübungen
+  (4 und 5 Sterne) nach 2 Zyklen am Stück einen Zyklus aus, wenn es eine gleich schwere Alternative
+  gibt, und kommen danach zurück. Ein Tausch je Zyklus nimmt eine noch nie trainierte Übung.
+  Neu: `sternFragen` (`player.ts`), `mitSternen` (`einstellungen.ts`), Feld `Einstellungen.sterneGefragt`,
+  Werte in `BEWERTUNG`; `tauscheNebenuebungen` (`progression.ts`) erweitert; Tests in
+  `bewertung.test.ts` und `speichern.test.ts`.
+- **Warum:** Wunsch des Nutzers nach mehr Übungen, die Spaß machen, ohne ständiges Nachfragen und mit
+  Abwechslung (Entscheidungen 29.10.2026).
+
+## 29.10.2026: Standard „alle normal“ statt „Oberkörper betont“
+- **Was:** Neuer Standard der Muskelprioritäten: alle 10 Muskelgruppen normal. Bestehende Daten mit dem
+  alten Standard werden einmalig umgestellt (Datenbank Version 3); selbst angepasste bleiben. Ändert sich
+  eine Priorität, springt die persönliche Satzgrenze des Muskels um den Unterschied der Startwerte und
+  behält den Fortschritt (`grenzenNachPrioritaeten`, `speicherePrioritaeten`). Der Zirkel-Vorschlag
+  richtet sich nach den am höchsten priorisierten Muskeln. Texte in Onboarding und Einstellungen
+  („Alle normal“, „Zurück zu „alle normal““). Tests für Standard, Migration, Grenzen und Zirkel; die
+  übrigen Logiktests nutzen „Oberkörper betont“ ausdrücklich als Szenario.
+- **Warum:** Wunsch des Nutzers nach einem ausgewogenen Standard, den er selbst anpasst
+  (Entscheidungen 29.10.2026).

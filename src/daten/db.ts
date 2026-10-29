@@ -1,14 +1,21 @@
 // IndexedDB über Dexie. Schemaänderungen nur mit neuer Version plus Migration (siehe CLAUDE.md).
 import { Dexie, type EntityTable, type Table } from 'dexie';
-import type {
-  AppZustand, Einheit, Einstellungen, MaxTest, MuskelZustand, MusterZustand, Ort, Tabellen,
-  Uebung, Utensil, VarianteZustand, Woche, ZirkelErgebnis, Zyklus,
+import {
+  MUSKELN, type AppZustand, type Einheit, type Einstellungen, type MaxTest, type MuskelZustand, MusterZustand, Ort, Tabellen,
+  type Muskel, type Prioritaet, type Uebung, type Utensil, type VarianteZustand, type Woche, type ZirkelErgebnis, type Zyklus,
 } from '../logik/typen';
-import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
+import { STANDARD_EINSTELLUNGEN, STANDARD_PRIORITAETEN } from '../konfiguration';
 import { KATALOG } from './katalog';
+import { grenzenNachPrioritaeten } from '../logik/einstellungen';
 
 // Früherer Standard der Isolations- und Kombi-Pause (bis Version 1 der Datenbank)
 const PAUSE_ALT = 75;
+// Früherer Standard der Muskelprioritäten „Oberkörper betont“ (bis Version 2 der Datenbank)
+const PRIORITAETEN_ALT: Record<Muskel, Prioritaet> = {
+  Brust: 'hoch', Ruecken: 'hoch', Schultern: 'hoch', Bizeps: 'hoch', Trizeps: 'hoch',
+  Quadrizeps: 'normal', Gesaess: 'normal', HintereOS: 'normal',
+  Bauch: 'niedrig', Waden: 'sehrNiedrig',
+};
 
 // Einstellungen sind genau ein Datensatz unter diesem Schlüssel.
 export const EINSTELLUNGEN_SCHLUESSEL = 1;
@@ -55,6 +62,16 @@ export class FitnessDb extends Dexie {
         if (e.pausenSek?.[art] === PAUSE_ALT) e.pausenSek[art] = STANDARD_EINSTELLUNGEN.pausenSek[art];
       }
     }));
+    // Version 3 (Entscheidung 29.10.2026): Muskelprioritäten auf den neuen Standard (alle normal), aber
+    // nur, wenn noch der alte Standard „Oberkörper betont“ gilt. Selbst angepasste bleiben.
+    // Die persönlichen Grenzen ziehen mit und behalten den gewonnenen Fortschritt.
+    this.version(3).upgrade(async (tx) => {
+      const e: Einstellungen | undefined = await tx.table('einstellungen').get(EINSTELLUNGEN_SCHLUESSEL);
+      if (!e?.prioritaeten || !MUSKELN.every((m) => e.prioritaeten[m] === PRIORITAETEN_ALT[m])) return;
+      const muskeln: MuskelZustand[] = await tx.table('muskeln').toArray();
+      await tx.table('muskeln').bulkPut(grenzenNachPrioritaeten(muskeln, PRIORITAETEN_ALT, STANDARD_PRIORITAETEN));
+      await tx.table('einstellungen').put({ ...e, prioritaeten: { ...STANDARD_PRIORITAETEN } }, EINSTELLUNGEN_SCHLUESSEL);
+    });
   }
 }
 

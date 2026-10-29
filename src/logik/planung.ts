@@ -9,7 +9,7 @@ import {
   alleUebungen, bandStufen, hatAktiveSperre, hatUtensil, istGesperrt, lastraster, uebungErlaubt, uebungMoeglich,
 } from './equipment';
 import {
-  BAND_STUFEN, MUSKELN, MUSTER_IDS, type AppZustand, type BandStufe, type Block, type EigenesWorkout, type Einheit,
+  BAND_STUFEN, MUSKELN, MUSTER_IDS, PRIORITAETEN, type AppZustand, type BandStufe, type Block, type EigenesWorkout, type Einheit,
   type Einstellungen, type Muskel, type MusterId, type Ort, type Position, type Uebung, type Zirkel,
 } from './typen';
 import {
@@ -776,7 +776,7 @@ export function workoutEinheit(z: AppZustand, w: EigenesWorkout, eing: EinheitEi
   return einheit;
 }
 
-// Fälliger Zirkel bei Prognose ab 3: sobald die hoch priorisierten Muskeln 70 % ihres Ziels haben
+// Fälliger Zirkel bei Prognose ab 3: sobald die am höchsten priorisierten Muskeln 70 % ihres Ziels haben
 // oder laut Prognose nur noch eine Einheit bleibt.
 export function zirkelVorschlagen(z: AppZustand, jetzt: string, prognose: number, ortId: string): boolean {
   const e = einstellungenVon(z);
@@ -790,7 +790,9 @@ export function zirkelVorschlagen(z: AppZustand, jetzt: string, prognose: number
   if (prognose - erledigteEinheiten <= 1) return true;
   const ziele = wochenziele(z, prognose, ortId, jetzt);
   const erledigt = woche?.erledigt ?? leer();
-  return MUSKELN.filter((m) => e.prioritaeten[m] === 'hoch' && ziele[m] > 0)
+  // Maßgeblich sind die am höchsten priorisierten Muskeln (beim Standard „alle normal“ also alle).
+  const hoechste = PRIORITAETEN.find((p) => MUSKELN.some((m) => e.prioritaeten[m] === p));
+  return MUSKELN.filter((m) => e.prioritaeten[m] === hoechste && ziele[m] > 0)
     .every((m) => erledigt[m] >= ZIRKEL.vorschlagAbAnteilZiel * ziele[m]);
 }
 

@@ -28,7 +28,7 @@ export function EinstellungenSeite() {
         <Zeile zu="/einstellungen/profil" titel="Profil"
           wert={`${LEVEL_NAMEN[e.level]} · ${e.ziele.map((x) => ZIEL_NAMEN[x]).join(', ')}`} />
         <Zeile zu="/einstellungen/prioritaeten" titel="Muskelprioritäten"
-          wert={standardPrio ? 'Oberkörper betont' : 'Angepasst'} />
+          wert={standardPrio ? 'Alle normal' : 'Angepasst'} />
         <Zeile zu="/einstellungen/training" titel="Dauer, Zirkel und Pausen"
           wert={`${e.standardDauerMin} Min · Zirkel ${kleinerAnfang(ZIRKEL_ANTEIL_NAMEN[e.zirkelAnteil])}`} />
         <Zeile zu="/einstellungen/einschraenkungen" titel="Einschränkungen"

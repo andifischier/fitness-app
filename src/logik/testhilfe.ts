@@ -7,7 +7,16 @@ import { plusTage, isoWoche } from './datum';
 import { dosisProMuskel, einstellungenVon, erstelleEinheit, persoenlicheGrenze, startfragen } from './planung';
 import {
   MUSKELN, type AppZustand, type Einheit, type Einstellungen, type MaxTest, type Muskel, type MuskelZustand, type Ort, type OrtEquipment,
+  type Prioritaet,
 } from './typen';
+
+// Profil „Oberkörper betont“ (Standard bis 29.10.2026): Grundlage der Beispiele und Use Cases der
+// Spezifikation und der Prototypen. Die Logiktests nutzen es weiter als Szenario.
+export const OBERKOERPER_BETONT: Record<Muskel, Prioritaet> = {
+  Brust: 'hoch', Ruecken: 'hoch', Schultern: 'hoch', Bizeps: 'hoch', Trizeps: 'hoch',
+  Quadrizeps: 'normal', Gesaess: 'normal', HintereOS: 'normal',
+  Bauch: 'niedrig', Waden: 'sehrNiedrig',
+};
 
 // Test-Katalog laut Spezifikation, Abschnitt „Simulation der Use Cases“
 export const TEST_IDS = [
@@ -46,7 +55,7 @@ export function zustand(opt: {
   const uebungen = opt.katalog === 'voll' ? KATALOG.uebungen : KATALOG.uebungen.filter((u) => TEST_IDS.includes(u.id));
   return {
     katalog: { ...KATALOG, uebungen },
-    einstellungen: [{ ...STANDARD_EINSTELLUNGEN, ...opt.einstellungen }],
+    einstellungen: [{ ...STANDARD_EINSTELLUNGEN, prioritaeten: OBERKOERPER_BETONT, ...opt.einstellungen }],
     orte: opt.orte ?? [ort()],
     eigeneUebungen: [], eigeneUtensilien: [], varianten: [], muster: [], muskeln: [],
     wochen: [], zyklen: [], einheiten: [], zirkelErgebnisse: [], maxTests: opt.maxTests ?? TESTTAG,

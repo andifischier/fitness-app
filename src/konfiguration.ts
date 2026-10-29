@@ -18,10 +18,11 @@ export const PROFIL = {
   zirkelSonst: 'alle2Wochen',
 } as const;
 
+// Standard seit 29.10.2026: alle Muskelgruppen normal (Entscheidung; vorher „Oberkörper betont“).
 export const STANDARD_PRIORITAETEN: Record<Muskel, Prioritaet> = {
-  Brust: 'hoch', Ruecken: 'hoch', Schultern: 'hoch', Bizeps: 'hoch', Trizeps: 'hoch',
+  Brust: 'normal', Ruecken: 'normal', Schultern: 'normal', Bizeps: 'normal', Trizeps: 'normal',
   Quadrizeps: 'normal', Gesaess: 'normal', HintereOS: 'normal',
-  Bauch: 'niedrig', Waden: 'sehrNiedrig',
+  Bauch: 'normal', Waden: 'normal',
 };
 
 export const STANDARD_EINSTELLUNGEN: Einstellungen = {
@@ -344,6 +345,14 @@ export const BEWERTUNG = {
   // (bei einer Übung mit 1 oder 2 Sternen genügen 2)
   bleibtAbSterne: 4,
   tauschMinSterne: 3,
+  // Sterne auf der Abschlussseite (Entscheidung 29.10.2026): höchstens 2 Übungen je Training; ohne
+  // Bewertung höchstens 2-mal gefragt, bewertete nach 42 Tagen erneut
+  fragenProTraining: 2,
+  fragenOhneAntwort: 2,
+  auffrischenTage: 42,
+  // Lieblinge (ab 4 Sternen) setzen nach 2 Zyklen am Stück einen Zyklus aus; je Zyklus 1 neue Nebenübung
+  pauseNachZyklen: 2,
+  neueProZyklus: 1,
 } as const;
 
 // Eigene Workouts und Anpassen der erstellten Einheit (Entscheidungen 21.10.2026)

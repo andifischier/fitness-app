@@ -1,17 +1,18 @@
 import 'fake-indexeddb/auto';
 import { afterEach, describe, expect, it } from 'vitest';
 import { KATALOG } from './katalog';
-import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
+import { STANDARD_EINSTELLUNGEN, STANDARD_PRIORITAETEN } from '../konfiguration';
+import { OBERKOERPER_BETONT } from '../logik/testhilfe';
 import { entwurfAusVorlage, fertigeUebung, mitFavorit, mitVideoLink, neuesUtensil } from '../logik/einstellungen';
 import { ort } from '../logik/testhilfe';
 import { testtagEinheit } from '../logik/testtag';
-import type { Einheit } from '../logik/typen';
+import type { Einheit, Einstellungen, Muskel, MuskelZustand } from '../logik/typen';
 import { Dexie } from 'dexie';
 import { FitnessDb, ladeZustand } from './db';
 import {
   aendereEinstellungen, aendereTage, beendeEinheit, beendeOnboarding, fuehreWochenabschluesseAus, ladeEinstellungen, loescheEigeneUebung,
   loescheEigenesUtensil, loescheOrt, speichereEigeneUebung, speichereEigenesUtensil, speichereNeueEinheit, speichereOrt,
-  loescheBeendeteEinheit, speichereAbschluss, speichereBewertung, speichereLaufendeEinheit, speichereTausch, speichereTesttag, starteEinheit,
+  loescheBeendeteEinheit, speichereAbschluss, speicherePrioritaeten, speichereBewertung, speichereLaufendeEinheit, speichereTausch, speichereTesttag, starteEinheit,
   setzeZurueck, verwerfeEinheit,
 } from './speichern';
 import { schritte, trageSatzEin } from '../logik/player';
@@ -307,6 +308,19 @@ describe('Abschluss und Bewertung', () => {
     expect((await ladeEinstellungen(d)).bewertungen).toBeUndefined();
   });
 
+  it('merkt sich gefragte Übungen, auch ohne Antwort, und die Bewertung aus dem Tab Übungen', async () => {
+    const d = neueDb();
+    await speichereOrt(ort(), d);
+    await d.einheiten.add(beendet());
+    await speichereAbschluss('a', { bewertungen: { kh_curls: 4 }, gefragt: ['kh_curls', 'hammer_curls'] }, '2026-10-20T18:41:00', d);
+    expect((await ladeEinstellungen(d)).bewertungen).toEqual({ kh_curls: 4 });
+    expect((await ladeEinstellungen(d)).sterneGefragt).toEqual({
+      kh_curls: { am: '2026-10-20T18:41:00', ohneAntwort: 0 }, hammer_curls: { am: '2026-10-20T18:41:00', ohneAntwort: 1 },
+    });
+    await speichereBewertung('hammer_curls', 5, '2026-10-21T10:00:00', d);
+    expect((await ladeEinstellungen(d)).sterneGefragt?.hammer_curls).toEqual({ am: '2026-10-21T10:00:00', ohneAntwort: 0 });
+  });
+
   it('speichert nichts für eine noch nicht beendete Einheit', async () => {
     const d = neueDb();
     await d.einheiten.add({ ...beendet(), status: 'laufend' });
@@ -353,5 +367,41 @@ describe('Datenbank Version 2', () => {
     const e = (await d.einstellungen.toArray())[0]!;
     expect(e.pausenSek).toEqual({ grund: 120, isolation: 60, supersatz: 90 });
     d.close();
+  });
+});
+
+describe('Datenbank Version 3', () => {
+  const muskel = (m: Muskel, persoenlicheGrenze: number): MuskelZustand =>
+    ({ muskel: m, letzteDosis: 0, letzteSchwer: false, persoenlicheGrenze, gleichWochen: 0, leistung: [] });
+  const nachMigration = async (prioritaeten: Einstellungen['prioritaeten']) => {
+    const name = `migration-${Math.random()}`;
+    const alt = new Dexie(name);
+    alt.version(2).stores({ einstellungen: '', muskeln: 'muskel' });
+    await alt.table('einstellungen').put({ ...STANDARD_EINSTELLUNGEN, prioritaeten }, 1);
+    await alt.table('muskeln').bulkPut([muskel('Brust', 14), muskel('Bauch', 6), muskel('Waden', 4)]);
+    alt.close();
+    const d = new FitnessDb(name);
+    const e = (await d.einstellungen.toArray())[0]!;
+    const grenzen = Object.fromEntries((await d.muskeln.toArray()).map((m) => [m.muskel, m.persoenlicheGrenze]));
+    d.close();
+    return { prioritaeten: e.prioritaeten, grenzen };
+  };
+
+  it('stellt den alten Standard „Oberkörper betont“ auf alle normal um und gleicht die Grenzen an', async () => {
+    expect(await nachMigration(OBERKOERPER_BETONT)).toEqual({ prioritaeten: STANDARD_PRIORITAETEN, grenzen: { Brust: 12, Bauch: 10, Waden: 10 } });
+    expect(Object.values(STANDARD_PRIORITAETEN).every((p) => p === 'normal')).toBe(true);
+  });
+
+  it('lässt selbst angepasste Prioritäten und ihre Grenzen unverändert', async () => {
+    const eigene = { ...OBERKOERPER_BETONT, Waden: 'niedrig' as const };
+    expect(await nachMigration(eigene)).toEqual({ prioritaeten: eigene, grenzen: { Brust: 14, Bauch: 6, Waden: 4 } });
+  });
+
+  it('eine Änderung in den Einstellungen zieht die Grenze mit', async () => {
+    const d = neueDb();
+    await d.muskeln.put(muskel('Bauch', 10));
+    await speicherePrioritaeten({ ...STANDARD_PRIORITAETEN, Bauch: 'hoch' }, d);
+    expect((await ladeEinstellungen(d)).prioritaeten.Bauch).toBe('hoch');
+    expect((await d.muskeln.get('Bauch'))?.persoenlicheGrenze).toBe(12);
   });
 });

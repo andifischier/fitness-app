@@ -42,7 +42,7 @@ Das Onboarding erfasst Ziele, Rahmenbedingungen und Equipment und endet mit eine
 | Übliche Einheiten pro Woche | 1 bis 6; nur Startwert für die Zahl der vorausgewählten Trainingstage, die jede Woche neu gewählt werden | 3 |
 | Standard-Trainingsdauer | 20 bis 90 Min in 5-Min-Schritten | 40 Min |
 | Längere Einheiten anbieten | Ja/Nein: in Wochen mit 1 bis 2 Einheiten „15 Min länger?“ vorschlagen | Ja |
-| Muskelprioritäten | Pro Muskelgruppe: hoch, normal, niedrig, sehr niedrig | Oberkörper betont (siehe Planungslogik) |
+| Muskelprioritäten | Pro Muskelgruppe: hoch, normal, niedrig, sehr niedrig | Alle normal (Entscheidung 29.10.2026, vorher „Oberkörper betont“; siehe Planungslogik) |
 | Ziel-Reserve | 1 bis 3 Wdh. (Standard) oder 2 bis 3 Wdh. (schonender) | 1 bis 3 Wdh. |
 | Anteil Zirkel-Workouts | Aus, alle 2 Wochen, 1x pro Woche, 2x pro Woche | Alle 2 Wochen |
 | Orte | Liste von Orten mit jeweils eigenem Equipment (siehe Datenmodell) | Zuhause |
@@ -196,6 +196,7 @@ interface Einstellungen {
   letztesBackup?: string;
   videoLinks?: Record<string, string>; // eigene Video-Links für Katalogübungen (eigene Übungen: eigenerVideoLink)
   bewertungen?: Record<string, 1|2|3|4|5>; // Sterne je Übungs-ID, letzte Bewertung zählt; fehlt sie, gilt 3
+  sterneGefragt?: Record<string, { am: string; ohneAntwort: number }>; // letzte Frage bzw. Bewertung je Übung (Entscheidung 29.10.2026)
   workouts?: EigenesWorkout[];      // eigene Workouts (Entscheidung 21.10.2026)
 }
 // Übungsliste: je Übung Sätze; Zirkel: Runden und je Station eine Vorgabe (Wdh. bzw. Sek.)
@@ -323,16 +324,17 @@ Das Wochenziel ist das Minimum aus drei Grenzen: dem, was die Zeit hergibt, der 
 
 - Wochenbudget = Prognose × Arbeitssätze pro Einheit × 1,7 (mittlere fraktionelle Sätze pro Arbeitssatz).
 - Wochenziel Muskel = min(persönliche Grenze, Obergrenze, max(Untergrenze, Wochenbudget × Gewicht ÷ Summe aller Gewichte)), gerundet.
-- Prioritäten sind in den Einstellungen pro Muskelgruppe änderbar. Standard ist „Oberkörper betont“:
+- Prioritäten sind in den Einstellungen pro Muskelgruppe änderbar. Standard sind seit 29.10.2026 **alle Muskelgruppen normal** (Entscheidung; der Nutzer passt sie bei Bedarf selbst an). Die Spalte „Muskelgruppen“ zeigt das frühere Profil „Oberkörper betont“, auf dem die Beispiele, Use Cases und Prototypen dieses Dokuments beruhen; es bleibt als Testszenario erhalten.
+- Ändert sich die Priorität eines Muskels, springt seine persönliche Grenze um den Unterschied der Startwerte (z. B. Bauch von niedrig auf normal: +4), begrenzt auf Untergrenze + 2 bis Obergrenze der neuen Priorität. So wirkt die Änderung sofort, und der mit Feedback gewonnene Fortschritt bleibt (Entscheidung 29.10.2026). Bestehende Daten mit dem alten Standard „Oberkörper betont“ wurden einmalig so auf „alle normal“ umgestellt (Datenbank Version 3); selbst angepasste Prioritäten blieben.
 
-| Priorität | Muskelgruppen | Gewicht | Untergrenze | Persönliche Grenze (Start) | Obergrenze |
+| Priorität | Muskelgruppen („Oberkörper betont“) | Gewicht | Untergrenze | Persönliche Grenze (Start) | Obergrenze |
 | --- | --- | --- | --- | --- | --- |
 | Hoch | Brust, Rücken, Schultern, Bizeps, Trizeps | 1,0 | 4 | 12 | 20 |
 | Normal | Quadrizeps, Gesäß, hintere Oberschenkel | 0,75 | 4 | 10 | 16 |
 | Niedrig | Bauch | 0,5 | 2 | 6 | 10 |
 | Sehr niedrig | Waden | 0,3 | 2 | 4 | 8 |
 
-Ergebnis mit diesen Startwerten bei 40 Min: Mit 2 bis 5 Einheiten erreicht das Wochenziel hoch priorisierter Muskeln die persönliche Grenze von 12 (mit 1 Einheit 6). Mehr Einheiten bedeuten also nicht automatisch mehr Volumen, sondern kürzere Einheiten mit besserer Verteilung und Raum für Zirkel, bis die persönliche Grenze durch gutes Feedback steigt.
+Ergebnis mit diesen Startwerten bei 40 Min: Beim Standard „alle normal“ erreicht mit 2 bis 5 Einheiten jeder Muskel die persönliche Grenze von 10 (mit 1 Einheit 5). Bei „Oberkörper betont“ erreichen hoch priorisierte Muskeln mit 2 bis 5 Einheiten 12 (mit 1 Einheit 6). Mehr Einheiten bedeuten also nicht automatisch mehr Volumen, sondern kürzere Einheiten mit besserer Verteilung und Raum für Zirkel, bis die persönliche Grenze durch gutes Feedback steigt.
 
 Die Frage „Morgen wieder?“ ist der Schlüssel für Tage am Stück: Sie lässt die andere Körperhälfte für die nächste Einheit frisch.
 
@@ -371,7 +373,9 @@ Zirkel zählen für das Erholungsfenster mit demselben Volumen wie für das Woch
 - Pro Muster und Zyklus (6 Wochen oder bis zur nächsten Erholungswoche) legt die App bis zu zwei Hauptvarianten A und B fest (z. B. Kurzhantel-Bankdrücken und Schrägbankdrücken), bestimmt bei Zyklusbeginn bzw. bei der ersten Nutzung des Musters am Ort. A und B wechseln sich von Einheit zu Einheit ab. Jede führt ihren eigenen Progressionsverlauf.
 - **Auswahl:** Kandidaten sind Varianten, die am Ort möglich, nicht gesperrt und nicht ausgeschlossen sind. Rangfolge: Favorit; dann Varianten mit 1 Stern ans Ende; dann Abstand zur Musterstufe (bei Lasttyp Last zählt nur, wie weit die Stufe über der Musterstufe liegt, weil die Last den Rest regelt); dann Bewertung (mehr Sterne zuerst); dann Lasttyp Last vor Band vor KG vor Zeit; dann Katalogreihenfolge. A = beste Variante, B = nächstbeste Variante mit anderer ID, bevorzugt mit anderem Equipment.
 - Zu Beginn eines neuen Zyklus werden Nebenübungen bevorzugt gegen Varianten gleicher Stufe getauscht; Favoriten bleiben. Varianten mit 4 oder 5 Sternen bleiben ebenfalls, Varianten mit 1 oder 2 Sternen werden zuerst getauscht.
-- **Bewertung der Übungen** (Entscheidung 21.10.2026): Der Nutzer kann jede Übung im Tab Übungen mit 1 bis 5 Sternen bewerten (seit 21.10.2026 nicht mehr am Ende jeder Einheit, um Rückfragen zu sparen). Die Bewertung ist freiwillig und mit der letzten Bewertung der Übung vorausgefüllt; es zählt immer die letzte. Ohne Bewertung gilt 3 (neutral). Im Tab Übungen lässt sie sich jederzeit ändern. Wirkung („ausgewogen“):
+- **Lieblinge mit Pause** (Entscheidung 29.10.2026): Eine Nebenübung mit 4 oder 5 Sternen, die im endenden und im Zyklus davor jeweils trainiert wurde (also rund 12 Wochen am Stück), setzt den neuen Zyklus aus, sofern es eine Variante gleicher Stufe mit mindestens 3 Sternen gibt; sonst bleibt sie. In diesem Zyklus steht sie auch nicht als Ersatz zur Wahl. Beim nächsten Zyklusbeginn kommt sie über „mehr Sterne zuerst“ zurück. Favoriten (markiert) bleiben immer.
+- **Eine neue Übung je Zyklus** (Entscheidung 29.10.2026): Von den Tauschen bei Zyklusbeginn nimmt einer eine Variante, die noch nie trainiert wurde (gleiche Stufe, mindestens 3 Sterne bzw. unbewertet, am Ort möglich). Welcher Tausch das ist, wechselt mit der Zyklusnummer. Eine zurückkehrende Variante mit 4 oder 5 Sternen geht vor; ohne passende neue Variante entfällt es.
+- **Bewertung der Übungen** (Entscheidungen 21.10.2026 und 29.10.2026): Der Nutzer kann jede Übung im Tab Übungen jederzeit mit 1 bis 5 Sternen bewerten. Zusätzlich fragt die Abschlussseite nach Sternen, aber nur gezielt: für trainierte Übungen (ohne Max-Tests und Zirkel-Stationen), die noch keine Bewertung haben und höchstens einmal ohne Antwort gefragt wurden, oder deren Bewertung bzw. letzte Frage mindestens 6 Wochen (42 Tage) zurückliegt. Unbewertete zuerst, dann die am längsten nicht gefragten; höchstens 2 Übungen je Training. Die Sterne sind freiwillig und mit der letzten Bewertung vorausgefüllt; „Speichern“ bestätigt sie und startet die 6 Wochen neu. Bleibt eine unbewertete Übung leer, zählt das als Frage ohne Antwort; nach 2 solchen fragt die App nicht mehr. Eine Bewertung im Tab Übungen zählt wie eine Antwort; wird sie entfernt, gilt die Übung wieder als nie gefragt. Es zählt immer die letzte Bewertung. Ohne Bewertung gilt 3 (neutral). Wirkung („ausgewogen“):
   - **1 Stern:** Ist die Übung Hauptvariante, wird sie ab der nächsten Einheit ersetzt, sofern am Ort eine Alternative desselben Musters mit höchstens 1 Stufe Abstand und mindestens 2 Sternen möglich ist (Auswahl nach der Rangfolge oben). Gibt es keine, bleibt sie.
   - **2 Sterne:** seltener (Abschlag in Schritt 6, beim Zyklusbeginn zuerst getauscht).
   - **4 und 5 Sterne:** häufiger (Zuschlag in Schritt 6, Vorrang in der Rangfolge bei gleichem Abstand zur Musterstufe, bleiben beim Zyklusbeginn).
@@ -383,7 +387,7 @@ Zirkel zählen für das Erholungsfenster mit demselben Volumen wie für das Woch
 - Klassisch, Supersatz und Mix ergeben sich aus der Wahl Kombi oder Klassisch vor dem Start und den gebildeten Runden (siehe Schritt 8).
 - **Zirkel:** Häufigkeit laut Einstellung. Bei einer Prognose von 3 oder mehr ersetzt ein Zirkel eine reguläre Einheit; bei 1 bis 2 Einheiten erscheint er nur als Finisher in frei gebliebener Zeit, damit das Kraftvolumen nicht leidet.
 - **Fälligkeit:** „alle 2 Wochen“ = 1 Zirkel in Wochen mit gerader ISO-Wochennummer; „1x pro Woche“ = 1; „2x pro Woche“ = 2.
-- **Vorschlag:** Ein fälliger Zirkel wird bei Prognose 3 oder mehr vorgeschlagen, sobald die hoch priorisierten Muskeln mindestens 70 % ihres Wochenziels haben oder laut Prognose nur noch eine Einheit bleibt. Der Nutzer kann jederzeit „Stattdessen Zirkel“ bzw. „Doch Krafteinheit“ wählen.
+- **Vorschlag:** Ein fälliger Zirkel wird bei Prognose 3 oder mehr vorgeschlagen, sobald die am höchsten priorisierten Muskeln (bei „Oberkörper betont“ die hohen, beim Standard „alle normal“ alle) mindestens 70 % ihres Wochenziels haben oder laut Prognose nur noch eine Einheit bleibt. Der Nutzer kann jederzeit „Stattdessen Zirkel“ bzw. „Doch Krafteinheit“ wählen.
 - **Volumen:** je Runde und Station 0,5 fraktionelle Sätze für Primärmuskeln, 0,25 für Sekundärmuskeln. Das gilt für Wochenvolumen und Erholungsfenster.
 - **Stationen:** Nennt der Hinweis der Station eine bevorzugte Übung (z. B. „Burpees bevorzugt“, „Thruster, ohne Kurzhanteln Sprung-Kniebeuge“), nimmt die App die zuerst genannte, die am Ort möglich, nicht gesperrt und nicht ausgeschlossen ist (Entscheidung 21.10.2026). Sonst nutzt jede Station die Variante „Musterstufe − 2“. Fehlt sie: nächstniedrigere zirkel-geeignete Variante; sonst niedrigste zirkel-geeignete; sonst irgendeine Variante des Musters; sonst wird die Station ausgelassen.
 - Jeder Zirkel hat einen festen Namen und eine feste Zusammensetzung; Varianten passen sich dem Ort an. Bestzeiten gelten pro Zirkel, Ort und Variantensatz.
@@ -401,7 +405,7 @@ Die Bereiche stehen pro Übung im Katalog (`bereich.von` = Untergrenze U, `berei
 
 ## Simulation der Use Cases
 
-Die Planungslogik wurde als Prototyp umgesetzt und mit realistischen Wochen durchgespielt (40-Min-Einheiten, Ort Zuhause, Startwerte dieses Dokuments). In allen sieben Fällen erreicht jeder hoch priorisierte Muskel mindestens die Hälfte seines Ziels, in den fünf Fällen mit stimmiger Prognose praktisch das volle Ziel. Der erste Entwurf lieferte in sechs der sieben Fälle deutlich weniger oder leere Einheiten.
+Die Planungslogik wurde als Prototyp umgesetzt und mit realistischen Wochen durchgespielt (40-Min-Einheiten, Ort Zuhause, Startwerte dieses Dokuments mit dem Profil „Oberkörper betont“). In allen sieben Fällen erreicht jeder hoch priorisierte Muskel mindestens die Hälfte seines Ziels, in den fünf Fällen mit stimmiger Prognose praktisch das volle Ziel. Der erste Entwurf lieferte in sechs der sieben Fälle deutlich weniger oder leere Einheiten.
 
 | Use Case | Wie die App plant | Ergebnis Oberkörper / Beine (erledigt von Ziel) | Erster Entwurf |
 | --- | --- | --- | --- |
@@ -438,7 +442,7 @@ Die Anpassung folgt einer doppelten Progression: erst mehr Wiederholungen im Zie
 | Satz | Nach jedem Satz | Nur „Satz erledigt“: gespeichert wird das Ziel (Entscheidung 29.10.2026). Gezählt wird nur im Kalibrierungssatz und im Max-Test. Bei „zu schwer“ im Übungsfeedback fragt die App, wie viele Wiederholungen bzw. Sekunden im ersten Satz gingen |
 | Übung | Einmal am Ende des Trainings auf der Abschlussseite, zusammen mit Gesamtanstrengung und Notiz (Entscheidungen 29.10.2026, ersetzt „nach jeder Übung bzw. Runde“ und die eigene Feedbackseite); beim vorzeitigen „Training beenden“ für die Übungen, deren Sätze alle erledigt sind | **Zu leicht** = 4 oder mehr Wiederholungen wären noch gegangen · **Passend** = 1 bis 3 wären noch gegangen · **Zu schwer** = Ziel nicht geschafft oder Technik brach ein. Halteübungen: **Zu leicht** = mehr als 10 Sek. wären noch gegangen · **Passend** = bis 10 Sek. · **Zu schwer** = Ziel nicht geschafft oder Haltung brach ein (Entscheidung 21.10.2026). Die Definition steht einmal als Hilfetext oben auf der Seite. Kein Feedback bei Max-Tests und Zirkel-Stationen. Wird das Training beendet, ohne dass bewertet wurde (z. B. „Training beenden“ auf der Abschlussseite), gilt für Übungen ohne Feedback automatisch „zu schwer“, wenn der erste Satz das Ziel verfehlt hat, sonst „passend“ (Entscheidung 21.10.2026). |
 | Workout | Am Ende | Gesamtanstrengung 1 bis 5 (1 = sehr leicht, 5 = am Limit), freiwillig und nicht vorausgewählt (Entscheidung 21.10.2026), optional Notiz |
-| Gefallen je Übung | Jederzeit im Tab Übungen | 1 bis 5 Sterne pro Übung, freiwillig (siehe Bewertung der Übungen) |
+| Gefallen je Übung | Jederzeit im Tab Übungen; auf der Abschlussseite für höchstens 2 neue oder seit 6 Wochen nicht bewertete Übungen (Entscheidung 29.10.2026) | 1 bis 5 Sterne pro Übung, freiwillig (siehe Bewertung der Übungen) |
 
 ### Progression pro Übung
 

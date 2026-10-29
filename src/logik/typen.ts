@@ -79,6 +79,7 @@ export interface Einstellungen {
   letztesBackup?: string;
   videoLinks?: Record<string, string>; // eigene Video-Links für Katalogübungen (eigene Übungen: eigenerVideoLink)
   bewertungen?: Record<string, Sterne>; // Sterne je Übungs-ID, letzte Bewertung zählt; fehlt sie, gilt 3
+  sterneGefragt?: Record<string, { am: string; ohneAntwort: number }>; // letzte Frage bzw. Bewertung je Übung
   workouts?: EigenesWorkout[];      // eigene Workouts (Entscheidung 21.10.2026)
 }
 

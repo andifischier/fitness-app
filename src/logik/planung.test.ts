@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { isoWoche, plusTage, wochentag } from './datum';
+import { STANDARD_PRIORITAETEN } from '../konfiguration';
 import {
   alternativen, aufwaermenFuer, dosisProMuskel, erholungsfenster, erstelleEinheit, hauptvarianten, istErholt, kannTauschen, startfragen,
   startwerte, tausche, wochenziele, zirkelVorschlagen,
@@ -421,5 +422,12 @@ describe('Zirkel', () => {
     const zirkel = plane(z, zeitpunkt(4, 18), { zirkelId: 'sprint' });
     const danach = absolviere(z, zirkel, zeitpunkt(4, 18));
     expect(zirkelVorschlagen(danach, zeitpunkt(5, 18), 4, 'zuhause')).toBe(false);
+  });
+
+  it('ohne hoch priorisierte Muskeln zählen die am höchsten priorisierten (Standard: alle normal)', () => {
+    const alleNormal = zustand({ einstellungen: { zirkelAnteil: '1proWoche', prioritaeten: STANDARD_PRIORITAETEN } });
+    expect(zirkelVorschlagen(alleNormal, zeitpunkt(1, 18), 3, 'zuhause')).toBe(false);
+    const { z } = simuliereWoche(alleNormal, 3, [{ tag: 0, stunde: 18 }, { tag: 2, stunde: 18 }]);
+    expect(zirkelVorschlagen(z, zeitpunkt(4, 18), 3, 'zuhause')).toBe(true);
   });
 });

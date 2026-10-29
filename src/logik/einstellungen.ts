@@ -1,12 +1,12 @@
 // Regeln für die Screens Einstellungen und Übungen: Orte und Equipment, eigene Übungen und
 // Utensilien, Favoriten, Ausschlüsse, Video-Links und Einschränkungen. Rein und deterministisch.
-import { PROFIL } from '../konfiguration';
+import { BEWERTUNG, PROFIL, VOLUMENGRENZE, WOCHENZIEL } from '../konfiguration';
 import { alleUebungen, uebungMoeglich } from './equipment';
 import { hauptvarianten } from './planung';
 import { einstellungenVon } from './verlauf';
 import {
-  MUSTER_IDS, type AppZustand, type Einstellungen, type MusterId, type Ort, type OrtEquipment, type Sterne, type Uebung,
-  type Utensil,
+  MUSTER_IDS, type AppZustand, type Einstellungen, type Muskel, type MuskelZustand, type MusterId, type Ort, type OrtEquipment,
+  type Prioritaet, type Sterne, type Uebung, type Utensil,
 } from './typen';
 
 // ---------- Zahlen mit Dezimalkomma ----------
@@ -357,10 +357,30 @@ export function mitBewertungen(e: Einstellungen, neu: Record<string, Sterne | un
   return ergebnis;
 }
 
+// Sterne von der Abschlussseite oder aus dem Tab Übungen (Entscheidung 29.10.2026): Jede gefragte
+// oder bewertete Übung merkt sich den Zeitpunkt; eine gefragte Übung ohne Bewertung und ohne Antwort
+// zählt eine Frage ohne Antwort mehr. Eine entfernte Bewertung gilt wieder als nie gefragt.
+export function mitSternen(e: Einstellungen, gefragt: string[], antworten: Record<string, Sterne | undefined>,
+  jetzt: string): Einstellungen {
+  const neu = mitBewertungen(e, antworten);
+  const sterneGefragt = { ...e.sterneGefragt };
+  for (const id of new Set([...gefragt, ...Object.keys(antworten)])) {
+    if (id in antworten && antworten[id] === undefined) delete sterneGefragt[id];
+    else {
+      const offen = antworten[id] === undefined && neu.bewertungen?.[id] === undefined;
+      const bisher = Math.min(e.sterneGefragt?.[id]?.ohneAntwort ?? 0, BEWERTUNG.fragenOhneAntwort);
+      sterneGefragt[id] = { am: jetzt, ohneAntwort: offen ? bisher + 1 : 0 };
+    }
+  }
+  neu.sterneGefragt = sterneGefragt;
+  if (Object.keys(sterneGefragt).length === 0) delete neu.sterneGefragt;
+  return neu;
+}
+
 // Entfernt alle Verweise der Einstellungen auf eine gelöschte eigene Übung.
 export function ohneUebung(e: Einstellungen, uebungId: string): Einstellungen {
-  return mitBewertungen(mitVideoLink(mitAusschluss(mitFavorit(e, uebungId, false), uebungId, false), uebungId, undefined),
-    { [uebungId]: undefined });
+  const ohne = mitVideoLink(mitAusschluss(mitFavorit(e, uebungId, false), uebungId, false), uebungId, undefined);
+  return mitSternen(ohne, [], { [uebungId]: undefined }, '');
 }
 
 // ---------- Einschränkungen ----------
@@ -384,4 +404,20 @@ export function ohneEinschraenkung(e: Einstellungen, id: string): Einstellungen 
 // Zirkel-Anteil als Startwert nach den Zielen: Ausdauer oder Fitness allgemein ⇒ 1x pro Woche.
 export function zirkelAnteilFuerZiele(ziele: Einstellungen['ziele']): Einstellungen['zirkelAnteil'] {
   return ziele.includes('ausdauer') || ziele.includes('fitness') ? PROFIL.zirkelMitAusdauer : PROFIL.zirkelSonst;
+}
+
+// ---------- Muskelprioritäten ----------
+
+// Persönliche Grenzen nach einer Änderung der Prioritäten (Entscheidung 29.10.2026): Die Grenze eines
+// Muskels mit neuer Priorität springt um den Unterschied der Startwerte, behält also den mit Feedback
+// gewonnenen Fortschritt; begrenzt auf Untergrenze + 2 bis Obergrenze der neuen Priorität.
+export function grenzenNachPrioritaeten(muskeln: MuskelZustand[], alt: Record<Muskel, Prioritaet>,
+  neu: Record<Muskel, Prioritaet>): MuskelZustand[] {
+  return muskeln.map((mz) => {
+    if (alt[mz.muskel] === neu[mz.muskel]) return mz;
+    const a = WOCHENZIEL.prioritaet[alt[mz.muskel]];
+    const n = WOCHENZIEL.prioritaet[neu[mz.muskel]];
+    const grenze = mz.persoenlicheGrenze + n.grenzeStart - a.grenzeStart;
+    return { ...mz, persoenlicheGrenze: Math.min(n.obergrenze, Math.max(n.untergrenze + VOLUMENGRENZE.minUeberUntergrenze, grenze)) };
+  });
 }

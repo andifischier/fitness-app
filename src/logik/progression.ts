@@ -465,23 +465,46 @@ function bestesVolumen(z: AppZustand, m: Muskel, wocheId: string): number {
 }
 
 // Neue Hauptvarianten der Nebenübungen (Isolation, Bauch, Waden) zu Beginn eines Zyklus: bevorzugt
-// eine andere Variante gleicher Stufe. Favoriten und Varianten ab 4 Sternen bleiben; getauscht wird
-// nur gegen eine Variante mit mindestens 3 Sternen (bei 1 oder 2 Sternen genügen 2), mehr Sterne zuerst.
-function tauscheNebenuebungen(z: AppZustand, jetzt: string): MusterZustand[] {
+// eine andere Variante gleicher Stufe. Favoriten bleiben; Varianten ab 4 Sternen bleiben auch, außer sie
+// wurden in den letzten 2 Zyklen jeweils trainiert: Dann setzen sie einen Zyklus aus und stehen in diesem
+// Zyklus auch nicht als Ersatz zur Wahl (Entscheidung 29.10.2026). Getauscht wird nur gegen eine Variante
+// mit mindestens 3 Sternen (bei 1 oder 2 Sternen genügen 2), mehr Sterne zuerst. Ein Tausch je Zyklus
+// nimmt eine noch nie trainierte Variante, falls möglich und keine Variante ab 4 Sternen an der Reihe ist;
+// welcher Tausch, wechselt mit der Zyklusnummer.
+function tauscheNebenuebungen(z: AppZustand, laufend: Zyklus, jetzt: string): MusterZustand[] {
   const e = einstellungenVon(z);
   const ort = ortVon(z, '');
+  if (!ort) return z.muster;
   const sterne = (id: string) => sterneVon(e, id);
+  const letzte = [laufend, ...z.zyklen.filter((x) => x.nr < laufend.nr).sort((a, b) => b.nr - a.nr)]
+    .slice(0, BEWERTUNG.pauseNachZyklen);
+  const trainiertIn = (id: string, zy: Zyklus) => sitzungen(z, id).some((x) => x.zeit >= zy.start && x.zeit < (zy.ende ?? jetzt));
+  const pausiert = (id: string) => !e.favoriten.includes(id) && sterne(id) >= BEWERTUNG.bleibtAbSterne
+    && letzte.length === BEWERTUNG.pauseNachZyklen && letzte.every((zy) => trainiertIn(id, zy));
+  const nebenmuster = z.muster.filter((mz) => MUSTER_ART[mz.muster] === 'isolation' || MUSTER_ART[mz.muster] === 'zusatz');
+  const pause = new Set(nebenmuster.flatMap((mz) => mz.hauptvarianten).filter(pausiert));
+
+  // Plätze, die getauscht werden, je mit ihren Kandidaten (mehr Sterne zuerst)
+  const plaetze = nebenmuster.flatMap((mz) => mz.hauptvarianten.flatMap((id) => {
+    const u = uebungVon(z, id);
+    if (!u || e.favoriten.includes(id) || (sterne(id) >= BEWERTUNG.bleibtAbSterne && !pause.has(id))) return [];
+    const mindestens = sterne(id) < BEWERTUNG.neutral ? BEWERTUNG.ersatzMinSterne : BEWERTUNG.tauschMinSterne;
+    const kandidaten = alleUebungen(z).filter((v) => v.muster === u.muster && v.stufe === u.stufe
+      && !mz.hauptvarianten.includes(v.id) && !pause.has(v.id) && sterne(v.id) >= mindestens && uebungErlaubt(e, ort, v, jetzt))
+      .sort((a, b) => sterne(b.id) - sterne(a.id)).map((v) => v.id);
+    return [{ muster: mz.muster, id, kandidaten }];
+  }));
+  const nieTrainiert = (id: string) => sitzungen(z, id).length === 0;
+  // Eine zurückkehrende Variante ab 4 Sternen geht der neuen vor.
+  const mitNeuer = plaetze.filter((p) => p.kandidaten.some(nieTrainiert) && sterne(p.kandidaten[0]!) < BEWERTUNG.bleibtAbSterne);
+  const neue = new Set(Array.from({ length: Math.min(BEWERTUNG.neueProZyklus, mitNeuer.length) },
+    (_, i) => mitNeuer[(laufend.nr + 1 + i) % mitNeuer.length]!));
+
   return z.muster.map((mz) => {
-    const art = MUSTER_ART[mz.muster];
-    if (!ort || (art !== 'isolation' && art !== 'zusatz')) return mz;
     const neu = mz.hauptvarianten.map((id) => {
-      const u = uebungVon(z, id);
-      if (!u || e.favoriten.includes(id) || sterne(id) >= BEWERTUNG.bleibtAbSterne) return id;
-      const mindestens = sterne(id) < BEWERTUNG.neutral ? BEWERTUNG.ersatzMinSterne : BEWERTUNG.tauschMinSterne;
-      const andere = alleUebungen(z).filter((v) => v.muster === u.muster && v.stufe === u.stufe
-        && !mz.hauptvarianten.includes(v.id) && sterne(v.id) >= mindestens && uebungErlaubt(e, ort, v, jetzt))
-        .sort((a, b) => sterne(b.id) - sterne(a.id))[0];
-      return andere?.id ?? id;
+      const platz = plaetze.find((p) => p.muster === mz.muster && p.id === id);
+      if (!platz) return id;
+      return (neue.has(platz) ? platz.kandidaten.find(nieTrainiert) : undefined) ?? platz.kandidaten[0] ?? id;
     });
     return { ...mz, hauptvarianten: [...new Set(neu)] };
   });
@@ -540,7 +563,7 @@ export function wochenabschluss(z: AppZustand, wocheId: string): AppZustand {
   if (laufend && grund) {
     zyklen = [...zyklen.filter((x) => x !== laufend), { ...laufend, ende: plusTage(naechsterMontag, 0), grund },
       { nr: laufend.nr + 1, start: naechsterMontag }];
-    muster = tauscheNebenuebungen(z, naechsterMontag);
+    muster = tauscheNebenuebungen(z, { ...laufend, ende: naechsterMontag }, naechsterMontag);
   }
 
   return {
