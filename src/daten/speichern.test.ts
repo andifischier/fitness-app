@@ -307,6 +307,19 @@ describe('Abschluss und Bewertung', () => {
     expect((await ladeEinstellungen(d)).bewertungen).toBeUndefined();
   });
 
+  it('merkt sich gefragte Übungen, auch ohne Antwort, und die Bewertung aus dem Tab Übungen', async () => {
+    const d = neueDb();
+    await speichereOrt(ort(), d);
+    await d.einheiten.add(beendet());
+    await speichereAbschluss('a', { bewertungen: { kh_curls: 4 }, gefragt: ['kh_curls', 'hammer_curls'] }, '2026-10-20T18:41:00', d);
+    expect((await ladeEinstellungen(d)).bewertungen).toEqual({ kh_curls: 4 });
+    expect((await ladeEinstellungen(d)).sterneGefragt).toEqual({
+      kh_curls: { am: '2026-10-20T18:41:00', ohneAntwort: 0 }, hammer_curls: { am: '2026-10-20T18:41:00', ohneAntwort: 1 },
+    });
+    await speichereBewertung('hammer_curls', 5, '2026-10-21T10:00:00', d);
+    expect((await ladeEinstellungen(d)).sterneGefragt?.hammer_curls).toEqual({ am: '2026-10-21T10:00:00', ohneAntwort: 0 });
+  });
+
   it('speichert nichts für eine noch nicht beendete Einheit', async () => {
     const d = neueDb();
     await d.einheiten.add({ ...beendet(), status: 'laufend' });

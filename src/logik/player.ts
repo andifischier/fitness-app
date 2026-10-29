@@ -2,7 +2,8 @@
 // Kalibrierungssatz und „Letztes Mal“. Rein und deterministisch: Die Zeit wird übergeben. Wo das
 // Training steht, ergibt sich allein aus den gespeicherten Satzergebnissen; so setzt ein
 // Neustart der App am richtigen Satz fort.
-import { MUSTER_ART, PLAYER, PROGRESSION } from '../konfiguration';
+import { BEWERTUNG, MUSTER_ART, PLAYER, PROGRESSION } from '../konfiguration';
+import { stundenZwischen } from './datum';
 import { lastraster } from './equipment';
 import { bereichFuer, lastAnzeige } from './planung';
 import type { AppZustand, BandStufe, Block, Einheit, Feedback, Position, SatzErgebnis, Uebung } from './typen';
@@ -256,6 +257,27 @@ export function offeneFeedbacks(einheit: Einheit): Stelle[] {
     });
   });
   return liste;
+}
+
+// Übungen, nach deren Sternen die Abschlussseite fragt (Entscheidung 29.10.2026): trainierte Übungen
+// ohne Max-Test und Zirkel, die noch keine Bewertung haben und höchstens einmal ohne Antwort gefragt
+// wurden, oder deren Bewertung bzw. letzte Frage mindestens 42 Tage zurückliegt. Unbewertete zuerst,
+// dann die am längsten nicht gefragten; höchstens 2 je Training.
+export function sternFragen(z: AppZustand, einheit: Einheit, jetzt: string): string[] {
+  const e = einstellungenVon(z);
+  const ids = [...new Set(einheit.bloecke.filter((b) => b.typ !== 'zirkel').flatMap((b) => b.positionen)
+    .filter((p) => !p.istMaxTest && p.ergebnisse.length > 0 && uebungVon(z, p.uebungId)).map((p) => p.uebungId))];
+  const kandidaten = ids.flatMap((id, i) => {
+    const gefragt = e.sterneGefragt?.[id];
+    if (e.bewertungen?.[id] === undefined) {
+      return (gefragt?.ohneAntwort ?? 0) < BEWERTUNG.fragenOhneAntwort ? [{ id, i, neu: true, am: gefragt?.am ?? '' }] : [];
+    }
+    return !gefragt || stundenZwischen(gefragt.am, jetzt) >= BEWERTUNG.auffrischenTage * 24
+      ? [{ id, i, neu: false, am: gefragt?.am ?? '' }] : [];
+  });
+  return kandidaten
+    .sort((a, b) => Number(b.neu) - Number(a.neu) || (a.am < b.am ? -1 : a.am > b.am ? 1 : 0) || a.i - b.i)
+    .slice(0, BEWERTUNG.fragenProTraining).map((k) => k.id);
 }
 
 // Satz, an dem die Progression misst: der erste, nach einem Kalibrierungssatz der zweite.

@@ -1,7 +1,7 @@
 // Schreibzugriffe der Screens Einstellungen und Übungen. Jede Änderung läuft in einer Transaktion;
 // Löschen prüft dort noch einmal, dass der Eintrag nie genutzt wurde.
 import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
-import { mitBewertungen, ohneUebung, ortGenutzt, uebungGenutzt, utensilGenutzt } from '../logik/einstellungen';
+import { mitSternen, ohneUebung, ortGenutzt, uebungGenutzt, utensilGenutzt } from '../logik/einstellungen';
 import { prognoseAusTagen } from '../logik/ausblick';
 import { loescheEinheit } from '../logik/loeschen';
 import { wocheMitPrognose } from '../logik/heute';
@@ -218,10 +218,11 @@ export async function loescheBeendeteEinheit(einheitId: string, d: FitnessDb = d
 
 // ---------- Abschluss und Bewertung der Übungen ----------
 
-// Speichert Gesamtanstrengung und Notiz einer beendeten Einheit sowie die Sterne je Übung. Eine
-// Bewertung mit 1 Stern ersetzt die Hauptvariante ab der nächsten Einheit (falls am Ort möglich).
+// Speichert Gesamtanstrengung und Notiz einer beendeten Einheit sowie die Sterne der gefragten Übungen
+// (`gefragt`, auch ohne Antwort; Entscheidung 29.10.2026). Eine Bewertung mit 1 Stern ersetzt die
+// Hauptvariante ab der nächsten Einheit (falls am Ort möglich).
 export async function speichereAbschluss(einheitId: string, angaben: {
-  gesamtbewertung?: Sterne; notiz?: string; bewertungen: Record<string, Sterne>;
+  gesamtbewertung?: Sterne; notiz?: string; bewertungen: Record<string, Sterne>; gefragt?: string[];
 }, jetzt: string, d: FitnessDb = db): Promise<boolean> {
   return d.transaction('rw', TABELLEN.map((t) => d.table(t)), async () => {
     const alt = await d.einheiten.get(einheitId);
@@ -233,7 +234,7 @@ export async function speichereAbschluss(einheitId: string, angaben: {
     const notiz = angaben.notiz?.trim();
     if (notiz) einheit.notiz = notiz;
     await d.einheiten.put(einheit);
-    await bewerte(angaben.bewertungen, einheit.ortId, jetzt, d);
+    await bewerte(angaben.gefragt ?? [], angaben.bewertungen, einheit.ortId, jetzt, d);
     return true;
   });
 }
@@ -242,12 +243,14 @@ export async function speichereAbschluss(einheitId: string, angaben: {
 export async function speichereBewertung(uebungId: string, sterne: Sterne | undefined, jetzt: string, d: FitnessDb = db): Promise<void> {
   await d.transaction('rw', TABELLEN.map((t) => d.table(t)), async () => {
     const ort = (await d.orte.toArray()).find((o) => o.standard);
-    await bewerte({ [uebungId]: sterne }, ort?.id ?? '', jetzt, d);
+    await bewerte([], { [uebungId]: sterne }, ort?.id ?? '', jetzt, d);
   });
 }
 
-async function bewerte(bewertungen: Record<string, Sterne | undefined>, ortId: string, jetzt: string, d: FitnessDb): Promise<void> {
+async function bewerte(gefragt: string[], bewertungen: Record<string, Sterne | undefined>, ortId: string, jetzt: string,
+  d: FitnessDb): Promise<void> {
+  if (gefragt.length === 0 && Object.keys(bewertungen).length === 0) return;
+  await d.einstellungen.put(mitSternen(await ladeEinstellungen(d), gefragt, bewertungen, jetzt), EINSTELLUNGEN_SCHLUESSEL);
   if (Object.keys(bewertungen).length === 0) return;
-  await d.einstellungen.put(mitBewertungen(await ladeEinstellungen(d), bewertungen), EINSTELLUNGEN_SCHLUESSEL);
   await d.muster.bulkPut(uebernimmBewertungen(await ladeZustand(d), ortId, jetzt).muster);
 }

@@ -3,9 +3,9 @@
 import { describe, expect, it } from 'vitest';
 import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
 import { plusTage, isoWoche } from './datum';
-import { mitBewertungen } from './einstellungen';
+import { mitBewertungen, mitSternen } from './einstellungen';
 import { erstelleEinheit, hauptvarianten } from './planung';
-import { beende, offeneFeedbacks, satzVorgabe, schritte, setzeFeedback, starte, trageSatzEin } from './player';
+import { beende, offeneFeedbacks, satzVorgabe, schritte, setzeFeedback, starte, sternFragen, trageSatzEin } from './player';
 import { schliesseEinheitAb, uebernimmBewertungen, vorschauNaechstesMal, wochenabschluss, type NaechstesMal } from './progression';
 import { MONTAG, ort, setzePrognose, zeitpunkt, zustand } from './testhilfe';
 import { MUSKELN, type AppZustand, type Einheit, type Muskel, type MusterZustand, type Sterne } from './typen';
@@ -130,6 +130,101 @@ describe('Zyklusbeginn mit Sternen', () => {
     expect(bizeps({ hammer_curls: 3, konzentrationscurl: 5 })).toEqual(['konzentrationscurl']);
     // Mit 2 Sternen genügt eine Alternative mit 2 Sternen.
     expect(bizeps({ kh_curls: 2, hammer_curls: 2, konzentrationscurl: 1 })).toEqual(['hammer_curls']);
+  });
+});
+
+// Fertige Einheit mit je einem erledigten Satz der Übungen (Zirkel: als Zirkelblock, Max-Test markiert).
+const fertig = (zeit: string, uebungen: string[], art: { zirkel?: string[]; maxTest?: string[] } = {}): Einheit => {
+  const position = (uebungId: string) => ({ uebungId, saetze: 1, zielWdh: 10, ergebnisse: [{ nr: 1, wdh: 10, zeit }],
+    ...(art.maxTest?.includes(uebungId) ? { istMaxTest: true } : {}) });
+  return {
+    id: zeit, woche: isoWoche(zeit), erstelltAm: zeit, gestartetAm: zeit, status: 'abgeschlossen', ortId: 'zuhause',
+    fokus: 'ganz', format: 'klassisch', geschaetzteDauerMin: 0, aufwaermen: [],
+    bloecke: [{ typ: 'einzeln', pauseSek: 0, positionen: uebungen.map(position) },
+      ...(art.zirkel ? [{ typ: 'zirkel' as const, pauseSek: 0, positionen: art.zirkel.map(position) }] : [])],
+  };
+};
+
+describe('Sterne auf der Abschlussseite (Entscheidung 29.10.2026)', () => {
+  const mit = (e: Partial<AppZustand['einstellungen'][number]>) => {
+    const z = voll();
+    return { ...z, einstellungen: [{ ...z.einstellungen[0]!, ...e }] };
+  };
+
+  it('fragt unbewertete Übungen, höchstens 2, ohne Max-Test und Zirkel', () => {
+    const einheit = fertig(JETZT, ['kh_curls', 'hammer_curls', 'kh_seitheben', 'kh_bankdruecken'],
+      { maxTest: ['kh_bankdruecken'], zirkel: ['plank'] });
+    expect(sternFragen(voll(), einheit, JETZT)).toEqual(['kh_curls', 'hammer_curls']);
+    expect(sternFragen(voll(), fertig(JETZT, ['kh_bankdruecken'], { maxTest: ['kh_bankdruecken'], zirkel: ['plank'] }), JETZT)).toEqual([]);
+  });
+
+  it('fragt ohne Antwort nur noch ein zweites Mal', () => {
+    const einheit = fertig(JETZT, ['kh_curls']);
+    const e1 = mitSternen(voll().einstellungen[0]!, ['kh_curls'], {}, JETZT);
+    expect(e1.sterneGefragt).toEqual({ kh_curls: { am: JETZT, ohneAntwort: 1 } });
+    expect(sternFragen(mit(e1), einheit, JETZT)).toEqual(['kh_curls']);
+    const e2 = mitSternen(e1, ['kh_curls'], {}, JETZT);
+    expect(sternFragen(mit(e2), einheit, plusTage(JETZT, 100))).toEqual([]);
+  });
+
+  it('fragt bewertete Übungen nach 6 Wochen wieder, unbewertete zuerst', () => {
+    const einheit = fertig(JETZT, ['kh_curls', 'hammer_curls', 'kh_seitheben']);
+    const e = mitSternen(voll().einstellungen[0]!, [], { kh_curls: 4, hammer_curls: 2 }, plusTage(JETZT, -41));
+    expect(sternFragen(mit(e), einheit, JETZT)).toEqual(['kh_seitheben']);
+    const alt = mitSternen(e, [], { hammer_curls: 2 }, plusTage(JETZT, -40));
+    // Nach 42 Tagen: kh_curls ist fällig, hammer_curls (später bewertet) noch nicht.
+    expect(sternFragen(mit(alt), einheit, plusTage(JETZT, 1))).toEqual(['kh_seitheben', 'kh_curls']);
+    // Bewertungen ohne Zeitpunkt (aus der Zeit vor dieser Regel) gelten als fällig.
+    expect(sternFragen(voll({ kh_curls: 4 }), fertig(JETZT, ['kh_curls']), JETZT)).toEqual(['kh_curls']);
+  });
+
+  it('eine Antwort oder eine bestätigte Bewertung setzt die Frist neu, Entfernen setzt alles zurück', () => {
+    const e1 = mitSternen(voll().einstellungen[0]!, ['kh_curls'], {}, JETZT);
+    const e2 = mitSternen(e1, ['kh_curls'], { kh_curls: 5 }, plusTage(JETZT, 3));
+    expect(e2.bewertungen).toEqual({ kh_curls: 5 });
+    expect(e2.sterneGefragt).toEqual({ kh_curls: { am: plusTage(JETZT, 3), ohneAntwort: 0 } });
+    const e3 = mitSternen(e2, ['kh_curls'], {}, plusTage(JETZT, 50));
+    expect(e3.bewertungen).toEqual({ kh_curls: 5 });
+    expect(e3.sterneGefragt).toEqual({ kh_curls: { am: plusTage(JETZT, 50), ohneAntwort: 0 } });
+    const e4 = mitSternen(e3, [], { kh_curls: undefined }, plusTage(JETZT, 51));
+    expect(e4.bewertungen).toBeUndefined();
+    expect(e4.sterneGefragt).toBeUndefined();
+  });
+});
+
+describe('Lieblinge mit Pause und eine neue Übung je Zyklus (Entscheidung 29.10.2026)', () => {
+  const null10 = () => Object.fromEntries(MUSKELN.map((m) => [m, 0])) as Record<Muskel, number>;
+  const zyklen = [{ nr: 1, start: plusTage(MONTAG, -77), ende: plusTage(MONTAG, -35) }, { nr: 2, start: plusTage(MONTAG, -35) }];
+  const bizeps = (bewertungen: Record<string, Sterne>, haupt: string[], einheiten: Einheit[], favoriten: string[] = []) => {
+    const z = voll(bewertungen, {
+      zyklen, einheiten,
+      muster: [{ muster: 'Bizeps', stufe: 3, hauptvarianten: haupt }],
+      wochen: [{ id: '2026-W43', prognose: 3, einheiten: 0, ziele: null10(), erledigt: null10(), erholungswoche: false, laengerAngenommen: false }],
+    });
+    const mitFav = { ...z, einstellungen: [{ ...z.einstellungen[0]!, favoriten }] };
+    return wochenabschluss(mitFav, '2026-W43').muster.find((m) => m.muster === 'Bizeps')!.hauptvarianten;
+  };
+  const beideZyklen = [fertig(plusTage(MONTAG, -50), ['kh_curls']), fertig(plusTage(MONTAG, -10), ['kh_curls'])];
+
+  it('ein Liebling setzt nach 2 Zyklen am Stück einen Zyklus aus', () => {
+    expect(bizeps({ kh_curls: 5 }, ['kh_curls'], beideZyklen)).toEqual(['hammer_curls']);
+    // Nur im laufenden Zyklus trainiert: bleibt.
+    expect(bizeps({ kh_curls: 5 }, ['kh_curls'], beideZyklen.slice(1))).toEqual(['kh_curls']);
+    // Favoriten bleiben immer.
+    expect(bizeps({ kh_curls: 5 }, ['kh_curls'], beideZyklen, ['kh_curls'])).toEqual(['kh_curls']);
+    // Ohne Alternative mit mindestens 3 Sternen bleibt er.
+    expect(bizeps({ kh_curls: 5, hammer_curls: 2, konzentrationscurl: 2 }, ['kh_curls'], beideZyklen)).toEqual(['kh_curls']);
+  });
+
+  it('nach der Pause kommt der Liebling zurück und geht der neuen Übung vor', () => {
+    const pause = [fertig(plusTage(MONTAG, -50), ['kh_curls']), fertig(plusTage(MONTAG, -10), ['hammer_curls'])];
+    expect(bizeps({ kh_curls: 5 }, ['hammer_curls'], pause)).toEqual(['kh_curls']);
+  });
+
+  it('nimmt beim Tausch eine noch nie trainierte Variante', () => {
+    const vorher = [fertig(plusTage(MONTAG, -50), ['hammer_curls']), fertig(plusTage(MONTAG, -10), ['kh_curls'])];
+    // Ohne die Regel wäre hammer_curls (Katalogreihenfolge) dran.
+    expect(bizeps({}, ['kh_curls'], vorher)).toEqual(['konzentrationscurl']);
   });
 });
 

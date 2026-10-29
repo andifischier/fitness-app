@@ -11,13 +11,13 @@ import { zirkelBestzeit, zirkelVorgaben } from '../../logik/heute';
 import { kannTauschen, lastAnzeige, mobilityZeilen, musterNachSaetzen, tausche } from '../../logik/planung';
 import {
   aktuellerBlock, aktuellerSchritt, balkenAbschnitte, beende, bewerteAlle, blockwechselNach, erledigteSaetze, fortschrittshinweis, letzterSatzAm, letztesMal, messSatz,
-  offeneFeedbacks, pauseNach, positionVon, satzVorgabe, schritte, feedbackVorschlag, korrigiereSatz, lastWaehlbar, starte, trageSatzEin,
+  offeneFeedbacks, pauseNach, positionVon, satzVorgabe, schritte, feedbackVorschlag, korrigiereSatz, lastWaehlbar, starte, sternFragen, trageSatzEin,
   type Balkenschritt, type SatzVorgabe, type Schritt, type Stelle,
 } from '../../logik/player';
 import { neueRekorde, vorschauNaechstesMal } from '../../logik/progression';
 import type { AppZustand, Einheit, Feedback, Sterne, Uebung } from '../../logik/typen';
 import { uebungVon } from '../../logik/verlauf';
-import { Ablaufliste, Hinweis, Knopf, Laedt } from '../../ui/bausteine';
+import { Ablaufliste, Hinweis, Knopf, Laedt, Sternwahl } from '../../ui/bausteine';
 import { TauschBlatt } from '../../ui/blaetter';
 import { Icon } from '../../ui/Icon';
 import { bereiteTonVor, pausenEnde, useBildschirmAn } from '../../ui/signal';
@@ -29,8 +29,8 @@ import { Uebergang, useUebergang } from '../../ui/uebergang';
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
 import { Countdown, Stoppuhr, Zaehler } from '../../ui/zaehler';
 
-// Angaben der Abschlussseite (Gesamtanstrengung freiwillig, nichts vorausgewählt).
-interface Angaben { gesamtbewertung?: Sterne; notiz?: string }
+// Angaben der Abschlussseite (Gesamtanstrengung freiwillig, nichts vorausgewählt; Sterne der gefragten Übungen).
+interface Angaben { gesamtbewertung?: Sterne; notiz?: string; bewertungen?: Record<string, Sterne>; gefragt?: string[] }
 
 export function TrainingSeite() {
   const { id } = useParams();
@@ -53,7 +53,7 @@ export function TrainingSeite() {
     setSchluss('speichert');
     try {
       await beendeEinheit(e, letzterSatzAm(e) ?? lokaleZeit());
-      await speichereAbschluss(e.id, { ...angaben, bewertungen: {} }, lokaleZeit());
+      await speichereAbschluss(e.id, { ...angaben, bewertungen: angaben.bewertungen ?? {} }, lokaleZeit());
       navigate('/', { replace: true });
     } catch {
       setSchluss('fehler');
@@ -727,7 +727,8 @@ function FeedbackKarte({ z, einheit, stelle, wahl, messwert, farbe, onWahl, onMe
 // Rekorde, darunter alle fertigen Übungen mit zu leicht / passend / zu schwer (vorausgewählt; bei „zu schwer“
 // die Nachfrage zum Messsatz), Gesamtanstrengung (freiwillig, nichts vorausgewählt), Notiz und optional
 // Abkühlen. Ein „Speichern“ für alles. Das Training endet mit dem letzten Satz; die Seite zeigt den Stand,
-// den das Speichern ergibt. Sterne vergibt der Nutzer im Tab Übungen (Entscheidung 21.10.2026).
+// den das Speichern ergibt. Sterne nur für höchstens 2 Übungen, die neu sind oder deren Bewertung 6 Wochen
+// alt ist (freiwillig, vorausgefüllt mit der letzten Bewertung; Entscheidung 29.10.2026).
 function Abschluss({ z, einheit, fehler, onSpeichern }: {
   z: AppZustand; einheit: Einheit; fehler: boolean; onSpeichern: (neu: Einheit, angaben: Angaben) => void;
 }) {
@@ -738,6 +739,9 @@ function Abschluss({ z, einheit, fehler, onSpeichern }: {
   const [notiz, setNotiz] = useState('');
   const [abkuehlen, setAbkuehlen] = useState(false);
   const [jetzt] = useState(lokaleZeit);
+  const [fragen] = useState(() => sternFragen(z, einheit, jetzt));
+  const [sterne, setSterne] = useState<Record<string, Sterne>>({});
+  const bisherSterne = einstellungenAus(z).bewertungen ?? {};
   const schluessel = (s: Stelle) => `${s.block}.${s.position}`;
   const wahl = (s: Stelle) => gewaehlt[schluessel(s)] ?? feedbackVorschlag(z, einheit, s);
   const messwert = (s: Stelle) => (wahl(s) === 'schwer' ? werte[schluessel(s)] ?? geschafft(z, einheit, s) : undefined);
@@ -761,7 +765,9 @@ function Abschluss({ z, einheit, fehler, onSpeichern }: {
   const inSek = stellen.every((s) => uebungVon(z, positionVon(einheit, { ...s, satz: 1 }).uebungId)?.bereich.einheit === 'Sek.');
   const speichern = () => {
     const text = notiz.trim();
-    onSpeichern(bewertet, { ...(anstrengung ? { gesamtbewertung: anstrengung } : {}), ...(text ? { notiz: text } : {}) });
+    onSpeichern(bewertet, {
+      ...(anstrengung ? { gesamtbewertung: anstrengung } : {}), ...(text ? { notiz: text } : {}), bewertungen: sterne, gefragt: fragen,
+    });
   };
 
   return (
@@ -810,6 +816,27 @@ function Abschluss({ z, einheit, fehler, onSpeichern }: {
                 onMesswert={(w) => setWerte({ ...werte, [schluessel(s)]: w })} />
             ))}
           </div>
+        </>
+      )}
+
+      {fragen.length > 0 && (
+        <>
+          <h2 className="mt-7 text-gross font-bold">{fragen.length > 1 ? 'Wie gefallen dir die Übungen?' : 'Wie gefällt dir die Übung?'}</h2>
+          <Hinweis>Freiwillig. Mehr Sterne: kommt öfter dran. 1 Stern: wird ab der nächsten Einheit ersetzt, wenn es eine Alternative gibt.</Hinweis>
+          <ul className="mt-3 rounded-karte border border-rand bg-flaeche px-5">
+            {fragen.map((id) => {
+              const name = uebungVon(z, id)?.name ?? id;
+              return (
+                <li key={id} className="border-b border-linie pt-3 pb-1 last:border-b-0">
+                  <p className="text-basis font-semibold">{name}</p>
+                  <div className="-ml-2.5">
+                    <Sternwahl label={`Bewertung ${name}`} wert={sterne[id] ?? bisherSterne[id]}
+                      onChange={(n) => setSterne({ ...sterne, [id]: n })} />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         </>
       )}
 
