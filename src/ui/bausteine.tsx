@@ -9,7 +9,7 @@ export function Seite({ titel, zurueck, children }: { titel: string; zurueck?: s
     <main className="mx-auto max-w-xl px-seite pt-8 pb-10">
       <header className={`flex items-center gap-3 ${zurueck ? 'mb-6' : 'mb-6 pt-4'}`}>
         {zurueck && (
-          <Link to={zurueck} aria-label="Zurück" className="-ml-3 flex size-touch items-center justify-center text-text">
+          <Link to={zurueck} state={{ zurueck: true }} aria-label="Zurück" className="-ml-3 flex size-touch items-center justify-center text-text">
             <Icon name="zurueck" />
           </Link>
         )}

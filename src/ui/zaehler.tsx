@@ -1,7 +1,9 @@
-// Zähler mit −/+ für geschaffte Wiederholungen und Stoppuhr für Halteübungen (Testtag und Training).
+// Zähler mit −/+ für geschaffte Wiederholungen, Stoppuhr für Halteübungen (Testtag, Max-Test) und
+// Countdown für Halteübungen im Training.
 import { useEffect, useState } from 'react';
 import { Knopf } from './bausteine';
 import { Icon } from './Icon';
+import { bereiteTonVor, pausenEnde } from './signal';
 
 const rund = 'flex size-[72px] items-center justify-center rounded-full border border-rand bg-flaeche text-text disabled:text-rand';
 
@@ -38,6 +40,38 @@ export function Stoppuhr({ wert, onChange }: { wert: number; onChange: (s: numbe
         {startMs === undefined
           ? <Knopf art="sekundaer" onClick={() => { onChange(0); setStartMs(Date.now()); }}>{wert > 0 ? 'Neu starten' : 'Stoppuhr starten'}</Knopf>
           : <Knopf art="sekundaer" onClick={() => setStartMs(undefined)}>Stopp</Knopf>}
+      </div>
+    </div>
+  );
+}
+
+// Countdown bis zum Ziel für Halteübungen (Entscheidung 29.10.2026): kein Zählen, am Ende Ton und
+// Vibration wie am Pausenende. „Satz erledigt“ speichert das Ziel, auch ohne Countdown.
+export function Countdown({ ziel }: { ziel: number }) {
+  const [startMs, setStartMs] = useState<number>();
+  const [jetzt, setJetzt] = useState(Date.now);
+  const rest = startMs === undefined ? ziel : Math.max(0, ziel - Math.floor((jetzt - startMs) / 1000));
+  const laeuft = startMs !== undefined && rest > 0;
+  useEffect(() => {
+    if (!laeuft) return;
+    const t = window.setInterval(() => setJetzt(Date.now()), 250);
+    return () => window.clearInterval(t);
+  }, [laeuft]);
+  useEffect(() => {
+    if (startMs !== undefined && rest === 0) pausenEnde();
+  }, [startMs, rest]);
+  return (
+    <div className="mt-8 flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-2">
+        <span className="text-zahl font-extrabold tabular-nums" aria-live="off">{rest}</span>
+        <p className="text-hinweis text-gedaempft">{rest === 0 ? 'Geschafft' : 'Sekunden'}</p>
+      </div>
+      <div className="w-full">
+        {laeuft
+          ? <Knopf art="sekundaer" onClick={() => setStartMs(undefined)}>Stopp</Knopf>
+          : <Knopf art="sekundaer" onClick={() => { bereiteTonVor(); setJetzt(Date.now()); setStartMs(Date.now()); }}>
+              {startMs === undefined ? 'Countdown starten' : 'Neu starten'}
+            </Knopf>}
       </div>
     </div>
   );

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { isoWoche, plusTage, wochentag } from './datum';
 import {
-  alternativen, dosisProMuskel, erholungsfenster, erstelleEinheit, hauptvarianten, istErholt, kannTauschen, startfragen,
+  alternativen, aufwaermenFuer, dosisProMuskel, erholungsfenster, erstelleEinheit, hauptvarianten, istErholt, kannTauschen, startfragen,
   startwerte, tausche, wochenziele, zirkelVorschlagen,
 } from './planung';
 import { absolviere, ort, setzePrognose, simuliereWoche, zeitpunkt, zustand } from './testhilfe';
 import { uebungVon } from './verlauf';
-import { MUSKELN, type AppZustand, type Einheit, type MuskelZustand, type Muskel } from './typen';
+import { MUSKELN, type AppZustand, type Block, type Einheit, type MuskelZustand, type Muskel } from './typen';
 
 const ids = (e: Einheit) => e.bloecke.flatMap((b) => b.positionen.map((p) => p.uebungId));
 const uebung = (z: AppZustand, id: string) => z.katalog.uebungen.find((u) => u.id === id)!;
@@ -193,7 +193,8 @@ describe('Aufbau der Einheit', () => {
   it('Aufwärmen: allgemein, Mobility der Tagesmuster, Aufwärmsatz der ersten Grundübung', () => {
     const e = plane(zustand());
     const texte = e.aufwaermen.map((a) => a.vorgabe);
-    expect(texte.slice(0, 3)).toEqual(zustand().katalog.aufwaermen.allgemein);
+    // Ganzkörper: Hampelmann, je die erste Zeile für oben und unten (Entscheidung 29.10.2026)
+    expect(texte.slice(0, 3)).toEqual(['60 Sek. Hampelmann', '30 Sek. Armkreisen vorwärts und rückwärts', '10 Kniebeugen ohne Last']);
     expect(texte).toContain('10 Band-Pull-Aparts');
     const erste = e.bloecke[0]!.positionen[0]!;
     const name = uebungVon(zustand(), erste.uebungId)!.name;
@@ -204,6 +205,24 @@ describe('Aufbau der Einheit', () => {
     expect(zweite.aufwaermen.at(-1)?.vorgabe).toMatch(new RegExp(`^8 Wdh\\. .+: \\d+(,\\d+)? kg$`));
     const ohneBand = plane(zustand({ orte: [ort(['KH', 'SCHRAEG', 'STANGE', 'TISCH', 'ERH'])] }));
     expect(ohneBand.aufwaermen.map((a) => a.vorgabe).join()).not.toContain('Band');
+  });
+
+  it('Aufwärmen: allgemeiner Teil nach Körperhälfte, Mobility nach den Mustern mit den meisten Sätzen', () => {
+    const z = zustand({ katalog: 'voll' });
+    const o = z.orte[0]!;
+    const block = (...p: [string, number][]): Block => ({
+      typ: 'einzeln', pauseSek: 90, positionen: p.map(([uebungId, saetze]) => ({ uebungId, saetze, zielWdh: 10, ergebnisse: [] })),
+    });
+    const texte = (bloecke: Block[]) => aufwaermenFuer(z, o, bloecke).filter((a) => a.uebungId === '').map((a) => a.vorgabe);
+    const oben = texte([block(['liegestuetz', 3], ['kh_curls', 2])]);
+    expect(oben.slice(0, 3)).toEqual(['60 Sek. Hampelmann', '30 Sek. Armkreisen vorwärts und rückwärts', '10 Schulterkreisen rückwärts']);
+    expect(oben.join()).not.toContain('Kniebeugen');
+    const unten = texte([block(['kniebeuge', 3], ['wadenheben', 3])]);
+    expect(unten.slice(0, 3)).toEqual(['60 Sek. Hampelmann', '10 Kniebeugen ohne Last', '10 Beinpendel je Bein']);
+    expect(unten.join()).not.toContain('Armkreisen');
+    // Rumpf mit den meisten Sätzen zuerst; höchstens 3 Mobility-Zeilen
+    const mobility = texte([block(['liegestuetz', 2], ['plank', 4], ['kniebeuge', 3], ['kh_rudern_einarmig', 1])]).slice(3);
+    expect(mobility).toEqual(['8 Katze-Kuh', '5 Ausfallschritte mit Oberkörperdrehung je Seite', '10 Wand-Slides']);
   });
 
   it('Einheit ist geplant, gehört zur Woche und hat Ziel und Last je Position', () => {

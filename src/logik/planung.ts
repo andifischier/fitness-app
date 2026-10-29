@@ -1,7 +1,7 @@
 // Planungsmodul laut Spezifikation, Abschnitt „Planungslogik“. Rein und deterministisch: Die
 // aktuelle Zeit wird übergeben; der Zustand wird nur gelesen, nie verändert.
 import {
-  ABLEITUNG, BEWERTUNG, ERHOLUNGSWOCHE, EINHEIT, ERSATZ, FOKUS_GRUPPEN, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
+  ABLEITUNG, BEWERTUNG, ERHOLUNGSWOCHE, EINHEIT, ERSATZ, FOKUS_GRUPPEN, KOERPERHAELFTE, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
   KOMBI, PROGRESSION, TESTTAG, TRAININGSPAUSE, WOCHENZIEL, WORKOUT, ZEITBUDGET, ZIRKEL,
 } from '../konfiguration';
 import { isoWoche, plusTage, stundenZwischen, verbleibendeTage, wochenNummer, wochentag } from './datum';
@@ -436,11 +436,30 @@ export function lastAnzeige(z: AppZustand, u: Uebung): 'bekannt' | 'vorschlag' |
   return basisKraft(z, u) !== undefined ? 'vorschlag' : 'waehlen';
 }
 
+// Muster der Positionen, die mit den meisten Sätzen zuerst (bei Gleichstand in der Reihenfolge der Einheit).
+export function musterNachSaetzen(z: AppZustand, positionen: Position[]): MusterId[] {
+  const saetze = new Map<MusterId, number>();
+  for (const p of positionen) {
+    const u = uebungVon(z, p.uebungId);
+    if (u) saetze.set(u.muster, (saetze.get(u.muster) ?? 0) + Math.max(1, p.saetze));
+  }
+  return [...saetze.keys()].sort((a, b) => saetze.get(b)! - saetze.get(a)!);
+}
+
+// Allgemeiner Teil (Entscheidung 29.10.2026): immer der Anfang; arbeiten Ober- und Unterkörper (oder
+// keiner von beiden), je die erste Zeile jeder Hälfte; arbeitet nur eine Hälfte, alle Zeilen dieser Hälfte.
+function allgemeinFuer(z: AppZustand, muster: MusterId[]): string[] {
+  const a = z.katalog.aufwaermen.allgemein;
+  const haelften = new Set(muster.map((m) => KOERPERHAELFTE[m]).filter((h) => h !== undefined));
+  if (haelften.size === 1) return [...a.immer, ...a[[...haelften][0]!]];
+  return [...a.immer, ...a.oben.slice(0, 1), ...a.unten.slice(0, 1)];
+}
+
 export function aufwaermenFuer(z: AppZustand, ort: Ort, bloecke: Block[]): Einheit['aufwaermen'] {
   const a = z.katalog.aufwaermen;
-  const zeilen = a.allgemein.map((t) => ({ uebungId: '', vorgabe: t }));
-  const uebungen = bloecke.flatMap((b) => b.positionen).map((p) => uebungVon(z, p.uebungId)).filter((u) => u !== undefined);
-  const mobility = mobilityZeilen(z, ort, new Set(uebungen.map((u) => u.muster)));
+  const muster = musterNachSaetzen(z, bloecke.flatMap((b) => b.positionen));
+  const zeilen = allgemeinFuer(z, muster).map((t) => ({ uebungId: '', vorgabe: t }));
+  const mobility = mobilityZeilen(z, ort, muster);
   zeilen.push(...mobility.slice(0, a.maxMobilityZeilen).map((t) => ({ uebungId: '', vorgabe: t })));
   const erste = bloecke.flatMap((b) => b.positionen).find((p) => {
     const u = uebungVon(z, p.uebungId);

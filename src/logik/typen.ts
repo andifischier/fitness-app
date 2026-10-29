@@ -44,7 +44,7 @@ export interface Zirkel {
 export interface KatalogDatei {
   schemaVersion: number; utensilien: Utensil[]; uebungen: Uebung[]; zirkel: Zirkel[];
   aufwaermen: {
-    allgemein: string[]; mobility: Partial<Record<MusterId, string[]>>;
+    allgemein: { immer: string[]; oben: string[]; unten: string[] }; mobility: Partial<Record<MusterId, string[]>>;
     maxMobilityZeilen: number; aufwaermsatz: { anteilLast: number; wdh: number };
   };
 }

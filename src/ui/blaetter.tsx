@@ -7,6 +7,7 @@ import { uebungVon } from '../logik/verlauf';
 import { Hinweis } from './bausteine';
 import { Icon } from './Icon';
 import { lastText, MUSTER_NAMEN } from './texte';
+import { useUebergang } from './uebergang';
 
 export function suche(liste: Uebung[], text: string): Uebung[] {
   const t = text.trim().toLowerCase();
@@ -21,9 +22,11 @@ export function nachMuster(liste: Uebung[]): [Uebung['muster'], Uebung[]][] {
 }
 
 export function Blatt({ titel, onSchliessen, children }: { titel: string; onSchliessen: () => void; children: ReactNode }) {
+  const grund = useUebergang<HTMLDivElement>(titel, 'einblenden', true);
+  const blatt = useUebergang<HTMLElement>(titel, 'blatt', true);
   return (
-    <div className="fixed inset-0 z-20 flex items-end bg-text/40" onClick={onSchliessen}>
-      <section role="dialog" aria-modal="true" aria-label={titel} onClick={(ev) => ev.stopPropagation()}
+    <div ref={grund} className="fixed inset-0 z-20 flex items-end bg-text/40" onClick={onSchliessen}>
+      <section ref={blatt} role="dialog" aria-modal="true" aria-label={titel} onClick={(ev) => ev.stopPropagation()}
         className="mx-auto max-h-[85dvh] w-full max-w-xl overflow-y-auto rounded-t-karte bg-flaeche px-seite pt-5 pb-[calc(20px+env(safe-area-inset-bottom))]">
         <div className="flex items-center gap-3">
           <h2 className="flex-1 text-screen font-extrabold">{titel}</h2>

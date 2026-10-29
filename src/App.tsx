@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router';
 import { Rahmen } from './ui/Rahmen';
+import { SeitenUebergang } from './ui/uebergang';
 import { HeuteSeite } from './seiten/Heute';
 import { EinheitSeite, FortschrittSeite, VerlaufSeite } from './seiten/fortschritt/Fortschritt';
 import { OnboardingSeite } from './seiten/onboarding/Onboarding';
@@ -22,12 +23,14 @@ export function App() {
   return (
     <Routes>
       <Route path="/onboarding" element={<Navigate to="/onboarding/1" replace />} />
-      <Route path="/onboarding/:schritt" element={<OnboardingSeite />} />
-      <Route path="/testtag" element={<TesttagSeite />} />
-      <Route path="/start" element={<StartSeite />} />
-      <Route path="/vorschau/:id" element={<VorschauSeite />} />
-      <Route path="/training/:id" element={<PlayerSeite />} />
-      <Route path="/mobility" element={<MobilitySeite />} />
+      <Route element={<SeitenUebergang />}>
+        <Route path="/onboarding/:schritt" element={<OnboardingSeite />} />
+        <Route path="/testtag" element={<TesttagSeite />} />
+        <Route path="/start" element={<StartSeite />} />
+        <Route path="/vorschau/:id" element={<VorschauSeite />} />
+        <Route path="/training/:id" element={<PlayerSeite />} />
+        <Route path="/mobility" element={<MobilitySeite />} />
+      </Route>
       <Route element={<Rahmen />}>
         <Route path="/" element={<HeuteSeite />} />
         <Route path="/fortschritt" element={<FortschrittSeite />} />

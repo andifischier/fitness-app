@@ -270,3 +270,23 @@
   Kombi-Workout, Fortschritt unklar, zu viele Rückfragen) und Abgleich mit der Studienlage
   (Pelland 2025, Zhang 2025, Singer 2024, Behenck 2020, Kassiano 2022, ACSM 2026). Alle Punkte vom Nutzer
   entschieden (`docs/entscheidungen.md`).
+
+## 29.10.2026: Aufwärmen nach Körperhälfte, Sätze ohne Zählen, Übergänge
+- **Was:**
+  - Aufwärmen: Der allgemeine Teil passt sich an (Beintag ohne Armkreisen, Oberkörpertag ohne
+    Kniebeugen, je mit einer passenden Zusatzübung); die Mobility kommt von den Mustern mit den
+    meisten Sätzen (vorher in der Reihenfolge der Übungen). Gilt auch fürs Abkühlen.
+  - Training: kein Zähler mehr im Satz; „Satz erledigt“ speichert das Ziel, jeder Satz zeigt
+    „Ziel“ statt „Vorgabe“. Zähler nur noch im Kalibrierungssatz einer neuen Übung und im Max-Test.
+    Halteübungen bekommen einen Countdown bis zum Ziel mit Ton am Ende.
+  - Übungsfeedback: Zeile mit den Sätzen statt antippbarer Zahlen; bei „zu schwer“ die Frage
+    „Wie viele hast du im 1. Satz geschafft?“, die Folge („Nächstes Mal …“) rechnet gleich damit.
+  - Übergänge: Seiten gleiten herein (zurück von links), Tabs blenden ein, Schritte im Training
+    gleiten, Blätter fahren hoch, der Fortschrittsbalken wächst weich; aus bei „Bewegung reduzieren“.
+  - Absturz bei jedem „Weiter“ im Onboarding behoben (Ursache gefunden): Neuere Chrome-Versionen
+    geben bei `window.scrollTo` ein Promise zurück; der Effekt in `Onboarding.tsx` gab es an React
+    weiter, das es als Aufräumfunktion aufrief („n is not a function“). Die drei Stufen der
+    Absturz-Absicherung bleiben als Schutz bestehen.
+- **Warum:** Wunsch des Nutzers (Aufwärmen passend zum Tag, weniger Tippen im Training, App soll
+  weniger wie ein Prototyp wirken). Entscheidungen in `docs/entscheidungen.md`. Der Absturz fiel
+  beim Prüfen im Browser auf (Chromium 153 zeigt ihn, frühere Versionen nicht).

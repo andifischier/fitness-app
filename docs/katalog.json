@@ -3376,11 +3376,19 @@
   }
  ],
  "aufwaermen": {
-  "allgemein": [
-   "60 Sek. Hampelmann",
-   "30 Sek. Armkreisen vorwärts und rückwärts",
-   "10 Kniebeugen ohne Last"
-  ],
+  "allgemein": {
+   "immer": [
+    "60 Sek. Hampelmann"
+   ],
+   "oben": [
+    "30 Sek. Armkreisen vorwärts und rückwärts",
+    "10 Schulterkreisen rückwärts"
+   ],
+   "unten": [
+    "10 Kniebeugen ohne Last",
+    "10 Beinpendel je Bein"
+   ]
+  },
   "mobility": {
    "hDruck": [
     "10 Wand-Slides",
