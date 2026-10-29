@@ -113,7 +113,7 @@ function WocheUndDauer({ e, zurueck, weiter }: { e: Einstellungen; zurueck: stri
           einheit="Min" onChange={(standardDauerMin) => void setze({ standardDauerMin })} />
       </Karte>
       <Karte titel="Muskelprioritäten"
-        hinweis={standard ? 'Oberkörper betont: mehr Sätze für Brust, Rücken, Schultern und Arme.' : 'Angepasst.'}>
+        hinweis={standard ? 'Alle Muskelgruppen normal. Passe sie an, wenn dir etwas wichtiger ist.' : 'Angepasst.'}>
         {!prioritaeten && <Knopf art="schlicht" onClick={() => setPrioritaeten(true)}>Anpassen</Knopf>}
       </Karte>
       {prioritaeten && <PrioritaetenListe e={e} />}

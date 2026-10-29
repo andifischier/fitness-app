@@ -18,10 +18,11 @@ export const PROFIL = {
   zirkelSonst: 'alle2Wochen',
 } as const;
 
+// Standard seit 29.10.2026: alle Muskelgruppen normal (Entscheidung; vorher „Oberkörper betont“).
 export const STANDARD_PRIORITAETEN: Record<Muskel, Prioritaet> = {
-  Brust: 'hoch', Ruecken: 'hoch', Schultern: 'hoch', Bizeps: 'hoch', Trizeps: 'hoch',
+  Brust: 'normal', Ruecken: 'normal', Schultern: 'normal', Bizeps: 'normal', Trizeps: 'normal',
   Quadrizeps: 'normal', Gesaess: 'normal', HintereOS: 'normal',
-  Bauch: 'niedrig', Waden: 'sehrNiedrig',
+  Bauch: 'normal', Waden: 'normal',
 };
 
 export const STANDARD_EINSTELLUNGEN: Einstellungen = {

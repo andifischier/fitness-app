@@ -1,12 +1,12 @@
 // Regeln für die Screens Einstellungen und Übungen: Orte und Equipment, eigene Übungen und
 // Utensilien, Favoriten, Ausschlüsse, Video-Links und Einschränkungen. Rein und deterministisch.
-import { BEWERTUNG, PROFIL } from '../konfiguration';
+import { BEWERTUNG, PROFIL, VOLUMENGRENZE, WOCHENZIEL } from '../konfiguration';
 import { alleUebungen, uebungMoeglich } from './equipment';
 import { hauptvarianten } from './planung';
 import { einstellungenVon } from './verlauf';
 import {
-  MUSTER_IDS, type AppZustand, type Einstellungen, type MusterId, type Ort, type OrtEquipment, type Sterne, type Uebung,
-  type Utensil,
+  MUSTER_IDS, type AppZustand, type Einstellungen, type Muskel, type MuskelZustand, type MusterId, type Ort, type OrtEquipment,
+  type Prioritaet, type Sterne, type Uebung, type Utensil,
 } from './typen';
 
 // ---------- Zahlen mit Dezimalkomma ----------
@@ -404,4 +404,20 @@ export function ohneEinschraenkung(e: Einstellungen, id: string): Einstellungen 
 // Zirkel-Anteil als Startwert nach den Zielen: Ausdauer oder Fitness allgemein ⇒ 1x pro Woche.
 export function zirkelAnteilFuerZiele(ziele: Einstellungen['ziele']): Einstellungen['zirkelAnteil'] {
   return ziele.includes('ausdauer') || ziele.includes('fitness') ? PROFIL.zirkelMitAusdauer : PROFIL.zirkelSonst;
+}
+
+// ---------- Muskelprioritäten ----------
+
+// Persönliche Grenzen nach einer Änderung der Prioritäten (Entscheidung 29.10.2026): Die Grenze eines
+// Muskels mit neuer Priorität springt um den Unterschied der Startwerte, behält also den mit Feedback
+// gewonnenen Fortschritt; begrenzt auf Untergrenze + 2 bis Obergrenze der neuen Priorität.
+export function grenzenNachPrioritaeten(muskeln: MuskelZustand[], alt: Record<Muskel, Prioritaet>,
+  neu: Record<Muskel, Prioritaet>): MuskelZustand[] {
+  return muskeln.map((mz) => {
+    if (alt[mz.muskel] === neu[mz.muskel]) return mz;
+    const a = WOCHENZIEL.prioritaet[alt[mz.muskel]];
+    const n = WOCHENZIEL.prioritaet[neu[mz.muskel]];
+    const grenze = mz.persoenlicheGrenze + n.grenzeStart - a.grenzeStart;
+    return { ...mz, persoenlicheGrenze: Math.min(n.obergrenze, Math.max(n.untergrenze + VOLUMENGRENZE.minUeberUntergrenze, grenze)) };
+  });
 }

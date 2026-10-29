@@ -42,7 +42,7 @@ Das Onboarding erfasst Ziele, Rahmenbedingungen und Equipment und endet mit eine
 | Übliche Einheiten pro Woche | 1 bis 6; nur Startwert für die Zahl der vorausgewählten Trainingstage, die jede Woche neu gewählt werden | 3 |
 | Standard-Trainingsdauer | 20 bis 90 Min in 5-Min-Schritten | 40 Min |
 | Längere Einheiten anbieten | Ja/Nein: in Wochen mit 1 bis 2 Einheiten „15 Min länger?“ vorschlagen | Ja |
-| Muskelprioritäten | Pro Muskelgruppe: hoch, normal, niedrig, sehr niedrig | Oberkörper betont (siehe Planungslogik) |
+| Muskelprioritäten | Pro Muskelgruppe: hoch, normal, niedrig, sehr niedrig | Alle normal (Entscheidung 29.10.2026, vorher „Oberkörper betont“; siehe Planungslogik) |
 | Ziel-Reserve | 1 bis 3 Wdh. (Standard) oder 2 bis 3 Wdh. (schonender) | 1 bis 3 Wdh. |
 | Anteil Zirkel-Workouts | Aus, alle 2 Wochen, 1x pro Woche, 2x pro Woche | Alle 2 Wochen |
 | Orte | Liste von Orten mit jeweils eigenem Equipment (siehe Datenmodell) | Zuhause |
@@ -324,16 +324,17 @@ Das Wochenziel ist das Minimum aus drei Grenzen: dem, was die Zeit hergibt, der 
 
 - Wochenbudget = Prognose × Arbeitssätze pro Einheit × 1,7 (mittlere fraktionelle Sätze pro Arbeitssatz).
 - Wochenziel Muskel = min(persönliche Grenze, Obergrenze, max(Untergrenze, Wochenbudget × Gewicht ÷ Summe aller Gewichte)), gerundet.
-- Prioritäten sind in den Einstellungen pro Muskelgruppe änderbar. Standard ist „Oberkörper betont“:
+- Prioritäten sind in den Einstellungen pro Muskelgruppe änderbar. Standard sind seit 29.10.2026 **alle Muskelgruppen normal** (Entscheidung; der Nutzer passt sie bei Bedarf selbst an). Die Spalte „Muskelgruppen“ zeigt das frühere Profil „Oberkörper betont“, auf dem die Beispiele, Use Cases und Prototypen dieses Dokuments beruhen; es bleibt als Testszenario erhalten.
+- Ändert sich die Priorität eines Muskels, springt seine persönliche Grenze um den Unterschied der Startwerte (z. B. Bauch von niedrig auf normal: +4), begrenzt auf Untergrenze + 2 bis Obergrenze der neuen Priorität. So wirkt die Änderung sofort, und der mit Feedback gewonnene Fortschritt bleibt (Entscheidung 29.10.2026). Bestehende Daten mit dem alten Standard „Oberkörper betont“ wurden einmalig so auf „alle normal“ umgestellt (Datenbank Version 3); selbst angepasste Prioritäten blieben.
 
-| Priorität | Muskelgruppen | Gewicht | Untergrenze | Persönliche Grenze (Start) | Obergrenze |
+| Priorität | Muskelgruppen („Oberkörper betont“) | Gewicht | Untergrenze | Persönliche Grenze (Start) | Obergrenze |
 | --- | --- | --- | --- | --- | --- |
 | Hoch | Brust, Rücken, Schultern, Bizeps, Trizeps | 1,0 | 4 | 12 | 20 |
 | Normal | Quadrizeps, Gesäß, hintere Oberschenkel | 0,75 | 4 | 10 | 16 |
 | Niedrig | Bauch | 0,5 | 2 | 6 | 10 |
 | Sehr niedrig | Waden | 0,3 | 2 | 4 | 8 |
 
-Ergebnis mit diesen Startwerten bei 40 Min: Mit 2 bis 5 Einheiten erreicht das Wochenziel hoch priorisierter Muskeln die persönliche Grenze von 12 (mit 1 Einheit 6). Mehr Einheiten bedeuten also nicht automatisch mehr Volumen, sondern kürzere Einheiten mit besserer Verteilung und Raum für Zirkel, bis die persönliche Grenze durch gutes Feedback steigt.
+Ergebnis mit diesen Startwerten bei 40 Min: Beim Standard „alle normal“ erreicht mit 2 bis 5 Einheiten jeder Muskel die persönliche Grenze von 10 (mit 1 Einheit 5). Bei „Oberkörper betont“ erreichen hoch priorisierte Muskeln mit 2 bis 5 Einheiten 12 (mit 1 Einheit 6). Mehr Einheiten bedeuten also nicht automatisch mehr Volumen, sondern kürzere Einheiten mit besserer Verteilung und Raum für Zirkel, bis die persönliche Grenze durch gutes Feedback steigt.
 
 Die Frage „Morgen wieder?“ ist der Schlüssel für Tage am Stück: Sie lässt die andere Körperhälfte für die nächste Einheit frisch.
 
@@ -386,7 +387,7 @@ Zirkel zählen für das Erholungsfenster mit demselben Volumen wie für das Woch
 - Klassisch, Supersatz und Mix ergeben sich aus der Wahl Kombi oder Klassisch vor dem Start und den gebildeten Runden (siehe Schritt 8).
 - **Zirkel:** Häufigkeit laut Einstellung. Bei einer Prognose von 3 oder mehr ersetzt ein Zirkel eine reguläre Einheit; bei 1 bis 2 Einheiten erscheint er nur als Finisher in frei gebliebener Zeit, damit das Kraftvolumen nicht leidet.
 - **Fälligkeit:** „alle 2 Wochen“ = 1 Zirkel in Wochen mit gerader ISO-Wochennummer; „1x pro Woche“ = 1; „2x pro Woche“ = 2.
-- **Vorschlag:** Ein fälliger Zirkel wird bei Prognose 3 oder mehr vorgeschlagen, sobald die hoch priorisierten Muskeln mindestens 70 % ihres Wochenziels haben oder laut Prognose nur noch eine Einheit bleibt. Der Nutzer kann jederzeit „Stattdessen Zirkel“ bzw. „Doch Krafteinheit“ wählen.
+- **Vorschlag:** Ein fälliger Zirkel wird bei Prognose 3 oder mehr vorgeschlagen, sobald die am höchsten priorisierten Muskeln (bei „Oberkörper betont“ die hohen, beim Standard „alle normal“ alle) mindestens 70 % ihres Wochenziels haben oder laut Prognose nur noch eine Einheit bleibt. Der Nutzer kann jederzeit „Stattdessen Zirkel“ bzw. „Doch Krafteinheit“ wählen.
 - **Volumen:** je Runde und Station 0,5 fraktionelle Sätze für Primärmuskeln, 0,25 für Sekundärmuskeln. Das gilt für Wochenvolumen und Erholungsfenster.
 - **Stationen:** Nennt der Hinweis der Station eine bevorzugte Übung (z. B. „Burpees bevorzugt“, „Thruster, ohne Kurzhanteln Sprung-Kniebeuge“), nimmt die App die zuerst genannte, die am Ort möglich, nicht gesperrt und nicht ausgeschlossen ist (Entscheidung 21.10.2026). Sonst nutzt jede Station die Variante „Musterstufe − 2“. Fehlt sie: nächstniedrigere zirkel-geeignete Variante; sonst niedrigste zirkel-geeignete; sonst irgendeine Variante des Musters; sonst wird die Station ausgelassen.
 - Jeder Zirkel hat einen festen Namen und eine feste Zusammensetzung; Varianten passen sich dem Ort an. Bestzeiten gelten pro Zirkel, Ort und Variantensatz.
@@ -404,7 +405,7 @@ Die Bereiche stehen pro Übung im Katalog (`bereich.von` = Untergrenze U, `berei
 
 ## Simulation der Use Cases
 
-Die Planungslogik wurde als Prototyp umgesetzt und mit realistischen Wochen durchgespielt (40-Min-Einheiten, Ort Zuhause, Startwerte dieses Dokuments). In allen sieben Fällen erreicht jeder hoch priorisierte Muskel mindestens die Hälfte seines Ziels, in den fünf Fällen mit stimmiger Prognose praktisch das volle Ziel. Der erste Entwurf lieferte in sechs der sieben Fälle deutlich weniger oder leere Einheiten.
+Die Planungslogik wurde als Prototyp umgesetzt und mit realistischen Wochen durchgespielt (40-Min-Einheiten, Ort Zuhause, Startwerte dieses Dokuments mit dem Profil „Oberkörper betont“). In allen sieben Fällen erreicht jeder hoch priorisierte Muskel mindestens die Hälfte seines Ziels, in den fünf Fällen mit stimmiger Prognose praktisch das volle Ziel. Der erste Entwurf lieferte in sechs der sieben Fälle deutlich weniger oder leere Einheiten.
 
 | Use Case | Wie die App plant | Ergebnis Oberkörper / Beine (erledigt von Ziel) | Erster Entwurf |
 | --- | --- | --- | --- |

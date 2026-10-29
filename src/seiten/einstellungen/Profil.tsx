@@ -1,5 +1,5 @@
 import { PROFIL, STANDARD_PRIORITAETEN, ZEITBUDGET } from '../../konfiguration';
-import { aendereEinstellungen } from '../../daten/speichern';
+import { aendereEinstellungen, speicherePrioritaeten } from '../../daten/speichern';
 import { MUSKELN, PRIORITAETEN, type Einstellungen, type Muskel, type Prioritaet } from '../../logik/typen';
 import { Auswahl, Hinweis, Karte, Knopf, Laedt, Mehrfachauswahl, Schalter, Seite, Stepper } from '../../ui/bausteine';
 import {
@@ -47,7 +47,7 @@ export function PrioritaetenSeite() {
   if (!z) return <Laedt />;
   return (
     <Seite titel="Muskelprioritäten" zurueck="/einstellungen">
-      <Hinweis>Höhere Priorität bekommt mehr Sätze pro Woche. Standard ist „Oberkörper betont“.</Hinweis>
+      <Hinweis>Höhere Priorität bekommt mehr Sätze pro Woche. Standard: alle normal.</Hinweis>
       <PrioritaetenListe e={einstellungenAus(z)} />
     </Seite>
   );
@@ -55,7 +55,7 @@ export function PrioritaetenSeite() {
 
 // Prioritäten je Muskel; auch im Onboarding genutzt.
 export function PrioritaetenListe({ e }: { e: Einstellungen }) {
-  const setzePrio = (m: Muskel, p: Prioritaet) => void setze({ prioritaeten: { ...e.prioritaeten, [m]: p } });
+  const setzePrio = (m: Muskel, p: Prioritaet) => void speicherePrioritaeten({ ...e.prioritaeten, [m]: p });
   const standard = MUSKELN.every((m) => e.prioritaeten[m] === STANDARD_PRIORITAETEN[m]);
   return (
     <>
@@ -73,8 +73,8 @@ export function PrioritaetenListe({ e }: { e: Einstellungen }) {
         </div>
       </Karte>
       {!standard && (
-        <Knopf art="sekundaer" onClick={() => void setze({ prioritaeten: STANDARD_PRIORITAETEN })}>
-          Zurück zu „Oberkörper betont“
+        <Knopf art="sekundaer" onClick={() => void speicherePrioritaeten(STANDARD_PRIORITAETEN)}>
+          Zurück zu „alle normal“
         </Knopf>
       )}
     </>

@@ -1,7 +1,7 @@
 // Schreibzugriffe der Screens Einstellungen und Übungen. Jede Änderung läuft in einer Transaktion;
 // Löschen prüft dort noch einmal, dass der Eintrag nie genutzt wurde.
 import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
-import { mitSternen, ohneUebung, ortGenutzt, uebungGenutzt, utensilGenutzt } from '../logik/einstellungen';
+import { grenzenNachPrioritaeten, mitSternen, ohneUebung, ortGenutzt, uebungGenutzt, utensilGenutzt } from '../logik/einstellungen';
 import { prognoseAusTagen } from '../logik/ausblick';
 import { loescheEinheit } from '../logik/loeschen';
 import { wocheMitPrognose } from '../logik/heute';
@@ -23,6 +23,15 @@ export async function aendereEinstellungen(
 ): Promise<void> {
   await d.transaction('rw', d.einstellungen, async () => {
     await d.einstellungen.put(aenderung(await ladeEinstellungen(d)), EINSTELLUNGEN_SCHLUESSEL);
+  });
+}
+
+// Neue Muskelprioritäten; die persönlichen Grenzen der geänderten Muskeln ziehen mit (Entscheidung 29.10.2026).
+export async function speicherePrioritaeten(prioritaeten: Einstellungen['prioritaeten'], d: FitnessDb = db): Promise<void> {
+  await d.transaction('rw', d.einstellungen, d.muskeln, async () => {
+    const e = await ladeEinstellungen(d);
+    await d.muskeln.bulkPut(grenzenNachPrioritaeten(await d.muskeln.toArray(), e.prioritaeten, prioritaeten));
+    await d.einstellungen.put({ ...e, prioritaeten }, EINSTELLUNGEN_SCHLUESSEL);
   });
 }
 
