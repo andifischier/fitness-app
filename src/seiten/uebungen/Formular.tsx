@@ -24,7 +24,7 @@ export function VorlageSeite() {
   return (
     <Seite titel="Eigene Übung" zurueck="/uebungen">
       <Hinweis>Wähle eine ähnliche Übung als Vorlage. Alle Angaben werden übernommen und lassen sich ändern.</Hinweis>
-      <Textfeld typ="search" label="Vorlage suchen" wert={text} onChange={setText} platzhalter="z. B. Rudern" />
+      <Textfeld typ="search" label="Vorlage suchen" wert={text} onChange={setText} platzhalter="z. B. Rows" />
       {nachMuster(suche(alleUebungen(z), text)).map(([m, liste]) => (
         <section key={m}>
           <h2 className="mb-2 text-gross font-bold">{MUSTER_NAMEN[m]}</h2>
@@ -140,7 +140,7 @@ function Formular({ z, start, titel, zurueck, hinweis, gesperrt }: {
               onText={(t) => aendere({ bereich: { ...u.bereich, bis: leseZahl(t) ?? Number.NaN } })} />
           </div>
           {u.lasttyp === 'Band' && (
-            <Schalter titel="Band unterstützt" hinweis="Fortschritt ist das nächstleichtere Band, z. B. Klimmzug mit Band."
+            <Schalter titel="Band unterstützt" hinweis="Fortschritt ist das nächstleichtere Band, z. B. Band-Assisted Pullups."
               an={u.unterstuetzend} onChange={(unterstuetzend) => aendere({ unterstuetzend })} />
           )}
           {u.lasttyp === 'Last' && mitHantel && (

@@ -143,9 +143,9 @@ describe('mobilityAlle', () => {
   it('zeigt die Mobility aller Muster ohne Doppelte, Zeilen mit Utensil nur, wenn es da ist', () => {
     const z = voll();
     const mitBand = mobilityAlle(z, ort());
-    expect(mitBand).toContain('10 Band-Pull-Aparts');
+    expect(mitBand).toContain('10 Band Pull-Aparts');
     expect(new Set(mitBand).size).toBe(mitBand.length);
-    expect(mobilityAlle(z, ort(['KH']))).not.toContain('10 Band-Pull-Aparts');
+    expect(mobilityAlle(z, ort(['KH']))).not.toContain('10 Band Pull-Aparts');
   });
 });
 

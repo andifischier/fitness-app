@@ -195,7 +195,7 @@ describe('Eigene Übungen', () => {
     const basis = { ...entwurfAusVorlage(katalogUebung('kh_curls')), name: 'Hammercurls' };
     expect(pruefeEigeneUebung(z, basis)).toEqual([]);
     expect(pruefeEigeneUebung(z, { ...basis, name: '' })).toContain('Gib der Übung einen Namen.');
-    expect(pruefeEigeneUebung(z, { ...basis, name: 'kurzhantel-curls' })[0]).toContain('gibt es schon');
+    expect(pruefeEigeneUebung(z, { ...basis, name: 'dumbbell curls' })[0]).toContain('gibt es schon');
     expect(pruefeEigeneUebung(z, { ...basis, primaer: [] })).toContain('Wähle mindestens einen Hauptmuskel.');
     expect(pruefeEigeneUebung(z, { ...basis, stufe: 11 })).toHaveLength(1);
     expect(pruefeEigeneUebung(z, { ...basis, bereich: { von: 15, bis: 10, einheit: 'Wdh.' } })).toHaveLength(1);
@@ -209,7 +209,7 @@ describe('Eigene Übungen', () => {
     const u = fertigeUebung(z, { ...entwurfAusVorlage(katalogUebung('kh_curls')), name: ' Hammercurls ' });
     expect(u).toMatchObject({ id: 'eigen_hammercurls', name: 'Hammercurls', herkunft: 'eigene' });
     expect(u.youtubeUrl).toBe(youtubeSuche('Hammercurls'));
-    expect(youtubeSuche('Knieliegestütz')).toBe(katalogUebung('knieliegestuetz').youtubeUrl);
+    expect(youtubeSuche('Knee Pushups')).toBe(katalogUebung('knieliegestuetz').youtubeUrl);
     const z2 = { ...z, eigeneUebungen: [u] };
     expect(fertigeUebung(z2, { ...u, name: 'Hammer-Curls' }).id).toBe('eigen_hammercurls');
     expect(fertigeUebung(z2, { ...entwurfAusVorlage(u), name: 'Hammercurls 2' }).id).toBe('eigen_hammercurls_2');

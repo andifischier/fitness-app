@@ -194,9 +194,9 @@ describe('Aufbau der Einheit', () => {
   it('Aufwärmen: allgemein, Mobility der Tagesmuster, Aufwärmsatz der ersten Grundübung', () => {
     const e = plane(zustand());
     const texte = e.aufwaermen.map((a) => a.vorgabe);
-    // Ganzkörper: Hampelmann, je die erste Zeile für oben und unten (Entscheidung 29.10.2026)
-    expect(texte.slice(0, 3)).toEqual(['50 Hampelmann', '10 Armkreisen je Richtung', '10 Kniebeugen ohne Last']);
-    expect(texte).toContain('10 Band-Pull-Aparts');
+    // Ganzkörper: Jumping Jacks, je die erste Zeile für oben und unten (Entscheidung 29.10.2026)
+    expect(texte.slice(0, 3)).toEqual(['50 Jumping Jacks', '10 Arm Circles je Richtung', '10 Squats']);
+    expect(texte).toContain('10 Band Pull-Aparts');
     const erste = e.bloecke[0]!.positionen[0]!;
     const name = uebungVon(zustand(), erste.uebungId)!.name;
     // Ohne bekannte Last folgt die Kalibrierung: kein Gewicht, das wie eine Vorgabe wirkt (Entscheidung 21.10.2026).
@@ -216,14 +216,14 @@ describe('Aufbau der Einheit', () => {
     });
     const texte = (bloecke: Block[]) => aufwaermenFuer(z, o, bloecke).filter((a) => a.uebungId === '').map((a) => a.vorgabe);
     const oben = texte([block(['liegestuetz', 3], ['kh_curls', 2])]);
-    expect(oben.slice(0, 3)).toEqual(['50 Hampelmann', '10 Armkreisen je Richtung', '10 Schulterkreisen rückwärts']);
+    expect(oben.slice(0, 3)).toEqual(['50 Jumping Jacks', '10 Arm Circles je Richtung', '10 Backward Shoulder Circles']);
     expect(oben.join()).not.toContain('Kniebeugen');
     const unten = texte([block(['kniebeuge', 3], ['wadenheben', 3])]);
-    expect(unten.slice(0, 3)).toEqual(['50 Hampelmann', '10 Kniebeugen ohne Last', '10 Beinpendel je Bein']);
-    expect(unten.join()).not.toContain('Armkreisen');
+    expect(unten.slice(0, 3)).toEqual(['50 Jumping Jacks', '10 Squats', '10 Leg Swings je Bein']);
+    expect(unten.join()).not.toContain('Arm Circles');
     // Rumpf mit den meisten Sätzen zuerst; höchstens 3 Mobility-Zeilen
     const mobility = texte([block(['liegestuetz', 2], ['plank', 4], ['kniebeuge', 3], ['kh_rudern_einarmig', 1])]).slice(3);
-    expect(mobility).toEqual(['8 Katze-Kuh', '5 Ausfallschritte mit Oberkörperdrehung je Seite', '10 Wand-Slides']);
+    expect(mobility).toEqual(['8 Cat-Cow', '5 Lunges with Twist je Seite', '10 Wall Slides']);
   });
 
   it('Einheit ist geplant, gehört zur Woche und hat Ziel und Last je Position', () => {
@@ -401,6 +401,7 @@ describe('Zirkel', () => {
       ids(erstelleEinheit(zz, { jetzt: MO, ortId, prognose: 3, morgenWieder: false, laenger: false, zirkelId }));
     expect(stationen(z, 'sprint')).toEqual(['burpees', expect.any(String), expect.any(String), 'mountain_climbers']);
     expect(stationen(z, 'fundament')[3]).toBe('plank');
+    expect(stationen(z, 'leiter')[2]).toBe('dead_bug');
     expect(stationen(z, 'ausdauer')[0]).toBe('hampelmann');
     expect(stationen(z, 'ausdauer').at(-1)).toBe('seitstuetz');
     expect(stationen(z, 'kraftprobe')).toContain('kh_thruster');

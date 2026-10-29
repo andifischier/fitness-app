@@ -29,7 +29,7 @@ describe('Aufwärmen Schritt für Schritt (Entscheidung 29.10.2026)', () => {
       .map((z) => z.replace(/\s*\(nur mit [A-Z]+\)$/, ''));
     for (const z of zeilen) {
       const s = aufwaermSchritt(z);
-      if (s.sek !== undefined) expect(s.name).toMatch(/Dehnung/);
+      if (s.sek !== undefined) expect(s.name).toMatch(/Stretch/);
       else expect(s.wdh).toBeGreaterThan(0);
     }
   });

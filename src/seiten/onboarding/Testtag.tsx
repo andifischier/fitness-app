@@ -105,7 +105,7 @@ function Test({ u, e, inSek, mitHaengen, onErledigt }: {
   u: Uebung; e: Einstellungen; inSek: boolean; mitHaengen: boolean; onErledigt: (r: Ergebnis) => void;
 }) {
   const [wert, setWert] = useState(0);
-  const [haengen, setHaengen] = useState<number>();     // gesetzt: Klimmzug mit 0 Wdh., jetzt Hängen
+  const [haengen, setHaengen] = useState<number>();     // gesetzt: Pullups mit 0 Wdh., jetzt Hängen
   const zeigeSek = inSek || haengen !== undefined;
   const erledigt = () => {
     if (haengen !== undefined) onErledigt({ wdh: 0, sek: haengen });
@@ -120,7 +120,7 @@ function Test({ u, e, inSek, mitHaengen, onErledigt }: {
       {haengen === undefined && <Technik e={e} u={u} />}
       <div className="mt-4 rounded-karte border border-rand bg-flaeche p-5 text-basis">
         {haengen !== undefined
-          ? 'Kein Klimmzug geschafft. Häng dich mit gestreckten Armen an die Stange und halte so lange wie möglich.'
+          ? 'Keinen Pullup geschafft. Häng dich mit gestreckten Armen an die Stange und halte so lange wie möglich.'
           : inSek
             ? 'So lange halten, wie es sauber geht.'
             : 'So viele saubere Wiederholungen wie möglich, ohne Pause.'}
