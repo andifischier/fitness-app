@@ -8,10 +8,10 @@ import { lokaleZeit } from '../../daten/zeit';
 import { PLAYER, PROGRESSION } from '../../konfiguration';
 import { lastraster } from '../../logik/equipment';
 import { zirkelBestzeit, zirkelVorgaben } from '../../logik/heute';
-import { kannTauschen, mobilityZeilen, tausche } from '../../logik/planung';
+import { kannTauschen, mobilityZeilen, musterNachSaetzen, tausche } from '../../logik/planung';
 import {
-  aktuellerSchritt, erledigteSaetze, fortschrittshinweis, letztesMal, offeneFeedbacks, pauseNach, positionVon, satzVorgabe, schritte,
-  feedbackVorschlag, korrigiereSatz, lastWaehlbar, setzeFeedback, starte, trageSatzEin, type SatzVorgabe, type Schritt, type Stelle,
+  aktuellerSchritt, erledigteSaetze, fortschrittshinweis, letztesMal, messSatz, offeneFeedbacks, pauseNach, positionVon, satzVorgabe,
+  schritte, feedbackVorschlag, korrigiereSatz, lastWaehlbar, setzeFeedback, starte, trageSatzEin, type SatzVorgabe, type Schritt, type Stelle,
 } from '../../logik/player';
 import { vorschauNaechstesMal, type Rekord } from '../../logik/progression';
 import type { AppZustand, Einheit, Feedback, Sterne, Uebung } from '../../logik/typen';
@@ -24,8 +24,9 @@ import {
   BAND_NAMEN, feedbackOptionen, fortschrittZeilen, lastTeile, lastText, naechstesMalText, rekordZeile, saetzeMitLast, zeitText,
 } from '../../ui/texte';
 import { Technik } from '../../ui/technik';
+import { Uebergang, useUebergang } from '../../ui/uebergang';
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
-import { Stoppuhr, Zaehler } from '../../ui/zaehler';
+import { Countdown, Stoppuhr, Zaehler } from '../../ui/zaehler';
 
 interface Schluss { einheit?: Einheit; rekorde?: Rekord[]; bestzeit?: number; fehler?: boolean }
 
@@ -136,19 +137,6 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
     setPhase({ art: 'satz' });
   };
 
-  // Zahl eines erledigten Satzes auf „Wie war die Übung?“ korrigieren.
-  const korrigiert = async (stelle: Stelle, nr: number, wert: number) => {
-    const neu = korrigiereSatz(z, einheit, stelle, nr, wert);
-    try {
-      if (!(await speichereLaufendeEinheit(neu))) throw new Error('nicht gespeichert');
-    } catch {
-      setFehler(true);
-      return;
-    }
-    setFehler(false);
-    setEinheit(neu);
-  };
-
   // Tauschen vor dem ersten Satz einer Übung (Entscheidung 21.10.2026); Ziel und Last der neuen Übung.
   const getauscht = async (s: Schritt, uebungId: string) => {
     setTauschen(false);
@@ -163,9 +151,13 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
     setEinheit(neu);
   };
 
-  // Alle Übungen einer Runde auf einer Seite bewerten (Entscheidung 21.10.2026: weniger Rückfragen).
-  const alleBewertet = async (stellen: Stelle[], feedbacks: Feedback[], pause?: Pausenzeit) => {
-    const neu = stellen.reduce((e, s, i) => setzeFeedback(e, s, feedbacks[i]!), einheit);
+  // Alle Übungen einer Runde auf einer Seite bewerten (Entscheidung 21.10.2026: weniger Rückfragen);
+  // bei „zu schwer“ zusätzlich das Geschaffte im Messsatz (Entscheidung 29.10.2026).
+  const alleBewertet = async (stellen: Stelle[], feedbacks: Feedback[], messwerte: (number | undefined)[], pause?: Pausenzeit) => {
+    const neu = stellen.reduce((e, s, i) => {
+      const wert = messwerte[i];
+      return setzeFeedback(wert === undefined ? e : korrigiereSatz(z, e, s, messSatz(z, e, s), wert), s, feedbacks[i]!);
+    }, einheit);
     try {
       if (!(await speichereLaufendeEinheit(neu))) throw new Error('nicht gespeichert');
     } catch {
@@ -181,7 +173,7 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
 
   if (phase.art === 'aufwaermen') {
     return (
-      <Rahmen titel="Aufwärmen" anteil={0} onSchliessen={() => navigate(`/vorschau/${einheit.id}`)}>
+      <Rahmen titel="Aufwärmen" anteil={0} schritt="aufwaermen" onSchliessen={() => navigate(`/vorschau/${einheit.id}`)}>
         {fehler && <Speicherfehler />}
         <Aufwaermen zeilen={einheit.aufwaermen.map((a) => a.vorgabe)} zirkel={zirkel} weiter={() => void losgehen()} />
       </Rahmen>
@@ -190,17 +182,15 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
   const offen = offeneFeedbacks(einheit)[0];
   if (phase.art === 'feedback' && offen) {
     return (
-      <Rahmen titel="" anteil={erledigteSaetze(einheit) / Math.max(1, liste.length)}
-        start={einheit.gestartetAm} onSchliessen={() => setMenue(true)}>
+      <Rahmen titel="" anteil={erledigteSaetze(einheit) / Math.max(1, liste.length)} schritt={`feedback-${offen.block}`}
+        start={einheit.gestartetAm} onSchliessen={() => setMenue(true)} ueber={menue && (
+          <Menue onFortsetzen={() => setMenue(false)} onSpaeter={() => navigate('/')}
+            onBeenden={() => { setMenue(false); onBeenden(einheit); }} />
+        )}>
         {fehler && <Speicherfehler />}
         <RundenFeedback key={offen.block} z={z} einheit={einheit}
           stellen={offeneFeedbacks(einheit).filter((x) => x.block === offen.block)}
-          onKorrektur={(stelle, nr, wert) => void korrigiert(stelle, nr, wert)}
-          onWeiter={(stellen, fbs) => void alleBewertet(stellen, fbs, phase.pause)} />
-        {menue && (
-          <Menue onFortsetzen={() => setMenue(false)} onSpaeter={() => navigate('/')}
-            onBeenden={() => { setMenue(false); onBeenden(einheit); }} />
-        )}
+          onWeiter={(stellen, fbs, werte) => void alleBewertet(stellen, fbs, werte, phase.pause)} />
       </Rahmen>
     );
   }
@@ -213,7 +203,17 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
   // Oben nur Zeit und Fortschritt; im Zirkel zusätzlich die Runde (Entscheidung 21.10.2026).
   const titel = zirkel ? `Runde ${schritt.satz} von ${einheit.bloecke[schritt.block]?.runden ?? 1}` : '';
   return (
-    <Rahmen titel={titel} anteil={anteil} start={einheit.gestartetAm} onSchliessen={() => setMenue(true)}>
+    <Rahmen titel={titel} anteil={anteil} schritt={`${phase.art}-${index}`} start={einheit.gestartetAm} onSchliessen={() => setMenue(true)}
+      ueber={<>
+        {tauschen && tauschbar && (
+          <TauschBlatt z={z} einheit={einheit} block={schritt.block} position={schritt.position}
+            onWahl={(id) => void getauscht(schritt, id)} onSchliessen={() => setTauschen(false)} />
+        )}
+        {menue && (
+          <Menue onFortsetzen={() => setMenue(false)} onSpaeter={() => navigate('/')}
+            onBeenden={() => { setMenue(false); onBeenden(einheit); }} />
+        )}
+      </>}>
       {fehler && <Speicherfehler />}
       {phase.art === 'pause' && (
         <Pause key={index} z={z} einheit={einheit} schritt={schritt} ende={phase.ende} dauer={phase.dauer}
@@ -225,21 +225,14 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
             onTauschen={onTauschen} onWeiter={() => void erledigt(positionVon(einheit, schritt).zielWdh)} />
         : <Satz key={`${index}-${u.id}`} z={z} einheit={einheit} schritt={schritt} u={u} onTauschen={onTauschen}
             onErledigt={(w, l) => void erledigt(w, l)} />)}
-      {tauschen && tauschbar && (
-        <TauschBlatt z={z} einheit={einheit} block={schritt.block} position={schritt.position}
-          onWahl={(id) => void getauscht(schritt, id)} onSchliessen={() => setTauschen(false)} />
-      )}
-      {menue && (
-        <Menue onFortsetzen={() => setMenue(false)} onSpaeter={() => navigate('/')}
-          onBeenden={() => { setMenue(false); onBeenden(einheit); }} />
-      )}
     </Rahmen>
   );
 }
 
-// Kopf mit Schließen, Titel, laufender Zeit seit dem Start und Fortschrittsbalken.
-function Rahmen({ titel, anteil, start, onSchliessen, children }: {
-  titel: string; anteil: number; start?: string; onSchliessen: () => void; children: ReactNode;
+// Kopf mit Schließen, Titel, laufender Zeit seit dem Start und Fortschrittsbalken. Wechselt der
+// Schritt, gleitet der Inhalt herein (Entscheidung 29.10.2026); Blätter (`ueber`) liegen außerhalb.
+function Rahmen({ titel, anteil, schritt, start, onSchliessen, ueber, children }: {
+  titel: string; anteil: number; schritt: string; start?: string; onSchliessen: () => void; ueber?: ReactNode; children: ReactNode;
 }) {
   return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col px-seite pt-4 pb-8">
@@ -252,9 +245,11 @@ function Rahmen({ titel, anteil, start, onSchliessen, children }: {
         <span className="min-w-touch text-right text-basis text-gedaempft tabular-nums">{start ? <Uhr start={start} /> : null}</span>
       </header>
       <div className="mt-3 h-1 rounded-full bg-linie">
-        <div className="h-1 rounded-full bg-akzent" style={{ width: `${Math.min(1, anteil) * 100}%` }} />
+        <div className="h-1 rounded-full bg-akzent transition-[width] duration-300 motion-reduce:transition-none"
+          style={{ width: `${Math.min(1, anteil) * 100}%` }} />
       </div>
-      {children}
+      <Uebergang schluessel={schritt} art="vor" className="flex flex-1 flex-col">{children}</Uebergang>
+      {ueber}
     </main>
   );
 }
@@ -341,14 +336,15 @@ function Satz({ z, einheit, schritt, u, onTauschen, onErledigt }: {
       <Kopf z={z} u={u} label={kennzeichnung(einheit, schritt)} onTauschen={onTauschen} />
       {!p.istMaxTest && <Satzpunkte satz={schritt.satz} von={p.saetze} />}
       <Vorgabekarte u={u} v={v} last={last} raster={lastWaehlbar(z, einheit, schritt) && ort ? lastraster(ort, u) : []} onLast={setLast} />
-      {v.inSek
-        ? <Stoppuhr wert={wert} onChange={setWert} />
-        : <Zaehler wert={wert} onChange={setWert} />}
+      {/* Gezählt wird nur im Kalibrierungssatz und im Max-Test; sonst gilt das Ziel (Entscheidung 29.10.2026). */}
+      {v.zaehlen
+        ? v.inSek ? <Stoppuhr wert={wert} onChange={setWert} /> : <Zaehler wert={wert} onChange={setWert} />
+        : v.inSek && <Countdown ziel={v.wert} />}
       {fortschritt
         ? <Fortschritt h={fortschritt} />
         : letztes && !p.istMaxTest && <p className="mt-3 text-center text-basis text-gedaempft">Letztes Mal: {letztesText(u, letztes)}</p>}
       <div className="mt-auto pt-8">
-        <Knopf onClick={() => onErledigt(wert, last)}>{p.istMaxTest ? 'Test erledigt' : 'Satz erledigt'}</Knopf>
+        <Knopf onClick={() => onErledigt(v.zaehlen ? wert : v.wert, last)}>{p.istMaxTest ? 'Test erledigt' : 'Satz erledigt'}</Knopf>
       </div>
     </div>
   );
@@ -367,7 +363,7 @@ function Satzpunkte({ satz, von }: { satz: number; von: number }) {
   );
 }
 
-// Ziel bzw. Vorgabe, Last und Hinweis zur Reserve. Bei Übungen mit Last lässt sich das Gewicht in
+// Ziel, Last und Hinweis zur Reserve. Bei Übungen mit Last lässt sich das Gewicht in
 // jedem Satz ändern (Entscheidung 21.10.2026); im Kalibrierungssatz wird es gewählt.
 function Vorgabekarte({ u, v, last, raster, onLast }: {
   u: Uebung; v: SatzVorgabe; last?: number; raster: number[]; onLast: (kg: number) => void;
@@ -376,9 +372,7 @@ function Vorgabekarte({ u, v, last, raster, onLast }: {
   const teile = lastTeile(u, { last, bandStufe: v.bandStufe });
   const links = v.art === 'maxTest'
     ? { titel: 'Max-Test', gross: v.inSek ? 'So lange' : 'So viele', klein: 'wie möglich' }
-    : v.art === 'ziel'
-      ? { titel: 'Ziel', gross: String(v.wert), klein: v.bereich ? `Bereich ${v.bereich.von} bis ${v.bereich.bis}${v.inSek ? ' Sek.' : ''}` : einheit }
-      : { titel: 'Vorgabe', gross: String(v.wert), klein: einheit };
+    : { titel: 'Ziel', gross: String(v.wert), klein: v.bereich ? `Bereich ${v.bereich.von} bis ${v.bereich.bis}${v.inSek ? ' Sek.' : ''}` : einheit };
   const pos = last === undefined ? -1 : raster.indexOf(last);
   return (
     <section className="mt-5 rounded-karte border border-rand bg-flaeche p-5">
@@ -474,7 +468,7 @@ function Pause({ z, einheit, schritt, ende, dauer, onAendern, onWeiter, onRueckg
   const umfang = 2 * Math.PI * radius;
   const naechstes = [
     p.istMaxTest ? 'Max-Test' : `Satz ${schritt.satz} von ${p.saetze}`,
-    v.art === 'ziel' ? `Ziel ${v.wert}${v.inSek ? ' Sek.' : ''}` : v.art === 'vorgabe' ? `Vorgabe ${v.wert}${v.inSek ? ' Sek.' : ''}` : undefined,
+    v.art === 'ziel' ? `Ziel ${v.wert}${v.inSek ? ' Sek.' : ''}` : undefined,
     u ? lastText(u, { last: v.last, bandStufe: p.bandStufe }) : undefined,
   ].filter(Boolean).join(' · ');
   return (
@@ -542,9 +536,11 @@ function Station({ z, einheit, schritt, u, letzte, onTauschen, onWeiter }: {
 
 // Unterbrechen oder beenden; beim Beenden bleiben alle erledigten Sätze gespeichert.
 function Menue({ onFortsetzen, onSpaeter, onBeenden }: { onFortsetzen: () => void; onSpaeter: () => void; onBeenden: () => void }) {
+  const grund = useUebergang<HTMLDivElement>('menue', 'einblenden', true);
+  const blatt = useUebergang<HTMLElement>('menue', 'blatt', true);
   return (
-    <div className="fixed inset-0 z-10 flex items-end bg-text/40" onClick={onFortsetzen}>
-      <section role="dialog" aria-modal="true" aria-label="Training unterbrechen" onClick={(ev) => ev.stopPropagation()}
+    <div ref={grund} className="fixed inset-0 z-10 flex items-end bg-text/40" onClick={onFortsetzen}>
+      <section ref={blatt} role="dialog" aria-modal="true" aria-label="Training unterbrechen" onClick={(ev) => ev.stopPropagation()}
         className="mx-auto w-full max-w-xl rounded-t-karte bg-flaeche px-seite pt-5 pb-[calc(20px+env(safe-area-inset-bottom))]">
         <h2 className="text-screen font-extrabold">Training unterbrechen?</h2>
         <Hinweis>Später fortsetzen: Du machst beim nächsten Satz weiter. Beenden: Erledigte Sätze werden gespeichert.</Hinweis>
@@ -558,15 +554,18 @@ function Menue({ onFortsetzen, onSpaeter, onBeenden }: { onFortsetzen: () => voi
   );
 }
 
-// Übungsfeedback (Mockup 6), seit 21.10.2026 eine Seite je Runde: je Übung die geschafften Zahlen
-// (antippen zum Korrigieren), drei Knöpfe und die Folge für die nächste Einheit. Vorausgewählt ist
-// „zu schwer“, wenn der erste Satz das Ziel verfehlt, sonst „passend“; meist genügt „Weiter“.
-function RundenFeedback({ z, einheit, stellen, onKorrektur, onWeiter }: {
+// Übungsfeedback (Mockup 6), seit 21.10.2026 eine Seite je Runde: je Übung die Sätze, drei Knöpfe
+// und die Folge für die nächste Einheit. Vorausgewählt ist „passend“ (bzw. „zu schwer“, wenn der
+// Kalibrierungssatz das Ziel verfehlt); meist genügt „Weiter“. Bei „zu schwer“ fragt die Karte, wie viele
+// im Messsatz gingen (Entscheidung 29.10.2026: kein Zählen im Satz).
+function RundenFeedback({ z, einheit, stellen, onWeiter }: {
   z: AppZustand; einheit: Einheit; stellen: Stelle[];
-  onKorrektur: (stelle: Stelle, nr: number, wert: number) => void; onWeiter: (stellen: Stelle[], feedbacks: Feedback[]) => void;
+  onWeiter: (stellen: Stelle[], feedbacks: Feedback[], messwerte: (number | undefined)[]) => void;
 }) {
   const [gewaehlt, setGewaehlt] = useState<Record<number, Feedback>>({});
+  const [werte, setWerte] = useState<Record<number, number>>({});
   const wahl = (s: Stelle) => gewaehlt[s.position] ?? feedbackVorschlag(z, einheit, s);
+  const messwert = (s: Stelle) => (wahl(s) === 'schwer' ? werte[s.position] ?? geschafft(z, einheit, s) : undefined);
   const inSek = stellen.every((s) => uebungVon(z, positionVon(einheit, { ...s, satz: 1 }).uebungId)?.bereich.einheit === 'Sek.');
   return (
     <div className="flex flex-1 flex-col">
@@ -576,60 +575,54 @@ function RundenFeedback({ z, einheit, stellen, onKorrektur, onWeiter }: {
       </ul>
       <div className="mt-4 flex flex-col gap-3">
         {stellen.map((s) => (
-          <FeedbackKarte key={`${s.block}.${s.position}`} z={z} einheit={einheit} stelle={s} wahl={wahl(s)}
+          <FeedbackKarte key={`${s.block}.${s.position}`} z={z} einheit={einheit} stelle={s} wahl={wahl(s)} messwert={messwert(s)}
             onWahl={(fb) => setGewaehlt({ ...gewaehlt, [s.position]: fb })}
-            onKorrektur={(nr, wert) => onKorrektur(s, nr, wert)} />
+            onMesswert={(w) => setWerte({ ...werte, [s.position]: w })} />
         ))}
       </div>
       <div className="mt-auto pt-8">
-        <Knopf onClick={() => onWeiter(stellen, stellen.map(wahl))}>Weiter</Knopf>
+        <Knopf onClick={() => onWeiter(stellen, stellen.map(wahl), stellen.map(messwert))}>Weiter</Knopf>
       </div>
     </div>
   );
 }
 
-function FeedbackKarte({ z, einheit, stelle, wahl, onWahl, onKorrektur }: {
-  z: AppZustand; einheit: Einheit; stelle: Stelle; wahl: Feedback; onWahl: (fb: Feedback) => void;
-  onKorrektur: (nr: number, wert: number) => void;
+// Gespeicherter Wert des Messsatzes (Wiederholungen bzw. Sekunden).
+function geschafft(z: AppZustand, einheit: Einheit, s: Stelle): number {
+  const p = einheit.bloecke[s.block]!.positionen[s.position]!;
+  const r = p.ergebnisse[messSatz(z, einheit, s) - 1];
+  return (r?.wdh ?? r?.sek) ?? p.zielWdh;
+}
+
+function FeedbackKarte({ z, einheit, stelle, wahl, messwert, onWahl, onMesswert }: {
+  z: AppZustand; einheit: Einheit; stelle: Stelle; wahl: Feedback; messwert?: number;
+  onWahl: (fb: Feedback) => void; onMesswert: (wert: number) => void;
 }) {
   const p = einheit.bloecke[stelle.block]!.positionen[stelle.position]!;
   const u = uebungVon(z, p.uebungId);
-  const [korrektur, setKorrektur] = useState<{ nr: number; wert: number }>();
-  const vorschau = useMemo(() => vorschauNaechstesMal(z, einheit, { ...p, feedback: wahl }, lokaleZeit()), [z, einheit, p, wahl]);
+  const nr = messSatz(z, einheit, stelle);
+  // Die Folge rechnet schon mit dem eingegebenen Messwert.
+  const vorschau = useMemo(() => {
+    const e = messwert === undefined ? einheit : korrigiereSatz(z, einheit, stelle, nr, messwert);
+    return vorschauNaechstesMal(z, e, { ...e.bloecke[stelle.block]!.positionen[stelle.position]!, feedback: wahl }, lokaleZeit());
+  }, [z, einheit, stelle, nr, messwert, wahl]);
   if (!u) return null;
   const inSek = u.bereich.einheit === 'Sek.';
-  // Mit wechselndem Gewicht steht unter den Zahlen, welches Gewicht in welchem Satz galt.
+  // Mit wechselndem Gewicht steht darunter, welches Gewicht in welchem Satz galt.
   const lasten = new Set(p.ergebnisse.map((r) => lastText(u, { last: r.last ?? p.last, bandStufe: r.bandStufe ?? p.bandStufe })));
   const last = lasten.size <= 1 ? [...lasten][0] : undefined;
+  const zahlen = p.ergebnisse.map((r) => (inSek ? r.sek : r.wdh) ?? 0);
   const jeSatz = lasten.size > 1
-    ? saetzeMitLast(u, p.ergebnisse.map((r) => ({ wert: (inSek ? r.sek : r.wdh) ?? 0, last: r.last ?? p.last, bandStufe: r.bandStufe ?? p.bandStufe })))
+    ? saetzeMitLast(u, p.ergebnisse.map((r, i) => ({ wert: zahlen[i]!, last: r.last ?? p.last, bandStufe: r.bandStufe ?? p.bandStufe })))
     : undefined;
   const naechste = vorschau && uebungVon(z, vorschau.uebungId);
   return (
     <section className="rounded-karte border border-rand bg-flaeche p-4">
       <p className="text-gross font-bold">{u.name}</p>
-      {last && <p className="text-basis text-gedaempft">{last}</p>}
-      <div className="mt-2 flex flex-wrap items-center gap-2">
-        {p.ergebnisse.map((r) => (
-          <button key={r.nr} type="button" aria-label={`${u.name}: Satz ${r.nr} ändern`}
-            onClick={() => setKorrektur({ nr: r.nr, wert: (inSek ? r.sek : r.wdh) ?? 0 })}
-            className={`flex min-h-touch min-w-touch items-center justify-center rounded-full bg-flaeche px-3 text-gross font-semibold ${korrektur?.nr === r.nr ? 'border-2 border-akzent' : 'border border-rand'}`}>
-            {(inSek ? r.sek : r.wdh) ?? 0}
-          </button>
-        ))}
-        <span className="text-basis text-gedaempft">{inSek ? 'Sek.' : 'Wdh.'}</span>
-      </div>
-      {jeSatz && <p className="mt-2 text-basis text-gedaempft">{jeSatz}</p>}
-      {korrektur && (
-        <div className="mt-3">
-          <p className="text-basis font-semibold">Satz {korrektur.nr} ändern</p>
-          <Zaehler wert={korrektur.wert} onChange={(wert) => setKorrektur({ ...korrektur, wert })} einheit={inSek ? 'Sekunden' : 'Wiederholungen'} />
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <Knopf art="sekundaer" onClick={() => setKorrektur(undefined)}>Abbrechen</Knopf>
-            <Knopf onClick={() => { onKorrektur(korrektur.nr, korrektur.wert); setKorrektur(undefined); }}>Übernehmen</Knopf>
-          </div>
-        </div>
-      )}
+      <p className="text-basis text-gedaempft">
+        {[last, `${zahlen.length} ${zahlen.length === 1 ? 'Satz' : 'Sätze'}: ${zahlen.join(' · ')} ${inSek ? 'Sek.' : 'Wdh.'}`].filter(Boolean).join(' · ')}
+      </p>
+      {jeSatz && <p className="mt-1 text-basis text-gedaempft">{jeSatz}</p>}
       <div role="radiogroup" aria-label={`Wie war ${u.name}?`} className="mt-3 grid grid-cols-3 gap-2">
         {feedbackOptionen(inSek).map((o) => (
           <button key={o.wert} type="button" role="radio" aria-checked={wahl === o.wert} onClick={() => onWahl(o.wert)}
@@ -639,6 +632,12 @@ function FeedbackKarte({ z, einheit, stelle, wahl, onWahl, onKorrektur }: {
           </button>
         ))}
       </div>
+      {messwert !== undefined && (
+        <div className="mt-3">
+          <p className="text-basis font-semibold">Wie {inSek ? 'lange hast du' : 'viele hast du'} im {nr}. Satz geschafft?</p>
+          <Zaehler wert={messwert} onChange={onMesswert} einheit={inSek ? 'Sekunden' : 'Wiederholungen'} />
+        </div>
+      )}
       {vorschau && naechste && (
         <p className="mt-3 flex items-start gap-2 text-basis text-gedaempft">
           <span className="text-akzent"><Icon name="pfeil" groesse={18} /></span>
@@ -675,12 +674,10 @@ function Abschluss({ z, schluss }: { z: AppZustand; schluss: Schluss }) {
   const kacheln: [string, string][] = zirkel
     ? [[dauerText(sek), 'Zeit'], ...(bisher !== undefined ? [[dauerText(bisher), 'Bestzeit bisher'] as [string, string]] : [])]
     : [[String(Math.round(sek / 60)), 'Minuten'], [String(erledigteSaetze(e)), 'Sätze'], [String(rekorde.length), rekorde.length === 1 ? 'Rekord' : 'Rekorde']];
-  const uebungen = [...new Set(e.bloecke.flatMap((b) => b.positionen)
-    .filter((p) => !p.istMaxTest && p.ergebnisse.length > 0).map((p) => p.uebungId))]
-    .map((id) => uebungVon(z, id)).filter((u): u is Uebung => u !== undefined);
+  const trainiert = e.bloecke.flatMap((b) => b.positionen).filter((p) => !p.istMaxTest && p.ergebnisse.length > 0);
   const ort = z.orte.find((o) => o.id === e.ortId);
   const mobility = ort
-    ? mobilityZeilen(z, ort, new Set(uebungen.map((u) => u.muster))).slice(0, z.katalog.aufwaermen.maxMobilityZeilen)
+    ? mobilityZeilen(z, ort, musterNachSaetzen(z, trainiert)).slice(0, z.katalog.aufwaermen.maxMobilityZeilen)
     : [];
 
   const speichern = async () => {

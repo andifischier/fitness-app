@@ -51,7 +51,7 @@ export const katalogSchema = z.object({
   uebungen: z.array(uebungSchema),
   zirkel: z.array(zirkelSchema),
   aufwaermen: z.object({
-    allgemein: z.array(z.string()),
+    allgemein: z.object({ immer: z.array(z.string()), oben: z.array(z.string()), unten: z.array(z.string()) }),
     mobility: z.partialRecord(musterId, z.array(z.string())),
     maxMobilityZeilen: ganzzahl.positive(),
     aufwaermsatz: z.object({ anteilLast: zahl.positive().max(1), wdh: ganzzahl.positive() }),

@@ -39,7 +39,9 @@ function Schritt({ nr, hinweis }: { nr: number; hinweis?: string }) {
 export function OnboardingSeite() {
   const z = useZustand();
   const nr = Number(useParams().schritt ?? 1);
-  useEffect(() => window.scrollTo(0, 0), [nr]);   // jeder Schritt beginnt oben
+  // Jeder Schritt beginnt oben. In geschweiften Klammern: Neuere Chrome-Versionen geben bei scrollTo ein
+  // Promise zurück, das React sonst als Aufräumfunktion aufruft (Ursache der Abstürze bei „Weiter“).
+  useEffect(() => { window.scrollTo(0, 0); }, [nr]);
   if (!Number.isInteger(nr) || nr < 1 || nr > SCHRITTE) return <Navigate to="/onboarding/1" replace />;
   if (!z) return <Laedt />;
   return <Inhalt key={nr} z={z} nr={nr} />;

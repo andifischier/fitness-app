@@ -160,6 +160,13 @@ export const MUSTER_ART: Record<MusterId, 'grund' | 'isolation' | 'zusatz' | 'ko
   Rumpf: 'zusatz', Waden: 'zusatz', Kondition: 'kondition',
 };
 
+// Körperhälfte je Muster für den allgemeinen Teil des Aufwärmens (Entscheidung 29.10.2026);
+// Rumpf und Kondition zählen zu keiner Hälfte
+export const KOERPERHAELFTE: Partial<Record<MusterId, 'oben' | 'unten'>> = {
+  hDruck: 'oben', vDruck: 'oben', hZug: 'oben', vZug: 'oben', Bizeps: 'oben', Trizeps: 'oben', Schulter: 'oben',
+  Knie: 'unten', Einbein: 'unten', Huefte: 'unten', Waden: 'unten',
+};
+
 // Fokus-Gruppen; Bauch ist immer erlaubt
 export const FOKUS_GRUPPEN: Record<'oben' | 'unten', readonly Muskel[]> = {
   oben: ['Brust', 'Ruecken', 'Schultern', 'Bizeps', 'Trizeps'],
@@ -312,6 +319,15 @@ export const PLAYER = {
   // Signal am Pausenende: drei kurze Töne und Vibration (Millisekunden)
   ton: { frequenzHz: 880, dauerMs: 180, abstandMs: 120, anzahl: 3, lautstaerke: 0.3 },
   vibration: [200, 100, 200, 100, 400],
+} as const;
+
+// Übergänge zwischen Bildschirmen (Entscheidung 29.10.2026): neue Seite gleitet kurz herein
+// (vor von rechts, zurück von links), Tabs und Schritte im Training blenden ein, Blätter fahren hoch
+export const UEBERGANG = {
+  dauerMs: 240,
+  blattMs: 260,
+  versatzPx: 28,
+  kurve: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
 } as const;
 
 // Bewertung der Übungen mit 1 bis 5 Sternen (Entscheidung 21.10.2026, „ausgewogen“)

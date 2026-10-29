@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   aktuellerSchritt, beende, erledigteSaetze, feedbackVorschlag, fortschrittshinweis, istKalibrierung, kalibriere, letztesMal, offeneFeedbacks, pauseNach,
-  korrigiereSatz, lastWaehlbar, satzVorgabe, schritte, setzeFeedback, starte, trageSatzEin,
+  korrigiereSatz, lastWaehlbar, messSatz, satzVorgabe, schritte, setzeFeedback, starte, trageSatzEin,
 } from './player';
 import { bereichFuer } from './planung';
 import { werteUebungAus } from './progression';
@@ -157,14 +157,14 @@ describe('Ziel und Vorgabe', () => {
   const z = mitVarianten(zustand());
   const liste = schritte(MIX);
 
-  it('zeigt im ersten Satz das Ziel mit Bereich, danach die Vorgabe aus dem vorherigen Satz', () => {
-    expect(satzVorgabe(z, MIX, liste[1]!)).toMatchObject({ art: 'ziel', wert: 10, bereich: { von: 8, bis: 12 }, last: 16 });
+  it('zeigt in jedem Satz das Ziel mit Bereich, ohne Zähler (Entscheidung 29.10.2026)', () => {
+    expect(satzVorgabe(z, MIX, liste[1]!)).toMatchObject({ art: 'ziel', wert: 10, bereich: { von: 8, bis: 12 }, last: 16, zaehlen: false });
     const e = trageSatzEin(z, MIX, liste[1]!, 9, '2026-10-20T18:10:00');
-    expect(satzVorgabe(z, e, liste[3]!)).toMatchObject({ art: 'vorgabe', wert: 9 });
+    expect(satzVorgabe(z, e, liste[3]!)).toMatchObject({ art: 'ziel', wert: 10, zaehlen: false });
   });
 
-  it('zeigt beim Max-Test kein Ziel', () => {
-    expect(satzVorgabe(z, MIX, liste[0]!)).toMatchObject({ art: 'maxTest', wert: 0 });
+  it('zeigt beim Max-Test kein Ziel und zählt', () => {
+    expect(satzVorgabe(z, MIX, liste[0]!)).toMatchObject({ art: 'maxTest', wert: 0, zaehlen: true });
   });
 
   it('nennt die Reserve laut Einstellung und beim letzten Isolationssatz 0 bis 1', () => {
@@ -193,7 +193,7 @@ describe('Kalibrierungssatz', () => {
     expect(istKalibrierung(z, e, s1!)).toBe(true);
     expect(istKalibrierung(z, e, s2!)).toBe(false);
     expect(istKalibrierung(mitVarianten(z), e, s1!)).toBe(false);
-    expect(satzVorgabe(z, e, s1!)).toMatchObject({ kalibrierung: true, wert: 8 });
+    expect(satzVorgabe(z, e, s1!)).toMatchObject({ kalibrierung: true, wert: 8, zaehlen: true });
   });
 
   it('legt nach dem ersten Satz Last und Ziel der restlichen Sätze fest', () => {
@@ -206,9 +206,9 @@ describe('Kalibrierungssatz', () => {
     const p = nach.bloecke[0]!.positionen[0]!;
     expect(p).toMatchObject({ last: 12, zielWdh: 9 });
     expect(p.ergebnisse[0]).toMatchObject({ wdh: 15, last: 10 });
-    expect(satzVorgabe(z, nach, s2!)).toMatchObject({ art: 'ziel', wert: 9, last: 12, kalibrierung: false });
-    const weiter = trageSatzEin(z, nach, s2!, 8, '2026-10-20T18:12:00');
-    expect(satzVorgabe(z, weiter, schritte(weiter)[2]!)).toMatchObject({ art: 'vorgabe', wert: 8 });
+    expect(satzVorgabe(z, nach, s2!)).toMatchObject({ art: 'ziel', wert: 9, last: 12, kalibrierung: false, zaehlen: false });
+    const weiter = trageSatzEin(z, nach, s2!, 9, '2026-10-20T18:12:00');
+    expect(satzVorgabe(z, weiter, schritte(weiter)[2]!)).toMatchObject({ art: 'ziel', wert: 9, zaehlen: false });
   });
 
   it('wertet die Progression ab dem ersten Satz nach der Kalibrierung aus', () => {
@@ -273,6 +273,8 @@ describe('Übungsfeedback', () => {
     e = trageSatzEin(neu, curls, { block: 0, position: 0, satz: 1 }, 10, '2026-10-20T18:10:00', 8);
     e = trageSatzEin(neu, e, { block: 0, position: 0, satz: 2 }, ziel - 1, '2026-10-20T18:12:00');
     expect(feedbackVorschlag(neu, e, { block: 0, position: 0 })).toBe('schwer');
+    expect(messSatz(neu, e, { block: 0, position: 0 })).toBe(2);
+    expect(messSatz(neu, curls, { block: 0, position: 0 })).toBe(1);
   });
 
   it('fragt im Zirkel nicht', () => {

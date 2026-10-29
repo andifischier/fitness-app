@@ -85,7 +85,7 @@ function ohneLast(z: AppZustand, einheit: Einheit, s: Schritt): boolean {
 }
 
 export interface SatzVorgabe {
-  art: 'ziel' | 'vorgabe' | 'maxTest' | 'station';
+  art: 'ziel' | 'maxTest' | 'station';
   wert: number;                       // Wiederholungen bzw. Sekunden; beim Max-Test 0
   inSek: boolean;
   bereich?: { von: number; bis: number };
@@ -93,10 +93,12 @@ export interface SatzVorgabe {
   reserve: string;                    // Hinweistext zur Reserve
   kalibrierung: boolean;
   langsam: boolean;
+  zaehlen: boolean;                   // Geschafftes eingeben (nur Kalibrierungssatz und Max-Test)
 }
 
-// Was ein Satz anzeigt: Ziel (erster Satz, nach einer Kalibrierung der zweite) bzw. Vorgabe =
-// geschaffte Wiederholungen des vorherigen Satzes, Last und Hinweis zur Reserve. Das Feld für Geschafftes ist mit `wert` vorausgefüllt.
+// Was ein Satz anzeigt: Ziel, Last und Hinweis zur Reserve. Seit 29.10.2026 (Entscheidung) ist das Ziel
+// in jedem Satz der Richtwert und wird mit „Satz erledigt“ als geschafft gespeichert; gezählt wird nur
+// im Kalibrierungssatz (Gewicht finden) und im Max-Test.
 export function satzVorgabe(z: AppZustand, einheit: Einheit, s: Schritt): SatzVorgabe {
   const e = einstellungenVon(z);
   const b = einheit.bloecke[s.block]!;
@@ -105,9 +107,9 @@ export function satzVorgabe(z: AppZustand, einheit: Einheit, s: Schritt): SatzVo
   const inSek = u?.bereich.einheit === 'Sek.';
   const bereich = u ? bereichFuer(e, u) : undefined;
   const werte = { last: satzLast(z, einheit, s), bandStufe: p.bandStufe };
-  const basis = { inSek, ...werte, kalibrierung: false, langsam: p.langsam === true };
+  const basis = { inSek, ...werte, kalibrierung: false, langsam: p.langsam === true, zaehlen: false };
   if (p.istMaxTest) {
-    return { ...basis, art: 'maxTest', wert: 0, reserve: inSek ? 'Nur so lange, wie die Haltung sauber bleibt.' : 'Ohne Pause, nur saubere Wiederholungen.' };
+    return { ...basis, zaehlen: true, art: 'maxTest', wert: 0, reserve: inSek ? 'Nur so lange, wie die Haltung sauber bleibt.' : 'Ohne Pause, nur saubere Wiederholungen.' };
   }
   if (b.typ === 'zirkel') return { ...basis, art: 'station', wert: p.zielWdh, reserve: '' };
   const kalibrierung = istKalibrierung(z, einheit, s);
@@ -116,12 +118,7 @@ export function satzVorgabe(z: AppZustand, einheit: Einheit, s: Schritt): SatzVo
       ? `Vorschlag aus deinem Testtag für etwa ${bereich!.von} Wiederholungen; passt es nicht, ändere es.`
       : `Wähle ein Gewicht für etwa ${bereich!.von} Wiederholungen.`} Aufhören, wenn noch ${PROGRESSION.neueVarianteReserve} gingen.`
     : reserveText(e.zielReserve, inSek, letzterIsolationssatz(u, p, s));
-  if (s.satz === 1 || nachKalibrierung(z, einheit, s)) {
-    return { ...basis, art: 'ziel', wert: kalibrierung ? bereich!.von : p.zielWdh, bereich, reserve, kalibrierung };
-  }
-  const vorher = p.ergebnisse[s.satz - 2];
-  const wert = (inSek ? vorher?.sek : vorher?.wdh) ?? p.zielWdh;
-  return { ...basis, art: 'vorgabe', wert, bereich, reserve };
+  return { ...basis, art: 'ziel', wert: kalibrierung ? bereich!.von : p.zielWdh, bereich, reserve, kalibrierung, zaehlen: kalibrierung };
 }
 
 const letzterIsolationssatz = (u: Uebung | undefined, p: Position, s: Schritt) =>
@@ -225,18 +222,20 @@ export function offeneFeedbacks(einheit: Einheit): Stelle[] {
   return liste;
 }
 
-// Vorausgewähltes Feedback: „zu schwer“, wenn der erste Satz das Ziel verfehlt, sonst „passend“. Nach
-// einem Kalibrierungssatz zählt der erste Satz danach (wie in der Progression).
-export function feedbackVorschlag(z: AppZustand, einheit: Einheit, s: Stelle): Feedback {
+// Satz, an dem die Progression misst: der erste, nach einem Kalibrierungssatz der zweite.
+export function messSatz(z: AppZustand, einheit: Einheit, s: Stelle): number {
   const p = einheit.bloecke[s.block]!.positionen[s.position]!;
-  if (p.ergebnisse.length > 1 && istKalibrierung(z, einheit, { ...s, satz: 1 }) && p.ergebnisse[0]?.last !== undefined) {
-    return feedbackVon({ ...p, ergebnisse: p.ergebnisse.slice(1) });
-  }
-  return feedbackVon(p);
+  return p.ergebnisse.length > 1 && istKalibrierung(z, einheit, { ...s, satz: 1 }) && p.ergebnisse[0]?.last !== undefined ? 2 : 1;
 }
 
-// Korrigiert die Wiederholungen bzw. Sekunden eines erledigten Satzes (Entscheidung 21.10.2026:
-// Zahlen auf „Wie war die Übung?“ antippen). Last und Ziel der Position bleiben.
+// Vorausgewähltes Feedback: „zu schwer“, wenn der Messsatz das Ziel verfehlt, sonst „passend“.
+export function feedbackVorschlag(z: AppZustand, einheit: Einheit, s: Stelle): Feedback {
+  const p = einheit.bloecke[s.block]!.positionen[s.position]!;
+  return feedbackVon({ ...p, ergebnisse: p.ergebnisse.slice(messSatz(z, einheit, s) - 1) });
+}
+
+// Korrigiert die Wiederholungen bzw. Sekunden eines erledigten Satzes; seit 29.10.2026 nur noch den
+// Messsatz nach „zu schwer“ („Wie viele im 1. Satz?“). Last und Ziel der Position bleiben.
 export function korrigiereSatz(z: AppZustand, einheit: Einheit, s: Stelle, nr: number, wert: number): Einheit {
   const neu = structuredClone(einheit);
   const p = neu.bloecke[s.block]!.positionen[s.position]!;
