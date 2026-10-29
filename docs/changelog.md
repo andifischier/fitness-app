@@ -352,3 +352,9 @@
   jetzt beide Fenster untereinander, in der Reihenfolge der Liste.
 - **Warum:** Fehler gemeldet vom Nutzer: Beim Abhaken des zweiten Utensils schloss sich das Fenster
   des ersten, sodass nur eines ausgefüllt werden konnte.
+
+## 29.10.2026: Gewichtslisten mit Dezimalpunkt
+- **Was:** Gewichtslisten (Kurzhanteln als feste Paare, Kettlebells) nehmen jetzt auch Eingaben wie
+  „4.5,6.8,9.1“ oder „8,12,16“ an. Deutsche Eingaben wie „5, 10, 12,5, 20“ gelten weiter.
+- **Warum:** Fehler gemeldet vom Nutzer: Eine Liste mit Dezimalpunkten wurde als eine ungültige Zahl
+  gelesen, die App verlangte trotzdem Gewichte.
