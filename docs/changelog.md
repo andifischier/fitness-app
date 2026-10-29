@@ -368,3 +368,10 @@
   `platzReicht` (`equipment.ts`), Katalogfeld `brauchtPlatz`; Tests in `aufwaermen.test.ts` und
   `equipment.test.ts`.
 - **Warum:** Rückmeldungen des Nutzers nach dem Testen (Entscheidungen 29.10.2026).
+
+## 29.10.2026: Englische Übungsnamen
+- **Was:** Alle 100 Katalogübungen heißen jetzt englisch wie bei Freeletics (z. B. Pushups, Pullups, Squats,
+  Climbers, Jumping Jacks; Hantelübungen wie Dumbbell Bench Press). Auch Aufwärmzeilen und die Übungen in
+  den Zirkel-Hinweisen sind englisch. Anleitungen und Bedienung bleiben deutsch. Geändert: `katalog.json`,
+  `uebungskatalog.md`, Beispiele in `spezifikation.md`, Texte im Testtag und im Übungsformular, Tests.
+- **Warum:** Wunsch des Nutzers, der die englischen Namen von Freeletics gewohnt ist (Entscheidungen 29.10.2026).
