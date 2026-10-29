@@ -225,20 +225,12 @@ export function Zeile({ zu, titel, wert }: { zu: string; titel: string; wert?: s
   );
 }
 
-// Abhakliste (Aufwärmen, Mobility); der Haken ist nur eine Hilfe und wird nicht gespeichert.
-export function Checkliste({ zeilen }: { zeilen: string[] }) {
-  const [an, setAn] = useState<number[]>([]);
+// Vorgegebene Liste (Aufwärmen, Mobility, Abkühlen); nichts zum Abhaken (Entscheidung 29.10.2026: weniger Tippen).
+export function Ablaufliste({ zeilen }: { zeilen: string[] }) {
   return (
     <ul className="rounded-karte border border-rand bg-flaeche px-5">
       {zeilen.map((zeile, i) => (
-        <li key={i} className="border-b border-linie last:border-b-0">
-          <button type="button" role="checkbox" aria-checked={an.includes(i)}
-            onClick={() => setAn(an.includes(i) ? an.filter((x) => x !== i) : [...an, i])}
-            className="flex min-h-[56px] w-full items-center gap-4 py-3 text-left text-basis">
-            <Haekchen an={an.includes(i)} />
-            {zeile}
-          </button>
-        </li>
+        <li key={i} className="flex min-h-[56px] items-center border-b border-linie py-3 text-basis last:border-b-0">{zeile}</li>
       ))}
     </ul>
   );

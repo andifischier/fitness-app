@@ -13,7 +13,7 @@ import {
 import {
   BAND_STUFEN, MUSKELN, type AppZustand, type BandStufe, type Einheit, type Einstellungen, type MaxTest,
   type Muskel, type MuskelZustand, type MusterId, type MusterZustand, type Ort, type Position, type Uebung,
-  type VarianteZustand, type Woche, type Zyklus,
+  type VarianteZustand, type Vorstand, type Woche, type Zyklus,
 } from './typen';
 import {
   e1rm, einheitZeit, einstellungenVon, ersterSatz, faelligerMaxTest, feedbackVon, fertigeEinheiten,
@@ -321,6 +321,9 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
   const positionen = fertig.bloecke.filter((b) => b.typ !== 'zirkel').flatMap((b) => b.positionen)
     .filter((p) => p.ergebnisse.length > 0);
 
+  // Stand vor dem Abschluss, damit Löschen ihn zurückholen kann (Entscheidung 29.10.2026).
+  if (fertig.format !== 'test') fertig.vorher = vorstand(z, positionen);
+
   if (ort) neu = legeHauptvariantenFest(neu, fertig, ort, start);
 
   // Progression je Übung und Max-Tests
@@ -390,6 +393,16 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
     // Der Testtag zählt nicht als Einheit der Woche (Entscheidung 20.10.2026).
     wochen: fertig.format === 'test' ? neu.wochen : ersetze(neu.wochen, woche, (w) => w.id === wocheId),
     einheiten: ersetze(neu.einheiten, fertig, (x) => x.id === fertig.id),
+  };
+}
+
+function vorstand(z: AppZustand, positionen: Position[]): Vorstand {
+  const ids = [...new Set(positionen.filter((p) => !p.istMaxTest).map((p) => p.uebungId))];
+  const muster = [...new Set(positionen.map((p) => uebungVon(z, p.uebungId)?.muster).filter((m) => m !== undefined))];
+  const mit = <T,>(zustand: T | undefined) => (zustand ? { zustand } : {});
+  return {
+    varianten: ids.map((uebungId) => ({ uebungId, ...mit(z.varianten.find((v) => v.uebungId === uebungId)) })),
+    muster: muster.map((m) => ({ muster: m, ...mit(z.muster.find((x) => x.muster === m)) })),
   };
 }
 

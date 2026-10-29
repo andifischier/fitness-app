@@ -37,6 +37,24 @@ export function schritte(einheit: Einheit): Schritt[] {
   return liste;
 }
 
+// Abschnitte des Fortschrittsbalkens (Entscheidung 29.10.2026): Kombi und Zirkel je Runde, einzelne
+// Übungen je Übung; innerhalb eines Abschnitts steht jeder Schritt (Satz bzw. Station) einzeln.
+export type Balkenschritt = 'erledigt' | 'aktuell' | 'offen';
+
+export function balkenAbschnitte(einheit: Einheit): Balkenschritt[][] {
+  const liste = schritte(einheit);
+  const aktuell = aktuellerSchritt(einheit);
+  const abschnitte: Balkenschritt[][] = [];
+  liste.forEach((s, i) => {
+    const vorher = liste[i - 1];
+    const gruppe = einheit.bloecke[s.block]!.typ === 'einzeln' ? s.position : s.satz;
+    const vorherGruppe = vorher && (einheit.bloecke[vorher.block]!.typ === 'einzeln' ? vorher.position : vorher.satz);
+    if (!vorher || vorher.block !== s.block || vorherGruppe !== gruppe) abschnitte.push([]);
+    abschnitte.at(-1)!.push(positionVon(einheit, s).ergebnisse.length >= s.satz ? 'erledigt' : i === aktuell ? 'aktuell' : 'offen');
+  });
+  return abschnitte;
+}
+
 export function positionVon(einheit: Einheit, s: Schritt): Position {
   return einheit.bloecke[s.block]!.positionen[s.position]!;
 }

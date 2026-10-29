@@ -3,6 +3,7 @@
 import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
 import { mitBewertungen, ohneUebung, ortGenutzt, uebungGenutzt, utensilGenutzt } from '../logik/einstellungen';
 import { prognoseAusTagen } from '../logik/ausblick';
+import { loescheEinheit } from '../logik/loeschen';
 import { wocheMitPrognose } from '../logik/heute';
 import { beende, erledigteSaetze, starte } from '../logik/player';
 import {
@@ -198,6 +199,20 @@ export async function beendeEinheit(einheit: Einheit, jetzt: string, d: FitnessD
     const neu = schliesseEinheitAb(z, beendet, jetzt);
     for (const t of [...TRAININGSTABELLEN, 'zirkelErgebnisse'] as const) await d.table(t).bulkPut(neu[t]);
     return { einheit: neu.einheiten.find((x) => x.id === einheit.id)!, rekorde };
+  });
+}
+
+// Löscht eine beendete Einheit aus dem Verlauf und holt den Stand davor zurück (Entscheidung 29.10.2026).
+// Die betroffenen Tabellen werden in einer Transaktion neu geschrieben.
+export async function loescheBeendeteEinheit(einheitId: string, d: FitnessDb = db): Promise<boolean> {
+  return d.transaction('rw', TABELLEN.map((t) => d.table(t)), async () => {
+    const neu = loescheEinheit(await ladeZustand(d), einheitId);
+    if (!neu) return false;
+    for (const t of [...TRAININGSTABELLEN, 'zirkelErgebnisse'] as const) {
+      await d.table(t).clear();
+      await d.table(t).bulkPut(neu[t]);
+    }
+    return true;
   });
 }
 

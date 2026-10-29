@@ -2,16 +2,18 @@
 // Ziel und die letzten 6 Wochen mit Entlastungswochen in einer Karte, Entscheidungen 21.10.2026),
 // Max-Test-Verlauf je Muster, Zirkel-Bestzeiten; Verlauf aller Einheiten mit Detailansicht.
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
+import { loescheBeendeteEinheit } from '../../daten/speichern';
 import { lokaleZeit } from '../../daten/zeit';
 import {
   achse, dauerSek, maxTestReihen, saetzeVon, verlauf, verlaufUebungen, wochenvolumen, zieleDieseWoche, zirkelBestzeiten,
   type MaxTestReihe, type Wochenvolumen,
 } from '../../logik/fortschritt';
+import { kannLoeschen } from '../../logik/loeschen';
 import { MUSKELN, type AppZustand, type Einheit } from '../../logik/typen';
 import { einheitZeit, uebungVon } from '../../logik/verlauf';
 import { zirkelName } from '../../logik/workouts';
-import { Chip, Hinweis, Karte, Laedt, Seite } from '../../ui/bausteine';
+import { Chip, Hinweis, Karte, Knopf, Laedt, Seite } from '../../ui/bausteine';
 import { Icon } from '../../ui/Icon';
 import {
   datumLang, datumText, einheitName, entlastungText, FEEDBACK_NAMEN, kwText, monatKurz, MUSKEL_NAMEN, saetzeText,
@@ -264,10 +266,14 @@ function Angabe({ titel, wert }: { titel: string; wert: string }) {
   );
 }
 
-// Eine Einheit: Datum, Ort, Dauer, alle Übungen mit Sätzen, Last und Feedback, Gesamtanstrengung, Notiz.
+// Eine Einheit: Datum, Ort, Dauer, alle Übungen mit Sätzen, Last und Feedback, Gesamtanstrengung, Notiz;
+// unten „Einheit löschen“ mit Rückfrage (Entscheidung 29.10.2026, nicht beim Testtag).
 export function EinheitSeite() {
   const z = useZustand();
   const { id = '' } = useParams();
+  const navigate = useNavigate();
+  const [loeschen, setLoeschen] = useState(false);
+  const [fehler, setFehler] = useState(false);
   if (!z) return <Laedt />;
   const e = verlauf(z).find((x) => x.id === id);
   if (!e) {
@@ -276,6 +282,14 @@ export function EinheitSeite() {
   const ort = z.orte.find((o) => o.id === e.ortId);
   const dauer = minutenText(e);
   const uebungen = verlaufUebungen(e);
+  const entfernen = async () => {
+    try {
+      if (!(await loescheBeendeteEinheit(e.id))) throw new Error('nicht gelöscht');
+      navigate('/fortschritt/verlauf', { replace: true });
+    } catch {
+      setFehler(true);
+    }
+  };
   return (
     <Seite titel={einheitName(z, e)} zurueck="/fortschritt/verlauf">
       <Karte>
@@ -303,6 +317,15 @@ export function EinheitSeite() {
         </ul>
       )}
       {e.notiz && <Karte titel="Notiz"><p className="whitespace-pre-wrap text-basis">{e.notiz}</p></Karte>}
+      {kannLoeschen(e) && (loeschen ? (
+        <Karte titel="Einheit löschen?" hinweis="Sie verschwindet aus Verlauf und Wochenzählung. Ziel und Gewicht der Übungen gehen auf den Stand davor zurück, wenn du sie seitdem nicht wieder trainiert hast.">
+          {fehler && <p role="alert" className="mb-3 font-semibold">Löschen hat nicht geklappt. Bitte versuche es noch einmal.</p>}
+          <div className="grid grid-cols-2 gap-3">
+            <Knopf art="sekundaer" onClick={() => setLoeschen(false)}>Abbrechen</Knopf>
+            <Knopf onClick={() => void entfernen()}>Löschen</Knopf>
+          </div>
+        </Karte>
+      ) : <Knopf art="schlicht" onClick={() => setLoeschen(true)}>Einheit löschen</Knopf>)}
     </Seite>
   );
 }

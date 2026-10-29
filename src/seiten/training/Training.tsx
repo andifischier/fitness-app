@@ -10,13 +10,13 @@ import { lastraster } from '../../logik/equipment';
 import { zirkelBestzeit, zirkelVorgaben } from '../../logik/heute';
 import { kannTauschen, mobilityZeilen, musterNachSaetzen, tausche } from '../../logik/planung';
 import {
-  aktuellerSchritt, erledigteSaetze, fortschrittshinweis, letztesMal, messSatz, offeneFeedbacks, pauseNach, positionVon, satzVorgabe,
-  schritte, feedbackVorschlag, korrigiereSatz, lastWaehlbar, setzeFeedback, starte, trageSatzEin, type SatzVorgabe, type Schritt, type Stelle,
+  aktuellerSchritt, balkenAbschnitte, erledigteSaetze, fortschrittshinweis, letztesMal, messSatz, offeneFeedbacks, pauseNach, positionVon, satzVorgabe,
+  schritte, feedbackVorschlag, korrigiereSatz, lastWaehlbar, setzeFeedback, starte, trageSatzEin, type Balkenschritt, type SatzVorgabe, type Schritt, type Stelle,
 } from '../../logik/player';
 import { vorschauNaechstesMal, type Rekord } from '../../logik/progression';
 import type { AppZustand, Einheit, Feedback, Sterne, Uebung } from '../../logik/typen';
 import { uebungVon } from '../../logik/verlauf';
-import { Checkliste, Hinweis, Knopf, Laedt } from '../../ui/bausteine';
+import { Ablaufliste, Hinweis, Knopf, Laedt } from '../../ui/bausteine';
 import { TauschBlatt } from '../../ui/blaetter';
 import { Icon } from '../../ui/Icon';
 import { bereiteTonVor, pausenEnde, useBildschirmAn } from '../../ui/signal';
@@ -173,7 +173,7 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
 
   if (phase.art === 'aufwaermen') {
     return (
-      <Rahmen titel="Aufwärmen" anteil={0} schritt="aufwaermen" onSchliessen={() => navigate(`/vorschau/${einheit.id}`)}>
+      <Rahmen titel="Aufwärmen" abschnitte={balkenAbschnitte(einheit).map((a) => a.map((): Balkenschritt => 'offen'))} schritt="aufwaermen" onSchliessen={() => navigate(`/vorschau/${einheit.id}`)}>
         {fehler && <Speicherfehler />}
         <Aufwaermen zeilen={einheit.aufwaermen.map((a) => a.vorgabe)} zirkel={zirkel} weiter={() => void losgehen()} />
       </Rahmen>
@@ -182,7 +182,7 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
   const offen = offeneFeedbacks(einheit)[0];
   if (phase.art === 'feedback' && offen) {
     return (
-      <Rahmen titel="" anteil={erledigteSaetze(einheit) / Math.max(1, liste.length)} schritt={`feedback-${offen.block}`}
+      <Rahmen titel="" abschnitte={balkenAbschnitte(einheit)} schritt={`feedback-${offen.block}`}
         start={einheit.gestartetAm} onSchliessen={() => setMenue(true)} ueber={menue && (
           <Menue onFortsetzen={() => setMenue(false)} onSpaeter={() => navigate('/')}
             onBeenden={() => { setMenue(false); onBeenden(einheit); }} />
@@ -196,14 +196,13 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
   }
   if (!schritt) return <Laedt />;
 
-  const anteil = erledigteSaetze(einheit) / Math.max(1, liste.length);
   const u = uebungVon(z, positionVon(einheit, schritt).uebungId);
   const tauschbar = kannTauschen(einheit, schritt.block, schritt.position);
   const onTauschen = tauschbar ? () => setTauschen(true) : undefined;
   // Oben nur Zeit und Fortschritt; im Zirkel zusätzlich die Runde (Entscheidung 21.10.2026).
   const titel = zirkel ? `Runde ${schritt.satz} von ${einheit.bloecke[schritt.block]?.runden ?? 1}` : '';
   return (
-    <Rahmen titel={titel} anteil={anteil} schritt={`${phase.art}-${index}`} start={einheit.gestartetAm} onSchliessen={() => setMenue(true)}
+    <Rahmen titel={titel} abschnitte={balkenAbschnitte(einheit)} schritt={`${phase.art}-${index}`} start={einheit.gestartetAm} onSchliessen={() => setMenue(true)}
       ueber={<>
         {tauschen && tauschbar && (
           <TauschBlatt z={z} einheit={einheit} block={schritt.block} position={schritt.position}
@@ -231,8 +230,8 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
 
 // Kopf mit Schließen, Titel, laufender Zeit seit dem Start und Fortschrittsbalken. Wechselt der
 // Schritt, gleitet der Inhalt herein (Entscheidung 29.10.2026); Blätter (`ueber`) liegen außerhalb.
-function Rahmen({ titel, anteil, schritt, start, onSchliessen, ueber, children }: {
-  titel: string; anteil: number; schritt: string; start?: string; onSchliessen: () => void; ueber?: ReactNode; children: ReactNode;
+function Rahmen({ titel, abschnitte, schritt, start, onSchliessen, ueber, children }: {
+  titel: string; abschnitte: Balkenschritt[][]; schritt: string; start?: string; onSchliessen: () => void; ueber?: ReactNode; children: ReactNode;
 }) {
   return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col px-seite pt-4 pb-8">
@@ -244,13 +243,29 @@ function Rahmen({ titel, anteil, schritt, start, onSchliessen, ueber, children }
         <p className="flex-1 text-center text-basis text-gedaempft">{titel}</p>
         <span className="min-w-touch text-right text-basis text-gedaempft tabular-nums">{start ? <Uhr start={start} /> : null}</span>
       </header>
-      <div className="mt-3 h-1 rounded-full bg-linie">
-        <div className="h-1 rounded-full bg-akzent transition-[width] duration-300 motion-reduce:transition-none"
-          style={{ width: `${Math.min(1, anteil) * 100}%` }} />
-      </div>
+      <Balken abschnitte={abschnitte} />
       <Uebergang schluessel={schritt} art="vor" className="flex flex-1 flex-col">{children}</Uebergang>
       {ueber}
     </main>
+  );
+}
+
+// Fortschrittsbalken (Entscheidung 29.10.2026): große Lücke zwischen Runden bzw. Übungen, kleine
+// zwischen den Sätzen darin; der aktuelle Satz ist heller markiert.
+function Balken({ abschnitte }: { abschnitte: Balkenschritt[][] }) {
+  const farbe = { erledigt: 'bg-akzent', aktuell: 'bg-akzent/40', offen: 'bg-linie' };
+  const fertig = abschnitte.flat().filter((s) => s === 'erledigt').length;
+  return (
+    <div role="progressbar" aria-label="Fortschritt" aria-valuemin={0} aria-valuemax={abschnitte.flat().length} aria-valuenow={fertig}
+      className="mt-3 flex gap-1.5">
+      {abschnitte.map((a, i) => (
+        <div key={i} className="flex flex-1 gap-0.5" style={{ flexGrow: a.length }}>
+          {a.map((s, j) => (
+            <span key={j} className={`h-1.5 flex-1 rounded-full transition-colors duration-300 motion-reduce:transition-none ${farbe[s]}`} />
+          ))}
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -287,7 +302,7 @@ function Aufwaermen({ zeilen, zirkel, weiter }: { zeilen: string[]; zirkel: bool
     <div className="mt-8 flex flex-1 flex-col">
       <h1 className="text-titel font-extrabold">Aufwärmen</h1>
       <Hinweis>{zirkel ? 'Etwa 5 Minuten. Mit „Fertig“ startet die Stoppuhr.' : 'Etwa 5 Minuten. Danach geht es los.'}</Hinweis>
-      <div className="mt-6"><Checkliste zeilen={zeilen} /></div>
+      <div className="mt-6"><Ablaufliste zeilen={zeilen} /></div>
       <div className="mt-auto flex flex-col gap-3 pt-8">
         <Knopf onClick={weiter}>Fertig</Knopf>
         <Knopf art="sekundaer" onClick={weiter}>Überspringen</Knopf>
@@ -744,7 +759,7 @@ function Abschluss({ z, schluss }: { z: AppZustand; schluss: Schluss }) {
       {mobility.length > 0 && (
         <div className="mt-5">
           {abkuehlen
-            ? <><h2 className="mb-3 text-gross font-bold">Abkühlen, ca. 3 Min.</h2><Checkliste zeilen={mobility} /></>
+            ? <><h2 className="mb-3 text-gross font-bold">Abkühlen, ca. 3 Min.</h2><Ablaufliste zeilen={mobility} /></>
             : <Knopf art="schlicht" onClick={() => setAbkuehlen(true)}>Abkühlen (optional, ca. 3 Min.)</Knopf>}
         </div>
       )}

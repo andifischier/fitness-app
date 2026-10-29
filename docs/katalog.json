@@ -203,6 +203,75 @@
    ]
   },
   {
+   "id": "liegestuetz_griffe",
+   "name": "Liegestütz an Griffen",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "GRIFFE"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Deficit+Push-up+an+Liegest%C3%BCtzgriffen",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Griffe schulterbreit auf den Boden, Körper von Ferse bis Kopf gerade.",
+    "Brust tiefer als die Hände senken, bis du eine Dehnung in der Brust spürst.",
+    "Kontrolliert hochdrücken, Bauch und Po fest."
+   ]
+  },
+  {
+   "id": "liegestuetz_griffe_fuesse_erhoeht",
+   "name": "Liegestütz an Griffen, Füße erhöht",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 6,
+   "equipment": [
+    [
+     "GRIFFE"
+    ],
+    [
+     "ERH"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Decline+Deficit+Push-up+an+Liegest%C3%BCtzgriffen",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Füße auf Stuhl oder Bank, Griffe schulterbreit am Boden, Körper gerade.",
+    "Brust langsam tief zwischen die Griffe senken.",
+    "Hochdrücken, die Hüfte nicht durchhängen lassen."
+   ]
+  },
+  {
    "id": "kh_bankdruecken",
    "name": "Kurzhantel-Bankdrücken",
    "muster": "hDruck",
@@ -3523,6 +3592,13 @@
    "name": "Erhöhung (Stuhl, Kasten, Stufe)",
    "details": "keine",
    "immerVorhanden": true,
+   "eigenes": false
+  },
+  {
+   "id": "GRIFFE",
+   "name": "Liegestützgriffe",
+   "details": "keine",
+   "immerVorhanden": false,
    "eigenes": false
   }
  ]
