@@ -11,7 +11,7 @@ import { FitnessDb, ladeZustand } from './db';
 import {
   aendereEinstellungen, aendereTage, beendeEinheit, beendeOnboarding, fuehreWochenabschluesseAus, ladeEinstellungen, loescheEigeneUebung,
   loescheEigenesUtensil, loescheOrt, speichereEigeneUebung, speichereEigenesUtensil, speichereNeueEinheit, speichereOrt,
-  speichereAbschluss, speichereBewertung, speichereLaufendeEinheit, speichereTausch, speichereTesttag, starteEinheit,
+  loescheBeendeteEinheit, speichereAbschluss, speichereBewertung, speichereLaufendeEinheit, speichereTausch, speichereTesttag, starteEinheit,
   setzeZurueck, verwerfeEinheit,
 } from './speichern';
 import { schritte, trageSatzEin } from '../logik/player';
@@ -234,6 +234,48 @@ describe('Trainings-Player speichern', () => {
     expect(e.status).toBe('geplant');
     expect(e.gestartetAm).toBeUndefined();
     expect(await d.wochen.count()).toBe(0);
+  });
+});
+
+describe('Beendete Einheit löschen (Entscheidung 29.10.2026)', () => {
+  const trainiere = async (d: FitnessDb, id: string, tag: number) => {
+    const plan: Einheit = { ...einheit('zuhause', 'kh_bankdruecken'), id, status: 'geplant', erstelltAm: `2026-10-${tag}T10:00:00` };
+    plan.bloecke[0]!.positionen[0]!.last = 12;
+    const v = (await ladeZustand(d)).varianten.find((x) => x.uebungId === 'kh_bankdruecken');
+    if (v) Object.assign(plan.bloecke[0]!.positionen[0]!, { last: v.last, zielWdh: v.zielWdh });
+    await d.einheiten.add(plan);
+    await starteEinheit(id, `2026-10-${tag}T18:05:00`, d);
+    let e = (await d.einheiten.get(id))!;
+    const z = await ladeZustand(d);
+    for (const s of schritte(e)) e = trageSatzEin(z, e, s, 12, `2026-10-${tag}T18:10:00`);
+    await speichereLaufendeEinheit(e, d);
+    await beendeEinheit(e, `2026-10-${tag}T18:40:00`, d);
+  };
+
+  it('entfernt die Einheit und holt Ziel und Gewicht von davor zurück', async () => {
+    const d = neueDb();
+    await speichereOrt(ort(), d);
+    await trainiere(d, 'a', 20);
+    const davor = await ladeZustand(d);
+    await trainiere(d, 'b', 22);
+    expect((await ladeZustand(d)).varianten).not.toEqual(davor.varianten);
+    expect(await loescheBeendeteEinheit('b', d)).toBe(true);
+    const nachher = await ladeZustand(d);
+    expect(nachher.einheiten.map((e) => e.id)).toEqual(['a']);
+    expect(nachher.varianten).toEqual(davor.varianten);
+    expect(nachher.muster).toEqual(davor.muster);
+    expect(nachher.wochen[0]?.einheiten).toBe(1);
+    expect(nachher.wochen[0]?.erledigt).toEqual(davor.wochen[0]?.erledigt);
+    expect(nachher.muskeln).toEqual(davor.muskeln);
+  });
+
+  it('lässt geplante Einheiten und den Testtag stehen', async () => {
+    const d = neueDb();
+    await d.einheiten.add({ ...einheit('zuhause', 'kh_bankdruecken'), id: 'g', status: 'geplant' });
+    await d.einheiten.add({ ...einheit('zuhause', 'liegestuetz'), id: 't', format: 'test' });
+    expect(await loescheBeendeteEinheit('g', d)).toBe(false);
+    expect(await loescheBeendeteEinheit('t', d)).toBe(false);
+    expect(await d.einheiten.count()).toBe(2);
   });
 });
 

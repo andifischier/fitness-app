@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  aktuellerSchritt, beende, erledigteSaetze, feedbackVorschlag, fortschrittshinweis, istKalibrierung, kalibriere, letztesMal, offeneFeedbacks, pauseNach,
+  aktuellerSchritt, balkenAbschnitte, beende, erledigteSaetze, feedbackVorschlag, fortschrittshinweis, istKalibrierung, kalibriere, letztesMal, offeneFeedbacks, pauseNach,
   korrigiereSatz, lastWaehlbar, messSatz, satzVorgabe, schritte, setzeFeedback, starte, trageSatzEin,
 } from './player';
 import { bereichFuer } from './planung';
@@ -61,6 +61,23 @@ describe('Reihenfolge der Sätze', () => {
     const zirkel = einheit([{ typ: 'zirkel', pauseSek: 0, runden: 2, zirkelId: 'z', positionen: [pos('a', 2), pos('b', 2)] }], { format: 'zirkel' });
     expect(schritte(zirkel).map((s) => `${s.position}.${s.satz}`)).toEqual(['0.1', '1.1', '0.2', '1.2']);
     expect(schritte(zirkel).map((_, i) => pauseNach(zirkel, i))).toEqual([0, 0, 0, 0]);
+  });
+});
+
+describe('Fortschrittsbalken (Entscheidung 29.10.2026)', () => {
+  it('teilt Kombi-Runden je Runde und einzelne Übungen je Übung ab', () => {
+    const z = zustand();
+    const e = trageSatzEin(z, trageSatzEin(z, MIX, schritte(MIX)[0]!, 8, '2026-10-20T18:10:00'), schritte(MIX)[1]!, 10, '2026-10-20T18:12:00');
+    expect(balkenAbschnitte(e)).toEqual([
+      ['erledigt'],
+      ['erledigt', 'aktuell'], ['offen', 'offen'], ['offen'],
+      ['offen', 'offen'],
+    ]);
+  });
+
+  it('teilt den Zirkel je Runde ab', () => {
+    const zirkel = einheit([{ typ: 'zirkel', pauseSek: 0, runden: 2, zirkelId: 'z', positionen: [pos('a', 2), pos('b', 2)] }], { format: 'zirkel' });
+    expect(balkenAbschnitte(zirkel)).toEqual([['aktuell', 'offen'], ['offen', 'offen']]);
   });
 });
 

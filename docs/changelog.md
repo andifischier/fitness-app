@@ -1,5 +1,6 @@
 # Changelog
 
+
 ## 20.10.2026: Klarstellungen eingearbeitet
 - **Was:** `klarstellungen.md`, `katalog.json` und `progression_prototyp.py` aus dem Hauptordner nach
   `docs/` verschoben (Katalog Schema 2 und angeglichener Prototyp ersetzen die alten Dateien).
@@ -290,3 +291,12 @@
 - **Warum:** Wunsch des Nutzers (Aufwärmen passend zum Tag, weniger Tippen im Training, App soll
   weniger wie ein Prototyp wirken). Entscheidungen in `docs/entscheidungen.md`. Der Absturz fiel
   beim Prüfen im Browser auf (Chromium 153 zeigt ihn, frühere Versionen nicht).
+
+## 29.10.2026: Fortschrittsbalken, Aufwärmen, Einheit löschen, Liegestützgriffe
+- **Was:** Fortschrittsbalken im Training mit einem Stück je Satz, große Lücke zwischen Runden bzw.
+  Übungen, kleine darin, aktueller Satz heller. Aufwärmen, Mobility und Abkühlen als einfache Liste
+  ohne Haken (`Ablaufliste` ersetzt `Checkliste`). Im Verlauf lässt sich eine beendete Einheit löschen
+  (`logik/loeschen.ts`, `loescheBeendeteEinheit`); dafür merken sich neue Einheiten den Stand davor
+  (`Einheit.vorher`). Katalog: Utensil „Liegestützgriffe“ (GRIFFE) und zwei Übungen, jetzt 100 Übungen
+  und 15 Utensilien.
+- **Warum:** Wünsche des Nutzers nach dem Training (Entscheidungen 29.10.2026).

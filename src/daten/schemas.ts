@@ -156,6 +156,10 @@ export const einheitSchema = z.object({
   gesamtbewertung: sterne.optional(),
   notiz: z.string().optional(),
   name: z.string().optional(),
+  vorher: z.object({
+    varianten: z.array(z.object({ uebungId: z.string().min(1), zustand: varianteSchema.optional() })),
+    muster: z.array(z.object({ muster: musterId, zustand: musterZustandSchema.optional() })),
+  }).optional(),
 });
 
 export const zirkelErgebnisSchema = z.object({

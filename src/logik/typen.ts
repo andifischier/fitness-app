@@ -131,6 +131,13 @@ export interface Einheit {
   aufwaermen: { uebungId: string; vorgabe: string }[];
   bloecke: Block[]; gesamtbewertung?: 1 | 2 | 3 | 4 | 5; notiz?: string;
   name?: string;                    // Name des eigenen Workouts, aus dem die Einheit erstellt wurde
+  vorher?: Vorstand;                // Stand vor dem Abschluss, damit Löschen ihn zurückholt (Entscheidung 29.10.2026)
+}
+// Varianten und Muster der Übungen einer Einheit, wie sie vor ihrem Abschluss waren; ohne `zustand`
+// gab es noch keinen Eintrag.
+export interface Vorstand {
+  varianten: { uebungId: string; zustand?: VarianteZustand }[];
+  muster: { muster: MusterId; zustand?: MusterZustand }[];
 }
 export interface ZirkelErgebnis { zirkelId: string; ortId: string; datum: string; zeitSek: number; varianten: string[] }
 export interface MaxTest { id: string; datum: string; muster: MusterId; uebungId: string; ergebnis: number; einheit: 'Wdh.' | 'Sek.' }

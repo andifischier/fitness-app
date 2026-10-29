@@ -1,6 +1,6 @@
 # Übungskatalog
 
-Der Startkatalog umfasst 98 Übungen in 13 Mustern, 14 Utensilien und 5 feste Zirkel. Er wird als Datei `katalog.json` mitgeliefert (gleicher Inhalt wie hier) und beim ersten Start geladen; eigene Übungen speichert die App getrennt.
+Der Startkatalog umfasst 100 Übungen in 13 Mustern, 15 Utensilien und 5 feste Zirkel. Er wird als Datei `katalog.json` mitgeliefert (gleicher Inhalt wie hier) und beim ersten Start geladen; eigene Übungen speichert die App getrennt.
 
 ## Regeln für den Katalog
 
@@ -43,6 +43,7 @@ Gibt es auch keinen Ersatz, entfällt das Muster an diesem Ort (Hinweis im Equip
 | SEIL | Springseil | keine | nein |
 | TISCH | Stabiler Tisch | keine | ja |
 | ERH | Erhöhung (Stuhl, Kasten, Stufe) | keine | ja |
+| GRIFFE | Liegestützgriffe | keine | nein |
 
 Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zuordnen.
 
@@ -56,6 +57,8 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | liegestuetz | Liegestütz | hDruck | Brust | Trizeps, Schultern | 4 | keins | KG | 8 bis 15 Wdh. | ja |
 | kh\_bodendruecken | Kurzhantel-Bodendrücken | hDruck | Brust | Trizeps, Schultern | 4 | KH | Last | 8 bis 12 Wdh. | nein |
 | liegestuetz\_fuesse\_erhoeht | Liegestütz, Füße erhöht | hDruck | Brust | Trizeps, Schultern | 5 | ERH | KG | 8 bis 15 Wdh. | ja |
+| liegestuetz\_griffe | Liegestütz an Griffen | hDruck | Brust | Trizeps, Schultern | 5 | GRIFFE | KG | 8 bis 15 Wdh. | ja |
+| liegestuetz\_griffe\_fuesse\_erhoeht | Liegestütz an Griffen, Füße erhöht | hDruck | Brust | Trizeps, Schultern | 6 | GRIFFE + ERH | KG | 8 bis 15 Wdh. | nein |
 | kh\_bankdruecken | Kurzhantel-Bankdrücken | hDruck | Brust | Trizeps, Schultern | 5 | KH + BANK/SCHRAEG | Last | 8 bis 12 Wdh. | nein |
 | kh\_schraegbank | Kurzhantel-Schrägbankdrücken | hDruck | Brust | Schultern, Trizeps | 5 | KH + SCHRAEG | Last | 8 bis 12 Wdh. | nein |
 | liegestuetz\_band | Liegestütz mit Band | hDruck | Brust | Trizeps, Schultern | 6 | BAND | Band | 8 bis 15 Wdh. | nein |
