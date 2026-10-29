@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { KATALOG } from '../daten/katalog';
 import { STANDARD_EINSTELLUNGEN } from '../konfiguration';
-import { bandStufen, istGesperrt, lastraster, uebungMoeglich } from './equipment';
+import { bandStufen, istGesperrt, lastraster, uebungErlaubt, uebungMoeglich } from './equipment';
 import type { Einstellungen, Ort, Uebung } from './typen';
 
 const uebung = (id: string): Uebung => KATALOG.uebungen.find((u) => u.id === id)!;
@@ -73,5 +73,24 @@ describe('Equipment und Sperren', () => {
     const e = mitSperre('muster', 'Knie', '2026-10-20');
     expect(istGesperrt(e, uebung('goblet_squat'), '2026-10-20T20:00:00')).toBe(true);
     expect(istGesperrt(e, uebung('goblet_squat'), '2026-10-21T08:00:00')).toBe(false);
+  });
+});
+
+describe('Platz zum Gehen (Entscheidung 29.10.2026)', () => {
+  const o = ort([{ utensilId: 'KH', kurzhanteln: { modus: 'paare', gewichteKg: [10] } }]);
+
+  it('Standard ohne Platz: Ausfallschritt gehend ist nicht erlaubt, andere Übungen schon', () => {
+    expect(STANDARD_EINSTELLUNGEN.platzZumGehen).toBeUndefined();
+    expect(uebungErlaubt(STANDARD_EINSTELLUNGEN, o, uebung('kh_ausfallschritt'), '2026-10-29T10:00:00')).toBe(false);
+    expect(uebungErlaubt(STANDARD_EINSTELLUNGEN, o, uebung('ausfallschritt_rueck'), '2026-10-29T10:00:00')).toBe(true);
+  });
+
+  it('mit Platz ist er erlaubt', () => {
+    const e = { ...STANDARD_EINSTELLUNGEN, platzZumGehen: true };
+    expect(uebungErlaubt(e, o, uebung('kh_ausfallschritt'), '2026-10-29T10:00:00')).toBe(true);
+  });
+
+  it('im Katalog braucht nur der Ausfallschritt gehend Platz', () => {
+    expect(KATALOG.uebungen.filter((u) => u.brauchtPlatz).map((u) => u.id)).toEqual(['kh_ausfallschritt']);
   });
 });

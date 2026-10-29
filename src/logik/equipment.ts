@@ -31,9 +31,14 @@ export function hatAktiveSperre(e: Einstellungen, jetzt: string): boolean {
   return e.einschraenkungen.some((s) => !s.bis || s.bis.slice(0, 10) >= heute);
 }
 
-// Am Ort möglich, nicht gesperrt und nicht ausgeschlossen.
+// Übungen, die Platz zum Gehen brauchen, nur mit „Platz zum Gehen“ im Profil (Entscheidung 29.10.2026).
+export function platzReicht(e: Einstellungen, u: Uebung): boolean {
+  return !u.brauchtPlatz || e.platzZumGehen === true;
+}
+
+// Am Ort möglich, Platz reicht, nicht gesperrt und nicht ausgeschlossen.
 export function uebungErlaubt(e: Einstellungen, ort: Ort, u: Uebung, jetzt: string): boolean {
-  return uebungMoeglich(ort, u) && !istGesperrt(e, u, jetzt) && !e.ausgeschlossen.includes(u.id);
+  return uebungMoeglich(ort, u) && platzReicht(e, u) && !istGesperrt(e, u, jetzt) && !e.ausgeschlossen.includes(u.id);
 }
 
 const runde = (kg: number) => Math.round(kg * 100) / 100;

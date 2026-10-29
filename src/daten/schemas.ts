@@ -37,6 +37,7 @@ export const uebungSchema = z.object({
   eigenerVideoLink: z.string().optional(),
   videoId: z.string().regex(/^[\w-]{11}$/).optional(),
   anleitung: z.array(z.string().min(1)).optional(),
+  brauchtPlatz: z.boolean().optional(),
   herkunft: z.enum(['katalog', 'eigene']),
 });
 
@@ -92,6 +93,7 @@ export const einstellungenSchema = z.object({
     id: z.string().min(1), typ: z.enum(['region', 'muster']), wert: z.string().min(1), bis: z.string().optional(),
   })),
   onboardingAbgeschlossen: z.boolean(),
+  platzZumGehen: z.boolean().optional(),
   letztesBackup: z.string().optional(),
   videoLinks: z.record(z.string(), z.string()).optional(),
   bewertungen: z.record(z.string(), sterne).optional(),

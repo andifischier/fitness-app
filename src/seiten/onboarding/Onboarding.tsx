@@ -14,7 +14,7 @@ import { LEVEL_NAMEN, MUSTER_NAMEN, ZIEL_NAMEN, equipmentText } from '../../ui/t
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
 import { EinschraenkungenInhalt } from '../einstellungen/Einschraenkungen';
 import { OrteBearbeiten } from '../einstellungen/Orte';
-import { PrioritaetenListe } from '../einstellungen/Profil';
+import { PlatzKarte, PrioritaetenListe } from '../einstellungen/Profil';
 
 export const SCHRITTE = 5;
 
@@ -66,6 +66,7 @@ function Inhalt({ z, nr }: { z: AppZustand; nr: number }) {
         <Karte titel="Trainingslevel">
           <Auswahl optionen={optionen(LEVEL_NAMEN)} wert={e.level} onChange={(level) => void setze({ level })} />
         </Karte>
+        <PlatzKarte e={e} />
         <Knopf onClick={weiter}>Weiter</Knopf>
       </Seite>
     );

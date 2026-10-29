@@ -1,4 +1,4 @@
-// Trainings-Player (Mockups 4 bis 7): Aufwärmen, Max-Test, Satz, Pause, Blockwechsel, Supersatz,
+// Trainings-Player (Mockups 4 bis 7): Aufwärmen Schritt für Schritt, Max-Test, Satz, Pause, Blockwechsel, Supersatz,
 // Zirkel-Modus und die Abschlussseite mit Übungsfeedback. Jeder erledigte Satz wird sofort gespeichert;
 // ein Neustart setzt am nächsten offenen Satz bzw. auf der Abschlussseite fort.
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
@@ -18,6 +18,7 @@ import { neueRekorde, vorschauNaechstesMal } from '../../logik/progression';
 import type { AppZustand, Einheit, Feedback, Sterne, Uebung } from '../../logik/typen';
 import { uebungVon } from '../../logik/verlauf';
 import { Ablaufliste, Hinweis, Knopf, Laedt, Sternwahl } from '../../ui/bausteine';
+import { AufwaermSchritte } from '../../ui/aufwaermen';
 import { TauschBlatt } from '../../ui/blaetter';
 import { Icon } from '../../ui/Icon';
 import { bereiteTonVor, pausenEnde, useBildschirmAn } from '../../ui/signal';
@@ -74,6 +75,7 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
   const [phase, setPhase] = useState<Phase>({
     art: start.status === 'geplant' ? 'aufwaermen' : aktuellerSchritt(start) >= schritte(start).length ? 'abschluss' : 'satz',
   });
+  const [aufwaermNr, setAufwaermNr] = useState(0);
   const [menue, setMenue] = useState(false);
   const [tauschen, setTauschen] = useState(false);
   const [fehler, setFehler] = useState(false);
@@ -169,9 +171,11 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
 
   if (phase.art === 'aufwaermen') {
     return (
-      <Rahmen titel="Aufwärmen" abschnitte={balkenAbschnitte(einheit, 0).map((a) => a.map((): Balkenschritt => 'offen'))} schritt="aufwaermen" onSchliessen={() => navigate(`/vorschau/${einheit.id}`)}>
+      <Rahmen titel="Aufwärmen" schritt={`aufwaermen-${aufwaermNr}`} onSchliessen={() => navigate(`/vorschau/${einheit.id}`)}
+        abschnitte={[einheit.aufwaermen.map((_, i): Balkenschritt => (i < aufwaermNr ? 'erledigt' : i === aufwaermNr ? 'aktuell' : 'offen'))]}>
         {fehler && <Speicherfehler />}
-        <Aufwaermen zeilen={einheit.aufwaermen.map((a) => a.vorgabe)} zirkel={zirkel} weiter={() => void losgehen()} />
+        <AufwaermSchritte zeilen={einheit.aufwaermen} nr={aufwaermNr} onNr={setAufwaermNr} onFertig={() => void losgehen()}
+          hinweisEnde={zirkel ? 'Mit „Fertig“ startet die Stoppuhr.' : undefined} />
       </Rahmen>
     );
   }
@@ -316,20 +320,6 @@ function dauerText(sek: number): string {
 
 function Speicherfehler() {
   return <p role="alert" className="mt-4 font-semibold">Speichern hat nicht geklappt. Bitte versuche es noch einmal.</p>;
-}
-
-function Aufwaermen({ zeilen, zirkel, weiter }: { zeilen: string[]; zirkel: boolean; weiter: () => void }) {
-  return (
-    <div className="mt-8 flex flex-1 flex-col">
-      <h1 className="text-titel font-extrabold">Aufwärmen</h1>
-      <Hinweis>{zirkel ? 'Etwa 5 Minuten. Mit „Fertig“ startet die Stoppuhr.' : 'Etwa 5 Minuten. Danach geht es los.'}</Hinweis>
-      <div className="mt-6"><Ablaufliste zeilen={zeilen} /></div>
-      <div className="mt-auto flex flex-col gap-3 pt-8">
-        <Knopf onClick={weiter}>Fertig</Knopf>
-        <Knopf art="sekundaer" onClick={weiter}>Überspringen</Knopf>
-      </div>
-    </div>
-  );
 }
 
 // Name eines Blocks: „Kombi B“, „Max-Test“; einzelne Übungen haben keinen.

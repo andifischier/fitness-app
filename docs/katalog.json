@@ -1737,6 +1737,7 @@
   {
    "id": "kh_ausfallschritt",
    "name": "Kurzhantel-Ausfallschritt gehend",
+   "brauchtPlatz": true,
    "muster": "Einbein",
    "primaer": [
     "Quadrizeps"
@@ -3447,10 +3448,10 @@
  "aufwaermen": {
   "allgemein": {
    "immer": [
-    "60 Sek. Hampelmann"
+    "50 Hampelmann"
    ],
    "oben": [
-    "30 Sek. Armkreisen vorwärts und rückwärts",
+    "10 Armkreisen je Richtung",
     "10 Schulterkreisen rückwärts"
    ],
    "unten": [

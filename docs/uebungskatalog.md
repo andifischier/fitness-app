@@ -168,11 +168,11 @@ Als Finisher (siehe Planungslogik) wird der Zirkel verwendet, dessen Dauer in di
 
 ## Aufwärmen
 
-Das Aufwärmen (ca. 5 Min) setzt sich aus drei Teilen zusammen und wird beim Erzeugen der Einheit festgelegt. Es zählt nicht zum Volumen.
+Das Aufwärmen (ca. 5 Min) setzt sich aus drei Teilen zusammen und wird beim Erzeugen der Einheit festgelegt. Es zählt nicht zum Volumen. Alle Vorgaben sind Wiederholungen, nur Halteübungen (Dehnungen) stehen in Sekunden (Entscheidung 29.10.2026).
 
 | Teil | Inhalt |
 | --- | --- |
-| Allgemein (immer, ca. 2 Min) | 60 Sek. Hampelmann; dazu nach Körperhälfte (Entscheidung 29.10.2026): nur Oberkörper 30 Sek. Armkreisen vorwärts und rückwärts und 10 Schulterkreisen rückwärts; nur Unterkörper 10 Kniebeugen ohne Last und 10 Beinpendel je Bein; sonst Armkreisen und Kniebeugen |
+| Allgemein (immer, ca. 2 Min) | 50 Hampelmann; dazu nach Körperhälfte (Entscheidung 29.10.2026): nur Oberkörper 10 Armkreisen je Richtung und 10 Schulterkreisen rückwärts; nur Unterkörper 10 Kniebeugen ohne Last und 10 Beinpendel je Bein; sonst Armkreisen und Kniebeugen |
 | Mobility für hDruck oder vDruck | 10 Wand-Slides; mit Band zusätzlich 10 Band-Pull-Aparts |
 | Mobility für hZug oder vZug | 10 Schulterblatt-Rudern im Stand (ohne Gewicht); mit Stange 5 Schulterblatt-Klimmzüge |
 | Mobility für Knie oder Einbein | 5 Ausfallschritte mit Oberkörperdrehung je Seite |

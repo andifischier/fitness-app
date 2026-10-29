@@ -195,7 +195,7 @@ describe('Aufbau der Einheit', () => {
     const e = plane(zustand());
     const texte = e.aufwaermen.map((a) => a.vorgabe);
     // Ganzkörper: Hampelmann, je die erste Zeile für oben und unten (Entscheidung 29.10.2026)
-    expect(texte.slice(0, 3)).toEqual(['60 Sek. Hampelmann', '30 Sek. Armkreisen vorwärts und rückwärts', '10 Kniebeugen ohne Last']);
+    expect(texte.slice(0, 3)).toEqual(['50 Hampelmann', '10 Armkreisen je Richtung', '10 Kniebeugen ohne Last']);
     expect(texte).toContain('10 Band-Pull-Aparts');
     const erste = e.bloecke[0]!.positionen[0]!;
     const name = uebungVon(zustand(), erste.uebungId)!.name;
@@ -216,10 +216,10 @@ describe('Aufbau der Einheit', () => {
     });
     const texte = (bloecke: Block[]) => aufwaermenFuer(z, o, bloecke).filter((a) => a.uebungId === '').map((a) => a.vorgabe);
     const oben = texte([block(['liegestuetz', 3], ['kh_curls', 2])]);
-    expect(oben.slice(0, 3)).toEqual(['60 Sek. Hampelmann', '30 Sek. Armkreisen vorwärts und rückwärts', '10 Schulterkreisen rückwärts']);
+    expect(oben.slice(0, 3)).toEqual(['50 Hampelmann', '10 Armkreisen je Richtung', '10 Schulterkreisen rückwärts']);
     expect(oben.join()).not.toContain('Kniebeugen');
     const unten = texte([block(['kniebeuge', 3], ['wadenheben', 3])]);
-    expect(unten.slice(0, 3)).toEqual(['60 Sek. Hampelmann', '10 Kniebeugen ohne Last', '10 Beinpendel je Bein']);
+    expect(unten.slice(0, 3)).toEqual(['50 Hampelmann', '10 Kniebeugen ohne Last', '10 Beinpendel je Bein']);
     expect(unten.join()).not.toContain('Armkreisen');
     // Rumpf mit den meisten Sätzen zuerst; höchstens 3 Mobility-Zeilen
     const mobility = texte([block(['liegestuetz', 2], ['plank', 4], ['kniebeuge', 3], ['kh_rudern_einarmig', 1])]).slice(3);
