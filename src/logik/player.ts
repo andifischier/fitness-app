@@ -37,22 +37,40 @@ export function schritte(einheit: Einheit): Schritt[] {
   return liste;
 }
 
-// Abschnitte des Fortschrittsbalkens (Entscheidung 29.10.2026): Kombi und Zirkel je Runde, einzelne
-// Übungen je Übung; innerhalb eines Abschnitts steht jeder Schritt (Satz bzw. Station) einzeln.
+// Block, in dem das Training gerade steht: der des nächsten offenen Schritts; ist alles erledigt, der letzte.
+export function aktuellerBlock(einheit: Einheit): number {
+  const liste = schritte(einheit);
+  return (liste[aktuellerSchritt(einheit)] ?? liste.at(-1))?.block ?? 0;
+}
+
+// Abschnitte des Fortschrittsbalkens, seit 29.10.2026 nur für einen Block (Entscheidung): Kombi und
+// Zirkel je Runde, einzelne Übungen je Übung; innerhalb eines Abschnitts steht jeder Schritt (Satz bzw.
+// Station) einzeln.
 export type Balkenschritt = 'erledigt' | 'aktuell' | 'offen';
 
-export function balkenAbschnitte(einheit: Einheit): Balkenschritt[][] {
+export function balkenAbschnitte(einheit: Einheit, block = aktuellerBlock(einheit)): Balkenschritt[][] {
   const liste = schritte(einheit);
   const aktuell = aktuellerSchritt(einheit);
+  const einzeln = einheit.bloecke[block]?.typ === 'einzeln';
   const abschnitte: Balkenschritt[][] = [];
+  let vorherGruppe: number | undefined;
   liste.forEach((s, i) => {
-    const vorher = liste[i - 1];
-    const gruppe = einheit.bloecke[s.block]!.typ === 'einzeln' ? s.position : s.satz;
-    const vorherGruppe = vorher && (einheit.bloecke[vorher.block]!.typ === 'einzeln' ? vorher.position : vorher.satz);
-    if (!vorher || vorher.block !== s.block || vorherGruppe !== gruppe) abschnitte.push([]);
+    if (s.block !== block) return;
+    const gruppe = einzeln ? s.position : s.satz;
+    if (gruppe !== vorherGruppe) abschnitte.push([]);
+    vorherGruppe = gruppe;
     abschnitte.at(-1)!.push(positionVon(einheit, s).ergebnisse.length >= s.satz ? 'erledigt' : i === aktuell ? 'aktuell' : 'offen');
   });
   return abschnitte;
+}
+
+// Beginnt nach Schritt i ein neuer Block? Dann zeigt die Pause den nächsten Block, und weiter geht es
+// erst mit „Los“ (Entscheidung 29.10.2026). Im Zirkel und nach dem letzten Schritt nie.
+export function blockwechselNach(einheit: Einheit, i: number): boolean {
+  const liste = schritte(einheit);
+  const s = liste[i];
+  const naechster = liste[i + 1];
+  return s !== undefined && naechster !== undefined && naechster.block !== s.block && einheit.format !== 'zirkel';
 }
 
 export function positionVon(einheit: Einheit, s: Schritt): Position {
@@ -227,14 +245,14 @@ export interface Stelle { block: number; position: number }
 
 const fertig = (p: Position) => p.ergebnisse.length >= p.saetze;
 
-// Übungen, deren Feedback noch fehlt: alle Sätze erledigt, kein Max-Test, kein Zirkel. Im Supersatz
-// erst, wenn das ganze Paar fertig ist (Entscheidung 21.10.2026), dann beide nacheinander.
+// Übungen, deren Feedback noch fehlt: alle Sätze erledigt, kein Max-Test, kein Zirkel. Gefragt wird seit
+// 29.10.2026 einmal am Ende des Trainings bzw. beim Beenden (Entscheidung), alle auf einer Seite.
 export function offeneFeedbacks(einheit: Einheit): Stelle[] {
   const liste: Stelle[] = [];
   einheit.bloecke.forEach((b, block) => {
-    if (b.typ === 'zirkel' || !b.positionen.every(fertig)) return;
+    if (b.typ === 'zirkel') return;
     b.positionen.forEach((p, position) => {
-      if (!p.istMaxTest && p.feedback === undefined && p.ergebnisse.length > 0) liste.push({ block, position });
+      if (fertig(p) && !p.istMaxTest && p.feedback === undefined && p.ergebnisse.length > 0) liste.push({ block, position });
     });
   });
   return liste;

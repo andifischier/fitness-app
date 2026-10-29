@@ -300,3 +300,14 @@
   (`Einheit.vorher`). Katalog: Utensil „Liegestützgriffe“ (GRIFFE) und zwei Übungen, jetzt 100 Übungen
   und 15 Utensilien.
 - **Warum:** Wünsche des Nutzers nach dem Training (Entscheidungen 29.10.2026).
+
+## 29.10.2026: Geführter Ablauf je Block, Bewertung am Ende, Vorlauf
+- **Was:**
+  - Fortschrittsbalken zeigt nur den aktuellen Block (Kombi, einzelne Übung oder Max-Test), darüber
+    „Block x von y“ (`aktuellerBlock`, `balkenAbschnitte` mit Block).
+  - Blockwechsel: Die Pause nach einem Block zeigt die Restzeit und groß den nächsten Block mit allen
+    Übungen, Sätzen, Ziel und Last; weiter erst mit „Los“ (`blockwechselNach`, Komponente `Blockwechsel`).
+  - Übungsfeedback einmal am Ende auf einer Seite für alle Übungen; „Training beenden“ vorher fragt die
+    fertigen Übungen ab, „Weiter trainieren“ führt zurück.
+  - Countdown und Stoppuhr mit 5 Sek. Vorlauf „Bereit machen“ und Ton zum Start (`PLAYER.vorlaufSek`).
+- **Warum:** Wunsch des Nutzers, klarer durchs Training geführt zu werden (Entscheidungen 29.10.2026).

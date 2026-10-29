@@ -1,6 +1,6 @@
-// Trainings-Player (Mockups 4 bis 7): Aufwärmen, Max-Test, Satz, Pause, Supersatz, Zirkel-Modus,
-// Übungsfeedback und Abschluss. Jeder erledigte Satz und jedes Feedback wird sofort gespeichert; ein
-// Neustart setzt am nächsten offenen Satz bzw. beim offenen Feedback fort.
+// Trainings-Player (Mockups 4 bis 7): Aufwärmen, Max-Test, Satz, Pause, Blockwechsel, Supersatz,
+// Zirkel-Modus, Übungsfeedback am Ende und Abschluss. Jeder erledigte Satz und jedes Feedback wird sofort
+// gespeichert; ein Neustart setzt am nächsten offenen Satz bzw. beim offenen Feedback fort.
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { beendeEinheit, speichereAbschluss, speichereLaufendeEinheit, starteEinheit } from '../../daten/speichern';
@@ -8,9 +8,9 @@ import { lokaleZeit } from '../../daten/zeit';
 import { PLAYER, PROGRESSION } from '../../konfiguration';
 import { lastraster } from '../../logik/equipment';
 import { zirkelBestzeit, zirkelVorgaben } from '../../logik/heute';
-import { kannTauschen, mobilityZeilen, musterNachSaetzen, tausche } from '../../logik/planung';
+import { kannTauschen, lastAnzeige, mobilityZeilen, musterNachSaetzen, tausche } from '../../logik/planung';
 import {
-  aktuellerSchritt, balkenAbschnitte, erledigteSaetze, fortschrittshinweis, letztesMal, messSatz, offeneFeedbacks, pauseNach, positionVon, satzVorgabe,
+  aktuellerBlock, aktuellerSchritt, balkenAbschnitte, blockwechselNach, erledigteSaetze, fortschrittshinweis, letztesMal, messSatz, offeneFeedbacks, pauseNach, positionVon, satzVorgabe,
   schritte, feedbackVorschlag, korrigiereSatz, lastWaehlbar, setzeFeedback, starte, trageSatzEin, type Balkenschritt, type SatzVorgabe, type Schritt, type Stelle,
 } from '../../logik/player';
 import { vorschauNaechstesMal, type Rekord } from '../../logik/progression';
@@ -21,7 +21,7 @@ import { TauschBlatt } from '../../ui/blaetter';
 import { Icon } from '../../ui/Icon';
 import { bereiteTonVor, pausenEnde, useBildschirmAn } from '../../ui/signal';
 import {
-  BAND_NAMEN, feedbackOptionen, fortschrittZeilen, lastTeile, lastText, naechstesMalText, rekordZeile, saetzeMitLast, zeitText,
+  BAND_NAMEN, detailText, feedbackOptionen, fortschrittZeilen, lastTeile, lastText, naechstesMalText, rekordZeile, saetzeMitLast, zeitText,
 } from '../../ui/texte';
 import { Technik } from '../../ui/technik';
 import { Uebergang, useUebergang } from '../../ui/uebergang';
@@ -62,18 +62,17 @@ export function TrainingSeite() {
 }
 
 type Pausenzeit = { ende: number; dauer: number };
-type Phase = { art: 'aufwaermen' } | { art: 'satz' } | ({ art: 'pause' } & Pausenzeit)
-  | { art: 'feedback'; pause?: Pausenzeit };
-
-// Nach dem Feedback geht es mit der restlichen Pause weiter (sie läuft ab dem Satzende).
-const nachFeedback = (pause?: Pausenzeit): Phase =>
-  pause && pause.ende > Date.now() ? { art: 'pause', ...pause } : { art: 'satz' };
+// Blockwechsel: Pause mit Übersicht des nächsten Blocks, weiter mit „Los“. Feedback: am Ende oder beim
+// vorzeitigen Beenden (`vorzeitig`), alle Übungen auf einer Seite (Entscheidungen 29.10.2026).
+type Phase = { art: 'aufwaermen' } | { art: 'satz' } | ({ art: 'pause' } & Pausenzeit) | ({ art: 'blockwechsel' } & Pausenzeit)
+  | { art: 'feedback'; vorzeitig?: boolean };
 
 function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeenden: (e: Einheit) => void }) {
   const navigate = useNavigate();
   const [einheit, setEinheit] = useState(start);
   const [phase, setPhase] = useState<Phase>({
-    art: start.status === 'geplant' ? 'aufwaermen' : offeneFeedbacks(start).length > 0 ? 'feedback' : 'satz',
+    art: start.status === 'geplant' ? 'aufwaermen'
+      : aktuellerSchritt(start) >= schritte(start).length && offeneFeedbacks(start).length > 0 ? 'feedback' : 'satz',
   });
   const [menue, setMenue] = useState(false);
   const [tauschen, setTauschen] = useState(false);
@@ -114,15 +113,25 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
     setFehler(false);
     setVorher(einheit);
     setEinheit(neu);
-    const ende = aktuellerSchritt(neu) >= liste.length;
-    const pause = ende ? 0 : pauseNach(neu, index);
-    const zeit = pause > 0 ? { ende: Date.now() + pause * 1000, dauer: pause } : undefined;
-    if (offeneFeedbacks(neu).length > 0) setPhase({ art: 'feedback', pause: zeit });
-    else if (ende) onBeenden(neu);
-    else setPhase(zeit ? { art: 'pause', ...zeit } : { art: 'satz' });
+    if (aktuellerSchritt(neu) >= liste.length) {
+      if (offeneFeedbacks(neu).length > 0) setPhase({ art: 'feedback' });
+      else onBeenden(neu);
+      return;
+    }
+    const pause = pauseNach(neu, index);
+    const zeit = { ende: Date.now() + pause * 1000, dauer: pause };
+    if (blockwechselNach(neu, index)) setPhase({ art: 'blockwechsel', ...zeit });
+    else setPhase(pause > 0 ? { art: 'pause', ...zeit } : { art: 'satz' });
   };
 
-  // „Rückgängig“ in der Pause (Entscheidung 21.10.2026): Der letzte Satz ist wieder offen.
+  // „Training beenden“ vor dem Ende: erst die fertigen Übungen bewerten, falls es welche gibt.
+  const beendenGewaehlt = () => {
+    setMenue(false);
+    if (phase.art !== 'feedback' && offeneFeedbacks(einheit).length > 0) setPhase({ art: 'feedback', vorzeitig: true });
+    else onBeenden(einheit);
+  };
+
+  // „Rückgängig“ in der Pause und beim Blockwechsel (Entscheidung 21.10.2026): Der letzte Satz ist wieder offen.
   const rueckgaengig = async () => {
     if (!vorher) return;
     try {
@@ -151,9 +160,9 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
     setEinheit(neu);
   };
 
-  // Alle Übungen einer Runde auf einer Seite bewerten (Entscheidung 21.10.2026: weniger Rückfragen);
-  // bei „zu schwer“ zusätzlich das Geschaffte im Messsatz (Entscheidung 29.10.2026).
-  const alleBewertet = async (stellen: Stelle[], feedbacks: Feedback[], messwerte: (number | undefined)[], pause?: Pausenzeit) => {
+  // Alle Übungen am Ende auf einer Seite bewerten (Entscheidung 29.10.2026); bei „zu schwer“ zusätzlich
+  // das Geschaffte im Messsatz. Danach ist das Training beendet.
+  const alleBewertet = async (stellen: Stelle[], feedbacks: Feedback[], messwerte: (number | undefined)[]) => {
     const neu = stellen.reduce((e, s, i) => {
       const wert = messwerte[i];
       return setzeFeedback(wert === undefined ? e : korrigiereSatz(z, e, s, messSatz(z, e, s), wert), s, feedbacks[i]!);
@@ -166,31 +175,30 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
     }
     setFehler(false);
     setEinheit(neu);
-    if (offeneFeedbacks(neu).length > 0) return;
-    if (aktuellerSchritt(neu) >= liste.length) onBeenden(neu);
-    else setPhase(nachFeedback(pause));
+    onBeenden(neu);
   };
 
   if (phase.art === 'aufwaermen') {
     return (
-      <Rahmen titel="Aufwärmen" abschnitte={balkenAbschnitte(einheit).map((a) => a.map((): Balkenschritt => 'offen'))} schritt="aufwaermen" onSchliessen={() => navigate(`/vorschau/${einheit.id}`)}>
+      <Rahmen titel="Aufwärmen" abschnitte={balkenAbschnitte(einheit, 0).map((a) => a.map((): Balkenschritt => 'offen'))} schritt="aufwaermen" onSchliessen={() => navigate(`/vorschau/${einheit.id}`)}>
         {fehler && <Speicherfehler />}
         <Aufwaermen zeilen={einheit.aufwaermen.map((a) => a.vorgabe)} zirkel={zirkel} weiter={() => void losgehen()} />
       </Rahmen>
     );
   }
-  const offen = offeneFeedbacks(einheit)[0];
-  if (phase.art === 'feedback' && offen) {
+  const offen = offeneFeedbacks(einheit);
+  if (phase.art === 'feedback' && offen.length > 0) {
+    // Beim vorzeitigen Beenden führt „Weiter trainieren“ zurück zum offenen Satz.
+    const fortsetzen = () => { setMenue(false); if (phase.vorzeitig) setPhase({ art: 'satz' }); };
     return (
-      <Rahmen titel="" abschnitte={balkenAbschnitte(einheit)} schritt={`feedback-${offen.block}`}
+      <Rahmen titel="" abschnitte={balkenAbschnitte(einheit)} schritt="feedback"
         start={einheit.gestartetAm} onSchliessen={() => setMenue(true)} ueber={menue && (
-          <Menue onFortsetzen={() => setMenue(false)} onSpaeter={() => navigate('/')}
+          <Menue onFortsetzen={fortsetzen} onSpaeter={() => navigate('/')}
             onBeenden={() => { setMenue(false); onBeenden(einheit); }} />
         )}>
         {fehler && <Speicherfehler />}
-        <RundenFeedback key={offen.block} z={z} einheit={einheit}
-          stellen={offeneFeedbacks(einheit).filter((x) => x.block === offen.block)}
-          onWeiter={(stellen, fbs, werte) => void alleBewertet(stellen, fbs, werte, phase.pause)} />
+        <Feedbackseite z={z} einheit={einheit} stellen={offen}
+          onWeiter={(stellen, fbs, werte) => void alleBewertet(stellen, fbs, werte)} />
       </Rahmen>
     );
   }
@@ -199,8 +207,10 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
   const u = uebungVon(z, positionVon(einheit, schritt).uebungId);
   const tauschbar = kannTauschen(einheit, schritt.block, schritt.position);
   const onTauschen = tauschbar ? () => setTauschen(true) : undefined;
-  // Oben nur Zeit und Fortschritt; im Zirkel zusätzlich die Runde (Entscheidung 21.10.2026).
-  const titel = zirkel ? `Runde ${schritt.satz} von ${einheit.bloecke[schritt.block]?.runden ?? 1}` : '';
+  // Oben Zeit, Block und dessen Fortschritt; im Zirkel statt des Blocks die Runde (Entscheidungen
+  // 21.10.2026 und 29.10.2026).
+  const titel = zirkel ? `Runde ${schritt.satz} von ${einheit.bloecke[schritt.block]?.runden ?? 1}`
+    : `Block ${aktuellerBlock(einheit) + 1} von ${einheit.bloecke.length}`;
   return (
     <Rahmen titel={titel} abschnitte={balkenAbschnitte(einheit)} schritt={`${phase.art}-${index}`} start={einheit.gestartetAm} onSchliessen={() => setMenue(true)}
       ueber={<>
@@ -209,14 +219,18 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
             onWahl={(id) => void getauscht(schritt, id)} onSchliessen={() => setTauschen(false)} />
         )}
         {menue && (
-          <Menue onFortsetzen={() => setMenue(false)} onSpaeter={() => navigate('/')}
-            onBeenden={() => { setMenue(false); onBeenden(einheit); }} />
+          <Menue onFortsetzen={() => setMenue(false)} onSpaeter={() => navigate('/')} onBeenden={beendenGewaehlt} />
         )}
       </>}>
       {fehler && <Speicherfehler />}
       {phase.art === 'pause' && (
         <Pause key={index} z={z} einheit={einheit} schritt={schritt} ende={phase.ende} dauer={phase.dauer}
           onAendern={(ende, dauer) => setPhase({ art: 'pause', ende, dauer })} onWeiter={() => setPhase({ art: 'satz' })}
+          onRueckgaengig={vorher ? () => void rueckgaengig() : undefined} />
+      )}
+      {phase.art === 'blockwechsel' && (
+        <Blockwechsel z={z} einheit={einheit} block={schritt.block} ende={phase.ende} dauer={phase.dauer}
+          onAendern={(ende, dauer) => setPhase({ art: 'blockwechsel', ende, dauer })} onLos={() => setPhase({ art: 'satz' })}
           onRueckgaengig={vorher ? () => void rueckgaengig() : undefined} />
       )}
       {phase.art === 'satz' && u && (zirkel
@@ -250,8 +264,8 @@ function Rahmen({ titel, abschnitte, schritt, start, onSchliessen, ueber, childr
   );
 }
 
-// Fortschrittsbalken (Entscheidung 29.10.2026): große Lücke zwischen Runden bzw. Übungen, kleine
-// zwischen den Sätzen darin; der aktuelle Satz ist heller markiert.
+// Fortschrittsbalken des aktuellen Blocks (Entscheidungen 29.10.2026): große Lücke zwischen Runden bzw.
+// Übungen, kleine zwischen den Sätzen darin; der aktuelle Satz ist heller markiert.
 function Balken({ abschnitte }: { abschnitte: Balkenschritt[][] }) {
   const farbe = { erledigt: 'bg-akzent', aktuell: 'bg-akzent/40', offen: 'bg-linie' };
   const fertig = abschnitte.flat().filter((s) => s === 'erledigt').length;
@@ -311,13 +325,20 @@ function Aufwaermen({ zeilen, zirkel, weiter }: { zeilen: string[]; zirkel: bool
   );
 }
 
+// Name eines Blocks: „Kombi B“, „Max-Test“; einzelne Übungen haben keinen.
+function blockName(einheit: Einheit, block: number): string | undefined {
+  const b = einheit.bloecke[block]!;
+  if (b.positionen.some((p) => p.istMaxTest)) return 'Max-Test';
+  if (b.typ !== 'supersatz') return undefined;
+  return `Kombi ${String.fromCharCode(65 + einheit.bloecke.slice(0, block).filter((x) => x.typ === 'supersatz').length)}`;
+}
+
 // Kennzeichnung über dem Namen: „Kombi A · Übung 1 von 3“ bzw. „Max-Test“.
 function kennzeichnung(einheit: Einheit, s: Schritt): string | undefined {
   const b = einheit.bloecke[s.block]!;
   if (positionVon(einheit, s).istMaxTest) return 'Max-Test';
   if (b.typ !== 'supersatz') return undefined;
-  const buchstabe = String.fromCharCode(65 + einheit.bloecke.slice(0, s.block).filter((x) => x.typ === 'supersatz').length);
-  return `Kombi ${buchstabe} · Übung ${s.position + 1} von ${b.positionen.length}`;
+  return `${blockName(einheit, s.block)} · Übung ${s.position + 1} von ${b.positionen.length}`;
 }
 
 // Name, „So geht's“ und, solange der erste Satz der Übung offen ist, „Tauschen“.
@@ -525,6 +546,69 @@ function Pause({ z, einheit, schritt, ende, dauer, onAendern, onWeiter, onRueckg
   );
 }
 
+// Pause vor dem nächsten Block (Entscheidung 29.10.2026): Restzeit, darunter groß der nächste Block mit
+// allen Übungen, Sätzen, Ziel und Last zum Aufbauen. Am Ende der Pause Ton und Vibration; weiter geht
+// es erst mit „Los“.
+function Blockwechsel({ z, einheit, block, ende, dauer, onAendern, onLos, onRueckgaengig }: {
+  z: AppZustand; einheit: Einheit; block: number; ende: number; dauer: number;
+  onAendern: (ende: number, dauer: number) => void; onLos: () => void; onRueckgaengig?: () => void;
+}) {
+  const jetzt = useJetzt(250);
+  const rest = Math.max(0, Math.ceil((ende - jetzt) / 1000));
+  const signal = useRef(dauer <= 0);
+  useEffect(() => {
+    if (rest > 0) {
+      signal.current = false;
+      return;
+    }
+    if (signal.current) return;
+    signal.current = true;
+    pausenEnde();
+  }, [rest]);
+  const name = blockName(einheit, block);
+  return (
+    <div className="flex flex-1 flex-col">
+      <div className="mt-8 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-gross font-semibold text-gedaempft">{rest > 0 ? 'Pause' : 'Pause vorbei'}</p>
+          <p className="text-zahl leading-none font-extrabold tabular-nums" aria-live="off">{zeitText(rest)}</p>
+        </div>
+        {dauer > 0 && (
+          <div className="w-36">
+            <Knopf art="sekundaer" onClick={() => onAendern(Math.max(ende, Date.now()) + PLAYER.pauseVerlaengernSek * 1000, dauer + PLAYER.pauseVerlaengernSek)}>
+              +{PLAYER.pauseVerlaengernSek} Sek.
+            </Knopf>
+          </div>
+        )}
+      </div>
+      <section className="mt-8 rounded-karte border-2 border-akzent bg-flaeche p-5">
+        <p className="text-hinweis font-bold tracking-wide text-akzent uppercase">Als Nächstes{name ? ` · ${name}` : ''}</p>
+        <ul className="mt-2">
+          {einheit.bloecke[block]!.positionen.map((p, i) => {
+            const u = uebungVon(z, p.uebungId);
+            if (!u) return null;
+            return (
+              <li key={i} className="border-b border-linie py-3 last:border-b-0">
+                <p className="text-gross font-bold">{u.name}</p>
+                <p className="text-basis text-gedaempft">{p.istMaxTest ? 'So viele wie möglich' : detailText(u, p, lastAnzeige(z, u))}</p>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+      <p className="mt-4 text-center text-hinweis text-gedaempft">Bau alles auf. Weiter geht es mit „Los“.</p>
+      {onRueckgaengig && (
+        <div className="mt-2">
+          <Knopf art="schlicht" onClick={onRueckgaengig}>Letzten Satz rückgängig</Knopf>
+        </div>
+      )}
+      <div className="mt-auto pt-8">
+        <Knopf onClick={onLos}>Los</Knopf>
+      </div>
+    </div>
+  );
+}
+
 // Zirkel-Station: Vorgabe aus dem Katalog, „Weiter“ ohne Pause; die Stoppuhr läuft im Kopf.
 function Station({ z, einheit, schritt, u, letzte, onTauschen, onWeiter }: {
   z: AppZustand; einheit: Einheit; schritt: Schritt; u: Uebung; letzte: boolean; onTauschen?: () => void; onWeiter: () => void;
@@ -569,18 +653,19 @@ function Menue({ onFortsetzen, onSpaeter, onBeenden }: { onFortsetzen: () => voi
   );
 }
 
-// Übungsfeedback (Mockup 6), seit 21.10.2026 eine Seite je Runde: je Übung die Sätze, drei Knöpfe
-// und die Folge für die nächste Einheit. Vorausgewählt ist „passend“ (bzw. „zu schwer“, wenn der
+// Übungsfeedback (Mockup 6), seit 29.10.2026 eine Seite am Ende für alle Übungen: je Übung die Sätze,
+// drei Knöpfe und die Folge für die nächste Einheit. Vorausgewählt ist „passend“ (bzw. „zu schwer“, wenn der
 // Kalibrierungssatz das Ziel verfehlt); meist genügt „Weiter“. Bei „zu schwer“ fragt die Karte, wie viele
 // im Messsatz gingen (Entscheidung 29.10.2026: kein Zählen im Satz).
-function RundenFeedback({ z, einheit, stellen, onWeiter }: {
+function Feedbackseite({ z, einheit, stellen, onWeiter }: {
   z: AppZustand; einheit: Einheit; stellen: Stelle[];
   onWeiter: (stellen: Stelle[], feedbacks: Feedback[], messwerte: (number | undefined)[]) => void;
 }) {
-  const [gewaehlt, setGewaehlt] = useState<Record<number, Feedback>>({});
-  const [werte, setWerte] = useState<Record<number, number>>({});
-  const wahl = (s: Stelle) => gewaehlt[s.position] ?? feedbackVorschlag(z, einheit, s);
-  const messwert = (s: Stelle) => (wahl(s) === 'schwer' ? werte[s.position] ?? geschafft(z, einheit, s) : undefined);
+  const [gewaehlt, setGewaehlt] = useState<Record<string, Feedback>>({});
+  const [werte, setWerte] = useState<Record<string, number>>({});
+  const schluessel = (s: Stelle) => `${s.block}.${s.position}`;
+  const wahl = (s: Stelle) => gewaehlt[schluessel(s)] ?? feedbackVorschlag(z, einheit, s);
+  const messwert = (s: Stelle) => (wahl(s) === 'schwer' ? werte[schluessel(s)] ?? geschafft(z, einheit, s) : undefined);
   const inSek = stellen.every((s) => uebungVon(z, positionVon(einheit, { ...s, satz: 1 }).uebungId)?.bereich.einheit === 'Sek.');
   return (
     <div className="flex flex-1 flex-col">
@@ -590,9 +675,9 @@ function RundenFeedback({ z, einheit, stellen, onWeiter }: {
       </ul>
       <div className="mt-4 flex flex-col gap-3">
         {stellen.map((s) => (
-          <FeedbackKarte key={`${s.block}.${s.position}`} z={z} einheit={einheit} stelle={s} wahl={wahl(s)} messwert={messwert(s)}
-            onWahl={(fb) => setGewaehlt({ ...gewaehlt, [s.position]: fb })}
-            onMesswert={(w) => setWerte({ ...werte, [s.position]: w })} />
+          <FeedbackKarte key={schluessel(s)} z={z} einheit={einheit} stelle={s} wahl={wahl(s)} messwert={messwert(s)}
+            onWahl={(fb) => setGewaehlt({ ...gewaehlt, [schluessel(s)]: fb })}
+            onMesswert={(w) => setWerte({ ...werte, [schluessel(s)]: w })} />
         ))}
       </div>
       <div className="mt-auto pt-8">

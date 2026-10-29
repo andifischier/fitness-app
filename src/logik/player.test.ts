@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  aktuellerSchritt, balkenAbschnitte, beende, erledigteSaetze, feedbackVorschlag, fortschrittshinweis, istKalibrierung, kalibriere, letztesMal, offeneFeedbacks, pauseNach,
+  aktuellerBlock, aktuellerSchritt, balkenAbschnitte, beende, blockwechselNach, erledigteSaetze, feedbackVorschlag, fortschrittshinweis, istKalibrierung, kalibriere, letztesMal, offeneFeedbacks, pauseNach,
   korrigiereSatz, lastWaehlbar, messSatz, satzVorgabe, schritte, setzeFeedback, starte, trageSatzEin,
 } from './player';
 import { bereichFuer } from './planung';
@@ -43,7 +43,7 @@ describe('Reihenfolge der Sätze', () => {
     expect(schritte(MIX).map((_, i) => pauseNach(MIX, i))).toEqual([90, 0, 75, 0, 75, 75, 60, 0]);
   });
 
-  it('Kombi-Runde mit 3 Übungen: je ein Satz jeder Übung, Pause nach der Runde, Feedback nach der Runde', () => {
+  it('Kombi-Runde mit 3 Übungen: je ein Satz jeder Übung, Pause nach der Runde', () => {
     const kombi = einheit([{ typ: 'supersatz', pauseSek: 75, positionen: [
       pos('kh_bankdruecken', 2, { last: 16 }), pos('kh_rudern_einarmig', 2, { last: 18 }), pos('haengendes_knieheben', 1),
     ] }]);
@@ -52,7 +52,7 @@ describe('Reihenfolge der Sätze', () => {
     let e = kombi;
     const z = zustand();
     for (const s of schritte(kombi).slice(0, 3)) e = trageSatzEin(z, e, s, 10, '2026-10-20T18:10:00');
-    expect(offeneFeedbacks(e)).toEqual([]);   // Knieheben ist fertig, die Runde aber noch nicht
+    expect(offeneFeedbacks(e)).toEqual([{ block: 0, position: 2 }]);   // Knieheben ist fertig
     for (const s of schritte(kombi).slice(3)) e = trageSatzEin(z, e, s, 10, '2026-10-20T18:12:00');
     expect(offeneFeedbacks(e)).toHaveLength(3);
   });
@@ -64,20 +64,35 @@ describe('Reihenfolge der Sätze', () => {
   });
 });
 
-describe('Fortschrittsbalken (Entscheidung 29.10.2026)', () => {
-  it('teilt Kombi-Runden je Runde und einzelne Übungen je Übung ab', () => {
+describe('Fortschrittsbalken und Blockwechsel (Entscheidungen 29.10.2026)', () => {
+  it('zeigt nur den aktuellen Block: Kombi je Runde, einzelne Übungen je Übung', () => {
     const z = zustand();
     const e = trageSatzEin(z, trageSatzEin(z, MIX, schritte(MIX)[0]!, 8, '2026-10-20T18:10:00'), schritte(MIX)[1]!, 10, '2026-10-20T18:12:00');
-    expect(balkenAbschnitte(e)).toEqual([
-      ['erledigt'],
-      ['erledigt', 'aktuell'], ['offen', 'offen'], ['offen'],
-      ['offen', 'offen'],
-    ]);
+    expect(aktuellerBlock(e)).toBe(1);
+    expect(balkenAbschnitte(e)).toEqual([['erledigt', 'aktuell'], ['offen', 'offen'], ['offen']]);
+    expect(balkenAbschnitte(e, 0)).toEqual([['erledigt']]);
+    expect(balkenAbschnitte(e, 2)).toEqual([['offen', 'offen']]);
+  });
+
+  it('bleibt nach dem letzten Satz beim letzten Block', () => {
+    const z = mitVarianten(zustand());
+    const e = schritte(MIX).reduce((x, s) => trageSatzEin(z, x, s, 10, '2026-10-20T18:10:00'), MIX);
+    expect(aktuellerBlock(e)).toBe(2);
+    expect(balkenAbschnitte(e)).toEqual([['erledigt', 'erledigt']]);
   });
 
   it('teilt den Zirkel je Runde ab', () => {
     const zirkel = einheit([{ typ: 'zirkel', pauseSek: 0, runden: 2, zirkelId: 'z', positionen: [pos('a', 2), pos('b', 2)] }], { format: 'zirkel' });
     expect(balkenAbschnitte(zirkel)).toEqual([['aktuell', 'offen'], ['offen', 'offen']]);
+  });
+
+  it('erkennt den Wechsel zum nächsten Block, nicht im Zirkel und nicht nach dem letzten Satz', () => {
+    expect(schritte(MIX).map((_, i) => blockwechselNach(MIX, i))).toEqual([true, false, false, false, false, true, false, false]);
+    const zirkel = einheit([
+      { typ: 'zirkel', pauseSek: 0, runden: 1, zirkelId: 'z', positionen: [pos('a', 1)] },
+      { typ: 'zirkel', pauseSek: 0, runden: 1, zirkelId: 'y', positionen: [pos('b', 1)] },
+    ], { format: 'zirkel' });
+    expect(blockwechselNach(zirkel, 0)).toBe(false);
   });
 });
 
@@ -256,11 +271,12 @@ describe('Übungsfeedback', () => {
   const erledige = (z: AppZustand, e: Einheit, bis: number) => schritte(e).slice(0, bis)
     .reduce((x, s) => trageSatzEin(z, x, s, 10, '2026-10-20T18:10:00'), e);
 
-  it('fragt erst, wenn alle Sätze der Übung erledigt sind; nie beim Max-Test', () => {
+  it('zählt eine Übung, wenn alle ihre Sätze erledigt sind; nie den Max-Test', () => {
     const z = mitVarianten(zustand());
     expect(offeneFeedbacks(erledige(z, MIX, 1))).toEqual([]);
-    // Supersatz: Rudern ist nach Runde 2 fertig, gefragt wird aber erst nach dem ganzen Paar.
-    expect(offeneFeedbacks(erledige(z, MIX, 5))).toEqual([]);
+    // Supersatz: Rudern ist nach Runde 2 fertig, auch wenn das Paar noch läuft (für das Beenden vor dem Ende).
+    expect(offeneFeedbacks(erledige(z, MIX, 4))).toEqual([]);
+    expect(offeneFeedbacks(erledige(z, MIX, 5))).toEqual([{ block: 1, position: 1 }]);
     expect(offeneFeedbacks(erledige(z, MIX, 6))).toEqual([{ block: 1, position: 0 }, { block: 1, position: 1 }]);
     expect(offeneFeedbacks(erledige(z, MIX, 8))).toEqual([{ block: 1, position: 0 }, { block: 1, position: 1 }, { block: 2, position: 0 }]);
   });

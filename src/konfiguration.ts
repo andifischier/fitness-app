@@ -313,12 +313,14 @@ export const BACKUP = {
 // Trainings-Player (Paket 7)
 export const PLAYER = {
   pauseVerlaengernSek: 30,
+  vorlaufSek: 5,                    // Countdown und Stoppuhr: Zeit zum Bereitmachen (Entscheidung 29.10.2026)
   verlaufPunkte: 8,                 // kleine Kurve im ersten Satz: so viele letzte Einheiten
   reserveHaltenSek: { von: 5, bis: 10 },     // Hinweis bei Halteübungen
   reserveLetzterIsolationssatz: { von: 0, bis: 1 },
   // Signal am Pausenende: drei kurze Töne und Vibration (Millisekunden)
   ton: { frequenzHz: 880, dauerMs: 180, abstandMs: 120, anzahl: 3, lautstaerke: 0.3 },
   vibration: [200, 100, 200, 100, 400],
+  startTonMs: 300,                  // ein Ton am Ende des Vorlaufs
 } as const;
 
 // Übergänge zwischen Bildschirmen (Entscheidung 29.10.2026): neue Seite gleitet kurz herein
