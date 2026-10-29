@@ -345,3 +345,10 @@
   übrigen Logiktests nutzen „Oberkörper betont“ ausdrücklich als Szenario.
 - **Warum:** Wunsch des Nutzers nach einem ausgewogenen Standard, den er selbst anpasst
   (Entscheidungen 29.10.2026).
+
+## 29.10.2026: Mehrere Detailfenster bei Orte und Equipment
+- **Was:** Auf der Seite „Orte und Equipment“ (auch Schritt 3 im Onboarding) können mehrere
+  Detailfenster gleichzeitig offen sein. Wer z. B. Kurzhanteln und Widerstandsbänder abhakt, sieht
+  jetzt beide Fenster untereinander, in der Reihenfolge der Liste.
+- **Warum:** Fehler gemeldet vom Nutzer: Beim Abhaken des zweiten Utensils schloss sich das Fenster
+  des ersten, sodass nur eines ausgefüllt werden konnte.
