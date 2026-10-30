@@ -9,7 +9,7 @@ import { bereichFuer, lastAnzeige } from './planung';
 import type { AppZustand, BandStufe, Block, Einheit, Feedback, Position, SatzErgebnis, Uebung } from './typen';
 import { naechsteVariante } from './progression';
 import {
-  e1rm, einstellungenVon, ersterSatz, feedbackVon, fertigeEinheiten, leistungswert, sitzungen, uebungVon, wdhBei, zielReserve,
+  e1rm, einstellungenVon, feedbackVon, letzterSatz, fertigeEinheiten, leistungswert, sitzungen, uebungVon, wdhBei, zielReserve,
 } from './verlauf';
 
 // Ein Schritt ist ein Satz (bzw. eine Zirkel-Station in einer Runde).
@@ -130,12 +130,13 @@ export interface SatzVorgabe {
   reserve: string;                    // Hinweistext zur Reserve
   kalibrierung: boolean;
   langsam: boolean;
-  zaehlen: boolean;                   // Geschafftes eingeben (nur Kalibrierungssatz und Max-Test)
+  zaehlen: boolean;                   // Geschafftes eingeben, vorbelegt mit dem Ziel (Entscheidung 30.10.2026)
+  gesenkt: boolean;                   // Ziel im Training gesenkt, weil ein Satz deutlich darunter blieb
 }
 
-// Was ein Satz anzeigt: Ziel, Last und Hinweis zur Reserve. Seit 29.10.2026 (Entscheidung) ist das Ziel
-// in jedem Satz der Richtwert und wird mit „Satz erledigt“ als geschafft gespeichert; gezählt wird nur
-// im Kalibrierungssatz (Gewicht finden) und im Max-Test.
+// Was ein Satz anzeigt: Ziel, Last und Hinweis zur Reserve. Seit 30.10.2026 (Entscheidung) lässt sich in
+// jedem Satz eintragen, was geschafft wurde (vorbelegt mit dem Ziel; Halteübungen zusätzlich mit
+// Countdown). Blieb ein Satz deutlich unter dem Ziel, zeigen die restlichen Sätze das Geschaffte.
 export function satzVorgabe(z: AppZustand, einheit: Einheit, s: Schritt): SatzVorgabe {
   const e = einstellungenVon(z);
   const b = einheit.bloecke[s.block]!;
@@ -144,7 +145,7 @@ export function satzVorgabe(z: AppZustand, einheit: Einheit, s: Schritt): SatzVo
   const inSek = u?.bereich.einheit === 'Sek.';
   const bereich = u ? bereichFuer(e, u) : undefined;
   const werte = { last: satzLast(z, einheit, s), bandStufe: p.bandStufe };
-  const basis = { inSek, ...werte, kalibrierung: false, langsam: p.langsam === true, zaehlen: false };
+  const basis = { inSek, ...werte, kalibrierung: false, langsam: p.langsam === true, zaehlen: false, gesenkt: false };
   if (p.istMaxTest) {
     return { ...basis, zaehlen: true, art: 'maxTest', wert: 0, reserve: inSek ? 'Nur so lange, wie die Haltung sauber bleibt.' : 'Ohne Pause, nur saubere Wiederholungen.' };
   }
@@ -155,7 +156,9 @@ export function satzVorgabe(z: AppZustand, einheit: Einheit, s: Schritt): SatzVo
       ? `Vorschlag aus deinem Testtag für etwa ${bereich!.von} Wiederholungen; passt es nicht, ändere es.`
       : `Wähle ein Gewicht für etwa ${bereich!.von} Wiederholungen.`} Aufhören, wenn noch ${PROGRESSION.neueVarianteReserve} gingen.`
     : reserveText(e.zielReserve, inSek, letzterIsolationssatz(u, p, s));
-  return { ...basis, art: 'ziel', wert: kalibrierung ? bereich!.von : p.zielWdh, bereich, reserve, kalibrierung, zaehlen: kalibrierung };
+  const gesenkt = !kalibrierung && s.satz > 1 && p.zielFolgesaetze !== undefined && p.zielFolgesaetze < p.zielWdh;
+  const wert = kalibrierung ? bereich!.von : gesenkt ? p.zielFolgesaetze! : p.zielWdh;
+  return { ...basis, art: 'ziel', wert, bereich, reserve, kalibrierung, zaehlen: true, gesenkt };
 }
 
 const letzterIsolationssatz = (u: Uebung | undefined, p: Position, s: Schritt) =>
@@ -199,13 +202,15 @@ export function lastWaehlbar(z: AppZustand, einheit: Einheit, s: Schritt): boole
 }
 
 // Trägt einen erledigten Satz ein (Zirkel-Station: Vorgabe), mit der gewählten Last. Nach dem
-// Kalibrierungssatz bekommen die restlichen Sätze Last und Ziel aus `kalibriere`.
+// Kalibrierungssatz bekommen die restlichen Sätze Last und Ziel aus `kalibriere`. Bleibt ein Satz
+// deutlich unter seinem Ziel, ist das Geschaffte das Ziel der restlichen Sätze (Entscheidung 30.10.2026).
 export function trageSatzEin(z: AppZustand, einheit: Einheit, s: Schritt, wert: number, jetzt: string, last?: number): Einheit {
   const neu = structuredClone(einheit);
   const p = positionVon(neu, s);
   const u = uebungVon(z, p.uebungId);
   const inSek = u?.bereich.einheit === 'Sek.';
   const kalibrierung = istKalibrierung(z, einheit, s);
+  const vorgabe = satzVorgabe(z, einheit, s);
   const gewicht = last !== undefined && lastWaehlbar(z, einheit, s) ? last : satzLast(z, einheit, s);
   const ergebnis: SatzErgebnis = {
     nr: p.ergebnisse.length + 1,
@@ -216,6 +221,10 @@ export function trageSatzEin(z: AppZustand, einheit: Einheit, s: Schritt, wert: 
   };
   p.ergebnisse.push(ergebnis);
   if (kalibrierung && u && gewicht !== undefined) Object.assign(p, kalibriere(z, neu.ortId, u, gewicht, wert));
+  else if (vorgabe.art === 'ziel' && !kalibrierung) {
+    const ab = PROGRESSION.folgesatzSenkenAb * (inSek ? PROGRESSION.sekProWdh : 1);
+    if (wert <= vorgabe.wert - ab) p.zielFolgesaetze = Math.max(1, wert);
+  }
   return neu;
 }
 
@@ -261,8 +270,8 @@ export function offeneFeedbacks(einheit: Einheit): Stelle[] {
 
 // Übungen, nach deren Sternen die Abschlussseite fragt (Entscheidung 29.10.2026): trainierte Übungen
 // ohne Max-Test und Zirkel, die noch keine Bewertung haben und höchstens einmal ohne Antwort gefragt
-// wurden, oder deren Bewertung bzw. letzte Frage mindestens 42 Tage zurückliegt. Unbewertete zuerst,
-// dann die am längsten nicht gefragten; höchstens 2 je Training.
+// wurden (alle, Entscheidung 30.10.2026), dazu höchstens 2 bewertete, deren Bewertung bzw. letzte Frage
+// mindestens 42 Tage zurückliegt (die am längsten nicht gefragten zuerst).
 export function sternFragen(z: AppZustand, einheit: Einheit, jetzt: string): string[] {
   const e = einstellungenVon(z);
   const ids = [...new Set(einheit.bloecke.filter((b) => b.typ !== 'zirkel').flatMap((b) => b.positionen)
@@ -275,34 +284,18 @@ export function sternFragen(z: AppZustand, einheit: Einheit, jetzt: string): str
     return !gefragt || stundenZwischen(gefragt.am, jetzt) >= BEWERTUNG.auffrischenTage * 24
       ? [{ id, i, neu: false, am: gefragt?.am ?? '' }] : [];
   });
-  return kandidaten
-    .sort((a, b) => Number(b.neu) - Number(a.neu) || (a.am < b.am ? -1 : a.am > b.am ? 1 : 0) || a.i - b.i)
-    .slice(0, BEWERTUNG.fragenProTraining).map((k) => k.id);
+  const auffrischen = kandidaten.filter((k) => !k.neu)
+    .sort((a, b) => (a.am < b.am ? -1 : a.am > b.am ? 1 : 0) || a.i - b.i)
+    .slice(0, BEWERTUNG.auffrischenProTraining);
+  return [...kandidaten.filter((k) => k.neu), ...auffrischen].map((k) => k.id);
 }
 
-// Satz, an dem die Progression misst: der erste, nach einem Kalibrierungssatz der zweite.
-export function messSatz(z: AppZustand, einheit: Einheit, s: Stelle): number {
-  const p = einheit.bloecke[s.block]!.positionen[s.position]!;
-  return p.ergebnisse.length > 1 && istKalibrierung(z, einheit, { ...s, satz: 1 }) && p.ergebnisse[0]?.last !== undefined ? 2 : 1;
-}
-
-// Vorausgewähltes Feedback: „zu schwer“, wenn der Messsatz das Ziel verfehlt, sonst „passend“.
+// Vorausgewähltes Feedback: „zu schwer“, wenn der letzte Satz das Ziel verfehlt (Entscheidung
+// 30.10.2026), sonst „passend“. Ein Kalibrierungssatz zählt nur, wenn er der einzige Satz ist.
 export function feedbackVorschlag(z: AppZustand, einheit: Einheit, s: Stelle): Feedback {
   const p = einheit.bloecke[s.block]!.positionen[s.position]!;
-  return feedbackVon({ ...p, ergebnisse: p.ergebnisse.slice(messSatz(z, einheit, s) - 1) });
-}
-
-// Korrigiert die Wiederholungen bzw. Sekunden eines erledigten Satzes; seit 29.10.2026 nur noch den
-// Messsatz nach „zu schwer“ („Wie viele im 1. Satz?“). Last und Ziel der Position bleiben.
-export function korrigiereSatz(z: AppZustand, einheit: Einheit, s: Stelle, nr: number, wert: number): Einheit {
-  const neu = structuredClone(einheit);
-  const p = neu.bloecke[s.block]!.positionen[s.position]!;
-  const r = p.ergebnisse.find((x) => x.nr === nr);
-  if (!r) return einheit;
-  const w = Math.max(0, Math.round(wert));
-  if (uebungVon(z, p.uebungId)?.bereich.einheit === 'Sek.') r.sek = w;
-  else r.wdh = w;
-  return neu;
+  const kalibriert = p.ergebnisse.length > 1 && istKalibrierung(z, einheit, { ...s, satz: 1 }) && p.ergebnisse[0]?.last !== undefined;
+  return feedbackVon(kalibriert ? { ...p, ergebnisse: p.ergebnisse.slice(1) } : p);
 }
 
 export function setzeFeedback(einheit: Einheit, s: Stelle, feedback: Feedback): Einheit {
@@ -311,13 +304,10 @@ export function setzeFeedback(einheit: Einheit, s: Stelle, feedback: Feedback): 
   return neu;
 }
 
-// Feedback aller Übungen der Abschlussseite auf einmal (Entscheidung 29.10.2026); bei „zu schwer“ mit dem
-// Geschafften im Messsatz (`messwerte`, undefined = unverändert).
-export function bewerteAlle(z: AppZustand, einheit: Einheit, stellen: Stelle[], feedbacks: Feedback[], messwerte: (number | undefined)[]): Einheit {
-  return stellen.reduce((e, s, i) => {
-    const wert = messwerte[i];
-    return setzeFeedback(wert === undefined ? e : korrigiereSatz(z, e, s, messSatz(z, e, s), wert), s, feedbacks[i]!);
-  }, einheit);
+// Feedback aller Übungen der Abschlussseite auf einmal (Entscheidung 29.10.2026). Das Geschaffte steht
+// seit 30.10.2026 schon in den Sätzen; die Abschlussseite fragt nicht mehr nach.
+export function bewerteAlle(einheit: Einheit, stellen: Stelle[], feedbacks: Feedback[]): Einheit {
+  return stellen.reduce((e, s, i) => setzeFeedback(e, s, feedbacks[i]!), einheit);
 }
 
 // Beginn des Trainings nach dem Aufwärmen; im Zirkel startet damit die Stoppuhr.
@@ -363,7 +353,7 @@ export function fortschrittshinweis(z: AppZustand, einheit: Einheit, s: Schritt,
   const ort = z.orte.find((o) => o.id === einheit.ortId);
   const bisher = sitzungen(z, u.id).filter((x) => x.einheit.id !== einheit.id);
   const letzte = bisher.at(-1);
-  const letztesMal = letzte ? ersterSatz(letzte.position) : undefined;
+  const letztesMal = letzte ? letzterSatz(letzte.position) : undefined;
   const verlauf = bisher.map((x) => leistungswert(e, u, x.position)).filter((w): w is number => w !== undefined)
     .slice(-PLAYER.verlaufPunkte);
   const { bis } = bereichFuer(e, u);

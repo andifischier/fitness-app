@@ -233,7 +233,8 @@
     "Griffe schulterbreit auf den Boden, Körper von Ferse bis Kopf gerade.",
     "Brust tiefer als die Hände senken, bis du eine Dehnung in der Brust spürst.",
     "Kontrolliert hochdrücken, Bauch und Po fest."
-   ]
+   ],
+   "videoId": "ik8q1YBkzCw"
   },
   {
    "id": "liegestuetz_griffe_fuesse_erhoeht",
@@ -269,7 +270,8 @@
     "Füße auf Stuhl oder Bank, Griffe schulterbreit am Boden, Körper gerade.",
     "Brust langsam tief zwischen die Griffe senken.",
     "Hochdrücken, die Hüfte nicht durchhängen lassen."
-   ]
+   ],
+   "videoId": "dFUI9bHAP5w"
   },
   {
    "id": "kh_bankdruecken",
@@ -3494,6 +3496,92 @@
   "aufwaermsatz": {
    "anteilLast": 0.5,
    "wdh": 8
+  },
+  "anleitungen": {
+   "Jumping Jacks": {
+    "uebungId": "hampelmann"
+   },
+   "Squats": {
+    "uebungId": "kniebeuge"
+   },
+   "Band Pull-Aparts": {
+    "uebungId": "band_pull_apart"
+   },
+   "Scapula Pullups": {
+    "uebungId": "scapula_pullups"
+   },
+   "Arm Circles": {
+    "videoId": "9XvHnPTMbx8",
+    "anleitung": [
+     "Aufrecht stehen, Arme seitlich auf Schulterhöhe ausstrecken.",
+     "Mit kleinen Kreisen beginnen und sie langsam größer werden lassen.",
+     "Erst vorwärts, dann gleich viele rückwärts; Schultern bleiben unten."
+    ]
+   },
+   "Backward Shoulder Circles": {
+    "videoId": "X7NtgY9kCCM",
+    "anleitung": [
+     "Aufrecht stehen, Arme hängen locker neben dem Körper.",
+     "Schultern zu den Ohren ziehen, dann nach hinten und unten kreisen.",
+     "Langsam und groß kreisen, hinten kurz die Schulterblätter zusammenziehen."
+    ]
+   },
+   "Leg Swings": {
+    "videoId": "D17eUtUt0zQ",
+    "anleitung": [
+     "Seitlich an eine Wand stellen und mit einer Hand abstützen.",
+     "Das äußere Bein locker vor und zurück schwingen, Oberkörper bleibt ruhig.",
+     "Klein anfangen und den Schwung langsam größer werden lassen, dann Seite wechseln."
+    ]
+   },
+   "Wall Slides": {
+    "videoId": "9ZBOvVO9JFs",
+    "anleitung": [
+     "Rücken an die Wand, Hinterkopf, Schultern und Po berühren sie.",
+     "Unterarme und Handrücken an die Wand, Ellbogen etwa 90 Grad gebeugt.",
+     "Arme langsam an der Wand nach oben schieben und wieder senken, ohne den Kontakt zu verlieren."
+    ]
+   },
+   "Scapula Squeezes": {
+    "videoId": "5Q0YUGWykkU",
+    "anleitung": [
+     "Aufrecht stehen oder sitzen, Arme locker, Ellbogen neben dem Körper.",
+     "Schulterblätter nach hinten unten zusammenziehen, als hieltest du einen Stift dazwischen.",
+     "Kurz halten und lösen; Schultern nicht hochziehen."
+    ]
+   },
+   "Lunges with Twist": {
+    "videoId": "KDelmDbh4Ms",
+    "anleitung": [
+     "Einen großen Schritt nach vorn in den Ausfallschritt machen, hinteres Knie knapp über dem Boden.",
+     "Oberkörper zum vorderen Bein drehen, Hüfte und Knie bleiben ausgerichtet.",
+     "Zurückdrehen, zurück in den Stand und mit dem anderen Bein wiederholen."
+    ]
+   },
+   "Good Mornings": {
+    "videoId": "61zbhuRiwQg",
+    "anleitung": [
+     "Hüftbreit stehen, Hände an den Hinterkopf, Knie leicht gebeugt.",
+     "Mit geradem Rücken die Hüfte nach hinten schieben und den Oberkörper nach vorn neigen.",
+     "Wenn die Rückseite der Beine spannt, über die Hüfte wieder aufrichten."
+    ]
+   },
+   "Kneeling Hip Flexor Stretch": {
+    "videoId": "UU7Nqd_Dric",
+    "anleitung": [
+     "Auf ein Knie gehen, das andere Bein steht vorn im rechten Winkel; bei Bedarf ein Kissen unters Knie.",
+     "Becken leicht einrollen, Po anspannen, Oberkörper aufrecht.",
+     "Hüfte langsam nach vorn schieben, bis vorn an der Hüfte des hinteren Beins eine Dehnung spürbar ist, und halten."
+    ]
+   },
+   "Cat-Cow": {
+    "videoId": "5KYLaU6Lg2E",
+    "anleitung": [
+     "Vierfüßlerstand: Hände unter den Schultern, Knie unter der Hüfte.",
+     "Ausatmen und den Rücken rund machen, Kinn zur Brust.",
+     "Einatmen, Bauch sinken lassen, Brust heben und nach vorn schauen; langsam im Wechsel."
+    ]
+   }
   }
  },
  "utensilien": [

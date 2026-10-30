@@ -20,41 +20,50 @@ const gespeichert = (hDruck: string[]): Partial<AppZustand> => ({ muster: [{ mus
 
 describe('Rangfolge der Hauptvarianten mit Sternen', () => {
   it('wählt ohne Bewertung nach Abstand, Lasttyp und Katalog', () => {
-    expect(ids(voll())).toEqual(['kh_bodendruecken', 'kh_bankdruecken']);
+    expect(ids(voll())).toEqual(['kh_bankdruecken', 'kh_schraegbank']);
+  });
+
+  it('plant die Floor Press nur ohne Bank (Entscheidung 30.10.2026)', () => {
+    const nurKh = ort(['KH']);
+    expect(ids(voll({}, { orte: [nurKh] }), 'hDruck', nurKh)).toEqual(['kh_bodendruecken', 'liegestuetz']);
+    expect(ids(voll())).not.toContain('kh_bodendruecken');
+    expect(ids(voll({}, { orte: [ort(['KH', 'BANK'])] }), 'hDruck', ort(['KH', 'BANK']))[0]).toBe('kh_bankdruecken');
+    // Auch eine gespeicherte Floor Press weicht am Ort mit Bank dem Bankdrücken.
+    expect(ids(voll({}, gespeichert(['kh_bodendruecken', 'kh_schraegbank'])))).toEqual(['kh_bankdruecken', 'kh_schraegbank']);
   });
 
   it('stellt Varianten mit 1 Stern ans Ende', () => {
-    expect(ids(voll({ kh_bodendruecken: 1 }))).toEqual(['kh_bankdruecken', 'kh_schraegbank']);
+    expect(ids(voll({ kh_bankdruecken: 1 }))).toEqual(['kh_schraegbank', 'liegestuetz_fuesse_erhoeht']);
   });
 
   it('bevorzugt bei gleichem Abstand zur Musterstufe mehr Sterne', () => {
     expect(ids(voll({ kh_schraegbank: 5 }))[0]).toBe('kh_schraegbank');
     // Der Abstand zur Musterstufe geht vor: 5 Sterne für Knieliegestütz (Stufe 1) ändern nichts.
-    expect(ids(voll({ knieliegestuetz: 5 }))[0]).toBe('kh_bodendruecken');
+    expect(ids(voll({ knieliegestuetz: 5 }))[0]).toBe('kh_bankdruecken');
   });
 
   it('der Favorit bleibt vor allem anderen', () => {
-    const z = voll({ kh_bodendruecken: 1 });
-    const fav: AppZustand = { ...z, einstellungen: [{ ...z.einstellungen[0]!, favoriten: ['kh_bodendruecken'] }] };
-    expect(ids(fav)[0]).toBe('kh_bodendruecken');
+    const z = voll({ kh_schraegbank: 1 });
+    const fav: AppZustand = { ...z, einstellungen: [{ ...z.einstellungen[0]!, favoriten: ['kh_schraegbank'] }] };
+    expect(ids(fav)[0]).toBe('kh_schraegbank');
   });
 });
 
 describe('1 Stern ersetzt die Hauptvariante', () => {
   it('ab der nächsten Einheit durch die beste Alternative mit höchstens 1 Stufe Abstand', () => {
-    const z = voll({ kh_bodendruecken: 1 }, gespeichert(['kh_bodendruecken', 'kh_bankdruecken']));
-    expect(ids(z)).toEqual(['kh_schraegbank', 'kh_bankdruecken']);
-    // Die nächste Einheit nutzt die Bodendrück-Variante nicht mehr.
+    const z = voll({ kh_bankdruecken: 1 }, gespeichert(['kh_bankdruecken', 'kh_schraegbank']));
+    expect(ids(z)).toEqual(['liegestuetz_fuesse_erhoeht', 'kh_schraegbank']);
+    // Die nächste Einheit nutzt das Bankdrücken nicht mehr.
     const einheit = erstelleEinheit(z, { jetzt: JETZT, ortId: 'zuhause', prognose: 3, morgenWieder: false, laenger: false });
     const uebungen = einheit.bloecke.flatMap((b) => b.positionen.map((p) => p.uebungId));
-    expect(uebungen).not.toContain('kh_bodendruecken');
-    expect(uebungen.some((id) => id === 'kh_schraegbank' || id === 'kh_bankdruecken')).toBe(true);
+    expect(uebungen).not.toContain('kh_bankdruecken');
+    expect(uebungen.some((id) => id === 'kh_schraegbank' || id === 'liegestuetz_fuesse_erhoeht')).toBe(true);
   });
 
   it('übernimmt den Ersatz in die gespeicherten Hauptvarianten', () => {
-    const z = voll({ kh_bodendruecken: 1 }, gespeichert(['kh_bodendruecken', 'kh_bankdruecken']));
+    const z = voll({ kh_bankdruecken: 1 }, gespeichert(['kh_bankdruecken', 'kh_schraegbank']));
     expect(uebernimmBewertungen(z, 'zuhause', JETZT).muster.find((m) => m.muster === 'hDruck')!.hauptvarianten)
-      .toEqual(['kh_schraegbank', 'kh_bankdruecken']);
+      .toEqual(['liegestuetz_fuesse_erhoeht', 'kh_schraegbank']);
   });
 
   it('bleibt, wenn es keine Alternative mit mindestens 2 Sternen in der Nähe gibt', () => {
@@ -62,11 +71,11 @@ describe('1 Stern ersetzt die Hauptvariante', () => {
     const basis = { orte: [nurKh], ...gespeichert(['kh_bodendruecken', 'liegestuetz']) };
     // Am Ort mit nur Kurzhanteln liegen Knieliegestütz (Stufe 1) und Archer (Stufe 8) zu weit weg.
     expect(ids(voll({ kh_bodendruecken: 1 }, basis), 'hDruck', nurKh)).toEqual(['kh_bodendruecken', 'liegestuetz']);
-    const z = voll({ kh_bodendruecken: 1 }, gespeichert(['kh_bodendruecken', 'kh_bankdruecken']));
+    const z = voll({ kh_bankdruecken: 1 }, gespeichert(['kh_bankdruecken', 'kh_schraegbank']));
     const alleSchlecht = mitBewertungen(z.einstellungen[0]!, {
-      kh_schraegbank: 1, liegestuetz_fuesse_erhoeht: 1, liegestuetz: 1, band_brustpresse: 1,
+      liegestuetz_fuesse_erhoeht: 1, liegestuetz: 1, band_brustpresse: 1, liegestuetz_band: 1,
     });
-    expect(ids({ ...z, einstellungen: [alleSchlecht] })).toEqual(['kh_bodendruecken', 'kh_bankdruecken']);
+    expect(ids({ ...z, einstellungen: [alleSchlecht] })).toEqual(['kh_bankdruecken', 'kh_schraegbank']);
     expect(uebernimmBewertungen({ ...z, einstellungen: [alleSchlecht] }, 'zuhause', JETZT).muster)
       .toEqual(z.muster);
   });
@@ -79,28 +88,28 @@ describe('1 Stern ersetzt die Hauptvariante', () => {
 
 describe('Sterne in der Übungswahl (Schritt 6)', () => {
   const erstesDruecken = (bewertungen: Record<string, Sterne>) => {
-    const z = voll(bewertungen, gespeichert(['kh_bodendruecken', 'kh_bankdruecken']));
+    const z = voll(bewertungen, gespeichert(['kh_bankdruecken', 'kh_schraegbank']));
     const einheit = erstelleEinheit(z, { jetzt: JETZT, ortId: 'zuhause', prognose: 3, morgenWieder: false, laenger: false });
-    return einheit.bloecke.flatMap((b) => b.positionen).find((p) => p.uebungId.startsWith('kh_b'))?.uebungId;
+    return einheit.bloecke.flatMap((b) => b.positionen).find((p) => ['kh_bankdruecken', 'kh_schraegbank'].includes(p.uebungId))?.uebungId;
   };
 
-  it('ohne Bewertung gewinnt bei Gleichstand die höhere Stufe', () => {
+  it('ohne Bewertung gewinnt bei Gleichstand die Reihenfolge der Kandidaten', () => {
     expect(erstesDruecken({})).toBe('kh_bankdruecken');
   });
 
   it('4 und 5 Sterne geben einen Zuschlag, 2 Sterne einen Abschlag', () => {
-    expect(erstesDruecken({ kh_bodendruecken: 4 })).toBe('kh_bodendruecken');
-    expect(erstesDruecken({ kh_bodendruecken: 5 })).toBe('kh_bodendruecken');
-    expect(erstesDruecken({ kh_bankdruecken: 2 })).toBe('kh_bodendruecken');
+    expect(erstesDruecken({ kh_schraegbank: 4 })).toBe('kh_schraegbank');
+    expect(erstesDruecken({ kh_schraegbank: 5 })).toBe('kh_schraegbank');
+    expect(erstesDruecken({ kh_bankdruecken: 2 })).toBe('kh_schraegbank');
   });
 
   it('ändert das Volumen pro Muskel nicht', () => {
     const saetze = (bewertungen: Record<string, Sterne>) => {
-      const z = voll(bewertungen, gespeichert(['kh_bodendruecken', 'kh_bankdruecken']));
+      const z = voll(bewertungen, gespeichert(['kh_bankdruecken', 'kh_schraegbank']));
       const e = erstelleEinheit(z, { jetzt: JETZT, ortId: 'zuhause', prognose: 3, morgenWieder: false, laenger: false });
       return e.bloecke.flatMap((b) => b.positionen).reduce((s, p) => s + p.saetze, 0);
     };
-    expect(saetze({ kh_bodendruecken: 5 })).toBe(saetze({}));
+    expect(saetze({ kh_schraegbank: 5 })).toBe(saetze({}));
     expect(saetze({ kh_bankdruecken: 2 })).toBe(saetze({}));
   });
 });
@@ -151,10 +160,10 @@ describe('Sterne auf der Abschlussseite (Entscheidung 29.10.2026)', () => {
     return { ...z, einstellungen: [{ ...z.einstellungen[0]!, ...e }] };
   };
 
-  it('fragt unbewertete Übungen, höchstens 2, ohne Max-Test und Zirkel', () => {
+  it('fragt alle unbewerteten Übungen, ohne Max-Test und Zirkel (Entscheidung 30.10.2026)', () => {
     const einheit = fertig(JETZT, ['kh_curls', 'hammer_curls', 'kh_seitheben', 'kh_bankdruecken'],
       { maxTest: ['kh_bankdruecken'], zirkel: ['plank'] });
-    expect(sternFragen(voll(), einheit, JETZT)).toEqual(['kh_curls', 'hammer_curls']);
+    expect(sternFragen(voll(), einheit, JETZT)).toEqual(['kh_curls', 'hammer_curls', 'kh_seitheben']);
     expect(sternFragen(voll(), fertig(JETZT, ['kh_bankdruecken'], { maxTest: ['kh_bankdruecken'], zirkel: ['plank'] }), JETZT)).toEqual([]);
   });
 
@@ -167,7 +176,7 @@ describe('Sterne auf der Abschlussseite (Entscheidung 29.10.2026)', () => {
     expect(sternFragen(mit(e2), einheit, plusTage(JETZT, 100))).toEqual([]);
   });
 
-  it('fragt bewertete Übungen nach 6 Wochen wieder, unbewertete zuerst', () => {
+  it('fragt bewertete Übungen nach 6 Wochen wieder, höchstens 2, unbewertete zuerst', () => {
     const einheit = fertig(JETZT, ['kh_curls', 'hammer_curls', 'kh_seitheben']);
     const e = mitSternen(voll().einstellungen[0]!, [], { kh_curls: 4, hammer_curls: 2 }, plusTage(JETZT, -41));
     expect(sternFragen(mit(e), einheit, JETZT)).toEqual(['kh_seitheben']);
@@ -176,6 +185,8 @@ describe('Sterne auf der Abschlussseite (Entscheidung 29.10.2026)', () => {
     expect(sternFragen(mit(alt), einheit, plusTage(JETZT, 1))).toEqual(['kh_seitheben', 'kh_curls']);
     // Bewertungen ohne Zeitpunkt (aus der Zeit vor dieser Regel) gelten als fällig.
     expect(sternFragen(voll({ kh_curls: 4 }), fertig(JETZT, ['kh_curls']), JETZT)).toEqual(['kh_curls']);
+    const drei = voll({ kh_curls: 4, hammer_curls: 2, kh_seitheben: 5 });
+    expect(sternFragen(drei, einheit, JETZT)).toEqual(['kh_curls', 'hammer_curls']);
   });
 
   it('eine Antwort oder eine bestätigte Bewertung setzt die Frist neu, Entfernen setzt alles zurück', () => {
@@ -284,14 +295,14 @@ describe('Nächste Einheit nach dem Feedback', () => {
     const z: AppZustand = {
       ...zustand(),
       varianten: [
-        { uebungId: 'kh_bankdruecken', last: 16, zielWdh: 12, e1rm: 16 * (1 + 15 / 30), seitSteigerung: 3, schwerSerie: 0 },
+        { uebungId: 'kh_bankdruecken', last: 16, zielWdh: 12, e1rm: 16 * (1 + 17 / 30), seitSteigerung: 3, schwerSerie: 0 },
       ],
     };
     const einheit = (uebungId: string, wdh: number, extra = {}): Einheit => ({
       id: 'e', woche: isoWoche(JETZT), erstelltAm: JETZT, gestartetAm: JETZT, status: 'laufend', ortId: 'zuhause',
       fokus: 'ganz', format: 'klassisch', geschaetzteDauerMin: 40, aufwaermen: [],
       bloecke: [{ typ: 'einzeln', pauseSek: 90, positionen: [{
-        uebungId, saetze: 2, zielWdh: 12, ergebnisse: [{ nr: 1, wdh, zeit: JETZT, ...extra }, { nr: 2, wdh: wdh - 1, zeit: JETZT, ...extra }],
+        uebungId, saetze: 2, zielWdh: 12, ergebnisse: [{ nr: 1, wdh, zeit: JETZT, ...extra }, { nr: 2, wdh, zeit: JETZT, ...extra }],
       }] }],
     });
     const bank = einheit('kh_bankdruecken', 12, { last: 16 });

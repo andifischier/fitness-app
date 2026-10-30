@@ -1,5 +1,9 @@
 // Aufwärmen Schritt für Schritt (Entscheidung 29.10.2026): Eine Zeile des Aufwärmens wird zur Vorgabe
 // eines Bildschirms. Zeitangaben haben nur Halteübungen (Countdown), alles andere wird gezählt.
+import type { TechnikInhalt } from './einstellungen';
+import type { AppZustand, Einheit } from './typen';
+import { uebungVon } from './verlauf';
+
 export interface AufwaermSchritt {
   name: string;
   wdh?: number;
@@ -18,4 +22,20 @@ export function aufwaermSchritt(zeile: string): AufwaermSchritt {
   const wdh = /^(\d+) (?:Wdh\. )?(.+?)(?:: (.+))?$/.exec(rumpf);
   if (wdh) return { name: wdh[2]!, wdh: Number(wdh[1]), ...extra, ...(wdh[3] ? { last: wdh[3] } : {}) };
   return { name: rumpf, ...extra };
+}
+
+// „So geht's“ eines Aufwärmschritts (Entscheidung 30.10.2026): beim Aufwärmsatz die Übung selbst, sonst
+// die Katalogübung bzw. die Anleitung mit Video aus `aufwaermen.anleitungen`; ohne Eintrag nur die Suche.
+export function aufwaermTechnik(z: AppZustand, zeile: Einheit['aufwaermen'][number]): TechnikInhalt {
+  const vorher = zeile.uebungId ? uebungVon(z, zeile.uebungId) : undefined;
+  if (vorher) return vorher;
+  const name = aufwaermSchritt(zeile.vorgabe).name;
+  const a = z.katalog.aufwaermen.anleitungen?.[name];
+  const katalog = a?.uebungId ? uebungVon(z, a.uebungId) : undefined;
+  if (katalog) return katalog;
+  return {
+    id: `aufwaermen:${name}`, name, herkunft: 'katalog',
+    youtubeUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(`${name} richtige Ausführung`)}`,
+    ...(a?.anleitung ? { anleitung: a.anleitung } : {}), ...(a?.videoId ? { videoId: a.videoId } : {}),
+  };
 }

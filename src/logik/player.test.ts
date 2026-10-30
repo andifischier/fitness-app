@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   aktuellerBlock, aktuellerSchritt, balkenAbschnitte, beende, bewerteAlle, letzterSatzAm, blockwechselNach, erledigteSaetze, feedbackVorschlag, fortschrittshinweis, istKalibrierung, kalibriere, letztesMal, offeneFeedbacks, pauseNach,
-  korrigiereSatz, lastWaehlbar, messSatz, satzVorgabe, schritte, setzeFeedback, starte, trageSatzEin,
+  lastWaehlbar, satzVorgabe, schritte, setzeFeedback, starte, trageSatzEin,
 } from './player';
 import { bereichFuer } from './planung';
 import { werteUebungAus } from './progression';
@@ -139,12 +139,18 @@ describe('Gewicht in jedem Satz (Entscheidung 21.10.2026)', () => {
     expect(b.zielWdh).toBe(a.zielWdh);
   });
 
-  it('korrigiert die Wiederholungen eines erledigten Satzes', () => {
-    const x = schritte(e).reduce((y, s) => trageSatzEin(z, y, s, 10, jetzt), e);
-    const k = korrigiereSatz(z, x, { block: 0, position: 0 }, 2, 7);
-    expect(k.bloecke[0]!.positionen[0]!.ergebnisse.map((r) => r.wdh)).toEqual([10, 7, 10]);
-    expect(x.bloecke[0]!.positionen[0]!.ergebnisse[1]!.wdh).toBe(10);
-    expect(korrigiereSatz(z, x, { block: 0, position: 0 }, 9, 7)).toBe(x);
+  it('speichert in jedem Satz das Geschaffte; ab 2 unter dem Ziel zeigen die restlichen Sätze das Geschaffte (Entscheidung 30.10.2026)', () => {
+    expect(satzVorgabe(z, e, s1!)).toMatchObject({ wert: 10, zaehlen: true, gesenkt: false });
+    let x = trageSatzEin(z, e, s1!, 9, jetzt);
+    expect(x.bloecke[0]!.positionen[0]!.zielFolgesaetze).toBeUndefined();
+    expect(satzVorgabe(z, x, s2!)).toMatchObject({ wert: 10, gesenkt: false });
+    x = trageSatzEin(z, x, s2!, 7, jetzt);
+    expect(satzVorgabe(z, x, s3!)).toMatchObject({ wert: 7, gesenkt: true });
+    x = trageSatzEin(z, x, s3!, 7, jetzt);
+    const p = x.bloecke[0]!.positionen[0]!;
+    expect(p.ergebnisse.map((r) => r.wdh)).toEqual([9, 7, 7]);
+    // Das ursprüngliche Ziel bleibt der Maßstab der Progression.
+    expect(p.zielWdh).toBe(10);
   });
 });
 
@@ -199,10 +205,10 @@ describe('Ziel und Vorgabe', () => {
   const z = mitVarianten(zustand());
   const liste = schritte(MIX);
 
-  it('zeigt in jedem Satz das Ziel mit Bereich, ohne Zähler (Entscheidung 29.10.2026)', () => {
-    expect(satzVorgabe(z, MIX, liste[1]!)).toMatchObject({ art: 'ziel', wert: 10, bereich: { von: 8, bis: 12 }, last: 16, zaehlen: false });
+  it('zeigt in jedem Satz das Ziel mit Bereich und den Zähler, vorbelegt mit dem Ziel (Entscheidung 30.10.2026)', () => {
+    expect(satzVorgabe(z, MIX, liste[1]!)).toMatchObject({ art: 'ziel', wert: 10, bereich: { von: 8, bis: 12 }, last: 16, zaehlen: true });
     const e = trageSatzEin(z, MIX, liste[1]!, 9, '2026-10-20T18:10:00');
-    expect(satzVorgabe(z, e, liste[3]!)).toMatchObject({ art: 'ziel', wert: 10, zaehlen: false });
+    expect(satzVorgabe(z, e, liste[3]!)).toMatchObject({ art: 'ziel', wert: 10, zaehlen: true, gesenkt: false });
   });
 
   it('zeigt beim Max-Test kein Ziel und zählt', () => {
@@ -248,9 +254,9 @@ describe('Kalibrierungssatz', () => {
     const p = nach.bloecke[0]!.positionen[0]!;
     expect(p).toMatchObject({ last: 12, zielWdh: 9 });
     expect(p.ergebnisse[0]).toMatchObject({ wdh: 15, last: 10 });
-    expect(satzVorgabe(z, nach, s2!)).toMatchObject({ art: 'ziel', wert: 9, last: 12, kalibrierung: false, zaehlen: false });
+    expect(satzVorgabe(z, nach, s2!)).toMatchObject({ art: 'ziel', wert: 9, last: 12, kalibrierung: false, zaehlen: true });
     const weiter = trageSatzEin(z, nach, s2!, 9, '2026-10-20T18:12:00');
-    expect(satzVorgabe(z, weiter, schritte(weiter)[2]!)).toMatchObject({ art: 'ziel', wert: 9, zaehlen: false });
+    expect(satzVorgabe(z, weiter, schritte(weiter)[2]!)).toMatchObject({ art: 'ziel', wert: 9, zaehlen: true });
   });
 
   it('wertet die Progression ab dem ersten Satz nach der Kalibrierung aus', () => {
@@ -291,13 +297,13 @@ describe('Übungsfeedback', () => {
     expect(offeneFeedbacks(erledige(z, MIX, 8))).toEqual([{ block: 1, position: 0 }, { block: 1, position: 1 }, { block: 2, position: 0 }]);
   });
 
-  it('bewertet alle Übungen auf einmal; bei „zu schwer“ mit dem Geschafften im ersten Satz', () => {
+  it('bewertet alle Übungen auf einmal; die Sätze bleiben, wie eingetragen', () => {
     const z = mitVarianten(zustand());
-    const e = bewerteAlle(z, erledige(z, MIX, 8), [{ block: 1, position: 0 }, { block: 2, position: 0 }], ['passend', 'schwer'], [undefined, 7]);
+    const vorher = erledige(z, MIX, 8);
+    const e = bewerteAlle(vorher, [{ block: 1, position: 0 }, { block: 2, position: 0 }], ['passend', 'schwer']);
     expect(e.bloecke[1]!.positionen[0]!).toMatchObject({ feedback: 'passend' });
-    expect(e.bloecke[1]!.positionen[0]!.ergebnisse[0]!.wdh).toBe(10);
     expect(e.bloecke[2]!.positionen[0]!).toMatchObject({ feedback: 'schwer' });
-    expect(e.bloecke[2]!.positionen[0]!.ergebnisse.map((r) => r.wdh)).toEqual([7, 10]);
+    expect(e.bloecke[2]!.positionen[0]!.ergebnisse).toEqual(vorher.bloecke[2]!.positionen[0]!.ergebnisse);
     expect(offeneFeedbacks(e)).toEqual([{ block: 1, position: 1 }]);
   });
 
@@ -310,12 +316,12 @@ describe('Übungsfeedback', () => {
     expect(offeneFeedbacks(e)).toEqual([{ block: 1, position: 1 }]);
   });
 
-  it('schlägt „zu schwer“ vor, wenn der erste Satz das Ziel verfehlt; nach der Kalibrierung zählt Satz 2', () => {
+  it('schlägt „zu schwer“ vor, wenn der letzte Satz das Ziel verfehlt; der Kalibrierungssatz zählt nicht', () => {
     const z = mitVarianten(zustand());
     const s = { block: 2, position: 0 };
     const mit = (wdh: number[]) => wdh.reduce((e, w, i) => trageSatzEin(z, e, { ...s, satz: i + 1 }, w, '2026-10-20T18:10:00'), MIX);
-    expect(feedbackVorschlag(z, mit([12, 9]), s)).toBe('passend');
-    expect(feedbackVorschlag(z, mit([11, 12]), s)).toBe('schwer');
+    expect(feedbackVorschlag(z, mit([12, 9]), s)).toBe('schwer');
+    expect(feedbackVorschlag(z, mit([9, 12]), s)).toBe('passend');
     // Neue Last-Variante: Satz 1 kalibriert, Satz 2 misst am berechneten Ziel.
     const neu = zustand();
     const curls = einheit([{ typ: 'einzeln', pauseSek: 60, positionen: [pos('kh_curls', 3, { last: 2, zielWdh: 10 })] }]);
@@ -326,8 +332,6 @@ describe('Übungsfeedback', () => {
     e = trageSatzEin(neu, curls, { block: 0, position: 0, satz: 1 }, 10, '2026-10-20T18:10:00', 8);
     e = trageSatzEin(neu, e, { block: 0, position: 0, satz: 2 }, ziel - 1, '2026-10-20T18:12:00');
     expect(feedbackVorschlag(neu, e, { block: 0, position: 0 })).toBe('schwer');
-    expect(messSatz(neu, e, { block: 0, position: 0 })).toBe(2);
-    expect(messSatz(neu, curls, { block: 0, position: 0 })).toBe(1);
   });
 
   it('fragt im Zirkel nicht', () => {
@@ -347,7 +351,7 @@ describe('Fortschritt im Training', () => {
 
   it('zeigt im ersten Satz letztes Mal, Ziel heute und ab wann mehr Gewicht kommt', () => {
     const z = { ...mitVarianten(zustand()), einheiten: [
-      frueher('kh_bankdruecken', [9, 8, 8], 16, '2026-10-16T18:00:00'), frueher('kh_bankdruecken', [10, 9, 8], 16, '2026-10-18T18:00:00'),
+      frueher('kh_bankdruecken', [9, 8, 8], 16, '2026-10-16T18:00:00'), frueher('kh_bankdruecken', [10, 10, 10], 16, '2026-10-18T18:00:00'),
     ] };
     const e = einheit([{ typ: 'einzeln', pauseSek: 90, positionen: [pos('kh_bankdruecken', 3, { last: 16, zielWdh: 11 })] }]);
     const h = fortschrittshinweis(z, e, { block: 0, position: 0, satz: 1 }, '2026-10-20T18:10:00')!;

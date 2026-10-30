@@ -291,12 +291,12 @@ describe('Abschluss und Bewertung', () => {
     const d = neueDb();
     await speichereOrt(ort(), d);
     await d.einheiten.add(beendet());
-    await d.muster.put({ muster: 'hDruck', stufe: 5, hauptvarianten: ['kh_bankdruecken', 'kh_bodendruecken'] });
+    await d.muster.put({ muster: 'hDruck', stufe: 5, hauptvarianten: ['kh_bankdruecken', 'kh_schraegbank'] });
     expect(await speichereAbschluss('a', { gesamtbewertung: 4, notiz: '  Schulter ok ', bewertungen: { kh_bankdruecken: 1 } }, '2026-10-20T18:41:00', d)).toBe(true);
     const e = (await d.einheiten.get('a'))!;
     expect(e).toMatchObject({ gesamtbewertung: 4, notiz: 'Schulter ok' });
     expect((await ladeEinstellungen(d)).bewertungen).toEqual({ kh_bankdruecken: 1 });
-    expect((await d.muster.get('hDruck'))?.hauptvarianten).toEqual(['kh_schraegbank', 'kh_bodendruecken']);
+    expect((await d.muster.get('hDruck'))?.hauptvarianten).toEqual(['liegestuetz_fuesse_erhoeht', 'kh_schraegbank']);
   });
 
   it('lässt Gesamtanstrengung und Notiz weg, wenn nichts angegeben ist', async () => {

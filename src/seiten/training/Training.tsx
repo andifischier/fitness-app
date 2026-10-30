@@ -10,8 +10,8 @@ import { lastraster } from '../../logik/equipment';
 import { zirkelBestzeit, zirkelVorgaben } from '../../logik/heute';
 import { kannTauschen, lastAnzeige, mobilityZeilen, musterNachSaetzen, tausche } from '../../logik/planung';
 import {
-  aktuellerBlock, aktuellerSchritt, balkenAbschnitte, beende, bewerteAlle, blockwechselNach, erledigteSaetze, fortschrittshinweis, letzterSatzAm, letztesMal, messSatz,
-  offeneFeedbacks, pauseNach, positionVon, satzVorgabe, schritte, feedbackVorschlag, korrigiereSatz, lastWaehlbar, starte, sternFragen, trageSatzEin,
+  aktuellerBlock, aktuellerSchritt, balkenAbschnitte, beende, bewerteAlle, blockwechselNach, erledigteSaetze, fortschrittshinweis, letzterSatzAm, letztesMal,
+  offeneFeedbacks, pauseNach, positionVon, satzVorgabe, schritte, feedbackVorschlag, lastWaehlbar, starte, sternFragen, trageSatzEin,
   type Balkenschritt, type SatzVorgabe, type Schritt, type Stelle,
 } from '../../logik/player';
 import { neueRekorde, vorschauNaechstesMal } from '../../logik/progression';
@@ -174,7 +174,7 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
       <Rahmen titel="Aufwärmen" schritt={`aufwaermen-${aufwaermNr}`} onSchliessen={() => navigate(`/vorschau/${einheit.id}`)}
         abschnitte={[einheit.aufwaermen.map((_, i): Balkenschritt => (i < aufwaermNr ? 'erledigt' : i === aufwaermNr ? 'aktuell' : 'offen'))]}>
         {fehler && <Speicherfehler />}
-        <AufwaermSchritte zeilen={einheit.aufwaermen} nr={aufwaermNr} onNr={setAufwaermNr} onFertig={() => void losgehen()}
+        <AufwaermSchritte z={z} zeilen={einheit.aufwaermen} nr={aufwaermNr} onNr={setAufwaermNr} onFertig={() => void losgehen()}
           hinweisEnde={zirkel ? 'Mit „Fertig“ startet die Stoppuhr.' : undefined} />
       </Rahmen>
     );
@@ -371,15 +371,22 @@ function Satz({ z, einheit, schritt, u, farbe, onTauschen, onErledigt }: {
       <Kopf z={z} u={u} label={kennzeichnung(einheit, schritt)} farbe={farbe} onTauschen={onTauschen} />
       {!p.istMaxTest && <Satzpunkte satz={schritt.satz} von={p.saetze} farbe={farbe} />}
       <Vorgabekarte u={u} v={v} farbe={farbe} last={last} raster={lastWaehlbar(z, einheit, schritt) && ort ? lastraster(ort, u) : []} onLast={setLast} />
-      {/* Gezählt wird nur im Kalibrierungssatz und im Max-Test; sonst gilt das Ziel (Entscheidung 29.10.2026). */}
-      {v.zaehlen
-        ? v.inSek ? <Stoppuhr wert={wert} onChange={setWert} /> : <Zaehler wert={wert} onChange={setWert} />
-        : v.inSek && <Countdown ziel={v.wert} />}
+      {v.gesenkt && (
+        <p className="mt-3 text-basis font-semibold">Ziel angepasst an deinen letzten Satz. Mach so viele, wie sauber gehen.</p>
+      )}
+      {/* Geschafftes in jedem Satz, vorbelegt mit dem Ziel (Entscheidung 30.10.2026); Halteübungen mit
+          Countdown bis zum Ziel, der Max-Test mit Stoppuhr. */}
+      {v.art === 'maxTest' && v.inSek && <Stoppuhr wert={wert} onChange={setWert} />}
+      {v.art !== 'maxTest' && v.inSek && <Countdown ziel={v.wert} />}
+      {!(v.art === 'maxTest' && v.inSek) && (
+        <Zaehler wert={wert} onChange={setWert} einheit={v.inSek ? 'Sekunden' : 'Wiederholungen'}
+          hinweis={v.art === 'ziel' && !v.kalibrierung ? 'Weniger geschafft? Mit − anpassen.' : undefined} />
+      )}
       {fortschritt
         ? <Fortschritt h={fortschritt} />
         : letztes && !p.istMaxTest && <p className="mt-3 text-center text-basis text-gedaempft">Letztes Mal: {letztesText(u, letztes)}</p>}
       <div className="mt-auto pt-8">
-        <Knopf onClick={() => onErledigt(v.zaehlen ? wert : v.wert, last)}>{p.istMaxTest ? 'Test erledigt' : 'Satz erledigt'}</Knopf>
+        <Knopf onClick={() => onErledigt(wert, last)}>{p.istMaxTest ? 'Test erledigt' : 'Satz erledigt'}</Knopf>
       </div>
     </div>
   );
@@ -652,25 +659,15 @@ function Menue({ onFortsetzen, onSpaeter, onBeenden }: { onFortsetzen: () => voi
   );
 }
 
-// Gespeicherter Wert des Messsatzes (Wiederholungen bzw. Sekunden).
-function geschafft(z: AppZustand, einheit: Einheit, s: Stelle): number {
-  const p = einheit.bloecke[s.block]!.positionen[s.position]!;
-  const r = p.ergebnisse[messSatz(z, einheit, s) - 1];
-  return (r?.wdh ?? r?.sek) ?? p.zielWdh;
-}
-
-function FeedbackKarte({ z, einheit, stelle, wahl, messwert, farbe, onWahl, onMesswert }: {
-  z: AppZustand; einheit: Einheit; stelle: Stelle; wahl: Feedback; messwert?: number; farbe: Blockfarbe;
-  onWahl: (fb: Feedback) => void; onMesswert: (wert: number) => void;
+function FeedbackKarte({ z, einheit, stelle, wahl, farbe, onWahl }: {
+  z: AppZustand; einheit: Einheit; stelle: Stelle; wahl: Feedback; farbe: Blockfarbe; onWahl: (fb: Feedback) => void;
 }) {
   const p = einheit.bloecke[stelle.block]!.positionen[stelle.position]!;
   const u = uebungVon(z, p.uebungId);
-  const nr = messSatz(z, einheit, stelle);
-  // Die Folge rechnet schon mit dem eingegebenen Messwert.
-  const vorschau = useMemo(() => {
-    const e = messwert === undefined ? einheit : korrigiereSatz(z, einheit, stelle, nr, messwert);
-    return vorschauNaechstesMal(z, e, { ...e.bloecke[stelle.block]!.positionen[stelle.position]!, feedback: wahl }, lokaleZeit());
-  }, [z, einheit, stelle, nr, messwert, wahl]);
+  const vorschau = useMemo(
+    () => vorschauNaechstesMal(z, einheit, { ...p, feedback: wahl }, lokaleZeit()),
+    [z, einheit, p, wahl],
+  );
   if (!u) return null;
   const inSek = u.bereich.einheit === 'Sek.';
   // Mit wechselndem Gewicht steht darunter, welches Gewicht in welchem Satz galt.
@@ -697,12 +694,6 @@ function FeedbackKarte({ z, einheit, stelle, wahl, messwert, farbe, onWahl, onMe
           </button>
         ))}
       </div>
-      {messwert !== undefined && (
-        <div className="mt-3">
-          <p className="text-basis font-semibold">Wie {inSek ? 'lange hast du' : 'viele hast du'} im {nr}. Satz geschafft?</p>
-          <Zaehler wert={messwert} onChange={onMesswert} einheit={inSek ? 'Sekunden' : 'Wiederholungen'} />
-        </div>
-      )}
       {vorschau && naechste && (
         <p className="mt-3 flex items-start gap-2 text-basis text-gedaempft">
           <span className="text-akzent"><Icon name="pfeil" groesse={18} /></span>
@@ -714,17 +705,16 @@ function FeedbackKarte({ z, einheit, stelle, wahl, messwert, farbe, onWahl, onMe
 }
 
 // Abschluss (Mockups 6 und 7), seit 29.10.2026 eine einzige Seite am Ende (Entscheidung): Dauer, Sätze,
-// Rekorde, darunter alle fertigen Übungen mit zu leicht / passend / zu schwer (vorausgewählt; bei „zu schwer“
-// die Nachfrage zum Messsatz), Gesamtanstrengung (freiwillig, nichts vorausgewählt), Notiz und optional
-// Abkühlen. Ein „Speichern“ für alles. Das Training endet mit dem letzten Satz; die Seite zeigt den Stand,
-// den das Speichern ergibt. Sterne nur für höchstens 2 Übungen, die neu sind oder deren Bewertung 6 Wochen
-// alt ist (freiwillig, vorausgefüllt mit der letzten Bewertung; Entscheidung 29.10.2026).
+// Rekorde, darunter alle fertigen Übungen mit zu leicht / passend / zu schwer (vorausgewählt; das Geschaffte
+// steht seit 30.10.2026 schon in den Sätzen), Gesamtanstrengung (freiwillig, nichts vorausgewählt), Notiz und
+// optional Abkühlen. Ein „Speichern“ für alles. Das Training endet mit dem letzten Satz; die Seite zeigt den
+// Stand, den das Speichern ergibt. Sterne für alle noch unbewerteten Übungen und höchstens 2, deren Bewertung
+// 6 Wochen alt ist (freiwillig, vorausgefüllt; Entscheidungen 29.10. und 30.10.2026).
 function Abschluss({ z, einheit, fehler, onSpeichern }: {
   z: AppZustand; einheit: Einheit; fehler: boolean; onSpeichern: (neu: Einheit, angaben: Angaben) => void;
 }) {
   const stellen = useMemo(() => offeneFeedbacks(einheit), [einheit]);
   const [gewaehlt, setGewaehlt] = useState<Record<string, Feedback>>({});
-  const [werte, setWerte] = useState<Record<string, number>>({});
   const [anstrengung, setAnstrengung] = useState<Sterne>();
   const [notiz, setNotiz] = useState('');
   const [abkuehlen, setAbkuehlen] = useState(false);
@@ -734,8 +724,7 @@ function Abschluss({ z, einheit, fehler, onSpeichern }: {
   const bisherSterne = einstellungenAus(z).bewertungen ?? {};
   const schluessel = (s: Stelle) => `${s.block}.${s.position}`;
   const wahl = (s: Stelle) => gewaehlt[schluessel(s)] ?? feedbackVorschlag(z, einheit, s);
-  const messwert = (s: Stelle) => (wahl(s) === 'schwer' ? werte[schluessel(s)] ?? geschafft(z, einheit, s) : undefined);
-  const bewertet = bewerteAlle(z, einheit, stellen, stellen.map(wahl), stellen.map(messwert));
+  const bewertet = bewerteAlle(einheit, stellen, stellen.map(wahl));
   const ende = letzterSatzAm(einheit) ?? jetzt;
   const e = beende(bewertet, ende);
   const sek = e.gestartetAm ? Math.max(0, Math.round((msVon(ende) - msVon(e.gestartetAm)) / 1000)) : 0;
@@ -800,10 +789,8 @@ function Abschluss({ z, einheit, fehler, onSpeichern }: {
           </ul>
           <div className="mt-3 flex flex-col gap-3">
             {stellen.map((s) => (
-              <FeedbackKarte key={schluessel(s)} z={z} einheit={einheit} stelle={s} wahl={wahl(s)} messwert={messwert(s)}
-                farbe={blockFarbe(s.block)}
-                onWahl={(fb) => setGewaehlt({ ...gewaehlt, [schluessel(s)]: fb })}
-                onMesswert={(w) => setWerte({ ...werte, [schluessel(s)]: w })} />
+              <FeedbackKarte key={schluessel(s)} z={z} einheit={einheit} stelle={s} wahl={wahl(s)} farbe={blockFarbe(s.block)}
+                onWahl={(fb) => setGewaehlt({ ...gewaehlt, [schluessel(s)]: fb })} />
             ))}
           </div>
         </>

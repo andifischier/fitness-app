@@ -56,7 +56,7 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | liegestuetz\_erhoeht\_haende | Incline Pushups | hDruck | Brust | Trizeps, Schultern | 2 | ERH | KG | 8 bis 15 Wdh. | ja |
 | band\_brustpresse | Band Chest Press | hDruck | Brust | Trizeps, Schultern | 3 | BAND + ANKER/STANGE | Band | 10 bis 15 Wdh. | nein |
 | liegestuetz | Pushups | hDruck | Brust | Trizeps, Schultern | 4 | keins | KG | 8 bis 15 Wdh. | ja |
-| kh\_bodendruecken | Dumbbell Floor Press | hDruck | Brust | Trizeps, Schultern | 4 | KH | Last | 8 bis 12 Wdh. | nein |
+| kh\_bodendruecken | Dumbbell Floor Press (nur ohne Bank und Schrägbank, Entscheidung 30.10.2026) | hDruck | Brust | Trizeps, Schultern | 4 | KH | Last | 8 bis 12 Wdh. | nein |
 | liegestuetz\_fuesse\_erhoeht | Decline Pushups | hDruck | Brust | Trizeps, Schultern | 5 | ERH | KG | 8 bis 15 Wdh. | ja |
 | liegestuetz\_griffe | Handle Pushups | hDruck | Brust | Trizeps, Schultern | 5 | GRIFFE | KG | 8 bis 15 Wdh. | ja |
 | liegestuetz\_griffe\_fuesse\_erhoeht | Decline Handle Pushups | hDruck | Brust | Trizeps, Schultern | 6 | GRIFFE + ERH | KG | 8 bis 15 Wdh. | nein |
@@ -180,5 +180,7 @@ Das Aufwärmen (ca. 5 Min) setzt sich aus drei Teilen zusammen und wird beim Erz
 | Mobility für Huefte | 10 Good Mornings ohne Last, 30 Sek. Kneeling Hip Flexor Stretch (Hüftbeuger-Dehnung kniend) je Seite |
 | Mobility für Rumpf | 8 Cat-Cow |
 | Aufwärmsatz | 1 Satz der ersten Grundübung mit etwa 50 % der Last (bzw. leichterer Variante), 8 Wiederholungen |
+
+**„So geht's“ beim Aufwärmen** (`aufwaermen.anleitungen` in `katalog.json`, Entscheidung 30.10.2026): Jumping Jacks, Squats, Band Pull-Aparts und Scapula Pullups zeigen die Katalogübung; Arm Circles, Backward Shoulder Circles, Leg Swings, Wall Slides, Scapula Squeezes, Lunges with Twist, Good Mornings, Kneeling Hip Flexor Stretch und Cat-Cow haben eine eigene Kurzanleitung (3 Stichpunkte) und ein festes Video. Der Aufwärmsatz zeigt die Übung selbst.
 
 Es werden höchstens drei Mobility-Zeilen gewählt, nach den Mustern mit den meisten Sätzen der Einheit.

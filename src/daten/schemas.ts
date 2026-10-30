@@ -56,6 +56,10 @@ export const katalogSchema = z.object({
     mobility: z.partialRecord(musterId, z.array(z.string())),
     maxMobilityZeilen: ganzzahl.positive(),
     aufwaermsatz: z.object({ anteilLast: zahl.positive().max(1), wdh: ganzzahl.positive() }),
+    // „So geht's“ je Aufwärmübung (Name wie in den Zeilen): Verweis auf eine Katalogübung oder eigene Anleitung
+    anleitungen: z.record(z.string(), z.object({
+      uebungId: z.string().optional(), videoId: z.string().optional(), anleitung: z.array(z.string()).optional(),
+    })).optional(),
   }),
 });
 
@@ -141,7 +145,7 @@ const satzSchema = z.object({
 const positionSchema = z.object({
   uebungId: z.string().min(1), saetze: ganzzahl.nonnegative(), zielWdh: zahl, last: zahl.optional(),
   bandStufe: bandStufe.optional(), istMaxTest: z.boolean().optional(), istLasttest: z.boolean().optional(), istErsatz: z.boolean().optional(),
-  getauschtVon: z.string().optional(), langsam: z.boolean().optional(), ergebnisse: z.array(satzSchema), feedback: z.enum(FEEDBACKS).optional(),
+  getauschtVon: z.string().optional(), langsam: z.boolean().optional(), zielFolgesaetze: zahl.optional(), ergebnisse: z.array(satzSchema), feedback: z.enum(FEEDBACKS).optional(),
 });
 
 export const einheitSchema = z.object({

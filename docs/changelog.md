@@ -375,3 +375,22 @@
   den Zirkel-Hinweisen sind englisch. Anleitungen und Bedienung bleiben deutsch. Geändert: `katalog.json`,
   `uebungskatalog.md`, Beispiele in `spezifikation.md`, Texte im Testtag und im Übungsformular, Tests.
 - **Warum:** Wunsch des Nutzers, der die englischen Namen von Freeletics gewohnt ist (Entscheidungen 29.10.2026).
+
+## 30.10.2026: Überarbeitung nach dem ersten Training
+- **Was:**
+  - Im Training lässt sich in jedem Satz eintragen, was geschafft wurde (Zähler mit −/+, vorbelegt mit
+    dem Ziel), auch in Kombi-Runden und bei Halteübungen. Bleibt ein Satz 2 oder mehr unter dem Ziel,
+    zeigen die restlichen Sätze das Geschaffte als Ziel.
+  - Die Progression misst am letzten statt am ersten Satz: mehr Wiederholungen oder Gewicht erst, wenn
+    alle Sätze das Ziel schaffen; fehlen im letzten Satz mehr als 2, sinkt das Ziel. Körpergewicht und
+    Halten wechseln bei deutlich verfehltem Ziel zur leichteren Variante. Laststeigerungen rechnen mit
+    der Ermüdung über die Sätze. Die Nachfrage „Wie viele im 1. Satz?“ entfällt.
+  - Die Abschlussseite fragt nach Sternen für alle neuen Übungen (statt höchstens 2).
+  - Jeder Aufwärmschritt hat „So geht's“ mit Kurzanleitung und Video; Handle Pushups und Decline
+    Handle Pushups haben jetzt feste Videos.
+  - Floor Press nur noch an Orten ohne Bank; sonst Bankdrücken.
+  - Geändert: `progression.ts`, `player.ts`, `verlauf.ts`, `equipment.ts`, `aufwaermen.ts`,
+    `einstellungen.ts`, `konfiguration.ts`, `typen.ts`, `schemas.ts`, `katalog.ts`, `katalog.json`,
+    `Training.tsx`, `Testtag.tsx`, `ui/aufwaermen.tsx`, `ui/technik.tsx`, `ui/zaehler.tsx`, `ui/texte.ts`;
+    Tests angepasst und ergänzt (unter anderem 12-Wochen-Simulation mit Ziel in allen Sätzen).
+- **Warum:** Rückmeldung des Nutzers nach dem ersten Training (Entscheidungen 30.10.2026).

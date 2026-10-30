@@ -87,7 +87,7 @@ function Ablauf({ z, start }: { z: AppZustand; start: Einheit }) {
       </div>
       {fehler && <p role="alert" className="mt-4 font-semibold">Speichern hat nicht geklappt. Bitte versuche es noch einmal.</p>}
       {schritt < 0 && (
-        <AufwaermSchritte key={aufwaermNr} zeilen={start.aufwaermen} nr={aufwaermNr} onNr={setAufwaermNr}
+        <AufwaermSchritte key={aufwaermNr} z={z} zeilen={start.aufwaermen} nr={aufwaermNr} onNr={setAufwaermNr}
           onFertig={() => setSchritt(0)} hinweisEnde="Danach geht es mit den Tests los." />
       )}
       {p && u && !p.istLasttest && (

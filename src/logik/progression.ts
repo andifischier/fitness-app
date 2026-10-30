@@ -16,7 +16,7 @@ import {
   type VarianteZustand, type Vorstand, type Woche, type Zyklus,
 } from './typen';
 import {
-  e1rm, einheitZeit, einstellungenVon, ersterSatz, faelligerMaxTest, feedbackVon, fertigeEinheiten,
+  e1rm, einheitZeit, einstellungenVon, ersterSatz, faelligerMaxTest, feedbackVon, fertigeEinheiten, letzterSatz,
   leistungswert, reserveFuer, sitzungen, sterneVon, uebungVon, wdhBei, zielReserve, type Sitzung,
 } from './verlauf';
 
@@ -63,6 +63,16 @@ export function naechsteVariante(z: AppZustand, ort: Ort, u: Uebung, jetzt: stri
   return liste.find((v) => !ausser.includes(v.id)) ?? liste[0];
 }
 
+// Nächstleichtere Variante desselben Musters am Ort (höchste kleinere Stufe, derselbe Lasttyp bevorzugt),
+// die nicht schon Hauptvariante ist.
+function leichtereVariante(z: AppZustand, ort: Ort, u: Uebung, jetzt: string, ausser: string[]): Uebung | undefined {
+  const e = einstellungenVon(z);
+  const anderer = (v: Uebung) => Number(v.lasttyp !== u.lasttyp);
+  return alleUebungen(z)
+    .filter((v) => v.muster === u.muster && v.stufe < u.stufe && !ausser.includes(v.id) && uebungErlaubt(e, ort, v, jetzt))
+    .sort((a, b) => b.stufe - a.stufe || anderer(a) - anderer(b))[0];
+}
+
 // Einseitige Variante desselben Musters (mindestens gleiche Stufe), falls im Katalog und am Ort möglich.
 function einseitigeVariante(z: AppZustand, ort: Ort, u: Uebung, jetzt: string, ausser: string[]): Uebung | undefined {
   const e = einstellungenVon(z);
@@ -87,7 +97,10 @@ function wechsle(muster: MusterZustand, von: string, zu: string) {
 
 // ---------- Auswertung einer Übung ----------
 
-// Schreibt Ziel, Last bzw. Band und Kraftschätzung der Variante fort (alle Regeln am ersten Satz).
+// Schreibt Ziel, Last bzw. Band und Kraftschätzung der Variante fort. Seit 30.10.2026 (Entscheidung)
+// misst die Progression am letzten Satz: Gesteigert wird erst, wenn auch er das Ziel schafft; fehlen
+// dort mehr als `letzterSatzToleranz`, sinkt das Ziel auf das Geschaffte. Am ersten Satz hängen nur
+// noch ein geändertes Gewicht, der Max-Test und der beste erste Satz.
 // `ortId` ist der Ort der Einheit; er bestimmt Lastraster, Bänder und die nächste Variante.
 export function werteUebungAus(z: AppZustand, position: Position, jetzt: string, ortId: string): { variante: VarianteZustand; muster: MusterZustand } {
   const e = einstellungenVon(z);
@@ -102,7 +115,7 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
   const muster = musterZustand(z, e, u.muster);
 
   // Kalibrierungssatz (erste Nutzung einer Last-Variante, Trainings-Player): Er legt Last und Ziel der
-  // restlichen Sätze fest; die Regeln messen am ersten Satz danach. Gibt es keinen, gelten die
+  // restlichen Sätze fest; die Regeln messen an den Sätzen danach. Gibt es keinen, gelten die
   // kalibrierten Werte.
   const kalibrierung = p.ergebnisse[0];
   if (u.lasttyp === 'Last' && alt?.last === undefined && !p.istMaxTest && p.last !== undefined && kalibrierung?.last !== undefined) {
@@ -116,7 +129,8 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
     p = { ...p, ergebnisse: p.ergebnisse.slice(1) };
   }
   const erster = ersterSatz(p);
-  if (erster === undefined) return { variante: alt ?? v, muster };
+  const letzter = letzterSatz(p);
+  if (erster === undefined || letzter === undefined) return { variante: alt ?? v, muster };
   const { von: U, bis: O } = bereichFuer(e, u);
 
   if (p.istMaxTest) {
@@ -134,8 +148,19 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
   const fb = feedbackVon(p);
   const ziel = p.zielWdh;
   const seit = alt?.seitSteigerung ?? PROGRESSION.startSeitSteigerung;
-  const eingewoehnung = seit < PROGRESSION.eingewoehnungEinheiten && erster >= U - PROGRESSION.deutlichVerfehltUnterU;
-  const deutlichVerfehlt = erster < U - PROGRESSION.deutlichVerfehltUnterU;
+  const inSek = u.bereich.einheit === 'Sek.';
+  const toleranz = PROGRESSION.letzterSatzToleranz * (inSek ? PROGRESSION.sekProWdh : 1);
+  const unterU = PROGRESSION.deutlichVerfehltUnterU * (inSek ? PROGRESSION.sekProWdh : 1);
+  // Eingewöhnung nach einer Steigerung: Hält der erste Satz mit, sinken spätere Sätze nur das Ziel.
+  // Leichter (Gewicht, Band, Variante) wird es erst, wenn schon der erste Satz deutlich unter dem
+  // Bereich liegt; bricht nur der letzte Satz ein, sinkt das Ziel (nie unter U − 1).
+  const eingewoehnung = seit < PROGRESSION.eingewoehnungEinheiten && erster >= U - unterU;
+  const deutlichVerfehlt = erster < U - unterU;
+  // Nicht geschafft: „zu schwer“ oder der letzte Satz unter dem Ziel. Dann hält die App das Ziel; fehlt
+  // mehr als die Toleranz (oder in der Eingewöhnung), sinkt es auf das Geschaffte, nie unter U − 1.
+  const nichtGeschafft = fb === 'schwer' || letzter < ziel;
+  const senken = eingewoehnung || letzter < ziel - toleranz;
+  const gesenkt = () => Math.min(ziel, Math.max(U - 1, letzter));
   const last = p.ergebnisse[0]?.last ?? p.last;
   const band = p.ergebnisse[0]?.bandStufe ?? p.bandStufe;
   if (last !== undefined) v.last = last;
@@ -165,29 +190,36 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
       v.e1rm = alt?.e1rm === undefined ? aktuell : PROGRESSION.e1rmGlaettung * alt.e1rm + (1 - PROGRESSION.e1rmGlaettung) * aktuell;
     }
     const schaetzung = v.e1rm ?? e1rm(last, erster, reserveFuer(fb, e));
+    // Das Ziel gilt für alle Sätze: Beim schwereren Gewicht muss es auch der letzte Satz schaffen,
+    // also abzüglich der Ermüdung der Sätze davor.
+    const ermuedung = PROGRESSION.ermuedungProSatz * Math.max(0, p.ergebnisse.length - 1);
+    const hoeher = naechsteLast(ort, u, last, 1);
+    const moeglich = hoeher === null ? 0 : wdhBei(schaetzung, hoeher, zielReserve(e)) - ermuedung;
+    const steigern = () => {
+      v.last = hoeher!;
+      v.zielWdh = begrenze(moeglich, U - 1, O);
+      gesteigert = true;
+    };
     if (p.last !== undefined && last !== p.last) {
       // Gewicht im ersten Satz geändert (Entscheidung 21.10.2026): Ziel wie nach dem Kalibrierungssatz
       // aus der Kraftschätzung bei diesem Gewicht; das Ziel des geplanten Gewichts ist kein Maßstab.
       v.zielWdh = begrenze(wdhBei(schaetzung, last, zielReserve(e)), U - 1, O);
-    } else if (fb === 'schwer') {
-      if (eingewoehnung) v.zielWdh = Math.max(U - 1, erster);
-      else if (deutlichVerfehlt) {
+    } else if (nichtGeschafft) {
+      if (deutlichVerfehlt) {
         v.last = naechsteLast(ort, u, last, -1) ?? last;
         v.zielWdh = U;
-      }
+      } else if (hoeher !== null && ziel > O && letzter >= O) {
+        // Über O gedehnt und alle Sätze mindestens O, nur knapp unter dem gedehnten Ziel: schwerer.
+        steigern();
+      } else if (senken) v.zielWdh = gesenkt();
     } else {
       const plus = fb === 'leicht' ? PROGRESSION.zielPlusLeicht : PROGRESSION.zielPlusPassend;
       const neu = Math.max(ziel, Math.min(ziel + plus, wdhBei(schaetzung, last, zielReserve(e))));
       if (neu <= O) v.zielWdh = neu;
       else {
-        const hoeher = naechsteLast(ort, u, last, 1);
         if (hoeher !== null) {
-          const moeglich = wdhBei(schaetzung, hoeher, zielReserve(e));
-          if (moeglich >= U || neu > O + PROGRESSION.dehnungUeberO) {
-            v.last = hoeher;
-            v.zielWdh = begrenze(moeglich, U - 1, O);
-            gesteigert = true;
-          } else v.zielWdh = neu;
+          if (moeglich >= U || neu > O + PROGRESSION.dehnungUeberO) steigern();
+          else v.zielWdh = neu;
         } else if (!v.langsam) {
           // Die Last geht aus: 1. langsameres Tempo, 2. Bereich bis O + 5, 3. einseitig, 4. nächste Variante
           v.langsam = true;
@@ -200,13 +232,18 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
         }
       }
     }
-  } else if (fb === 'schwer') {
-    if (eingewoehnung) v.zielWdh = Math.max(U - 1, erster);
-    else if (deutlichVerfehlt) {
+  } else if (nichtGeschafft) {
+    if (deutlichVerfehlt) {
+      // Band: leichteres Band; Körpergewicht und Halten: leichtere Variante am Ort (Entscheidung 30.10.2026).
+      const leichter = u.lasttyp === 'Band' ? undefined : leichtereVariante(z, ort, u, jetzt, muster.hauptvarianten);
       if (u.lasttyp === 'Band' && band) v.bandStufe = naechsteBandStufe(ort, u, band, -1) ?? band;
+      if (leichter) {
+        delete v.langsam;
+        wechsle(muster, u.id, leichter.id);
+      }
       v.zielWdh = U;
-    }
-  } else if (erster >= O) {
+    } else if (senken) v.zielWdh = gesenkt();
+  } else if (letzter >= O) {
     const staerker = u.lasttyp === 'Band' && band ? naechsteBandStufe(ort, u, band, 1) : null;
     if (staerker) {
       v.bandStufe = staerker;
@@ -224,7 +261,7 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
   if (gesteigert) delete v.langsam;
   v.seitSteigerung = gesteigert ? 0 : Math.min(seit + 1, 99);
   // Musterstufe: schwerste Variante, die im Zielbereich mit „passend“ oder „zu leicht“ bewältigt wurde.
-  if (fb !== 'schwer' && erster >= U) muster.stufe = Math.max(muster.stufe, u.stufe);
+  if (fb !== 'schwer' && letzter >= U) muster.stufe = Math.max(muster.stufe, u.stufe);
   return { variante: v, muster };
 }
 

@@ -177,6 +177,12 @@ export const FOKUS_GRUPPEN: Record<'oben' | 'unten', readonly Muskel[]> = {
 // Rangfolge der Lasttypen bei der Wahl der Hauptvarianten (kleiner = bevorzugt)
 export const LASTTYP_RANG = { Last: 0, Band: 1, KG: 2, Zeit: 3 } as const;
 
+// Übungen, die nur als Ersatz dienen (Entscheidung 30.10.2026): Sie sind am Ort nur möglich, wenn keines
+// der genannten Utensilien dort ist (Floor Press nur ohne Bank, sonst Bankdrücken mit vollem Bewegungsumfang)
+export const NUR_OHNE: Record<string, readonly string[]> = {
+  kh_bodendruecken: ['BANK', 'SCHRAEG'],
+};
+
 // Ersatz, wenn ein Muster am Ort keine Variante hat (der Reihe nach)
 export const ERSATZ: Partial<Record<MusterId, readonly ({ uebung: string } | { muster: MusterId })[]>> = {
   vZug: [{ uebung: 'band_latzug' }, { uebung: 'tischrudern' }, { muster: 'hZug' }],
@@ -240,6 +246,16 @@ export const PROGRESSION = {
   dehnungUeberO: 3,
   dehnungLastEnde: 5,
   deutlichVerfehltUnterU: 2,
+  // Letzter Satz zählt (Entscheidung 30.10.2026): fehlen dort mehr als so viele Wdh. (Sek.: × 5) zum Ziel,
+  // sinkt das Ziel auf das Geschaffte
+  letzterSatzToleranz: 2,
+  // Im Training (Entscheidung 30.10.2026): bleibt ein Satz so viele Wdh. (Sek.: × 5) oder mehr unter dem
+  // Ziel, zeigen die restlichen Sätze der Übung das Geschaffte als Ziel
+  folgesatzSenkenAb: 2,
+  sekProWdh: 5,
+  // Wiederholungen, die jeder weitere Satz bei gleicher Last verliert; damit rechnet die Kraftschätzung
+  // das Ziel für den letzten Satz (Steigerung und Laststeigerung)
+  ermuedungProSatz: 1,
   eingewoehnungEinheiten: 2,
   kgMaxUeberBestem: 2,
   zeitPlusPassend: 5,
@@ -345,9 +361,9 @@ export const BEWERTUNG = {
   // (bei einer Übung mit 1 oder 2 Sternen genügen 2)
   bleibtAbSterne: 4,
   tauschMinSterne: 3,
-  // Sterne auf der Abschlussseite (Entscheidung 29.10.2026): höchstens 2 Übungen je Training; ohne
-  // Bewertung höchstens 2-mal gefragt, bewertete nach 42 Tagen erneut
-  fragenProTraining: 2,
+  // Sterne auf der Abschlussseite (Entscheidungen 29.10. und 30.10.2026): alle unbewerteten Übungen
+  // (ohne Antwort höchstens 2-mal gefragt), dazu höchstens 2 bewertete nach 42 Tagen erneut
+  auffrischenProTraining: 2,
   fragenOhneAntwort: 2,
   auffrischenTage: 42,
   // Lieblinge (ab 4 Sternen) setzen nach 2 Zyklen am Stück einen Zyklus aus; je Zyklus 1 neue Nebenübung
