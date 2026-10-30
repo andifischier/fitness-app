@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { isoWoche, plusTage, wocheVerschoben } from './datum';
 import { dosisProMuskel, erstelleEinheit, startfragen, wochenziele } from './planung';
 import {
-  erholungswocheAngebot, maxTestFaellig, naechsteLast, neueRekorde, offeneWochenabschluesse, schliesseEinheitAb,
+  muskelLeistung, erholungswocheAngebot, maxTestFaellig, naechsteLast, neueRekorde, offeneWochenabschluesse, schliesseEinheitAb,
   werteUebungAus, wochenabschluss,
 } from './progression';
 import { MONTAG, ort, setzePrognose, TESTTAG, zeitpunkt, zustand } from './testhilfe';
@@ -77,9 +77,16 @@ describe('Progression mit Last (Kraftschätzung)', () => {
     expect(werteUebungAus(knapp, position(kh, 9, [9], { last: 16, feedback: 'passend' }), MO, 'zuhause').variante.zielWdh).toBe(9);
   });
 
-  it('„zu leicht“: Ziel +2', () => {
+  it('„zu leicht“: sofort eine Gewichtsstufe mehr, wenn die Schätzung dort U − 1 zulässt (Entscheidung 30.10.2026)', () => {
     const z = mit(variante(kh, { last: 16, zielWdh: 8, e1rm: 25 }));
-    expect(werteUebungAus(z, position(kh, 8, [8, 8], { last: 16, feedback: 'leicht' }), MO, 'zuhause').variante.zielWdh).toBe(10);
+    const { variante: v } = werteUebungAus(z, position(kh, 8, [8, 8], { last: 16, feedback: 'leicht' }), MO, 'zuhause');
+    expect(v).toMatchObject({ last: 18, zielWdh: 7, seitSteigerung: 0 });
+  });
+
+  it('„zu leicht“ mit zu großem Gewichtssprung: Ziel +2 beim selben Gewicht', () => {
+    const paare: Ort = { id: 'paare', name: 'paare', standard: true, equipment: [{ utensilId: 'KH', kurzhanteln: { modus: 'paare', gewichteKg: [16, 24] } }, { utensilId: 'BANK' }] };
+    const z = { ...mit(variante(kh, { last: 16, zielWdh: 8, e1rm: 25 })), orte: [paare] };
+    expect(werteUebungAus(z, position(kh, 8, [8, 8], { last: 16, feedback: 'leicht' }), MO, 'paare').variante).toMatchObject({ last: 16, zielWdh: 10 });
   });
 
   it('Ziel über O: Last + 1 Schritt, wenn die Schätzung dort U schafft; sonst Bereich bis O + 3', () => {
@@ -310,7 +317,7 @@ describe('Max-Test-Fälligkeit', () => {
     expect(maxTestFaellig(muede, tag, 'zuhause')?.muster).not.toBe('hDruck');
   });
 
-  it('im Plan: am Anfang, ein Test pro Einheit, das getestete Muster bekommt 50 % weniger Sätze', () => {
+  it('im Plan: am Anfang, ein Test pro Einheit, das getestete Muster bekommt 50 % weniger Sätze, aber mindestens 2', () => {
     const tag = plusTage(MONTAG, 22);
     const mit = plane(setzePrognose(voll(), tag, 3), tag);
     const ohne = plane(setzePrognose(voll({ maxTests: TESTTAG.map((t) => ({ ...t, datum: plusTage(tag, -1) })) }), tag, 3), tag);
@@ -320,6 +327,8 @@ describe('Max-Test-Fälligkeit', () => {
     const hDruckSaetze = (e: Einheit) => e.bloecke.flatMap((b) => b.positionen)
       .filter((p) => !p.istMaxTest && uebung(voll(), p.uebungId).muster === 'hDruck').reduce((s, p) => s + p.saetze, 0);
     expect(hDruckSaetze(mit)).toBeLessThanOrEqual(Math.ceil(hDruckSaetze(ohne) / 2) + 1);
+    // Keine Übung mit nur 1 Satz (Entscheidung 30.10.2026)
+    expect(mit.bloecke.flatMap((b) => b.positionen).filter((p) => !p.istMaxTest).every((p) => p.saetze >= 2)).toBe(true);
     expect(mit.aufwaermen.at(-1)!.uebungId).not.toBe('liegestuetz');
   });
 });
@@ -456,57 +465,75 @@ describe('Erholungswoche', () => {
 });
 
 describe('Wochenabschluss und persönliche Volumengrenze', () => {
-  // Hauptvariante kh_bankdruecken (Brust primär) mit einer Sitzung je Woche und Leistungswert `wdh`.
-  const sitzung = (wocheId: string, wdh: number, bewertung?: 1 | 2 | 3 | 4 | 5, feedback: Feedback = 'passend'): Einheit => {
+  // Hauptvariante kh_bankdruecken (Brust primär) mit einer Sitzung je Woche und Leistungswert `wdh`. Die erste
+  // Sitzung (W40) zählt nicht (wie ein Kalibrierungssatz); verglichen wird W43 mit dem Mittel aus W41 und W42.
+  const sitzung = (wocheId: string, wdh: number, bewertung?: 1 | 2 | 3 | 4 | 5, feedback: Feedback = 'passend',
+    werte: Partial<Position> = { last: 16 }): Einheit => {
     const start = plusTage(MONTAG, 7 * (Number(wocheId.slice(-2)) - 43) + 1);
     return {
       id: `e-${wocheId}`, woche: wocheId, erstelltAm: start, gestartetAm: start, status: 'abgeschlossen', ortId: 'zuhause',
       fokus: 'ganz', format: 'klassisch', geschaetzteDauerMin: 40, aufwaermen: [], ...(bewertung ? { gesamtbewertung: bewertung } : {}),
-      bloecke: [{ typ: 'einzeln', pauseSek: 90, positionen: [position('kh_bankdruecken', 10, [wdh], { last: 16, feedback })] }],
+      bloecke: [{ typ: 'einzeln', pauseSek: 90, positionen: [position('kh_bankdruecken', 10, [wdh], { ...werte, feedback })] }],
     };
   };
   const wochenIds = ['2026-W40', '2026-W41', '2026-W42', '2026-W43'];
-  const aufbau = (wdh: number[], opt: { brust?: number; bewertung?: 1 | 2 | 3 | 4 | 5; grenze?: number; gleich?: number; erholung?: boolean; feedback?: Feedback } = {}): AppZustand => ({
+  const aufbau = (wdh: number[], opt: { brust?: number; bewertung?: 1 | 2 | 3 | 4 | 5; grenze?: number; gleich?: number; erholung?: boolean;
+    feedback?: Feedback; vorwoche?: number; zuletzt?: Partial<Position> } = {}): AppZustand => ({
     ...zustand(),
     muster: [{ muster: 'hDruck', stufe: 5, hauptvarianten: ['kh_bankdruecken'] }],
-    einheiten: wochenIds.map((id, i) => sitzung(id, wdh[i]!, i === 3 ? opt.bewertung : undefined, i === 3 ? opt.feedback : 'passend')),
+    einheiten: wochenIds.map((id, i) => sitzung(id, wdh[i]!, i === 3 ? opt.bewertung : undefined, i === 3 ? opt.feedback : 'passend',
+      i === 3 && opt.zuletzt ? opt.zuletzt : { last: 16 })),
     wochen: wochenIds.map((id) => ({
       id, prognose: 3, einheiten: 1, ziele: { ...null10(), Brust: 12 }, erledigt: { ...null10(), Brust: opt.brust ?? 12 },
       erholungswoche: id === '2026-W43' && !!opt.erholung, laengerAngenommen: false, ...(id !== '2026-W43' ? { ausgewertet: true } : {}),
     })),
-    muskeln: [{ muskel: 'Brust', letzteDosis: 1, letzteSchwer: false, persoenlicheGrenze: opt.grenze ?? 12, gleichWochen: opt.gleich ?? 1, leistung: [] }],
+    muskeln: [{ muskel: 'Brust', letzteDosis: 1, letzteSchwer: false, persoenlicheGrenze: opt.grenze ?? 12, gleichWochen: opt.gleich ?? 1,
+      leistung: opt.vorwoche !== undefined ? [{ woche: '2026-W42', wert: opt.vorwoche }] : [] }],
   });
   const grenze = (z: AppZustand) => z.muskeln.find((m) => m.muskel === 'Brust')!;
 
-  it('Leistung gestiegen: Grenze unverändert; Leistung je Woche gespeichert', () => {
-    const z = wochenabschluss(aufbau([10, 10, 10, 12]), '2026-W43');
-    expect(grenze(z)).toMatchObject({ persoenlicheGrenze: 12, gleichWochen: 0 });
-    expect(grenze(z).leistung[0]!.woche).toBe('2026-W43');
-    expect(grenze(z).leistung[0]!.wert).toBeGreaterThan(0.01);
+  it('Leistung je Woche gespeichert; eine gute Woche zählt mit, ändert die Grenze aber noch nicht', () => {
+    const z = wochenabschluss(aufbau([10, 10, 10, 12], { gleich: 0 }), '2026-W43');
+    expect(grenze(z)).toMatchObject({ persoenlicheGrenze: 12, gleichWochen: 1 });
+    expect(grenze(z).leistung.at(-1)!.woche).toBe('2026-W43');
+    expect(grenze(z).leistung.at(-1)!.wert).toBeGreaterThan(0.01);
     expect(z.wochen.find((w) => w.id === '2026-W43')!.ausgewertet).toBe(true);
   });
 
-  it('2 Wochen gleich, kein „zu schwer“, Anstrengung höchstens 3: +2 Sätze', () => {
-    expect(grenze(wochenabschluss(aufbau([10, 10, 10, 10], { bewertung: 3, brust: 12 }), '2026-W43')).persoenlicheGrenze).toBe(14);
-    expect(grenze(wochenabschluss(aufbau([10, 10, 10, 10], { gleich: 0 }), '2026-W43'))).toMatchObject({ persoenlicheGrenze: 12, gleichWochen: 1 });
-    expect(grenze(wochenabschluss(aufbau([10, 10, 10, 10], { feedback: 'schwer' }), '2026-W43')).persoenlicheGrenze).toBe(12);
+  it('4 gute Wochen in Folge (kein Abfall, kein „zu schwer“, Anstrengung höchstens 3): +2 Sätze', () => {
+    expect(grenze(wochenabschluss(aufbau([10, 10, 10, 12], { gleich: 3, bewertung: 3 }), '2026-W43'))).toMatchObject({ persoenlicheGrenze: 14, gleichWochen: 0 });
+    expect(grenze(wochenabschluss(aufbau([10, 10, 10, 10], { gleich: 3 }), '2026-W43')).persoenlicheGrenze).toBe(14);
+    expect(grenze(wochenabschluss(aufbau([10, 10, 10, 10], { gleich: 2 }), '2026-W43'))).toMatchObject({ persoenlicheGrenze: 12, gleichWochen: 3 });
+    expect(grenze(wochenabschluss(aufbau([10, 10, 10, 10], { gleich: 3, feedback: 'schwer' }), '2026-W43'))).toMatchObject({ persoenlicheGrenze: 12, gleichWochen: 0 });
+    expect(grenze(wochenabschluss(aufbau([10, 10, 10, 10], { gleich: 3, bewertung: 4 }), '2026-W43')).persoenlicheGrenze).toBe(10);
   });
 
   it('Deckel: höchstens 4 Sätze über dem besten Wochenvolumen der letzten 4 Wochen', () => {
-    const z = aufbau([10, 10, 10, 10], { grenze: 14, brust: 10 });
+    const z = aufbau([10, 10, 10, 10], { grenze: 14, brust: 10, gleich: 3 });
     expect(grenze(wochenabschluss(z, '2026-W43')).persoenlicheGrenze).toBe(14);
-    const tief = aufbau([10, 10, 10, 10], { grenze: 12, brust: 10 });
+    const tief = aufbau([10, 10, 10, 10], { grenze: 12, brust: 10, gleich: 3 });
     tief.wochen = tief.wochen.map((w) => ({ ...w, ziele: { ...w.ziele, Brust: 11 } }));
     expect(grenze(wochenabschluss(tief, '2026-W43')).persoenlicheGrenze).toBe(14);
-    const knapp = aufbau([10, 10, 10, 10], { grenze: 12, brust: 9 });
+    const knapp = aufbau([10, 10, 10, 10], { grenze: 12, brust: 9, gleich: 3 });
     knapp.wochen = knapp.wochen.map((w) => ({ ...w, ziele: { ...w.ziele, Brust: 11 } }));
     expect(grenze(wochenabschluss(knapp, '2026-W43')).persoenlicheGrenze).toBe(13);
   });
 
-  it('Leistung über 3 % gefallen oder Anstrengung ab 4: −2 Sätze, nicht unter Untergrenze + 2', () => {
-    expect(grenze(wochenabschluss(aufbau([10, 10, 10, 8]), '2026-W43')).persoenlicheGrenze).toBe(10);
+  it('Leistung 2 Wochen in Folge über 3 % gefallen oder Anstrengung ab 4: −2 Sätze, nicht unter Untergrenze + 2', () => {
+    expect(grenze(wochenabschluss(aufbau([10, 10, 10, 8], { vorwoche: -0.05 }), '2026-W43')).persoenlicheGrenze).toBe(10);
     expect(grenze(wochenabschluss(aufbau([10, 10, 10, 11], { bewertung: 4 }), '2026-W43')).persoenlicheGrenze).toBe(10);
-    expect(grenze(wochenabschluss(aufbau([10, 10, 10, 8], { grenze: 7 }), '2026-W43')).persoenlicheGrenze).toBe(6);
+    expect(grenze(wochenabschluss(aufbau([10, 10, 10, 8], { grenze: 7, vorwoche: -0.05 }), '2026-W43')).persoenlicheGrenze).toBe(6);
+    // Eine einzelne schwache Woche senkt nichts, unterbricht aber die guten Wochen.
+    expect(grenze(wochenabschluss(aufbau([10, 10, 10, 8], { gleich: 3 }), '2026-W43'))).toMatchObject({ persoenlicheGrenze: 12, gleichWochen: 0 });
+  });
+
+  it('anderes Gewicht, Band oder langsames Tempo und die erste Sitzung zählen nicht als Leistungsabfall', () => {
+    const leichter = aufbau([10, 10, 10, 9], { vorwoche: -0.05, zuletzt: { last: 12 } });
+    expect(grenze(wochenabschluss(leichter, '2026-W43')).persoenlicheGrenze).toBe(12);
+    const langsam = aufbau([10, 10, 10, 6], { vorwoche: -0.05, zuletzt: { last: 16, langsam: true } });
+    expect(grenze(wochenabschluss(langsam, '2026-W43')).persoenlicheGrenze).toBe(12);
+    // Die erste Sitzung (z. B. Kalibrierungssatz mit 25 Wdh.) ist kein Maßstab.
+    expect(muskelLeistung(aufbau([25, 10, 10, 10]), 'Brust', '2026-W43')).toBe(0);
   });
 
   it('schwache Wochen (unter 80 % des Ziels) und Erholungswochen verändern die Grenze nicht', () => {
