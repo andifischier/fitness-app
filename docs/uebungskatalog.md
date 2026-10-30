@@ -1,6 +1,6 @@
 # Übungskatalog
 
-Der Startkatalog umfasst 100 Übungen in 13 Mustern, 15 Utensilien und 5 feste Zirkel. Er wird als Datei `katalog.json` mitgeliefert (gleicher Inhalt wie hier) und beim ersten Start geladen; eigene Übungen speichert die App getrennt.
+Der Startkatalog umfasst 101 Übungen in 13 Mustern, 15 Utensilien und 5 feste Zirkel. Er wird als Datei `katalog.json` mitgeliefert (gleicher Inhalt wie hier) und beim ersten Start geladen; eigene Übungen speichert die App getrennt.
 
 ## Regeln für den Katalog
 
@@ -12,7 +12,7 @@ Der Startkatalog umfasst 100 Übungen in 13 Mustern, 15 Utensilien und 5 feste Z
 - **Festes Video** (`videoId` in `katalog.json`, YouTube-ID, Entscheidungen 21.10.2026): für jede Katalogübung ein eigenes Video, wird in der App eingebettet und ersetzt die Suche als Link. Die ersten 10 (z. B. liegestuetz X1qbPKGDuKM, kniebeuge u-G8nn6crRA, klimmzug 5eScXtldIaI) sind deutschsprachig; die übrigen 88 sind nach „beste Qualität, egal welche Sprache“ gewählt und daher meist englisch. Ein eigener Video-Link des Nutzers hat Vorrang.
 - **Kurzanleitung** (`anleitung` in `katalog.json`): 3 Stichpunkte zur Ausführung für jede Übung; angezeigt unter „So geht's“.
 - **Stufe:** 1 bis 10 innerhalb des Musters; bestimmt die Reihenfolge beim Variantenwechsel.
-- **Anzahl Gewichte** (`anzahlGewichte` in `katalog.json`, nur Last-Übungen mit KH/KB): bestimmt die Lastanzeige („16 kg je Hand“ bzw. „16 kg“). Eine Hantel (1): kh\_rudern\_einarmig, kb\_schulterdruecken, kb\_rudern, klimmzug\_gewicht, goblet\_squat, kh\_rdl\_einbeinig, kb\_swing, kh\_russian\_twist, konzentrationscurl, kh\_trizeps\_ueberkopf, kh\_wadenheben. Alle übrigen KH-Übungen: zwei Hanteln (2).
+- **Anzahl Gewichte** (`anzahlGewichte` in `katalog.json`, nur Last-Übungen mit KH/KB): bestimmt die Lastanzeige („16 kg je Hand“ bzw. „16 kg“). Eine Hantel (1): kh\_rudern\_einarmig, kb\_schulterdruecken, kb\_rudern, klimmzug\_gewicht, goblet\_squat, kh\_rdl\_einbeinig, kb\_swing, kh\_russian\_twist, konzentrationscurl, kh\_trizeps\_ueberkopf, kh\_wadenheben, kh\_hip\_thrust (eine Hantel auf der Hüfte, Entscheidung 30.10.2026). Alle übrigen KH-Übungen: zwei Hanteln (2).
 - **Sekundär „keine“:** Die Übung zählt nur für den Primärmuskel. Muster „Kondition“ mit Primär „Ganzkörper“ zählt nicht zum Muskelvolumen.
 
 **Ersatz, wenn ein Muster am Ort keine Variante hat** (Variante wird im Plan als Ersatz markiert):
@@ -92,6 +92,7 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | chinup | Chinups | vZug | Rücken | Bizeps | 5 | STANGE | KG | 5 bis 12 Wdh. | nein |
 | klimmzug | Pullups | vZug | Rücken | Bizeps | 6 | STANGE | KG | 5 bis 12 Wdh. | nein |
 | klimmzug\_gewicht | Weighted Pullups | vZug | Rücken | Bizeps | 8 | STANGE + KH/KB | Last | 5 bis 10 Wdh. | nein |
+| box\_squat | Box Squats | Knie | Quadrizeps | Gesäß | 1 | ERH | KG | 8 bis 15 Wdh. | ja |
 | kniebeuge | Squats | Knie | Quadrizeps | Gesäß | 2 | keins | KG | 12 bis 20 Wdh. | ja |
 | band\_kniebeuge | Band Squats | Knie | Quadrizeps | Gesäß | 3 | BAND | Band | 10 bis 15 Wdh. | nein |
 | pausen\_kniebeuge | Pause Squats | Knie | Quadrizeps | Gesäß | 3 | keins | KG | 10 bis 15 Wdh. | nein |

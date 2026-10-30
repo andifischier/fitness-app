@@ -183,7 +183,7 @@ describe('verlauf', () => {
         { typ: 'supersatz', pauseSek: 75, positionen: [
           { uebungId: 'kh_bankdruecken', saetze: 3, zielWdh: 10, last: 16, feedback: 'leicht',
             ergebnisse: [{ nr: 1, wdh: 12, zeit: '' }, { nr: 2, wdh: 11, zeit: '' }, { nr: 3, wdh: 10, zeit: '' }] },
-          { uebungId: 'kh_rudern_einarmig', saetze: 3, zielWdh: 10, last: 14, ergebnisse: [{ nr: 1, wdh: 8, zeit: '' }] },
+          { uebungId: 'kh_rudern_einarmig', saetze: 3, zielWdh: 10, last: 14, ergebnisse: [{ nr: 1, wdh: 7, zeit: '' }] },
           { uebungId: 'kh_curls', saetze: 3, zielWdh: 10, ergebnisse: [] },
         ] },
       ],

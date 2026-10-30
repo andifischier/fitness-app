@@ -5,7 +5,7 @@ import {
   alternativen, aufwaermenFuer, dosisProMuskel, erholungsfenster, erstelleEinheit, hauptvarianten, istErholt, kannTauschen, startfragen,
   startwerte, tausche, wochenziele, zirkelVorschlagen,
 } from './planung';
-import { absolviere, ort, setzePrognose, simuliereWoche, zeitpunkt, zustand } from './testhilfe';
+import { absolviere, eingespielt, ort, setzePrognose, simuliereWoche, zeitpunkt, zustand } from './testhilfe';
 import { uebungVon } from './verlauf';
 import { MUSKELN, type AppZustand, type Block, type Einheit, type MuskelZustand, type Muskel } from './typen';
 
@@ -177,8 +177,8 @@ describe('Aufbau der Einheit', () => {
 
   it('Klassisch: jede Übung einzeln; Kombi bringt in derselben Zeit mehr Sätze unter', () => {
     const saetze = (e: Einheit) => e.bloecke.flatMap((b) => b.positionen).reduce((s, p) => s + p.saetze, 0);
-    const klassisch = plane(zustand(), MO, { prognose: 2, klassisch: true });
-    const kombi = plane(zustand(), MO, { prognose: 2 });
+    const klassisch = plane(eingespielt(zustand()), MO, { prognose: 2, klassisch: true });
+    const kombi = plane(eingespielt(zustand()), MO, { prognose: 2 });
     expect(klassisch.format).toBe('klassisch');
     expect(klassisch.bloecke.every((b) => b.typ === 'einzeln')).toBe(true);
     expect(kombi.format).not.toBe('klassisch');
@@ -192,7 +192,7 @@ describe('Aufbau der Einheit', () => {
   });
 
   it('Aufwärmen: allgemein, Mobility der Tagesmuster, Aufwärmsatz der ersten Grundübung', () => {
-    const e = plane(zustand());
+    const e = plane(eingespielt(zustand()));
     const texte = e.aufwaermen.map((a) => a.vorgabe);
     // Ganzkörper: Jumping Jacks, je die erste Zeile für oben und unten (Entscheidung 29.10.2026)
     expect(texte.slice(0, 3)).toEqual(['50 Jumping Jacks', '10 Arm Circles je Richtung', '10 Squats']);

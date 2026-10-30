@@ -1,6 +1,6 @@
 // Hilfen für die Screens Heute, Vor dem Start und Vorschau (Paket 6). Rein und deterministisch:
 // Die aktuelle Zeit wird übergeben, der Zustand nur gelesen.
-import { BACKUP, MAXTEST, PROFIL } from '../konfiguration';
+import { BACKUP, FOKUS_GRUPPEN, MAXTEST, PROFIL } from '../konfiguration';
 import { isoWoche, plusTage, stundenZwischen, wocheStart, wocheVerschoben } from './datum';
 import { uebungErlaubt } from './equipment';
 import { istErholungswoche, mobilityZeilen, wochenziele, zirkelStation } from './planung';
@@ -50,6 +50,20 @@ export function heuteErledigt(z: AppZustand, jetzt: string):
   const dauerMin = einheit.gestartetAm && einheit.beendetAm
     ? Math.max(1, Math.round(stundenZwischen(einheit.gestartetAm, einheit.beendetAm) * 60)) : 0;
   return { einheit, dauerMin, saetze: saetzeVon(einheit) };
+}
+
+// Bezeichnung nach Inhalt (Entscheidung 30.10.2026): Eine Ganzkörper-Einheit, deren Hauptmuskeln
+// (ohne Bauch) alle zu einer Körperhälfte gehören, heißt wie diese Hälfte, z. B. „Unterkörper“, wenn der
+// Oberkörper noch in Erholung ist.
+export function fokusNachInhalt(z: AppZustand, e: Einheit): Einheit['fokus'] {
+  if (e.fokus !== 'ganz') return e.fokus;
+  const muskeln = e.bloecke.flatMap((b) => b.positionen).filter((p) => !p.istMaxTest)
+    .flatMap((p) => uebungVon(z, p.uebungId)?.primaer ?? []).filter((m) => m !== 'Bauch');
+  if (muskeln.length === 0) return 'ganz';
+  for (const haelfte of ['oben', 'unten'] as const) {
+    if (muskeln.every((m) => FOKUS_GRUPPEN[haelfte].includes(m))) return haelfte;
+  }
+  return 'ganz';
 }
 
 const saetzeVon = (e: Einheit) => e.bloecke.reduce((n, b) => n + b.positionen.reduce((m, p) => m + p.ergebnisse.length, 0), 0);

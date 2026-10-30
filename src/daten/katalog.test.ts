@@ -8,7 +8,7 @@ const kopie = () => structuredClone(katalogDatei) as unknown as typeof KATALOG;
 describe('Katalog', () => {
   it('lädt den mitgelieferten Katalog vollständig', () => {
     expect(KATALOG.schemaVersion).toBe(2);
-    expect(KATALOG.uebungen).toHaveLength(100);
+    expect(KATALOG.uebungen).toHaveLength(101);
     expect(KATALOG.utensilien).toHaveLength(15);
     expect(KATALOG.zirkel).toHaveLength(5);
     expect(new Set(KATALOG.uebungen.map((u) => u.muster)).size).toBe(13);

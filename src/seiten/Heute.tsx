@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router';
 import { aendereTage, speichereTausch, verwerfeEinheit } from '../daten/speichern';
 import { lokaleZeit } from '../daten/zeit';
-import { maxOffeneTage, prognoseAusTagen, vorschlagTage, wochenausblick, type AusblickTag } from '../logik/ausblick';
+import { heuteFrei, maxOffeneTage, prognoseAusTagen, vorschlagTage, wochenausblick, type AusblickTag } from '../logik/ausblick';
 import { isoWoche, wochentag } from '../logik/datum';
 import { aktuelleEinheit, backupErinnerung, heuteErledigt, naechsterMaxTest } from '../logik/heute';
 import { erstelleEinheit, istErholungswoche, startfragen, tausche } from '../logik/planung';
@@ -14,7 +14,7 @@ import { uebungVon } from '../logik/verlauf';
 import { Hinweis, Knopf, TageWahl } from '../ui/bausteine';
 import { TauschBlatt } from '../ui/blaetter';
 import { Icon } from '../ui/Icon';
-import { abText, datumLang, einheitName, muskelgruppenText, tagText } from '../ui/texte';
+import { abText, datumLang, einheitName, einheitenText, muskelgruppenText, tagText } from '../ui/texte';
 import { kannTeilen, sichereBackup } from '../ui/backupSichern';
 import { UebungsListe } from '../ui/uebungsliste';
 import { einstellungenAus, useZustand } from '../ui/useZustand';
@@ -66,9 +66,10 @@ function Inhalt({ z, jetzt }: { z: AppZustand; jetzt: string }) {
   // üblichen Möglichkeiten (Entscheidung 21.10.2026).
   const [nochmal, setNochmal] = useState(false);
   const fertig = !aktuell && !nochmal ? erledigt : undefined;
+  const frei = !aktuell && !nochmal && !fertig && heuteFrei(jetzt, woche?.tage);
   const naechster = ausblick?.find((t) => (t.art === 'einheit' || t.art === 'zirkel') && t.datum > jetzt.slice(0, 10));
   const ort = z.orte.find((o) => o.id === (fertig?.einheit.ortId ?? vorschau?.ortId ?? fragen.ortId));
-  const liste = !fertig && aktuell?.status !== 'laufend' && vorschau && vorschau.bloecke.length > 0 ? vorschau : undefined;
+  const liste = !fertig && !frei && aktuell?.status !== 'laufend' && vorschau && vorschau.bloecke.length > 0 ? vorschau : undefined;
   // Tauschen auf Heute geht in der erstellten Einheit; die voraussichtliche wird erst vor dem Start erstellt.
   const [tausch, setTausch] = useState<{ block: number; position: number }>();
   const tauschbar = aktuell?.status === 'geplant' ? aktuell : undefined;
@@ -89,7 +90,7 @@ function Inhalt({ z, jetzt }: { z: AppZustand; jetzt: string }) {
       <section className="rounded-karte border border-rand bg-flaeche p-5">
         <div className="flex items-center justify-between gap-3">
           <p className="text-basis text-gedaempft">
-            {fertig ? 'Dein Training heute' : aktuell?.status === 'laufend' ? 'Unterbrochene Einheit' : aktuell ? 'Erstellte Einheit' : 'Nächste Einheit'}
+            {fertig || frei ? 'Dein Training heute' : aktuell?.status === 'laufend' ? 'Unterbrochene Einheit' : aktuell ? 'Erstellte Einheit' : 'Nächste Einheit'}
           </p>
           {ort && <span className="rounded-full bg-akzent-hell px-3 py-1 text-basis font-semibold text-akzent">{ort.name}</span>}
         </div>
@@ -107,6 +108,12 @@ function Inhalt({ z, jetzt }: { z: AppZustand; jetzt: string }) {
                 {naechster && <p className="mt-1 text-basis">Nächstes Training: {tagText(naechster.datum, naechster.tag)}</p>}
               </div>
             </div>
+            <Knopf art="schlicht" onClick={() => setNochmal(true)}>Trotzdem trainieren</Knopf>
+          </>
+        ) : frei ? (
+          <>
+            <Titel titel="Heute frei"
+              text={naechster ? `Nächstes Training: ${tagText(naechster.datum, naechster.tag)}` : 'Diese Woche ist kein Training mehr geplant.'} />
             <Knopf art="schlicht" onClick={() => setNochmal(true)}>Trotzdem trainieren</Knopf>
           </>
         ) : aktuell?.status === 'laufend' ? (
@@ -191,7 +198,7 @@ function Woche({ z, jetzt, ortId, tage, einheiten, ausblick }: {
         <h2 className="text-screen font-extrabold">Diese Woche</h2>
         {tage && (
           <p className="text-basis text-gedaempft">
-            {einheiten} von {prognoseAusTagen(z, jetzt, tage)} Einheiten
+            {einheitenText(einheiten, prognoseAusTagen(z, jetzt, tage))}
           </p>
         )}
       </div>

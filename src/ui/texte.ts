@@ -6,6 +6,7 @@ import type {
   AppZustand, BandStufe, Einheit, Einstellungen, Feedback, MusterId, Muskel, Position, Prioritaet, Uebung, Utensil,
 } from '../logik/typen';
 import { uebungVon } from '../logik/verlauf';
+import { fokusNachInhalt } from '../logik/heute';
 import { zirkelName } from '../logik/workouts';
 
 export const MUSKEL_NAMEN: Record<Muskel, string> = {
@@ -255,12 +256,17 @@ export function entlastungText(wocheId: string, einheiten: number, erholungswoch
   return `${kw} nur ${einheiten} ${einheiten === 1 ? 'Einheit' : 'Einheiten'}, zählt als Entlastung.`;
 }
 
+// „0 von 1 Einheit“, „2 von 3 Einheiten“ (Wochenstand auf Heute)
+export function einheitenText(erledigt: number, geplant: number): string {
+  return `${erledigt} von ${geplant} ${geplant === 1 ? 'Einheit' : 'Einheiten'}`;
+}
+
 // Name einer Einheit: eigenes Workout, Zirkelname, „Testtag“ oder Fokus („Ganzkörper“)
 export function einheitName(z: AppZustand, e: Einheit): string {
   if (e.name) return e.name;
   if (e.format === 'test') return 'Testtag';
   if (e.format === 'zirkel') return zirkelName(z, e.bloecke[0]?.zirkelId) ?? 'Zirkel';
-  return FOKUS_NAMEN[e.fokus];
+  return FOKUS_NAMEN[fokusNachInhalt(z, e)];
 }
 
 // Sätze einer Übung im Verlauf: „16 kg je Hand · 12, 11, 10 Wdh.“; wechselt die Last innerhalb der

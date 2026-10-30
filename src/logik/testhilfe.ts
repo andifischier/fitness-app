@@ -62,6 +62,23 @@ export function zustand(opt: {
   };
 }
 
+// Alle Übungen gelten als schon einmal trainiert (Datum vor den Use Cases, ohne Werte): Die Use Cases
+// beschreiben eingespielte Wochen, nicht die erste Woche mit lauter neuen Übungen (dort gelten höchstens
+// 3 Sätze je Übung, Entscheidung 30.10.2026).
+export function eingespielt(z: AppZustand, zuletzt = '2026-09-01T10:00:00'): AppZustand {
+  const ids = [...z.katalog.uebungen, ...z.eigeneUebungen].map((u) => u.id);
+  return {
+    ...z,
+    varianten: [
+      ...z.varianten,
+      ...ids.filter((id) => !z.varianten.some((v) => v.uebungId === id)).map((uebungId) => {
+        const u = [...z.katalog.uebungen, ...z.eigeneUebungen].find((x) => x.id === uebungId)!;
+        return { uebungId, zielWdh: u.bereich.von, seitSteigerung: 2, schwerSerie: 0, zuletzt };
+      }),
+    ],
+  };
+}
+
 const null10 = () => Object.fromEntries(MUSKELN.map((m) => [m, 0])) as Record<Muskel, number>;
 
 // Setzt die Wochenprognose (ohne gewählte Tage), wie es die App vor dem Wochenausblick tat.

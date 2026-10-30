@@ -1379,6 +1379,39 @@
    ]
   },
   {
+   "id": "box_squat",
+   "name": "Box Squats",
+   "muster": "Knie",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 1,
+   "equipment": [
+    [
+     "ERH"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Box+Squats+richtige+Ausf%C3%BChrung",
+   "videoId": "vVpojWs8lQg",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Stuhl oder Kasten hinter dich, Füße schulterbreit, Zehen leicht nach außen.",
+    "Hüfte nach hinten und unten, bis der Po die Sitzfläche kurz berührt, ohne dich abzulegen.",
+    "Über die Fersen wieder hochdrücken, Knie folgen den Zehen, Rücken gerade."
+   ]
+  },
+  {
    "id": "kniebeuge",
    "name": "Squats",
    "muster": "Knie",
@@ -2033,7 +2066,7 @@
    "videoId": "N4JVnHFOq50",
    "herkunft": "katalog",
    "unterstuetzend": false,
-   "anzahlGewichte": 2,
+   "anzahlGewichte": 1,
    "anleitung": [
     "Schulterblätter an die Bankkante, Hantel auf der Hüfte.",
     "Hüfte hochdrücken, bis Knie, Hüfte und Schultern eine Linie bilden.",

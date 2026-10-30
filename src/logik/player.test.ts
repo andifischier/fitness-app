@@ -321,6 +321,8 @@ describe('Übungsfeedback', () => {
     const s = { block: 2, position: 0 };
     const mit = (wdh: number[]) => wdh.reduce((e, w, i) => trageSatzEin(z, e, { ...s, satz: i + 1 }, w, '2026-10-20T18:10:00'), MIX);
     expect(feedbackVorschlag(z, mit([12, 9]), s)).toBe('schwer');
+    // Bis 2 unter dem Ziel ist „passend“ vorausgewählt (Entscheidung 30.10.2026).
+    expect(feedbackVorschlag(z, mit([12, 10]), s)).toBe('passend');
     expect(feedbackVorschlag(z, mit([9, 12]), s)).toBe('passend');
     // Neue Last-Variante: Satz 1 kalibriert, Satz 2 misst am berechneten Ziel.
     const neu = zustand();
@@ -330,7 +332,7 @@ describe('Übungsfeedback', () => {
     e = trageSatzEin(neu, e, { block: 0, position: 0, satz: 2 }, ziel, '2026-10-20T18:12:00');
     expect(feedbackVorschlag(neu, e, { block: 0, position: 0 })).toBe('passend');
     e = trageSatzEin(neu, curls, { block: 0, position: 0, satz: 1 }, 10, '2026-10-20T18:10:00', 8);
-    e = trageSatzEin(neu, e, { block: 0, position: 0, satz: 2 }, ziel - 1, '2026-10-20T18:12:00');
+    e = trageSatzEin(neu, e, { block: 0, position: 0, satz: 2 }, ziel - 3, '2026-10-20T18:12:00');
     expect(feedbackVorschlag(neu, e, { block: 0, position: 0 })).toBe('schwer');
   });
 

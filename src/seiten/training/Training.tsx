@@ -377,7 +377,7 @@ function Satz({ z, einheit, schritt, u, farbe, onTauschen, onErledigt }: {
       {/* Geschafftes in jedem Satz, vorbelegt mit dem Ziel (Entscheidung 30.10.2026); Halteübungen mit
           Countdown bis zum Ziel, der Max-Test mit Stoppuhr. */}
       {v.art === 'maxTest' && v.inSek && <Stoppuhr wert={wert} onChange={setWert} />}
-      {v.art !== 'maxTest' && v.inSek && <Countdown ziel={v.wert} />}
+      {v.art !== 'maxTest' && v.inSek && <Countdown ziel={v.wert} onStopp={setWert} />}
       {!(v.art === 'maxTest' && v.inSek) && (
         <Zaehler wert={wert} onChange={setWert} einheit={v.inSek ? 'Sekunden' : 'Wiederholungen'}
           hinweis={v.art === 'ziel' && !v.kalibrierung ? 'Weniger geschafft? Mit − anpassen.' : undefined} />
@@ -624,6 +624,9 @@ function Station({ z, einheit, schritt, u, letzte, onTauschen, onWeiter }: {
   const vorgabe = zirkelVorgaben(z, einheit)[schritt.position] ?? String(p.zielWdh);
   const text = /^\d+$/.test(vorgabe) ? `${vorgabe} ${u.bereich.einheit}` : vorgabe;
   const last = lastText(u, p);
+  // Stationen mit Sekunden bekommen den Countdown wie Halteübungen (Entscheidung 30.10.2026).
+  const sek = /^(\d+)\s*Sek\.?$/.exec(vorgabe)?.[1] ?? (u.bereich.einheit === 'Sek.' && /^\d+$/.test(vorgabe) ? vorgabe : undefined);
+  const sekunden = sek !== undefined ? Number(sek) : undefined;
   return (
     <div className="flex flex-1 flex-col">
       <Kopf z={z} u={u} label={`Station ${schritt.position + 1} von ${b.positionen.length}`} onTauschen={onTauschen} />
@@ -632,6 +635,7 @@ function Station({ z, einheit, schritt, u, letzte, onTauschen, onWeiter }: {
         <p className="text-titel leading-tight font-extrabold">{text}</p>
         {last && <p className="mt-2 text-basis text-gedaempft">{last}</p>}
       </section>
+      {sekunden !== undefined && <Countdown key={`${schritt.block}-${schritt.position}-${schritt.satz}`} ziel={sekunden} />}
       <div className="mt-auto pt-8">
         <Knopf onClick={onWeiter}>{letzte ? 'Fertig' : 'Weiter'}</Knopf>
       </div>

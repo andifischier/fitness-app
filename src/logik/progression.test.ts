@@ -111,8 +111,10 @@ describe('Progression mit Last (Kraftschätzung)', () => {
     expect(aus([10, 7, 5])).toMatchObject({ last: 16, zielWdh: 7 });
     // Leichter wird es erst, wenn schon der erste Satz deutlich unter dem Bereich liegt.
     expect(aus([5, 4, 4])).toMatchObject({ last: 14, zielWdh: 8 });
-    // Ohne Feedback zählt der letzte Satz: verfehlt er das Ziel, gilt „zu schwer“.
-    expect(aus([12, 11, 9]).schwerSerie).toBe(1);
+    // Ohne Feedback zählt der letzte Satz: fehlen dort mehr als 2, gilt „zu schwer“, bis 2 „passend“
+    // (Entscheidung 30.10.2026); das Ziel steigt trotzdem erst, wenn der letzte Satz es schafft.
+    expect(aus([12, 11, 7]).schwerSerie).toBe(1);
+    expect(aus([12, 11, 9])).toMatchObject({ schwerSerie: 0, zielWdh: 10 });
   });
 
   it('über O gedehnt: schaffen alle Sätze O, kommt das schwerere Gewicht', () => {
@@ -262,8 +264,10 @@ describe('Abschluss einer Einheit', () => {
 
   it('Rekorde: neuer Bestwert der Kraftschätzung und des ersten Satzes', () => {
     const z0 = setzePrognose(zustand(), MO, 3);
-    const z1 = fuehreDurch(z0, plane(z0, MO), MO);
-    const zweite = plane(z1, zeitpunkt(3, 18));
+    const erste = plane(z0, MO);
+    const z1 = fuehreDurch(z0, erste, MO);
+    // Dieselben Übungen noch einmal (die Planung wechselt sonst A und B ab).
+    const zweite = { ...erste, id: 'zweite', erstelltAm: zeitpunkt(3, 18) };
     const besser = { ...zweite, bloecke: zweite.bloecke.map((b) => ({ ...b, positionen: b.positionen.map((p) => ({
       ...p, feedback: 'passend' as const, ergebnisse: [{ nr: 1, wdh: p.zielWdh + 3, ...(p.last ? { last: p.last } : {}), zeit: zeitpunkt(3, 18) }],
     })) })) };

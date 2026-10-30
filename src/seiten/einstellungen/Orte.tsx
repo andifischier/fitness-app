@@ -197,7 +197,8 @@ export function OrteBearbeiten({ z, titel = 'Orte und Equipment', zurueck = '/ei
             const zeigeDetails = an && (u === BANKZEILE || hatDetails(u.id));
             const loeschbar = u !== BANKZEILE && u.eigenes && !an && !utensilGenutzt(z, u.id);
             return (
-              <li key={id} className="flex items-center gap-4 border-b border-linie py-4 last:border-b-0">
+              <li key={id} className="border-b border-linie py-4 last:border-b-0">
+                <div className="flex items-center gap-4">
                 <button type="button" role="checkbox" aria-checked={an} onClick={() => umschalten(u)}
                   className="flex min-h-touch flex-1 items-center gap-4 text-left">
                   <Haekchen an={an} />
@@ -212,24 +213,25 @@ export function OrteBearbeiten({ z, titel = 'Orte und Equipment', zurueck = '/ei
                 {loeschbar && (
                   <Knopf art="schlicht" onClick={() => void loescheEigenesUtensil(u.id)}>Löschen</Knopf>
                 )}
+                </div>
+                {/* Details direkt unter dem angehakten Utensil (Entscheidung 30.10.2026) */}
+                {u === BANKZEILE && details.includes(BANKZEILE) && hantelbank(entwurf) !== 'keine' && (
+                  <DetailFenster titel="Hantelbank, Details" hinweis="Eine verstellbare Bank kann auch flach genutzt werden.">
+                    <Auswahl spalten={2} wert={hantelbank(entwurf)} onChange={(w) => aendere(mitHantelbank(entwurf, w))}
+                      optionen={[{ wert: 'flach', text: 'Flach' }, { wert: 'verstellbar', text: 'Verstellbar' }]} />
+                  </DetailFenster>
+                )}
+                {u !== BANKZEILE && detailUtensilien.includes(u) && (
+                  <DetailFenster key={`${version}-${u.id}`} titel={`${utensilName(u)}, Details`}>
+                    <Details e={equipmentVon(entwurf, u.id)!}
+                      onChange={(teil) => aendere(mitDetails(entwurf, u.id, teil))} />
+                  </DetailFenster>
+                )}
               </li>
             );
           })}
         </ul>
       </section>
-
-      {details.includes(BANKZEILE) && hantelbank(entwurf) !== 'keine' && (
-        <Karte titel="Hantelbank, Details" hinweis="Eine verstellbare Bank kann auch flach genutzt werden.">
-          <Auswahl spalten={2} wert={hantelbank(entwurf)} onChange={(w) => aendere(mitHantelbank(entwurf, w))}
-            optionen={[{ wert: 'flach', text: 'Flach' }, { wert: 'verstellbar', text: 'Verstellbar' }]} />
-        </Karte>
-      )}
-      {detailUtensilien.map((u) => (
-        <Karte key={`${version}-${u.id}`} titel={`${utensilName(u)}, Details`}>
-          <Details e={equipmentVon(entwurf, u.id)!}
-            onChange={(teil) => aendere(mitDetails(entwurf, u.id, teil))} />
-        </Karte>
-      ))}
 
       <div className="flex flex-wrap items-center justify-between gap-x-3">
         <Hinweis>{anzahl === 1 ? '1 Übung' : `${anzahl} Übungen`} an diesem Ort möglich</Hinweis>
@@ -262,6 +264,17 @@ export function OrteBearbeiten({ z, titel = 'Orte und Equipment', zurueck = '/ei
       </Knopf>
       {gespeichert && <OrtLoeschen z={z} ort={gespeichert} onLoeschen={() => void loeschen()} />}
     </Seite>
+  );
+}
+
+// Detailfenster unter einer Zeile der Utensilliste
+function DetailFenster({ titel, hinweis, children }: { titel: string; hinweis?: string; children: ReactNode }) {
+  return (
+    <div className="mt-3 rounded-karte bg-hintergrund p-4">
+      <h2 className="text-gross font-bold">{titel}</h2>
+      {hinweis && <p className="mt-1 text-hinweis text-gedaempft">{hinweis}</p>}
+      <div className="mt-3 flex flex-col gap-3">{children}</div>
+    </div>
   );
 }
 

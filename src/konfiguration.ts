@@ -47,7 +47,8 @@ export const TESTTAG = {
   startzielAnteil: 0.7,
   hDruck: { grenzen: [0, 7, 20, 30], varianten: ['knieliegestuetz', 'liegestuetz_erhoeht_haende', 'liegestuetz', 'liegestuetz_fuesse_erhoeht', 'liegestuetz_band'] },
   vZug: { haengenSek: 20, grenzen: [3, 7, 14], varianten: ['scapula_pullups', 'negative_klimmzuege', 'klimmzug_band', 'chinup', 'klimmzug', 'klimmzug_gewicht'] },
-  Knie: { grenzen: [14, 30], varianten: ['kniebeuge', 'pausen_kniebeuge', 'goblet_squat'], ersatzOhneLast: 'bss_kg' },
+  // Unter 12 (Untergrenze der Squats) startet Box Squats (Entscheidung 30.10.2026)
+  Knie: { grenzen: [11, 14, 30], varianten: ['box_squat', 'kniebeuge', 'pausen_kniebeuge', 'goblet_squat'], ersatzOhneLast: 'bss_kg' },
   Rumpf: { grenzen: [29, 60], varianten: ['dead_bug', 'plank', 'hollow_hold'] },
   kalibrierungReserve: 3,
   minutenProTest: 3,              // geschätzte Dauer je Test (plus Aufwärmen)
@@ -98,7 +99,7 @@ export const ABLEITUNG = {
     bss_kh: { basis: 'Knie', faktor: 0.4 },
     kh_wadenheben: { basis: 'Knie', faktor: 0.6 },
     kh_rdl: { basis: 'Huefte', faktor: 1 },
-    kh_hip_thrust: { basis: 'Huefte', faktor: 1 },
+    kh_hip_thrust: { basis: 'Huefte', faktor: 1.6 },   // eine Hantel auf der Hüfte (Entscheidung 30.10.2026)
     kh_rdl_einbeinig: { basis: 'Huefte', faktor: 0.6 },
   } satisfies Record<string, { basis: MusterId; faktor: number }>,
 } as const;
@@ -140,11 +141,15 @@ export const EINHEIT = {
   saetzeProUebung: { min: 2, max: 4, maxWenigEinheiten: 5, wenigBisPrognose: 2 },  // bei 1 bis 2 Einheiten bis 5 Sätze
   minOffenerBedarf: 0.25,
   maxSaetzeBauchWaden: 3,
+  // Neue Übung (noch nie trainiert): beim ersten Mal höchstens so viele Sätze (Entscheidung 30.10.2026)
+  maxSaetzeErstesMal: 3,
   ruhetagUnterSaetzen: 6,
   freiFuerZirkelAbSaetzen: 3,
   finisherMin: { von: 10, bis: 15 },
   mobilityMin: 10,
   maxHauptvarianten: 2,
+  // Variante B höchstens so viele Stufen über der Musterstufe (Entscheidung 30.10.2026)
+  bMaxUeberMusterstufe: 1,
   zyklusWochen: 6,
 } as const;
 
@@ -258,6 +263,9 @@ export const PROGRESSION = {
   ermuedungProSatz: 1,
   eingewoehnungEinheiten: 2,
   kgMaxUeberBestem: 2,
+  // Leichteste Möglichkeit am Ort (keine leichtere Variante, Last oder Band): Das Ziel darf unter den
+  // Bereich sinken, aber nicht unter diese Werte (Entscheidung 30.10.2026)
+  minZielLeichteste: { wdh: 1, sek: 5 },
   zeitPlusPassend: 5,
   zeitPlusLeicht: 10,
   neueVarianteReserve: 3,
@@ -329,6 +337,7 @@ export const BACKUP = {
 
 // Trainings-Player (Paket 7)
 export const PLAYER = {
+  maxEingabe: 999,                // größte Zahl im Zähler per Tastatur (Entscheidung 30.10.2026)
   pauseVerlaengernSek: 30,
   vorlaufSek: 5,                    // Countdown und Stoppuhr: Zeit zum Bereitmachen (Entscheidung 29.10.2026)
   verlaufPunkte: 8,                 // kleine Kurve im ersten Satz: so viele letzte Einheiten
