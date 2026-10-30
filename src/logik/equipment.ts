@@ -1,5 +1,5 @@
 // Was an einem Ort möglich ist: Equipment, Sperren, Ausschlüsse und Lasten.
-import { SPERREN_NACH_REGION } from '../konfiguration';
+import { NUR_OHNE, SPERREN_NACH_REGION } from '../konfiguration';
 import { BAND_STUFEN, type AppZustand, type BandStufe, type Einstellungen, type Ort, type Uebung } from './typen';
 
 export function alleUebungen(z: AppZustand): Uebung[] {
@@ -10,8 +10,10 @@ export function hatUtensil(ort: Ort, utensilId: string): boolean {
   return ort.equipment.some((e) => e.utensilId === utensilId);
 }
 
-// Aus jeder Equipment-Gruppe ist mindestens ein Utensil nötig.
+// Aus jeder Equipment-Gruppe ist mindestens ein Utensil nötig. Ersatzübungen wie die Floor Press
+// entfallen, wenn das Utensil für die bessere Ausführung da ist (Entscheidung 30.10.2026).
 export function uebungMoeglich(ort: Ort, u: Uebung): boolean {
+  if (u.herkunft === 'katalog' && NUR_OHNE[u.id]?.some((id) => hatUtensil(ort, id))) return false;
   return u.equipment.every((gruppe) => gruppe.some((id) => hatUtensil(ort, id)));
 }
 

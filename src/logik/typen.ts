@@ -42,11 +42,14 @@ export interface Zirkel {
   id: string; name: string; runden: number; dauerHinweis: string;
   stationen: { muster: MusterId; vorgabe: number | string; hinweis: string }[];
 }
+// „So geht's“ einer Aufwärmübung: Verweis auf eine Katalogübung oder eigene Anleitung mit Video.
+export interface AufwaermAnleitung { uebungId?: string; videoId?: string; anleitung?: string[] }
 export interface KatalogDatei {
   schemaVersion: number; utensilien: Utensil[]; uebungen: Uebung[]; zirkel: Zirkel[];
   aufwaermen: {
     allgemein: { immer: string[]; oben: string[]; unten: string[] }; mobility: Partial<Record<MusterId, string[]>>;
     maxMobilityZeilen: number; aufwaermsatz: { anteilLast: number; wdh: number };
+    anleitungen?: Record<string, AufwaermAnleitung>;
   };
 }
 
@@ -120,6 +123,7 @@ export interface Position {
   istMaxTest?: boolean; istErsatz?: boolean; getauschtVon?: string;
   istLasttest?: boolean;             // Gewichtstest am Testtag (Entscheidung 21.10.2026)
   langsam?: boolean;                // 3 Sek. absenken
+  zielFolgesaetze?: number;         // im Training gesenktes Ziel der restlichen Sätze (Entscheidung 30.10.2026)
   ergebnisse: SatzErgebnis[]; feedback?: Feedback;
 }
 export interface Block {

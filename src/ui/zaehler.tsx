@@ -8,7 +8,9 @@ import { bereiteTonVor, pausenEnde, vorlaufEnde } from './signal';
 
 const rund = 'flex size-[72px] items-center justify-center rounded-full border border-rand bg-flaeche text-text disabled:text-rand';
 
-export function Zaehler({ wert, onChange, einheit = 'Wiederholungen' }: { wert: number; onChange: (w: number) => void; einheit?: string }) {
+export function Zaehler({ wert, onChange, einheit = 'Wiederholungen', hinweis }: {
+  wert: number; onChange: (w: number) => void; einheit?: string; hinweis?: string;
+}) {
   return (
     <div className="mt-8 flex flex-col items-center gap-2">
       <p className="text-basis text-gedaempft">Geschafft</p>
@@ -22,6 +24,7 @@ export function Zaehler({ wert, onChange, einheit = 'Wiederholungen' }: { wert: 
         </button>
       </div>
       <p className="text-hinweis text-gedaempft">{einheit}</p>
+      {hinweis && <p className="text-hinweis text-gedaempft">{hinweis}</p>}
     </div>
   );
 }
@@ -79,8 +82,8 @@ export function Stoppuhr({ wert, onChange }: { wert: number; onChange: (s: numbe
   );
 }
 
-// Countdown bis zum Ziel für Halteübungen (Entscheidung 29.10.2026): kein Zählen, erst der Vorlauf, am
-// Ende Ton und Vibration wie am Pausenende. „Satz erledigt“ speichert das Ziel, auch ohne Countdown.
+// Countdown bis zum Ziel für Halteübungen (Entscheidung 29.10.2026): erst der Vorlauf, am Ende Ton und
+// Vibration wie am Pausenende. Gespeichert wird der Zähler darunter (vorbelegt mit dem Ziel).
 export function Countdown({ ziel }: { ziel: number }) {
   const { startMs, jetzt, vorlauf, laeuft, starten, stoppen } = useVorlauf();
   const rest = !laeuft || startMs === undefined ? ziel : Math.max(0, ziel - Math.floor((jetzt - startMs) / 1000));

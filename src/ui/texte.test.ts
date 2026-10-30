@@ -90,12 +90,12 @@ describe('Übungsfeedback und Abschluss', () => {
   it('beschreibt die nächste Einheit', () => {
     const basis = { neueVariante: false, kalibrierung: false };
     expect(naechstesMalText(u('kh_bankdruecken'), { ...basis, uebungId: 'kh_bankdruecken', zielWdh: 11, last: 16 }))
-      .toBe('Nächstes Mal: 16 kg je Hand, Ziel 11 im ersten Satz.');
-    expect(naechstesMalText(u('plank'), { ...basis, uebungId: 'plank', zielWdh: 45 })).toBe('Nächstes Mal: Ziel 45 Sek. im ersten Satz.');
+      .toBe('Nächstes Mal: 16 kg je Hand, Ziel 11 je Satz.');
+    expect(naechstesMalText(u('plank'), { ...basis, uebungId: 'plank', zielWdh: 45 })).toBe('Nächstes Mal: Ziel 45 Sek. je Satz.');
     expect(naechstesMalText(u('liegestuetz'), { ...basis, uebungId: 'liegestuetz', zielWdh: 8, langsam: true }))
-      .toBe('Nächstes Mal: Ziel 8 im ersten Satz. 3 Sek. absenken.');
+      .toBe('Nächstes Mal: Ziel 8 je Satz. 3 Sek. absenken.');
     expect(naechstesMalText(u('klimmzug'), { ...basis, uebungId: 'klimmzug', zielWdh: 5, neueVariante: true }))
-      .toBe(`Nächstes Mal: ${u('klimmzug').name}, Ziel 5 im ersten Satz.`);
+      .toBe(`Nächstes Mal: ${u('klimmzug').name}, Ziel 5 je Satz.`);
     expect(naechstesMalText(u('goblet_squat'), { ...basis, uebungId: 'goblet_squat', zielWdh: 8, neueVariante: true, kalibrierung: true }))
       .toBe(`Nächstes Mal: ${u('goblet_squat').name}, das Gewicht wählst du im ersten Satz.`);
   });
@@ -162,8 +162,8 @@ describe('Fortschritt und Verlauf', () => {
 describe('Fortschritt im ersten Satz', () => {
   it('nennt letztes Mal, heute und den nächsten Schritt', () => {
     expect(fortschrittZeilen({ inSek: false, letztesMal: 9, heute: 10, ab: 12, schritt: 'gewicht', verlauf: [] }))
-      .toEqual({ jetzt: 'Letztes Mal 9 · heute 10', danach: 'Ab 12 im 1. Satz: mehr Gewicht' });
+      .toEqual({ jetzt: 'Letztes Mal 9 · heute 10', danach: 'Ab 12 in allen Sätzen: mehr Gewicht' });
     expect(fortschrittZeilen({ inSek: true, heute: 30, ab: 60, schritt: 'variante', naechste: 'Hollow Hold', verlauf: [] }))
-      .toEqual({ jetzt: 'Erstes Mal · heute 30 Sek.', danach: 'Ab 60 Sek. im 1. Satz: Hollow Hold' });
+      .toEqual({ jetzt: 'Erstes Mal · heute 30 Sek.', danach: 'Ab 60 Sek. in allen Sätzen: Hollow Hold' });
   });
 });

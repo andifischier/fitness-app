@@ -75,10 +75,16 @@ export function ersterSatz(p: Position): number | undefined {
   return s ? (s.wdh ?? s.sek) : undefined;
 }
 
-// Feedback der Übung; fehlt es, gilt „zu schwer“, wenn der erste Satz das Ziel verfehlt.
+// Letzter erledigter Satz; an ihm misst die Progression (Entscheidung 30.10.2026).
+export function letzterSatz(p: Position): number | undefined {
+  const s = p.ergebnisse.at(-1);
+  return s ? (s.wdh ?? s.sek) : undefined;
+}
+
+// Feedback der Übung; fehlt es, gilt „zu schwer“, wenn der letzte Satz das Ziel verfehlt.
 export function feedbackVon(p: Position): Feedback {
-  const erster = ersterSatz(p);
-  return p.feedback ?? (erster !== undefined && erster < p.zielWdh ? 'schwer' : 'passend');
+  const letzter = letzterSatz(p);
+  return p.feedback ?? (letzter !== undefined && letzter < p.zielWdh ? 'schwer' : 'passend');
 }
 
 // Leistungswert einer Übung in einer Einheit: e1RM aus dem besten Satz (Last), sonst erster Satz.

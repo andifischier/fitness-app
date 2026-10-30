@@ -180,10 +180,11 @@ export function feedbackOptionen(inSek: boolean): { wert: Feedback; titel: strin
     ];
 }
 
-// Folgetext unter dem Feedback: „Nächstes Mal: 16 kg je Hand, Ziel 11 im ersten Satz.“
+// Folgetext unter dem Feedback: „Nächstes Mal: 16 kg je Hand, Ziel 11 je Satz.“ (Entscheidung 30.10.2026:
+// das Ziel gilt für alle Sätze, gemessen am letzten)
 export function naechstesMalText(u: Uebung, n: NaechstesMal): string {
   if (n.kalibrierung) return `Nächstes Mal: ${u.name}, das Gewicht wählst du im ersten Satz.`;
-  const ziel = `Ziel ${n.zielWdh}${u.bereich.einheit === 'Sek.' ? ' Sek.' : ''} im ersten Satz`;
+  const ziel = `Ziel ${n.zielWdh}${u.bereich.einheit === 'Sek.' ? ' Sek.' : ''} je Satz`;
   const teile = [n.neueVariante ? u.name : undefined, lastText(u, n), ziel].filter(Boolean).join(', ');
   return `Nächstes Mal: ${teile}.${n.langsam ? ` ${PROGRESSION.tempoAbsenkenSek} Sek. absenken.` : ''}`;
 }
@@ -299,8 +300,9 @@ export function tagText(datum: string, tag: number): string {
   return `${TAGE_KURZ[tag]}, ${t}.${m}.`;
 }
 
-// Fortschritt im ersten Satz (Entscheidung 21.10.2026): „Letztes Mal 9 · heute 10“ und darunter, was
-// als Nächstes kommt: „Ab 12 im 1. Satz: mehr Gewicht“.
+// Fortschritt im ersten Satz (Entscheidung 21.10.2026): „Letztes Mal 9 · heute 10“ (letzter Satz der
+// letzten Einheit) und darunter, was als Nächstes kommt: „Ab 12 in allen Sätzen: mehr Gewicht“
+// (Entscheidung 30.10.2026: gemessen am letzten Satz).
 export function fortschrittZeilen(h: Fortschrittshinweis): { jetzt: string; danach: string } {
   const e = h.inSek ? ' Sek.' : '';
   const jetzt = [h.letztesMal !== undefined ? `Letztes Mal ${h.letztesMal}${e}` : 'Erstes Mal', `heute ${h.heute}${e}`].join(' · ');
@@ -311,5 +313,5 @@ export function fortschrittZeilen(h: Fortschrittshinweis): { jetzt: string; dana
     band: 'das nächste Band',
     bandLeichter: 'weniger Unterstützung',
   }[h.schritt];
-  return { jetzt, danach: `Ab ${h.ab}${e} im 1. Satz: ${folge}` };
+  return { jetzt, danach: `Ab ${h.ab}${e} in allen Sätzen: ${folge}` };
 }

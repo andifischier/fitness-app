@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { KATALOG } from '../daten/katalog';
-import { aufwaermSchritt } from './aufwaermen';
+import { aufwaermSchritt, aufwaermTechnik } from './aufwaermen';
+import { zustand } from './testhilfe';
 
 describe('Aufwärmen Schritt für Schritt (Entscheidung 29.10.2026)', () => {
   it('gezählte Übungen: Anzahl und Name', () => {
@@ -32,5 +33,27 @@ describe('Aufwärmen Schritt für Schritt (Entscheidung 29.10.2026)', () => {
       if (s.sek !== undefined) expect(s.name).toMatch(/Stretch/);
       else expect(s.wdh).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("So geht's beim Aufwärmen (Entscheidung 30.10.2026)", () => {
+  const z = zustand({ katalog: 'voll' });
+
+  it('zeigt beim Aufwärmsatz die Übung selbst', () => {
+    expect(aufwaermTechnik(z, { uebungId: 'goblet_squat', vorgabe: '8 Wdh. Goblet Squat: 8 kg' }).id).toBe('goblet_squat');
+  });
+
+  it('verweist auf die Katalogübung oder liefert Anleitung und Video', () => {
+    expect(aufwaermTechnik(z, { uebungId: '', vorgabe: '50 Jumping Jacks' }).id).toBe('hampelmann');
+    const katze = aufwaermTechnik(z, { uebungId: '', vorgabe: '8 Cat-Cow' });
+    expect(katze).toMatchObject({ name: 'Cat-Cow', videoId: '5KYLaU6Lg2E' });
+    expect(katze.anleitung).toHaveLength(3);
+    expect(aufwaermTechnik(z, { uebungId: '', vorgabe: '30 Sek. Kneeling Hip Flexor Stretch je Seite' }).videoId).toBe('UU7Nqd_Dric');
+  });
+
+  it('ohne Eintrag bleibt die YouTube-Suche', () => {
+    const t = aufwaermTechnik(z, { uebungId: '', vorgabe: '10 Unbekannt' });
+    expect(t.videoId).toBeUndefined();
+    expect(t.youtubeUrl).toContain('Unbekannt');
   });
 });

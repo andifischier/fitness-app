@@ -2,11 +2,11 @@
 // (Entscheidung 21.10.2026). Das Video lädt erst auf Tipp und braucht Internet; der Link öffnet
 // YouTube (festes Video, eigener Link oder Suche).
 import { useState } from 'react';
-import { videoIdVon, videoLinkVon } from '../logik/einstellungen';
-import type { Einstellungen, Uebung } from '../logik/typen';
+import { videoIdVon, videoLinkVon, type TechnikInhalt } from '../logik/einstellungen';
+import type { Einstellungen } from '../logik/typen';
 import { Icon } from './Icon';
 
-export function Technik({ e, u, offen: start = false }: { e: Einstellungen; u: Uebung; offen?: boolean }) {
+export function Technik({ e, u, offen: start = false }: { e: Einstellungen; u: TechnikInhalt; offen?: boolean }) {
   const [offen, setOffen] = useState(start);
   const [video, setVideo] = useState(false);
   const id = videoIdVon(e, u);

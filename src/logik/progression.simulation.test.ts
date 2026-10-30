@@ -64,13 +64,13 @@ function simuliere(frequenzen: number[], seed: number): Verlauf {
       const saetze: { wdh: number; reserve: number }[] = [];
       for (let k = 0; k < spe; k++) {
         const moeglich = Math.max(0, Math.floor(maxWdh - k));
-        const gemacht = k === 0
-          ? (moeglich - ziel >= 1 ? ziel : Math.max(0, moeglich - 1))
-          : Math.min(saetze.at(-1)!.wdh, Math.max(0, moeglich - 1));
+        // Seit 30.10.2026 gilt das Ziel in jedem Satz: aufhören beim Ziel, sonst mit 1 Reserve.
+        const gemacht = moeglich - ziel >= 1 ? ziel : Math.max(0, moeglich - 1);
         saetze.push({ wdh: gemacht, reserve: moeglich - gemacht });
       }
       const erster = saetze[0]!;
-      const fb: Feedback = erster.wdh < ziel ? 'schwer' : erster.reserve >= 4 ? 'leicht' : 'passend';
+      const letzter = saetze.at(-1)!;
+      const fb: Feedback = letzter.wdh < ziel ? 'schwer' : erster.reserve >= 4 ? 'leicht' : 'passend';
       const best = Math.max(...saetze.map((s) => s.wdh));
       eWoche.push(e1rm(last, best, fb === 'leicht' ? 4 : fb === 'passend' ? 2 : 1));
       const jetzt = zeitpunkt(tag++, 18);

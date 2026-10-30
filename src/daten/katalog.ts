@@ -28,6 +28,11 @@ export function pruefeKatalog(roh: unknown): KatalogDatei {
     if (u.herkunft !== 'katalog') probleme.push(`Übung ${u.id}: Herkunft muss „katalog“ sein`);
   }
 
+  const uebungIds = new Set(katalog.uebungen.map((u) => u.id));
+  for (const [name, a] of Object.entries(katalog.aufwaermen.anleitungen ?? {})) {
+    if (a.uebungId !== undefined && !uebungIds.has(a.uebungId)) probleme.push(`Aufwärmen ${name}: Übung ${a.uebungId} unbekannt`);
+  }
+
   if (probleme.length > 0) throw new Error(`Katalog ungültig: ${probleme.join('; ')}`);
   return katalog;
 }

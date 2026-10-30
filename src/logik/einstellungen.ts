@@ -306,9 +306,12 @@ export function istVideoLink(text: string): boolean {
   }
 }
 
+// Was „So geht's“ braucht; auch Aufwärmübungen ohne Katalogeintrag liefern das (Entscheidung 30.10.2026).
+export type TechnikInhalt = Pick<Uebung, 'id' | 'name' | 'anleitung' | 'videoId' | 'youtubeUrl' | 'herkunft' | 'eigenerVideoLink'>;
+
 // Eigener Link hat Vorrang vor der YouTube-Suche.
 // Link zum Video: eigener Link, sonst das feste Katalogvideo, sonst die YouTube-Suche.
-export function videoLinkVon(e: Einstellungen, u: Uebung): string {
+export function videoLinkVon(e: Einstellungen, u: TechnikInhalt): string {
   return u.eigenerVideoLink ?? e.videoLinks?.[u.id] ?? (u.videoId ? `https://www.youtube.com/watch?v=${u.videoId}` : u.youtubeUrl);
 }
 
@@ -330,12 +333,12 @@ export function youtubeId(link: string): string | undefined {
 
 // Video zum Einbetten: ein eigener YouTube-Link hat Vorrang, sonst das feste Video aus dem Katalog.
 // Ein eigener Link, der kein YouTube-Video ist, wird nicht eingebettet.
-export function videoIdVon(e: Einstellungen, u: Uebung): string | undefined {
+export function videoIdVon(e: Einstellungen, u: TechnikInhalt): string | undefined {
   const eigener = eigenerLinkVon(e, u);
   return eigener !== undefined ? youtubeId(eigener) : u.videoId;
 }
 
-export function eigenerLinkVon(e: Einstellungen, u: Uebung): string | undefined {
+export function eigenerLinkVon(e: Einstellungen, u: TechnikInhalt): string | undefined {
   return u.herkunft === 'eigene' ? u.eigenerVideoLink : e.videoLinks?.[u.id];
 }
 
