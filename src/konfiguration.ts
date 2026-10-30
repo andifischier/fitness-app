@@ -248,6 +248,9 @@ export const PROGRESSION = {
   e1rmTeiler: 30,
   zielPlusPassend: 1,
   zielPlusLeicht: 2,
+  // „Zu leicht“ bei Last: sofort schwerer, wenn die Schätzung dort mindestens U − so viele zulässt
+  // (Entscheidung 30.10.2026)
+  leichtSchwererAbUnterU: 1,
   dehnungUeberO: 3,
   dehnungLastEnde: 5,
   deutlichVerfehltUnterU: 2,
@@ -276,13 +279,14 @@ export const PROGRESSION = {
   einseitigKennzeichen: ['einbeinig', 'einarmig'] as readonly string[],
 } as const;
 
-// Persönliche Volumengrenze pro Muskel
+// Persönliche Volumengrenze pro Muskel (Entscheidung 30.10.2026: „robust, behutsam mehr“): weniger Sätze
+// erst, wenn die Leistung so viele Wochen in Folge gefallen ist oder die Anstrengung hoch war; nach so vielen
+// guten Wochen in Folge (ohne Warnzeichen) mehr Sätze
 export const VOLUMENGRENZE = {
   bewertenAbAnteilZiel: 0.8,
-  gestiegenUeber: 0.01,
-  gleichInnerhalb: 0.01,
-  gleichWochen: 2,
   gefallenUeber: 0.03,
+  gefallenWochen: 2,
+  guteWochen: 4,
   mittelWochen: 2,
   anstrengungHoechstens: 3,
   anstrengungAb: 4,
@@ -323,6 +327,8 @@ export const MAXTEST = {
   abstandTageWenigeEinheiten: 28,
   wenigeEinheitenBis: 2,
   weitereSaetzeAnteil: 0.5,
+  // Höchstens bis auf so viele Sätze (Entscheidung 30.10.2026: keine Übung mit nur 1 Satz)
+  minSaetzeNachTest: 2,
   rotation: ['hDruck', 'vZug', 'Knie', 'Rumpf'] as readonly MusterId[],
   // Übung des Testtags je Muster; spätere Tests nutzen dieselbe Übung wie der letzte Test
   uebungen: { hDruck: 'liegestuetz', vZug: 'klimmzug', Knie: 'kniebeuge', Rumpf: 'plank' } as Partial<Record<MusterId, string>>,

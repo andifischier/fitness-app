@@ -244,16 +244,23 @@ export function ohneEinStern(z: AppZustand, e: Einstellungen, liste: Uebung[], e
   return neu;
 }
 
-// A und B wechseln sich ab: fällig ist die Variante, die zuletzt nicht dran war.
+// A und B wechseln sich ab: fällig ist die Variante, die zuletzt nicht dran war (Max-Tests und Zirkel
+// zählen nicht). Ohne Verlauf die mit mehr Sternen, bei Gleichstand A, bei zwei Varianten ohne Gewicht die
+// leichtere (Entscheidung 30.10.2026).
 function faellige(z: AppZustand, kandidaten: Kandidat[]): Kandidat | undefined {
   const [a, b] = kandidaten;
   if (!a || !b) return a;
   const ids = new Set([a.uebung.id, b.uebung.id]);
   for (const einheit of fertigeEinheiten(z).reverse()) {
-    const p = einheit.bloecke.flatMap((bl) => bl.positionen).filter((x) => ids.has(x.uebungId)).at(-1);
+    const p = einheit.bloecke.filter((bl) => bl.typ !== 'zirkel').flatMap((bl) => bl.positionen)
+      .filter((x) => ids.has(x.uebungId) && !x.istMaxTest && x.ergebnisse.length > 0).at(-1);
     if (p) return p.uebungId === a.uebung.id ? b : a;
   }
-  return a;
+  const e = einstellungenVon(z);
+  const sterne = sterneVon(e, b.uebung.id) - sterneVon(e, a.uebung.id);
+  if (sterne !== 0) return sterne > 0 ? b : a;
+  const ohneGewicht = a.uebung.lasttyp !== 'Last' && b.uebung.lasttyp !== 'Last';
+  return ohneGewicht && b.uebung.stufe < a.uebung.stufe ? b : a;
 }
 
 // Noch nie trainiert (kein Trainingsdatum der Variante; Testtag, Gewichtstest und Zirkel setzen keins):
@@ -529,12 +536,21 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
 
   // Schritt 6: Übungen gierig wählen aus den Hauptvarianten A und B aller Muster außer Rumpf und Waden
   const budget = arbeitssaetze(z, e.standardDauerMin + (eing.laenger ? ZEITBUDGET.laengerMin : 0), eing.klassisch === true);
+  // A und B wechseln sich je Muster strikt ab (Entscheidung 30.10.2026): Die nicht fällige Variante kommt
+  // nur, wenn die fällige schon gewählt ist (zweite Übung derselben Bewegung). Haben A und B verschiedene
+  // Hauptmuskeln (z. B. Rumänisches Kreuzheben und Hip Thrust), bleiben beide frei, sonst fehlte einem
+  // Muskel jede zweite Einheit seine Übung.
   const kandidaten: Kandidat[] = [];
+  const zuerst = new Map<string, string>();   // nicht fällige Variante → fällige Variante desselben Musters
   for (const muster of MUSTER_IDS) {
     const art = MUSTER_ART[muster];
     if (art !== 'grund' && art !== 'isolation') continue;
-    for (const k of hauptvarianten(z, muster, ort, jetzt, e)) {
-      if (!kandidaten.some((x) => x.uebung.id === k.uebung.id)) kandidaten.push(k);
+    const haupt = hauptvarianten(z, muster, ort, jetzt, e);
+    const faellig = faellige(z, haupt);
+    for (const k of haupt) {
+      if (kandidaten.some((x) => x.uebung.id === k.uebung.id)) continue;
+      kandidaten.push(k);
+      if (faellig && k !== faellig && hauptmuskel(k.uebung) === hauptmuskel(faellig.uebung)) zuerst.set(k.uebung.id, faellig.uebung.id);
     }
   }
   const dosis = leer();
@@ -577,7 +593,8 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
     if (k.istErsatz || !bedient.has(h)) return true;
     return !gedeckelt.has(h) && bedarf[h] - dosis[h] >= EINHEIT.saetzeProUebung.min;
   };
-  const moeglich = (k: Kandidat) => !benutzt.has(k.uebung.id) && k.uebung.primaer.every((m) => erholt[m])
+  const dran = (k: Kandidat) => !zuerst.has(k.uebung.id) || benutzt.has(zuerst.get(k.uebung.id)!);
+  const moeglich = (k: Kandidat) => !benutzt.has(k.uebung.id) && dran(k) && k.uebung.primaer.every((m) => erholt[m])
     && lohnt(k) && wert(k.uebung) > EINHEIT.minOffenerBedarf;
   // Eine zweite Übung desselben Musters nur, wenn für ihren Hauptmuskel keine Übung eines anderen
   // Musters offen ist (Entscheidung 30.10.2026: z. B. Rudern statt einer zweiten Klimmzug-Variante).
@@ -639,7 +656,8 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
   if (testUebung) {
     for (const a of [...gewaehlt, ...zusatz]) {
       if (a.k.uebung.muster !== testUebung.muster) continue;
-      const weniger = Math.max(1, Math.round(a.saetze * MAXTEST.weitereSaetzeAnteil));
+      // Höchstens bis auf 2 Sätze (Entscheidung 30.10.2026: keine Übung mit nur 1 Satz)
+      const weniger = Math.min(a.saetze, Math.max(MAXTEST.minSaetzeNachTest, Math.round(a.saetze * MAXTEST.weitereSaetzeAnteil)));
       if (gewaehlt.includes(a)) gesamt -= a.saetze - weniger;
       a.saetze = weniger;
     }

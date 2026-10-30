@@ -91,6 +91,17 @@ export function setzePrognose(z: AppZustand, jetzt: string, prognose: number): A
   return { ...z, wochen: [...z.wochen.filter((w) => w.id !== id), woche] };
 }
 
+// Alle geplanten Sätze mit dem Ziel erledigt (Zirkel: eine Runde je Station).
+function mitErgebnissen(einheit: Einheit, jetzt: string): Einheit['bloecke'] {
+  return einheit.bloecke.map((b) => ({
+    ...b,
+    positionen: b.positionen.map((p) => ({
+      ...p,
+      ergebnisse: Array.from({ length: b.typ === 'zirkel' ? b.runden ?? 1 : p.saetze }, (_, i) => ({ nr: i + 1, wdh: p.zielWdh, zeit: jetzt })),
+    })),
+  }));
+}
+
 // Schreibt eine durchgeführte Einheit fort (alle geplanten Sätze erledigt).
 export function absolviere(z: AppZustand, einheit: Einheit, jetzt: string, zuSchwer: Muskel[] = []): AppZustand {
   const dosis = dosisProMuskel(z, einheit);
@@ -113,7 +124,7 @@ export function absolviere(z: AppZustand, einheit: Einheit, jetzt: string, zuSch
     ...z2,
     wochen: z2.wochen.map((w) => (w.id === neueWoche.id ? neueWoche : w)),
     muskeln,
-    einheiten: [...z.einheiten, { ...einheit, status: 'abgeschlossen', gestartetAm: jetzt }],
+    einheiten: [...z.einheiten, { ...einheit, status: 'abgeschlossen', gestartetAm: jetzt, bloecke: mitErgebnissen(einheit, jetzt) }],
   };
 }
 

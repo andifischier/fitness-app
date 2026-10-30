@@ -306,6 +306,41 @@ describe('Hauptvarianten, Ersatz und Sperren', () => {
   });
 });
 
+describe('A und B wechseln sich ab (Entscheidung 30.10.2026)', () => {
+  const folge = (z0: AppZustand, ids3: string[]) => {
+    let z = z0;
+    const liste: string[][] = [];
+    for (const tag of [0, 2, 4]) {
+      const jetzt = zeitpunkt(tag, 18);
+      z = setzePrognose(z, jetzt, 3);
+      const e = plane(z, jetzt);
+      liste.push(ids(e).filter((id) => ids3.includes(id)));
+      z = absolviere(z, e, jetzt);
+    }
+    return liste;
+  };
+
+  it('gleicher Hauptmuskel: strikt im Wechsel, ohne Verlauf die leichtere Variante ohne Gewicht zuerst', () => {
+    const z = eingespielt({ ...zustand({ katalog: 'voll', orte: [ort(['STANGE', 'ERH'])] }),
+      muster: [{ muster: 'vZug', stufe: 6, hauptvarianten: ['klimmzug', 'chinup'] }] });
+    expect(folge(z, ['klimmzug', 'chinup'])).toEqual([['chinup'], ['klimmzug'], ['chinup']]);
+  });
+
+  it('ohne Verlauf kommt die Variante mit mehr Sternen zuerst', () => {
+    const z = eingespielt({ ...zustand({ katalog: 'voll', orte: [ort(['STANGE', 'ERH'])] }),
+      muster: [{ muster: 'vZug', stufe: 6, hauptvarianten: ['klimmzug', 'chinup'] }] });
+    z.einstellungen = [{ ...z.einstellungen[0]!, bewertungen: { klimmzug: 4 } }];
+    expect(folge(z, ['klimmzug', 'chinup'])[0]).toEqual(['klimmzug']);
+  });
+
+  it('verschiedene Hauptmuskeln: beide bleiben frei (Rumänisches Kreuzheben und Hip Thrust)', () => {
+    const z = eingespielt({ ...zustand({ katalog: 'voll', orte: [ort()], einstellungen: { prioritaeten: STANDARD_PRIORITAETEN } }),
+      muster: [{ muster: 'Huefte', stufe: 5, hauptvarianten: ['kh_hip_thrust', 'kh_rdl'] }] });
+    // Fällig wäre Hip Thrust (A); trotzdem darf das Kreuzheben für die hinteren Oberschenkel allein kommen.
+    expect(folge(z, ['kh_rdl', 'kh_hip_thrust'])[0]).toEqual(['kh_rdl']);
+  });
+});
+
 describe('Startwerte und Ortswechsel', () => {
   it('neue Variante: Untergrenze des Bereichs und kleinste Last; Ziel „Kraft“ nutzt 6 bis 10', () => {
     const z = zustand();

@@ -418,3 +418,19 @@
     neue Tests in `testrunde.test.ts`, bestehende angepasst (Use Cases mit eingespielten Übungen).
 - **Warum:** Testrunde mit einer Einsteigerin ohne Geräte, einem erfahrenen Nutzer mit Homegym und Hotel
   sowie Szenarien mit Einschränkungen (Entscheidungen 30.10.2026).
+
+## 30.10.2026: Übungsalgorithmus überarbeitet (12-Wochen-Simulation)
+- **Was:**
+  - Satzzahl je Muskel: Ein leichteres Gewicht, ein anderes Band, langsames Absenken, der Kalibrierungssatz
+    und der Testtag zählen nicht mehr als Leistungsabfall. Weniger Sätze erst nach 2 Wochen Leistungsabfall
+    in Folge oder hoher Anstrengung; nach 4 guten Wochen in Folge +2 Sätze bis zur Obergrenze.
+  - A und B einer Bewegung wechseln sich strikt ab (bei gleichem Hauptmuskel); ohne Verlauf entscheiden die
+    Sterne, wer zuerst dran ist.
+  - „Zu leicht“ bei Hantelübungen: nächstes Mal sofort eine Gewichtsstufe mehr, wenn die Schätzung es zulässt.
+  - Max-Test: Die getestete Bewegung bekommt weiter halb so viele Sätze, aber mindestens 2 je Übung.
+  - Geändert: `planung.ts`, `progression.ts`, `konfiguration.ts`, `testhilfe.ts`; neue und angepasste Tests in
+    `planung.test.ts`, `progression.test.ts`, `planung.usecases.test.ts`.
+- **Warum:** Eine 12-Wochen-Simulation mit dem echten Ablauf zeigte sinkende Satzgrenzen trotz Fortschritt
+  (Trizeps 10 → 6, Einsteiger mehrere Muskeln 8 → 6), kaum Wechsel zwischen A und B (Pullups 1-mal in
+  12 Wochen), langsames Aufholen zu leichter Gewichte und Übungen mit 1 Satz (Entscheidungen 30.10.2026).
+  Mit den Änderungen steigt die Satzgrenze bei Fortschritt alle 4 Wochen um 2 Sätze, A und B kommen gleich oft.

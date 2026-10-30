@@ -245,7 +245,10 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
     } else {
       const plus = fb === 'leicht' ? PROGRESSION.zielPlusLeicht : PROGRESSION.zielPlusPassend;
       const neu = Math.max(ziel, Math.min(ziel + plus, wdhBei(schaetzung, last, zielReserve(e))));
-      if (neu <= O) v.zielWdh = neu;
+      // „Zu leicht“ (Entscheidung 30.10.2026): sofort eine Gewichtsstufe mehr, wenn die Schätzung dort
+      // mindestens U − 1 Wiederholungen im letzten Satz zulässt; sonst wie bisher mehr Wiederholungen.
+      if (fb === 'leicht' && hoeher !== null && moeglich >= U - PROGRESSION.leichtSchwererAbUnterU) steigern();
+      else if (neu <= O) v.zielWdh = neu;
       else {
         if (hoeher !== null) {
           if (moeglich >= U || neu > O + PROGRESSION.dehnungUeberO) steigern();
@@ -489,26 +492,33 @@ function anstrengung(z: AppZustand, wocheId: string): number | undefined {
     .map((x) => x.gesamtbewertung!));
 }
 
+// Bedingung, unter der eine Leistung gemessen wurde: Gewicht (des ersten Satzes), Band und Tempo. Nur
+// Sitzungen mit gleicher Bedingung sind vergleichbar (Entscheidung 30.10.2026): Ein leichteres Gewicht,
+// ein anderes Band oder langsames Absenken sind kein Leistungsabfall.
+const bedingung = (s: Sitzung) =>
+  `${s.position.ergebnisse[0]?.last ?? s.position.last ?? ''}|${s.position.bandStufe ?? ''}|${s.position.langsam ? 1 : 0}`;
+
 function wochenwert(e: Einstellungen, u: Uebung, liste: Sitzung[], wocheId: string): number | undefined {
   return mittel(liste.filter((s) => s.einheit.woche === wocheId)
     .map((s) => leistungswert(e, u, s.position)).filter((w): w is number => w !== undefined));
 }
 
 // Leistung eines Muskels: mittlere relative Veränderung seiner Hauptvarianten (Muskel primär)
-// gegenüber dem 2-Wochen-Mittel davor. Varianten ohne Vergleich (z. B. in der Woche gewechselt) zählen nicht.
+// gegenüber dem 2-Wochen-Mittel davor, je Variante nur unter gleicher Bedingung wie ihre letzte Sitzung
+// der Woche. Die erste Sitzung einer Variante (Kalibrierungssatz bzw. neue Übung) und der Testtag zählen
+// nicht. Varianten ohne Vergleich zählen nicht.
 export function muskelLeistung(z: AppZustand, m: Muskel, wocheId: string): number | undefined {
   const e = einstellungenVon(z);
   const ids = new Set(z.muster.flatMap((x) => x.hauptvarianten));
-  const davor = [1, 2].map((d) => wocheVerschoben(wocheId, -d));
+  const davor = Array.from({ length: VOLUMENGRENZE.mittelWochen }, (_, i) => wocheVerschoben(wocheId, -1 - i));
   const aenderungen: number[] = [];
   for (const id of ids) {
     const u = uebungVon(z, id);
     if (!u || !u.primaer.includes(m)) continue;
-    const liste = sitzungen(z, id);
-    const jetzt = liste.filter((s) => s.einheit.woche === wocheId);
-    // Band: nur vergleichbar, wenn dieselbe Stufe genutzt wurde.
-    const stufe = jetzt[0]?.position.bandStufe;
-    const vergleichbar = u.lasttyp === 'Band' ? liste.filter((s) => s.position.bandStufe === stufe) : liste;
+    const liste = sitzungen(z, id).filter((s) => s.einheit.format !== 'test').slice(1);
+    const letzte = liste.filter((s) => s.einheit.woche === wocheId).at(-1);
+    if (!letzte) continue;
+    const vergleichbar = liste.filter((s) => bedingung(s) === bedingung(letzte));
     const aktuell = wochenwert(e, u, vergleichbar, wocheId);
     const vorher = mittel(davor.map((w) => wochenwert(e, u, vergleichbar, w)).filter((w): w is number => w !== undefined));
     if (aktuell !== undefined && vorher) aenderungen.push(aktuell / vorher - 1);
@@ -610,13 +620,20 @@ export function wochenabschluss(z: AppZustand, wocheId: string): AppZustand {
     const ziel = woche.ziele[m];
     if (woche.erholungswoche || ziel <= 0 || woche.erledigt[m] < g.bewertenAbAnteilZiel * ziel) return mz;
     const p = WOCHENZIEL.prioritaet[e.prioritaeten[m]];
-    if ((leistung !== undefined && leistung < -g.gefallenUeber) || (schnitt !== undefined && schnitt >= g.anstrengungAb)) {
+    // Warnzeichen (Entscheidung 30.10.2026): Leistung mehrere Wochen in Folge gefallen oder hohe Anstrengung.
+    // Eine einzelne schwache Woche senkt nichts; nach mehreren guten Wochen in Folge gibt es mehr Sätze.
+    // `gleichWochen` zählt seitdem die guten Wochen in Folge.
+    const gefallen = (wert: number | undefined) => wert !== undefined && wert < -g.gefallenUeber;
+    const fruehere = Array.from({ length: g.gefallenWochen - 1 }, (_, i) => wocheVerschoben(wocheId, -1 - i))
+      .map((w) => alt.leistung.find((x) => x.woche === w)?.wert);
+    const hoheAnstrengung = schnitt !== undefined && schnitt >= g.anstrengungAb;
+    if (hoheAnstrengung || (gefallen(leistung) && fruehere.every(gefallen))) {
       mz.persoenlicheGrenze = Math.min(mz.persoenlicheGrenze, Math.max(p.untergrenze + g.minUeberUntergrenze, mz.persoenlicheGrenze - g.schritt));
       mz.gleichWochen = 0;
-    } else if (leistung !== undefined && Math.abs(leistung) <= g.gleichInnerhalb) {
+    } else if (!gefallen(leistung) && !schwerAusserhalbEingewoehnung(z, m, wocheId)
+      && (schnitt === undefined || schnitt <= g.anstrengungHoechstens)) {
       mz.gleichWochen += 1;
-      if (mz.gleichWochen >= g.gleichWochen && !schwerAusserhalbEingewoehnung(z, m, wocheId)
-        && (schnitt === undefined || schnitt <= g.anstrengungHoechstens)) {
+      if (mz.gleichWochen >= g.guteWochen) {
         // Deckel: höchstens 4 Sätze über dem besten Wochenvolumen der letzten 4 Wochen.
         const hoeher = Math.min(mz.persoenlicheGrenze + g.schritt, p.obergrenze, bestesVolumen(z, m, wocheId) + g.maxUeberBestem);
         if (hoeher > mz.persoenlicheGrenze) {
