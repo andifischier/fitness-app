@@ -30,11 +30,23 @@ export function heuteTrainiert(z: AppZustand, jetzt: string): boolean {
   return erledigtDieseWoche(z, jetzt).some((e) => einheitZeit(e).slice(0, 10) === jetzt.slice(0, 10));
 }
 
-// Tage, die noch anstehen: ab morgen, heute nur, solange heute noch nicht trainiert wurde.
+// Heute war der Testtag (zählt nicht als Einheit, aber „Erste Einheit ab morgen“).
+export function testtagHeute(z: AppZustand, jetzt: string): boolean {
+  return fertigeEinheiten(z).some((e) => e.format === 'test' && einheitZeit(e).slice(0, 10) === jetzt.slice(0, 10));
+}
+
+// Tage, die noch anstehen: ab morgen, heute nur, solange heute noch nicht trainiert wurde und kein
+// Testtag war (Entscheidung 30.10.2026: sonst rechnete der Ausblick mit einer unsichtbaren Einheit).
 export function offeneTage(z: AppZustand, jetzt: string, tage: readonly number[]): number[] {
   const heute = wochentag(jetzt);
-  const heuteOffen = !heuteTrainiert(z, jetzt);
+  const heuteOffen = !heuteTrainiert(z, jetzt) && !testtagHeute(z, jetzt);
   return tage.filter((t) => t > heute || (t === heute && heuteOffen));
+}
+
+// Heute ist kein gewählter Trainingstag (Entscheidung 30.10.2026: Heute zeigt dann „Heute frei“ mit
+// dem nächsten Training statt einer Empfehlung). Ohne gewählte Tage gibt es keinen freien Tag.
+export function heuteFrei(jetzt: string, tage: readonly number[] | undefined): boolean {
+  return tage !== undefined && !tage.includes(wochentag(jetzt));
 }
 
 // Wochenprognose aus den gewählten Tagen: erledigte Einheiten plus noch anstehende Tage.
@@ -51,9 +63,11 @@ export function maxOffeneTage(z: AppZustand, jetzt: string): number {
 }
 
 // Vorschlag, solange noch keine Tage gewählt sind: die Tage der Vorwoche ab heute, sonst die
-// vorgeschlagene Zahl an Einheiten gleichmäßig auf die restlichen Tage verteilt (ab heute).
+// vorgeschlagene Zahl an Einheiten gleichmäßig auf die restlichen Tage verteilt (ab heute; nach dem
+// Testtag ab morgen).
 export function vorschlagTage(z: AppZustand, jetzt: string): number[] {
-  const heute = wochentag(jetzt);
+  const heute = wochentag(jetzt) + (testtagHeute(z, jetzt) ? 1 : 0);
+  if (heute > 6) return [];
   const vorwoche = z.wochen.find((w) => w.id === isoWoche(plusTage(jetzt, -7)))?.tage?.filter((t) => t >= heute);
   if (vorwoche && vorwoche.length > 0) return vorwoche.slice(0, maxOffeneTage(z, jetzt));
   const rest = 7 - heute;

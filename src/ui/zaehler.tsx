@@ -8,9 +8,17 @@ import { bereiteTonVor, pausenEnde, vorlaufEnde } from './signal';
 
 const rund = 'flex size-[72px] items-center justify-center rounded-full border border-rand bg-flaeche text-text disabled:text-rand';
 
+// Tipp auf die Zahl öffnet die Zifferntastatur (Entscheidung 30.10.2026); übernommen wird beim Verlassen
+// des Felds oder mit „Fertig“ bzw. Enter auf der Tastatur.
 export function Zaehler({ wert, onChange, einheit = 'Wiederholungen', hinweis }: {
   wert: number; onChange: (w: number) => void; einheit?: string; hinweis?: string;
 }) {
+  const [eingabe, setEingabe] = useState<string>();
+  const uebernehmen = () => {
+    const zahl = Number.parseInt(eingabe ?? '', 10);
+    if (Number.isFinite(zahl) && zahl >= 0) onChange(Math.min(zahl, PLAYER.maxEingabe));
+    setEingabe(undefined);
+  };
   return (
     <div className="mt-8 flex flex-col items-center gap-2">
       <p className="text-basis text-gedaempft">Geschafft</p>
@@ -18,12 +26,24 @@ export function Zaehler({ wert, onChange, einheit = 'Wiederholungen', hinweis }:
         <button type="button" className={rund} disabled={wert <= 0} onClick={() => onChange(wert - 1)} aria-label="Weniger">
           <span aria-hidden="true" className="text-screen">−</span>
         </button>
-        <span className="min-w-24 text-center text-zahl font-extrabold" aria-live="polite">{wert}</span>
+        {eingabe === undefined ? (
+          <button type="button" className="min-w-24 rounded-karte text-center text-zahl font-extrabold" aria-live="polite"
+            aria-label={`${wert} ${einheit}, tippen zum Eingeben`} onClick={() => setEingabe(String(wert))}>
+            {wert}
+          </button>
+        ) : (
+          <input
+            type="number" inputMode="numeric" pattern="[0-9]*" min={0} autoFocus aria-label={`${einheit} eingeben`}
+            className="w-24 rounded-karte border border-akzent bg-flaeche text-center text-zahl font-extrabold"
+            value={eingabe} onChange={(ev) => setEingabe(ev.target.value)} onFocus={(ev) => ev.target.select()}
+            onBlur={uebernehmen} onKeyDown={(ev) => { if (ev.key === 'Enter') ev.currentTarget.blur(); }}
+          />
+        )}
         <button type="button" className={rund} onClick={() => onChange(wert + 1)} aria-label="Mehr">
           <Icon name="plus" />
         </button>
       </div>
-      <p className="text-hinweis text-gedaempft">{einheit}</p>
+      <p className="text-hinweis text-gedaempft">{eingabe === undefined ? `${einheit} · Zahl antippen zum Eingeben` : einheit}</p>
       {hinweis && <p className="text-hinweis text-gedaempft">{hinweis}</p>}
     </div>
   );
@@ -83,13 +103,15 @@ export function Stoppuhr({ wert, onChange }: { wert: number; onChange: (s: numbe
 }
 
 // Countdown bis zum Ziel für Halteübungen (Entscheidung 29.10.2026): erst der Vorlauf, am Ende Ton und
-// Vibration wie am Pausenende. Gespeichert wird der Zähler darunter (vorbelegt mit dem Ziel).
-export function Countdown({ ziel }: { ziel: number }) {
+// Vibration wie am Pausenende. Gespeichert wird der Zähler darunter (vorbelegt mit dem Ziel); „Stopp“
+// übernimmt die gehaltenen Sekunden in den Zähler (`onStopp`, Entscheidung 30.10.2026).
+export function Countdown({ ziel, onStopp }: { ziel: number; onStopp?: (sek: number) => void }) {
   const { startMs, jetzt, vorlauf, laeuft, starten, stoppen } = useVorlauf();
   const rest = !laeuft || startMs === undefined ? ziel : Math.max(0, ziel - Math.floor((jetzt - startMs) / 1000));
   const [fertig, setFertig] = useState(false);
   useEffect(() => {
     if (laeuft && rest === 0) {
+      onStopp?.(ziel);
       pausenEnde();
       setFertig(true);
       stoppen();
@@ -112,7 +134,7 @@ export function Countdown({ ziel }: { ziel: number }) {
       </div>
       <div className="w-full">
         {laeuft
-          ? <Knopf art="sekundaer" onClick={stoppen}>Stopp</Knopf>
+          ? <Knopf art="sekundaer" onClick={() => { onStopp?.(ziel - rest); stoppen(); }}>Stopp</Knopf>
           : <Knopf art="sekundaer" onClick={() => { setFertig(false); starten(); }}>
               {startMs === undefined && !fertig ? 'Countdown starten' : 'Neu starten'}
             </Knopf>}

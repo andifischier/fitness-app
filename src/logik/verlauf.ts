@@ -81,10 +81,14 @@ export function letzterSatz(p: Position): number | undefined {
   return s ? (s.wdh ?? s.sek) : undefined;
 }
 
-// Feedback der Übung; fehlt es, gilt „zu schwer“, wenn der letzte Satz das Ziel verfehlt.
+// Feedback der Übung; fehlt es, gilt „zu schwer“, wenn der letzte Satz mehr als die Toleranz (2 Wdh.,
+// Halteübungen 10 Sek.) unter dem Ziel bleibt, sonst „passend“ (Entscheidung 30.10.2026).
 export function feedbackVon(p: Position): Feedback {
+  if (p.feedback) return p.feedback;
   const letzter = letzterSatz(p);
-  return p.feedback ?? (letzter !== undefined && letzter < p.zielWdh ? 'schwer' : 'passend');
+  const inSek = p.ergebnisse.at(-1)?.sek !== undefined;
+  const toleranz = PROGRESSION.letzterSatzToleranz * (inSek ? PROGRESSION.sekProWdh : 1);
+  return letzter !== undefined && letzter < p.zielWdh - toleranz ? 'schwer' : 'passend';
 }
 
 // Leistungswert einer Übung in einer Einheit: e1RM aus dem besten Satz (Last), sonst erster Satz.

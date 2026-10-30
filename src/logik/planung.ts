@@ -206,7 +206,10 @@ export function hauptvarianten(z: AppZustand, muster: MusterId, ort: Ort, jetzt:
     }
     const sortiert = rangiere(z, e, muster, erlaubt);
     const a = sortiert[0]!;
-    const rest = sortiert.slice(1);
+    // B höchstens 1 Stufe über der Musterstufe (Entscheidung 30.10.2026); sonst nur A. Bei Varianten
+    // mit Gewicht regelt die Last die Schwierigkeit, die Grenze gilt dort nicht (wie in der Rangfolge).
+    const grenze = musterstufe(z, e, muster) + EINHEIT.bMaxUeberMusterstufe;
+    const rest = sortiert.slice(1).filter((r) => r.u.lasttyp === 'Last' || r.u.stufe <= grenze);
     if (rest.length === 0) return [{ uebung: a.u, istErsatz: false }];
     // B: nächstbeste Variante, innerhalb derselben Stufe bevorzugt mit anderem Equipment.
     const gleichAuf = rest.filter((r) => [0, 1, 2].every((i) => r.k[i] === rest[0]!.k[i]));
@@ -251,6 +254,12 @@ function faellige(z: AppZustand, kandidaten: Kandidat[]): Kandidat | undefined {
     if (p) return p.uebungId === a.uebung.id ? b : a;
   }
   return a;
+}
+
+// Noch nie trainiert (kein Trainingsdatum der Variante; Testtag, Gewichtstest und Zirkel setzen keins):
+// beim ersten Mal höchstens `EINHEIT.maxSaetzeErstesMal` Sätze (Entscheidung 30.10.2026).
+export function nieTrainiert(z: AppZustand, uebungId: string): boolean {
+  return !z.varianten.some((v) => v.uebungId === uebungId && v.zuletzt !== undefined);
 }
 
 // Je Hauptmuskel die zuletzt dafür gewählte Übung (aus der letzten Einheit mit diesem Muskel).
@@ -559,13 +568,26 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
   // kleinste Satzzahl offen ist; sonst bleibt der Platz für andere Muskeln (höchstens 6 Übungen).
   // Ersatzübungen (z. B. Chin-up für Bizeps) zählen für das ersetzte Muster und sind davon ausgenommen.
   // Übungen, deren Hauptmuskeln nicht erholt sind, entfallen ganz.
+  // Bekam ein Hauptmuskel eine neue Übung mit höchstens 3 Sätzen, bleibt sein Rest in dieser Einheit
+  // offen statt einer zweiten Übung (sonst verdrängen zweite Übungen ganze Muskelgruppen).
   const bedient = new Set<Muskel>();
+  const gedeckelt = new Set<Muskel>();
   const lohnt = (k: Kandidat) => {
     const h = hauptmuskel(k.uebung)!;
-    return k.istErsatz || !bedient.has(h) || bedarf[h] - dosis[h] >= EINHEIT.saetzeProUebung.min;
+    if (k.istErsatz || !bedient.has(h)) return true;
+    return !gedeckelt.has(h) && bedarf[h] - dosis[h] >= EINHEIT.saetzeProUebung.min;
   };
-  const offen = () => kandidaten.filter((k) => !benutzt.has(k.uebung.id) && k.uebung.primaer.every((m) => erholt[m])
-    && lohnt(k) && wert(k.uebung) > EINHEIT.minOffenerBedarf);
+  const moeglich = (k: Kandidat) => !benutzt.has(k.uebung.id) && k.uebung.primaer.every((m) => erholt[m])
+    && lohnt(k) && wert(k.uebung) > EINHEIT.minOffenerBedarf;
+  // Eine zweite Übung desselben Musters nur, wenn für ihren Hauptmuskel keine Übung eines anderen
+  // Musters offen ist (Entscheidung 30.10.2026: z. B. Rudern statt einer zweiten Klimmzug-Variante).
+  const vielfalt = (k: Kandidat) => {
+    if (k.istErsatz || !gewaehlt.some((a) => a.k.uebung.muster === k.uebung.muster)) return true;
+    const h = hauptmuskel(k.uebung);
+    return !kandidaten.some((x) => x.uebung.muster !== k.uebung.muster && hauptmuskel(x.uebung) === h
+      && !gewaehlt.some((a) => a.k.uebung.muster === x.uebung.muster) && moeglich(x));
+  };
+  const offen = () => kandidaten.filter((k) => moeglich(k) && vielfalt(k));
   while (gesamt < budget && gewaehlt.length < EINHEIT.maxUebungen) {
     const liste = offen();
     if (liste.length === 0) break;
@@ -574,16 +596,24 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
       + (e.favoriten.includes(u.id) ? EINHEIT.zuschlagFavorit : 0)
       + BEWERTUNG.zuschlag[sterneVon(e, u.id)]
       - abschlag(u);
-    // Bei Gleichstand gewinnt die höhere Variantenstufe, danach die Reihenfolge der Kandidaten.
+    // Bei Gleichstand gewinnt die höhere Variantenstufe; zwischen A und B desselben Musters ohne
+    // Gewicht die leichtere (Entscheidung 30.10.2026; mit Gewicht regelt die Last die Schwierigkeit).
+    // Danach die Reihenfolge der Kandidaten.
+    const ohneGewicht = (u: Uebung) => u.lasttyp !== 'Last';
+    const vorrang = (k: Kandidat, b: Kandidat) => (k.uebung.muster === b.uebung.muster
+      && ohneGewicht(k.uebung) && ohneGewicht(b.uebung)
+      ? k.uebung.stufe < b.uebung.stufe : k.uebung.stufe > b.uebung.stufe);
     let beste = liste[0]!;
     for (const k of liste) {
       const d = punkte(k.uebung) - punkte(beste.uebung);
-      if (d > 1e-9 || (Math.abs(d) <= 1e-9 && k.uebung.stufe > beste.uebung.stufe)) beste = k;
+      if (d > 1e-9 || (Math.abs(d) <= 1e-9 && vorrang(k, beste))) beste = k;
     }
     benutzt.add(beste.uebung.id);
     const h = hauptmuskel(beste.uebung)!;
     const { min, maxWenigEinheiten, wenigBisPrognose } = EINHEIT.saetzeProUebung;
-    const max = prognose <= wenigBisPrognose ? maxWenigEinheiten : EINHEIT.saetzeProUebung.max;
+    const maxUeblich = prognose <= wenigBisPrognose ? maxWenigEinheiten : EINHEIT.saetzeProUebung.max;
+    const max = nieTrainiert(z, beste.uebung.id) ? Math.min(maxUeblich, EINHEIT.maxSaetzeErstesMal) : maxUeblich;
+    if (max < Math.min(maxUeblich, Math.ceil(bedarf[h] - dosis[h]))) gedeckelt.add(h);
     const saetze = Math.min(Math.max(min, Math.min(max, Math.ceil(bedarf[h] - dosis[h]))), budget - gesamt);
     if (saetze <= 0) break;
     gewaehlt.push({ k: beste, saetze });

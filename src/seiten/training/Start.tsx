@@ -70,6 +70,13 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
     () => new Map(z.katalog.zirkel.map((x) => [x.id, zirkelBestzeit(z, x.id, ortId, jetzt)])),
     [z, ortId, jetzt],
   );
+  // Dauer wie in der Vorschau, inklusive Aufwärmen (Entscheidung 30.10.2026)
+  const zirkelDauer = useMemo(
+    () => new Map(z.katalog.zirkel.map((x) => [x.id, erstelleEinheit(z, {
+      jetzt, ortId, prognose: 1, morgenWieder: false, laenger: false, zirkelId: x.id,
+    }).geschaetzteDauerMin])),
+    [z, ortId, jetzt],
+  );
 
   const erstelle = async (zirkelId?: string, workout?: EigenesWorkout) => {
     if (laeuft) return;
@@ -186,7 +193,7 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
                       <span className="flex-1">
                         <span className="block text-gross font-semibold">{x.name}</span>
                         <span className="block text-hinweis text-gedaempft">
-                          {x.dauerHinweis} · {best !== undefined ? `Bestzeit ${zeitText(best)}` : 'noch keine Bestzeit'}
+                          ca. {zirkelDauer.get(x.id)} Min · {best !== undefined ? `Bestzeit ${zeitText(best)}` : 'noch keine Bestzeit'}
                         </span>
                       </span>
                       <span className="text-gedaempft"><Icon name="weiter" groesse={20} /></span>

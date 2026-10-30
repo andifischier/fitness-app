@@ -11,7 +11,7 @@ import {
   wochenziele,
 } from './planung';
 import {
-  BAND_STUFEN, MUSKELN, type AppZustand, type BandStufe, type Einheit, type Einstellungen, type MaxTest,
+  BAND_STUFEN, MUSKELN, type AppZustand, type BandStufe, type Einheit, type Einstellungen, type Feedback, type MaxTest,
   type Muskel, type MuskelZustand, type MusterId, type MusterZustand, type Ort, type Position, type Uebung,
   type VarianteZustand, type Vorstand, type Woche, type Zyklus,
 } from './typen';
@@ -63,14 +63,34 @@ export function naechsteVariante(z: AppZustand, ort: Ort, u: Uebung, jetzt: stri
   return liste.find((v) => !ausser.includes(v.id)) ?? liste[0];
 }
 
-// Nächstleichtere Variante desselben Musters am Ort (höchste kleinere Stufe, derselbe Lasttyp bevorzugt),
-// die nicht schon Hauptvariante ist.
-function leichtereVariante(z: AppZustand, ort: Ort, u: Uebung, jetzt: string, ausser: string[]): Uebung | undefined {
+// Nächstleichtere Variante desselben Musters am Ort (höchste kleinere Stufe). Seit 30.10.2026
+// (Entscheidung) auch die andere Hauptvariante; bei gleicher Stufe gehen Varianten vor, die noch keine
+// Hauptvariante sind, dann derselbe Lasttyp.
+function leichtereVariante(z: AppZustand, ort: Ort, u: Uebung, jetzt: string, haupt: string[]): Uebung | undefined {
   const e = einstellungenVon(z);
   const anderer = (v: Uebung) => Number(v.lasttyp !== u.lasttyp);
+  const istHaupt = (v: Uebung) => Number(haupt.includes(v.id));
   return alleUebungen(z)
-    .filter((v) => v.muster === u.muster && v.stufe < u.stufe && !ausser.includes(v.id) && uebungErlaubt(e, ort, v, jetzt))
-    .sort((a, b) => b.stufe - a.stufe || anderer(a) - anderer(b))[0];
+    .filter((v) => v.muster === u.muster && v.stufe < u.stufe && uebungErlaubt(e, ort, v, jetzt))
+    .sort((a, b) => b.stufe - a.stufe || istHaupt(a) - istHaupt(b) || anderer(a) - anderer(b))[0];
+}
+
+// Ziel bei Körpergewicht und Band aus allen Sätzen (Entscheidung 30.10.2026): Jeder Satz plus die
+// Reserve laut Bewertung ergibt, was in diesem Satz bis zum Versagen gegangen wäre. Eine Ausgleichsgerade
+// über die Sätze schätzt daraus das Nachlassen (nie eine Zunahme) und den letzten Satz; das Ziel ist
+// dieser letzte Satz minus Ziel-Reserve, damit auch der letzte Satz es mit 1 bis 3 Reserve schafft.
+export function zielAusSaetzen(e: Einstellungen, p: Position, fb: Feedback): number | undefined {
+  const werte = p.ergebnisse.map((s) => s.wdh ?? s.sek).filter((w): w is number => w !== undefined);
+  if (werte.length === 0) return undefined;
+  const r = reserveFuer(fb, e);
+  const kapazitaet = werte.map((w) => w + r);
+  const n = kapazitaet.length;
+  const mi = (n - 1) / 2;
+  const mk = mittel(kapazitaet)!;
+  const nenner = kapazitaet.reduce((s, _, i) => s + (i - mi) ** 2, 0);
+  const steigung = nenner > 0 ? Math.min(0, kapazitaet.reduce((s, k, i) => s + (i - mi) * (k - mk), 0) / nenner) : 0;
+  const letzter = mk + steigung * (n - 1 - mi);
+  return Math.floor(letzter - zielReserve(e) + 1e-6);
 }
 
 // Einseitige Variante desselben Musters (mindestens gleiche Stufe), falls im Katalog und am Ort möglich.
@@ -160,7 +180,10 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
   // mehr als die Toleranz (oder in der Eingewöhnung), sinkt es auf das Geschaffte, nie unter U − 1.
   const nichtGeschafft = fb === 'schwer' || letzter < ziel;
   const senken = eingewoehnung || letzter < ziel - toleranz;
-  const gesenkt = () => Math.min(ziel, Math.max(U - 1, letzter));
+  // Leichteste Möglichkeit am Ort (keine leichtere Variante, Last oder Band): Das Ziel darf dann unter
+  // den Bereich sinken (Entscheidung 30.10.2026).
+  const minZiel = inSek ? PROGRESSION.minZielLeichteste.sek : PROGRESSION.minZielLeichteste.wdh;
+  const gesenkt = (amEnde = false) => Math.min(ziel, Math.max(amEnde ? minZiel : U - 1, letzter));
   const last = p.ergebnisse[0]?.last ?? p.last;
   const band = p.ergebnisse[0]?.bandStufe ?? p.bandStufe;
   if (last !== undefined) v.last = last;
@@ -205,13 +228,20 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
       // aus der Kraftschätzung bei diesem Gewicht; das Ziel des geplanten Gewichts ist kein Maßstab.
       v.zielWdh = begrenze(wdhBei(schaetzung, last, zielReserve(e)), U - 1, O);
     } else if (nichtGeschafft) {
+      const leichtereLast = naechsteLast(ort, u, last, -1);
+      const leichter = leichtereLast === null ? leichtereVariante(z, ort, u, jetzt, muster.hauptvarianten) : undefined;
       if (deutlichVerfehlt) {
-        v.last = naechsteLast(ort, u, last, -1) ?? last;
-        v.zielWdh = U;
+        if (leichtereLast !== null) {
+          v.last = leichtereLast;
+          v.zielWdh = U;
+        } else if (leichter) {
+          wechsle(muster, u.id, leichter.id);
+          v.zielWdh = U;
+        } else v.zielWdh = Math.max(minZiel, Math.min(U, letzter));
       } else if (hoeher !== null && ziel > O && letzter >= O) {
         // Über O gedehnt und alle Sätze mindestens O, nur knapp unter dem gedehnten Ziel: schwerer.
         steigern();
-      } else if (senken) v.zielWdh = gesenkt();
+      } else if (senken) v.zielWdh = gesenkt(leichtereLast === null && !leichter);
     } else {
       const plus = fb === 'leicht' ? PROGRESSION.zielPlusLeicht : PROGRESSION.zielPlusPassend;
       const neu = Math.max(ziel, Math.min(ziel + plus, wdhBei(schaetzung, last, zielReserve(e))));
@@ -233,16 +263,21 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
       }
     }
   } else if (nichtGeschafft) {
+    // Band: zuerst ein leichteres Band; sonst und bei Körpergewicht und Halten die leichtere Variante am
+    // Ort, auch wenn sie schon die andere Hauptvariante ist (Entscheidungen 30.10.2026). Gibt es nichts
+    // Leichteres, sinkt das Ziel auf das Geschaffte, auch unter den Bereich.
+    const leichteresBand = u.lasttyp === 'Band' && band ? naechsteBandStufe(ort, u, band, -1) : null;
+    const leichter = leichteresBand ? undefined : leichtereVariante(z, ort, u, jetzt, muster.hauptvarianten);
     if (deutlichVerfehlt) {
-      // Band: leichteres Band; Körpergewicht und Halten: leichtere Variante am Ort (Entscheidung 30.10.2026).
-      const leichter = u.lasttyp === 'Band' ? undefined : leichtereVariante(z, ort, u, jetzt, muster.hauptvarianten);
-      if (u.lasttyp === 'Band' && band) v.bandStufe = naechsteBandStufe(ort, u, band, -1) ?? band;
-      if (leichter) {
+      if (leichteresBand) {
+        v.bandStufe = leichteresBand;
+        v.zielWdh = U;
+      } else if (leichter) {
         delete v.langsam;
         wechsle(muster, u.id, leichter.id);
-      }
-      v.zielWdh = U;
-    } else if (senken) v.zielWdh = gesenkt();
+        v.zielWdh = U;
+      } else v.zielWdh = Math.max(minZiel, Math.min(U, letzter));
+    } else if (senken) v.zielWdh = gesenkt(!leichteresBand && !leichter);
   } else if (letzter >= O) {
     const staerker = u.lasttyp === 'Band' && band ? naechsteBandStufe(ort, u, band, 1) : null;
     if (staerker) {
@@ -253,9 +288,12 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
   } else if (u.lasttyp === 'Zeit') {
     v.zielWdh = Math.min(O, ziel + (fb === 'leicht' ? PROGRESSION.zeitPlusLeicht : PROGRESSION.zeitPlusPassend));
   } else {
-    // Körpergewicht und Band: höchstens 2 Wdh. über dem bisher besten ersten Satz.
+    // Körpergewicht und Band: +1 bzw. +2, oder mehr, wenn die Schätzung aus allen Sätzen deutlich mehr
+    // zulässt (Entscheidung 30.10.2026); höchstens 2 Wdh. über dem bisher besten ersten Satz.
     const plus = fb === 'leicht' ? PROGRESSION.zielPlusLeicht : PROGRESSION.zielPlusPassend;
-    v.zielWdh = Math.min(O, Math.max(ziel, Math.min(ziel + plus, v.bestErsterSatz + PROGRESSION.kgMaxUeberBestem)));
+    const deckel = v.bestErsterSatz + PROGRESSION.kgMaxUeberBestem;
+    const geschaetzt = zielAusSaetzen(e, p, fb) ?? ziel;
+    v.zielWdh = Math.min(O, Math.max(ziel, Math.min(Math.max(ziel + plus, geschaetzt), deckel)));
   }
 
   if (gesteigert) delete v.langsam;

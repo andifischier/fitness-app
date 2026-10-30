@@ -394,3 +394,27 @@
     `Training.tsx`, `Testtag.tsx`, `ui/aufwaermen.tsx`, `ui/technik.tsx`, `ui/zaehler.tsx`, `ui/texte.ts`;
     Tests angepasst und ergänzt (unter anderem 12-Wochen-Simulation mit Ziel in allen Sätzen).
 - **Warum:** Rückmeldung des Nutzers nach dem ersten Training (Entscheidungen 30.10.2026).
+
+## 30.10.2026: Überarbeitung nach der Testrunde mit verschiedenen Nutzern
+- **Was:**
+  - Die zweite Übung einer Bewegung ist höchstens 1 Stufe schwerer als dein Stand, bei Gleichstand kommt
+    die leichtere zuerst (Übungen ohne Gewicht). Einsteiger bekommen keine Diamond Pushups oder Elevated
+    Pike Pushups mehr.
+  - Geht eine Übung gar nicht, nimmt die App die leichtere, auch wenn sie schon die andere Hauptübung ist;
+    bei der leichtesten sinkt das Ziel auf das Geschaffte. Neu im Katalog: Box Squats (Testtag unter 12 Squats).
+  - „Zu schwer“ ist erst vorausgewählt, wenn im letzten Satz 3 oder mehr Wiederholungen (Halten: mehr als
+    10 Sek.) fehlen.
+  - Körpergewicht und Band: Das nächste Ziel schätzt die App aus allen Sätzen, dem Nachlassen und der
+    Bewertung; geht deutlich mehr, springt es.
+  - Eine zweite Übung derselben Bewegung nur, wenn für den Muskel keine andere offen ist (z. B. Rudern statt
+    eines zweiten Klimmzugs). Neue Übungen beim ersten Mal höchstens 3 Sätze.
+  - Zähler: Tipp auf die Zahl öffnet die Zifferntastatur; „Stopp“ bei Halteübungen übernimmt die Sekunden.
+  - Heute: kein unsichtbares Training mehr am Testtag-Abend im Wochenausblick, „Heute frei“ an freien Tagen,
+    „Unterkörper“ statt „Ganzkörper“, wenn nur Beine drin sind, „0 von 1 Einheit“.
+  - Geräte-Details direkt unter dem Gerät; Zirkel mit gleicher Dauer in Liste und Vorschau, Countdown bei
+    Zeit-Stationen; Dumbbell Hip Thrusts mit einer Hantel.
+  - Geändert: `planung.ts`, `progression.ts`, `verlauf.ts`, `ausblick.ts`, `heute.ts`, `konfiguration.ts`,
+    `katalog.json`, `Heute.tsx`, `Start.tsx`, `Training.tsx`, `Orte.tsx`, `ui/zaehler.tsx`, `ui/texte.ts`;
+    neue Tests in `testrunde.test.ts`, bestehende angepasst (Use Cases mit eingespielten Übungen).
+- **Warum:** Testrunde mit einer Einsteigerin ohne Geräte, einem erfahrenen Nutzer mit Homegym und Hotel
+  sowie Szenarien mit Einschränkungen (Entscheidungen 30.10.2026).
