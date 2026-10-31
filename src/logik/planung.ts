@@ -10,7 +10,7 @@ import {
 } from './equipment';
 import {
   BAND_STUFEN, MUSKELN, MUSTER_IDS, PRIORITAETEN, type AppZustand, type BandStufe, type Block, type EigenesWorkout, type Einheit,
-  type Einstellungen, type Muskel, type MusterId, type Ort, type Position, type Uebung, type Zirkel,
+  type Einstellungen, type Muskel, type MusterId, type Ort, type Position, type Uebung, type Woche, type Zirkel,
 } from './typen';
 import {
   einstellungenVon, faelligerMaxTest, fertigeEinheiten, istErholt, letzteEinheitZeit, seitRueckkehrTrainiert,
@@ -35,7 +35,13 @@ export interface EinheitEingabe {
   jetzt: string; ortId: string; prognose: number; morgenWieder: boolean; laenger: boolean; zirkelId?: string;
   erholungswoche?: boolean;         // angenommene Erholungswoche, solange die Woche noch nicht gespeichert ist
   klassisch?: boolean;              // Klassisch statt Kombi (Standard: Kombi, Entscheidung 21.10.2026)
+  // Vor dem Start gewählt (Entscheidung 31.10.2026): Muskeln für heute (ohne Angabe der Vorschlag)
+  // und Wunschdauer in Minuten (ohne Angabe die Standarddauer). Reicht der Bedarf der Woche nicht für
+  // die Wunschdauer, kommen Sätze obendrauf, die spätere Einheiten der Woche nicht kürzen.
+  muskeln?: Muskel[];
+  dauerMin?: number;
 }
+export interface MuskelVorschlag { gewaehlt: Muskel[]; nichtErholt: Muskel[] }
 
 const leer = (): ProMuskel => Object.fromEntries(MUSKELN.map((m) => [m, 0])) as ProMuskel;
 const begrenze = (x: number, min: number, max: number) => Math.min(max, Math.max(min, x));
@@ -163,6 +169,14 @@ export function dosisProMuskel(z: AppZustand, einheit: Einheit): ProMuskel {
     }
   }
   return dosis;
+}
+
+// Sätze obendrauf einer Einheit (Entscheidung 31.10.2026): was über die geplante Basis hinaus erledigt
+// wurde. Ohne längere Wunschdauer undefined.
+export function obendraufVon(einheit: Einheit, dosis: ProMuskel): ProMuskel | undefined {
+  const basis = einheit.basisDosis;
+  if (!basis) return undefined;
+  return Object.fromEntries(MUSKELN.map((m) => [m, Math.max(0, dosis[m] - basis[m])])) as ProMuskel;
 }
 
 // ---------- Hauptvarianten ----------
@@ -389,6 +403,55 @@ function nachPause(z: AppZustand, e: Einstellungen, ort: Ort, u: Uebung, pause: 
 interface Auswahl { k: Kandidat; saetze: number }
 interface Plan { einheit: Einheit; budgetSaetze: number; freieSaetze: number; bedarfOffen: boolean }
 
+// Für die Planung erledigtes Volumen der Woche: Sätze obendrauf (längere Wunschdauer) zählen nicht,
+// damit spätere Einheiten der Woche ihren Umfang behalten (Entscheidung 31.10.2026).
+export function erledigtFuerPlanung(woche: Woche | undefined): ProMuskel {
+  const erledigt = { ...(woche?.erledigt ?? leer()) };
+  for (const m of MUSKELN) erledigt[m] = Math.max(0, erledigt[m] - (woche?.obendrauf?.[m] ?? 0));
+  return erledigt;
+}
+
+interface Grundlage {
+  prognose: number; erholungswoche: boolean; ziele: ProMuskel; erledigt: ProMuskel; n: number;
+  erholt: Record<Muskel, boolean>; fokus: Fokus;
+}
+
+// Schritte 2 bis 4: Prognose, Restzahl n mit Pacing-Korrektur, Erholung und Fokus.
+function grundlage(z: AppZustand, e: Einstellungen, ort: Ort, eing: EinheitEingabe): Grundlage {
+  const jetzt = eing.jetzt;
+  const woche = z.wochen.find((w) => w.id === isoWoche(jetzt));
+  const erledigteEinheiten = woche?.einheiten ?? 0;
+  const prognose = Math.max(eing.prognose, erledigteEinheiten + 1);
+  const erledigt = erledigtFuerPlanung(woche);
+  const erholungswoche = istErholungswoche(z, jetzt, eing.erholungswoche);
+  const ziele = wochenziele(z, prognose, ort.id, jetzt, erholungswoche);
+  const tage = verbleibendeTage(jetzt);
+  const letzte = letzteEinheitZeit(z);
+  let n = Math.max(1, Math.min(prognose - erledigteEinheiten, tage));
+  if (letzte && stundenZwischen(letzte, jetzt) >= WOCHENZIEL.pacingAbStunden) {
+    n = Math.max(1, Math.min(n, Math.ceil(tage / 2)));
+  }
+  const erholt = Object.fromEntries(MUSKELN.map((m) => [m, istErholt(z.muskeln.find((x) => x.muskel === m), jetzt)])) as Record<Muskel, boolean>;
+  const fokus: Fokus = eing.morgenWieder ? waehleFokus(z, e, erholt, ziele, erledigt) : 'ganz';
+  return { prognose, erholungswoche, ziele, erledigt, n, erholt, fokus };
+}
+
+const imFokusVon = (fokus: Fokus) => (m: Muskel) => fokus === 'ganz' || m === 'Bauch' || FOKUS_GRUPPEN[fokus].includes(m);
+
+// Vorschlag der Muskeln für „Vor dem Start“ (Entscheidung 31.10.2026): die erholten Muskeln des Fokus
+// (Ganzkörper: alle erholten). Nicht erholte Muskeln sind wählbar, aber markiert.
+export function muskelVorschlag(z: AppZustand, eing: EinheitEingabe): MuskelVorschlag {
+  const e = einstellungenVon(z);
+  const ort = z.orte.find((o) => o.id === eing.ortId);
+  if (!ort) return { gewaehlt: [], nichtErholt: [] };
+  const g = grundlage(z, e, ort, eing);
+  const imFokus = imFokusVon(g.fokus);
+  return {
+    gewaehlt: MUSKELN.filter((m) => imFokus(m) && g.erholt[m]),
+    nichtErholt: MUSKELN.filter((m) => !g.erholt[m]),
+  };
+}
+
 function waehleFokus(z: AppZustand, e: Einstellungen, erholt: Record<Muskel, boolean>, ziele: ProMuskel, erledigt: ProMuskel): Fokus {
   const zuletzt = (g: readonly Muskel[]) =>
     g.map((m) => z.muskeln.find((x) => x.muskel === m)?.letzteBelastung ?? '').reduce((a, b) => (a > b ? a : b), '');
@@ -497,7 +560,7 @@ export function aufwaermenFuer(z: AppZustand, ort: Ort, bloecke: Block[]): Einhe
   return zeilen;
 }
 
-function plane(z: AppZustand, eing: EinheitEingabe): Plan {
+function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Plan {
   const e = einstellungenVon(z);
   const ort = z.orte.find((o) => o.id === eing.ortId);
   if (!ort) return { einheit: leereEinheit(eing), budgetSaetze: 0, freieSaetze: 0, bedarfOffen: false };
@@ -506,36 +569,28 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
     if (zirkel) return { einheit: zirkelEinheit(z, e, ort, zirkel, eing), budgetSaetze: 0, freieSaetze: 0, bedarfOffen: false };
   }
 
-  // Schritt 2: Woche, Prognose (steigt automatisch) und Restzahl n mit Pacing-Korrektur
+  // Schritte 2 bis 4: Woche, Prognose (steigt automatisch), Restzahl n, Erholung und Fokus
   const jetzt = eing.jetzt;
-  const woche = z.wochen.find((w) => w.id === isoWoche(jetzt));
-  const erledigteEinheiten = woche?.einheiten ?? 0;
-  const prognose = Math.max(eing.prognose, erledigteEinheiten + 1);
-  const erledigt = woche?.erledigt ?? leer();
-  const erholungswoche = istErholungswoche(z, jetzt, eing.erholungswoche);
-  const ziele = wochenziele(z, prognose, ort.id, jetzt, erholungswoche);
-  const tage = verbleibendeTage(jetzt);
-  const letzte = letzteEinheitZeit(z);
-  let n = Math.max(1, Math.min(prognose - erledigteEinheiten, tage));
-  if (letzte && stundenZwischen(letzte, jetzt) >= WOCHENZIEL.pacingAbStunden) {
-    n = Math.max(1, Math.min(n, Math.ceil(tage / 2)));
-  }
+  const g = grundlage(z, e, ort, eing);
+  const { prognose, erholungswoche, ziele, erledigt, n, fokus } = g;
+  // Gewählte Muskeln (Entscheidung 31.10.2026): Nur sie bekommen Bedarf; nicht erholte, aber gewählte
+  // gelten heute als erholt. Muskeln, die der Nutzer aus dem Vorschlag abgewählt hat (z. B. Muskelkater),
+  // gelten als nicht erholt; Muskeln außerhalb des Vorschlags bleiben wie ohne Auswahl.
+  const vorschlag = MUSKELN.filter((m) => imFokusVon(fokus)(m) && g.erholt[m]);
+  const wahl = eing.muskeln ? new Set(eing.muskeln) : new Set(vorschlag);
+  const erholt = Object.fromEntries(MUSKELN.map((m) => [m,
+    wahl.has(m) || (g.erholt[m] && !vorschlag.includes(m))])) as Record<Muskel, boolean>;
 
-  // Schritte 4 und 5: Fokus und Bedarf
-  const erholt = Object.fromEntries(MUSKELN.map((m) => [m, istErholt(z.muskeln.find((x) => x.muskel === m), jetzt)])) as Record<Muskel, boolean>;
-  const fokus: Fokus = eing.morgenWieder ? waehleFokus(z, e, erholt, ziele, erledigt) : 'ganz';
+  // Schritt 5: Bedarf
   const bedarf = leer();
   for (const m of MUSKELN) {
     const rest = Math.max(0, ziele[m] - erledigt[m]);
-    let anteil = rest / n;
-    if (fokus !== 'ganz') {
-      anteil = FOKUS_GRUPPEN[fokus].includes(m) || m === 'Bauch' ? rest / Math.max(1, Math.ceil(n / 2)) : 0;
-    }
-    bedarf[m] = erholt[m] ? Math.min(EINHEIT.maxSaetzeProMuskel, Math.ceil(anteil)) : 0;
+    const anteil = fokus === 'ganz' ? rest / n : rest / Math.max(1, Math.ceil(n / 2));
+    bedarf[m] = wahl.has(m) ? Math.min(EINHEIT.maxSaetzeProMuskel, Math.ceil(anteil)) : 0;
   }
 
   // Schritt 6: Übungen gierig wählen aus den Hauptvarianten A und B aller Muster außer Rumpf und Waden
-  const budget = arbeitssaetze(z, e.standardDauerMin + (eing.laenger ? ZEITBUDGET.laengerMin : 0), eing.klassisch === true);
+  const budget = budgetVorgabe ?? arbeitssaetze(z, e.standardDauerMin + (eing.laenger ? ZEITBUDGET.laengerMin : 0), eing.klassisch === true);
   // A und B wechseln sich je Muster strikt ab (Entscheidung 30.10.2026): Die nicht fällige Variante kommt
   // nur, wenn die fällige schon gewählt ist (zweite Übung derselben Bewegung). Haben A und B verschiedene
   // Hauptmuskeln (z. B. Rumänisches Kreuzheben und Hip Thrust), bleiben beide frei, sonst fehlte einem
@@ -557,7 +612,7 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
   let gesamt = 0;
 
   // Max-Test (falls fällig) am Anfang; er zählt als ein harter Satz.
-  const imFokus = (m: Muskel) => fokus === 'ganz' || m === 'Bauch' || FOKUS_GRUPPEN[fokus].includes(m);
+  const imFokus = (m: Muskel) => wahl.has(m);
   const test = faelligerMaxTest(z, jetzt, ort, prognose, erholungswoche, imFokus);
   const testUebung = test ? uebungVon(z, test.uebungId) : undefined;
   if (testUebung) {
@@ -605,7 +660,10 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
       && !gewaehlt.some((a) => a.k.uebung.muster === x.uebung.muster) && moeglich(x));
   };
   const offen = () => kandidaten.filter((k) => moeglich(k) && vielfalt(k));
-  while (gesamt < budget && gewaehlt.length < EINHEIT.maxUebungen) {
+  const { min, maxWenigEinheiten, wenigBisPrognose } = EINHEIT.saetzeProUebung;
+  const maxUeblich = prognose <= wenigBisPrognose ? maxWenigEinheiten : EINHEIT.saetzeProUebung.max;
+  const maxSaetze = (u: Uebung) => (nieTrainiert(z, u.id) ? Math.min(maxUeblich, EINHEIT.maxSaetzeErstesMal) : maxUeblich);
+  const fuelle = (maxUebungen: number) => { while (gesamt < budget && gewaehlt.length < maxUebungen) {
     const liste = offen();
     if (liste.length === 0) break;
     const punkte = (u: Uebung) => wert(u)
@@ -627,9 +685,7 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
     }
     benutzt.add(beste.uebung.id);
     const h = hauptmuskel(beste.uebung)!;
-    const { min, maxWenigEinheiten, wenigBisPrognose } = EINHEIT.saetzeProUebung;
-    const maxUeblich = prognose <= wenigBisPrognose ? maxWenigEinheiten : EINHEIT.saetzeProUebung.max;
-    const max = nieTrainiert(z, beste.uebung.id) ? Math.min(maxUeblich, EINHEIT.maxSaetzeErstesMal) : maxUeblich;
+    const max = maxSaetze(beste.uebung);
     if (max < Math.min(maxUeblich, Math.ceil(bedarf[h] - dosis[h]))) gedeckelt.add(h);
     const saetze = Math.min(Math.max(min, Math.min(max, Math.ceil(bedarf[h] - dosis[h]))), budget - gesamt);
     if (saetze <= 0) break;
@@ -637,8 +693,39 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
     bedient.add(h);
     gesamt += saetze;
     for (const [m, v] of beitrag(beste.uebung)) dosis[m] += saetze * v;
-  }
+  } };
+  fuelle(EINHEIT.maxUebungen);
   const bedarfOffen = gesamt >= budget && offen().length > 0;
+
+  // Obendrauf (Entscheidung 31.10.2026): Bleibt bei einer Wunschdauer Zeit übrig, bekommen die gewählten
+  // Muskeln mehr Sätze, bis zu `EINHEIT.maxSaetzeProMuskel` je Einheit: zuerst mehr Sätze der gewählten
+  // Übungen (neue Übungen bleiben bei 3), dann weitere Übungen, auch eine zweite für einen Muskel mit
+  // neuer Übung. Diese Sätze zählen für die Woche, kürzen aber spätere Einheiten nicht.
+  const vorObendrauf = { ...dosis };
+  const basisBedarf = { ...bedarf };
+  if (eing.dauerMin !== undefined && gesamt < budget) {
+    for (const m of wahl) if (erholt[m]) bedarf[m] = Math.max(bedarf[m], EINHEIT.maxSaetzeProMuskel);
+    const aufstocken = () => {
+      let weiter = true;
+      while (weiter && gesamt < budget) {
+        weiter = false;
+        for (const a of gewaehlt) {
+          const h = hauptmuskel(a.k.uebung)!;
+          if (gesamt >= budget || a.saetze >= maxSaetze(a.k.uebung) || bedarf[h] - dosis[h] < 1) continue;
+          a.saetze += 1;
+          gesamt += 1;
+          for (const [m, v] of beitrag(a.k.uebung)) dosis[m] += v;
+          weiter = true;
+        }
+      }
+    };
+    aufstocken();
+    gedeckelt.clear();
+    fuelle(EINHEIT.maxUebungenObendrauf);
+    aufstocken();
+  }
+  const extra = leer();
+  for (const m of MUSKELN) extra[m] = dosis[m] - vorObendrauf[m];
 
   // Schritt 7: Bauch und Waden zusätzlich zum Zeitbudget
   const zusatz: Auswahl[] = [];
@@ -646,7 +733,7 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
     const k = faellige(z, hauptvarianten(z, muster, ort, jetzt, e));
     const m = k && hauptmuskel(k.uebung);
     if (!k || !m || !erholt[m]) continue;
-    const saetze = Math.min(EINHEIT.maxSaetzeBauchWaden, Math.ceil(bedarf[m] - dosis[m]));
+    const saetze = Math.min(EINHEIT.maxSaetzeBauchWaden, Math.ceil(basisBedarf[m] - (dosis[m] - extra[m])));
     if (saetze <= 0) continue;
     zusatz.push({ k, saetze });
     for (const [mm, v] of beitrag(k.uebung)) dosis[mm] += saetze * v;
@@ -684,6 +771,10 @@ function plane(z: AppZustand, eing: EinheitEingabe): Plan {
     aufwaermen: aufwaermenFuer(z, ort, bloecke),
     bloecke,
   };
+  if (MUSKELN.some((m) => extra[m] > 0)) {
+    const geplant = dosisProMuskel(z, einheit);
+    einheit.basisDosis = Object.fromEntries(MUSKELN.map((m) => [m, Math.max(0, geplant[m] - extra[m])])) as ProMuskel;
+  }
   einheit.geschaetzteDauerMin = geschaetzteDauer(z, einheit);
   return { einheit, budgetSaetze: gesamt, freieSaetze: budget - gesamt, bedarfOffen };
 }
@@ -837,7 +928,7 @@ export function zirkelVorschlagen(z: AppZustand, jetzt: string, prognose: number
   const erledigteEinheiten = woche?.einheiten ?? 0;
   if (prognose - erledigteEinheiten <= 1) return true;
   const ziele = wochenziele(z, prognose, ortId, jetzt);
-  const erledigt = woche?.erledigt ?? leer();
+  const erledigt = erledigtFuerPlanung(woche);
   // Maßgeblich sind die am höchsten priorisierten Muskeln (beim Standard „alle normal“ also alle).
   const hoechste = PRIORITAETEN.find((p) => MUSKELN.some((m) => e.prioritaeten[m] === p));
   return MUSKELN.filter((m) => e.prioritaeten[m] === hoechste && ziele[m] > 0)
@@ -906,7 +997,16 @@ function fragenErgebnis(z: AppZustand, e: Einstellungen, jetzt: string, ortId: s
 }
 
 export function erstelleEinheit(z: AppZustand, eing: EinheitEingabe): Einheit {
-  return plane(z, eing).einheit;
+  if (eing.dauerMin === undefined || eing.zirkelId) return plane(z, eing).einheit;
+  // Wunschdauer (Entscheidung 31.10.2026): so viele Arbeitssätze, wie in die Minuten passen; Bauch und
+  // Waden zählen hier mit, damit die geschätzte Dauer die Wunschdauer nicht überschreitet.
+  let budget = arbeitssaetze(z, eing.dauerMin, eing.klassisch === true);
+  let plan = plane(z, eing, budget);
+  while (plan.einheit.geschaetzteDauerMin > eing.dauerMin && budget > 0) {
+    budget -= 1;
+    plan = plane(z, eing, budget);
+  }
+  return plan.einheit;
 }
 
 export function alternativen(z: AppZustand, einheit: Einheit, block: number, position: number):

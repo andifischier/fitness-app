@@ -2,7 +2,7 @@
 // Woche, Max-Tests und Zirkel-Bestzeiten; Ziel, Gewicht und Variante jeder Übung gehen auf den Stand
 // davor zurück, solange danach nicht schon wieder mit ihr (bzw. ihrem Muster) trainiert wurde.
 import { MUSKELN, type AppZustand, type Einheit, type MuskelZustand, type Position, type VarianteZustand } from './typen';
-import { dosisProMuskel } from './planung';
+import { dosisProMuskel, obendraufVon } from './planung';
 import { einheitZeit, feedbackVon, fertigeEinheiten, uebungVon } from './verlauf';
 
 export function kannLoeschen(e: Einheit): boolean {
@@ -60,7 +60,11 @@ export function loescheEinheit(z: AppZustand, einheitId: string): AppZustand | u
     if (w.id !== e.woche) return w;
     const erledigt = { ...w.erledigt };
     for (const m of MUSKELN) erledigt[m] = Math.max(0, erledigt[m] - dosis[m]);
-    return { ...w, einheiten: Math.max(0, w.einheiten - 1), erledigt };
+    const extra = obendraufVon(e, dosis);
+    if (!w.obendrauf || !extra) return { ...w, einheiten: Math.max(0, w.einheiten - 1), erledigt };
+    const obendrauf = { ...w.obendrauf };
+    for (const m of MUSKELN) obendrauf[m] = Math.max(0, obendrauf[m] - extra[m]);
+    return { ...w, einheiten: Math.max(0, w.einheiten - 1), erledigt, obendrauf };
   });
 
   // Erholung: Muskeln, die zuletzt in dieser Einheit belastet wurden, zählen ab der letzten übrigen Einheit.

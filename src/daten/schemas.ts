@@ -130,6 +130,7 @@ export const wocheSchema = z.object({
   ziele: muskelWerte(zahl), erledigt: muskelWerte(zahl),
   erholungswoche: z.boolean(), laengerAngenommen: z.boolean(), ausgewertet: z.boolean().optional(),
   tage: z.array(ganzzahl.min(0).max(6)).optional(),
+  obendrauf: muskelWerte(zahl).optional(),
 });
 
 export const zyklusSchema = z.object({
@@ -163,6 +164,7 @@ export const einheitSchema = z.object({
   gesamtbewertung: sterne.optional(),
   notiz: z.string().optional(),
   name: z.string().optional(),
+  basisDosis: muskelWerte(zahl).optional(),
   vorher: z.object({
     varianten: z.array(z.object({ uebungId: z.string().min(1), zustand: varianteSchema.optional() })),
     muster: z.array(z.object({ muster: musterId, zustand: musterZustandSchema.optional() })),

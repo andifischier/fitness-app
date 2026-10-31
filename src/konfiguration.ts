@@ -5,6 +5,8 @@ import type { Einstellungen, MusterId, Muskel, Prioritaet } from './logik/typen'
 export const PROFIL = {
   einheitenProWoche: { min: 1, max: 6 },
   dauerMin: { min: 20, max: 90, schritt: 5 },
+  // Wunschdauer vor dem Start mit −/+ (Entscheidung 31.10.2026)
+  wunschdauerMin: { min: 15, max: 90, schritt: 5 },
   // Einstellbare Pausen je Art (Entscheidung 20.10.2026)
   pausenSek: { min: 30, max: 180, schritt: 15 },
   // Musterstufe ohne Testtag
@@ -138,6 +140,7 @@ export const EINHEIT = {
   abschlagLetzteEinheit: 0.6,
   abschlagGleichesMuster: 0.6,    // gleiches Muster wie zuletzt für den Hauptmuskel (Klimmzug nach Rudern)
   maxUebungen: 6,                 // Übungen im Zeitbudget, Bauch und Waden kommen dazu
+  maxUebungenObendrauf: 10,       // bei längerer Wunschdauer mit Sätzen obendrauf (Entscheidung 31.10.2026)
   saetzeProUebung: { min: 2, max: 4, maxWenigEinheiten: 5, wenigBisPrognose: 2 },  // bei 1 bis 2 Einheiten bis 5 Sätze
   minOffenerBedarf: 0.25,
   maxSaetzeBauchWaden: 3,

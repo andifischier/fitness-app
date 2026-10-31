@@ -434,3 +434,21 @@
   (Trizeps 10 → 6, Einsteiger mehrere Muskeln 8 → 6), kaum Wechsel zwischen A und B (Pullups 1-mal in
   12 Wochen), langsames Aufholen zu leichter Gewichte und Übungen mit 1 Satz (Entscheidungen 30.10.2026).
   Mit den Änderungen steigt die Satzgrenze bei Fortschritt alle 4 Wochen um 2 Sätze, A und B kommen gleich oft.
+
+## 31.10.2026: Muskeln und Dauer vor dem Start
+- **Was:**
+  - „Vor dem Start“: Unter „Ändern“ neu „Welche Muskeln heute?“ mit allen zehn Muskelgruppen, der Vorschlag
+    ist vorausgewählt, nicht erholte Muskeln sind markiert und trotzdem wählbar. Abwählen (z. B. bei
+    Muskelkater) schließt Übungen mit diesem Muskel als Primärmuskel aus. Die Zeile oben nennt die Muskeln.
+  - Neu und immer sichtbar „Wie lange trainierst du?“ mit −/+ in 5-Min-Schritten (15 bis 90 Min), vorbelegt
+    mit der Dauer des Vorschlags. Ersetzt „15 Min länger?“; die Einstellung „Längere Einheiten anbieten“
+    steuert jetzt nur den Hinweis unter der Dauer.
+  - Längere Wunschdauer: Sätze obendrauf (bis 10 je Muskel, bis 10 Übungen, neue Übungen weiter höchstens
+    3 Sätze). Sie zählen für die Woche, kürzen aber spätere Einheiten nicht (`Einheit.basisDosis`,
+    `Woche.obendrauf`).
+  - Geändert: `planung.ts` (`muskelVorschlag`, `erledigtFuerPlanung`, `obendraufVon`, Wunschdauer in
+    `erstelleEinheit`), `progression.ts`, `loeschen.ts`, `typen.ts`, `schemas.ts`, `konfiguration.ts`,
+    `Start.tsx`, `Profil.tsx`; neue Tests in `wunsch.test.ts`.
+- **Warum:** Wunsch des Nutzers (Entscheidungen 31.10.2026): Mit vielen neuen Übungen (höchstens 3 Sätze)
+  kam eine Einheit nur auf rund 20 Min. Der Nutzer will länger trainieren und selbst festlegen, welche
+  Muskeln dran sind, ohne dass die übrigen Tage der Woche darunter leiden.

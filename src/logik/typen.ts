@@ -113,6 +113,9 @@ export interface Woche {
   erholungswoche: boolean; laengerAngenommen: boolean;
   ausgewertet?: boolean;            // Wochenabschluss gelaufen
   tage?: number[];                  // gewählte Trainingstage (0 = Montag … 6 = Sonntag), sortiert
+  // Davon Sätze obendrauf (längere Wunschdauer, Entscheidung 31.10.2026): zählen für die Woche, aber
+  // nicht für die Planung der weiteren Einheiten
+  obendrauf?: Record<Muskel, number>;
 }
 export interface Zyklus { nr: number; start: string; ende?: string; grund?: 'zeitablauf' | 'erholungswoche' }
 
@@ -139,6 +142,9 @@ export interface Einheit {
   bloecke: Block[]; gesamtbewertung?: 1 | 2 | 3 | 4 | 5; notiz?: string;
   name?: string;                    // Name des eigenen Workouts, aus dem die Einheit erstellt wurde
   vorher?: Vorstand;                // Stand vor dem Abschluss, damit Löschen ihn zurückholt (Entscheidung 29.10.2026)
+  // Geplante fraktionelle Sätze je Muskel ohne die Sätze obendrauf; nur bei längerer Wunschdauer
+  // (Entscheidung 31.10.2026). Was darüber hinaus erledigt wird, zählt in `Woche.obendrauf`.
+  basisDosis?: Record<Muskel, number>;
 }
 // Varianten und Muster der Übungen einer Einheit, wie sie vor ihrem Abschluss waren; ohne `zustand`
 // gab es noch keinen Eintrag.

@@ -1,7 +1,8 @@
 // Vor dem Start (Mockup 2): Trainingstage der Woche (nur, solange keine gewählt sind, mit Angebot
 // einer Erholungswoche; Entscheidung 21.10.2026), eine Zeile mit Ort, Kombi oder Klassisch (Standard
-// Kombi) und „Morgen wieder?“, die „Ändern“ aufklappt (Entscheidung 21.10.2026), „15 Min länger?“
-// und „Einheit erstellen“; darunter „Stattdessen Zirkel“ mit der Liste der Zirkel und „Eigenes Workout“
+// Kombi) und „Morgen wieder?“, die „Ändern“ aufklappt (Entscheidung 21.10.2026), dazu die Muskeln für
+// heute (Vorschlag vorausgewählt, nicht erholte markiert) und die Dauer mit −/+ (Entscheidung 31.10.2026,
+// ersetzt „15 Min länger?“), und „Einheit erstellen“; darunter „Stattdessen Zirkel“ mit der Liste der Zirkel und „Eigenes Workout“
 // mit der Liste der eigenen Workouts (Entscheidung 21.10.2026). Alles ist vorausgefüllt.
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
@@ -10,13 +11,14 @@ import { lokaleZeit } from '../../daten/zeit';
 import { maxOffeneTage, vorschlagTage } from '../../logik/ausblick';
 import { isoWoche, wochentag } from '../../logik/datum';
 import { zirkelBestzeit } from '../../logik/heute';
-import { erstelleEinheit, startfragen, workoutEinheit } from '../../logik/planung';
+import { erstelleEinheit, muskelVorschlag, startfragen, workoutEinheit, type EinheitEingabe } from '../../logik/planung';
 import { erholungswocheAngebot, type ErholungswocheGrund } from '../../logik/progression';
-import type { AppZustand, EigenesWorkout } from '../../logik/typen';
+import { PROFIL } from '../../konfiguration';
+import { MUSKELN, type AppZustand, type EigenesWorkout, type Muskel } from '../../logik/typen';
 import { workoutAmOrt, workoutBestzeit, workoutsVon } from '../../logik/workouts';
-import { Auswahl, Fehler, Hinweis, Karte, Knopf, Laedt, TageWahl } from '../../ui/bausteine';
+import { Auswahl, Chip, Fehler, Hinweis, Karte, Knopf, Laedt, Stepper, TageWahl } from '../../ui/bausteine';
 import { Icon } from '../../ui/Icon';
-import { zeitText } from '../../ui/texte';
+import { MUSKEL_NAMEN, zeitText } from '../../ui/texte';
 import { workoutText } from '../workouts/Workouts';
 import { useZustand } from '../../ui/useZustand';
 
@@ -51,7 +53,9 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
   const [erholung, setErholung] = useState(angebot !== null);
   const [ortId, setOrtId] = useState(fragen.ortId);
   const [morgenWieder, setMorgenWieder] = useState(fragen.prognoseAbfragen ? tage.includes(heute + 1) : fragen.morgenWiederVorschlag);
-  const [laenger, setLaenger] = useState(false);
+  // Muskeln und Dauer folgen dem Vorschlag, bis der Nutzer sie ändert (Entscheidung 31.10.2026).
+  const [muskeln, setMuskeln] = useState<Muskel[] | null>(null);
+  const [dauer, setDauer] = useState<number | null>(null);
   const [art, setArt] = useState<'kombi' | 'klassisch'>('kombi');   // Standard Kombi (Entscheidung 21.10.2026)
   const [modus, setModus] = useState<'kraft' | 'zirkel' | 'workout'>(() =>
     params.get('workout') === '1' ? 'workout'
@@ -78,19 +82,39 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
     [z, ortId, jetzt],
   );
 
+  // Vorschlag der Muskeln und Dauer zu den aktuellen Angaben; die Planung ist rein und schnell genug,
+  // um bei jeder Änderung neu zu rechnen.
+  const basis: EinheitEingabe = {
+    jetzt, ortId, prognose, morgenWieder, laenger: false, klassisch: art === 'klassisch',
+    ...(angebot !== null ? { erholungswoche: erholung } : {}),
+  };
+  const vorschlag = useMemo(() => muskelVorschlag(z, basis),
+    [z, jetzt, ortId, prognose, morgenWieder, art, erholung]);
+  const gewaehlt = muskeln ?? vorschlag.gewaehlt;
+  const mitMuskeln = muskeln !== null ? { muskeln } : {};
+  const vorschlagDauer = useMemo(() => erstelleEinheit(z, { ...basis, ...mitMuskeln }).geschaetzteDauerMin,
+    [z, jetzt, ortId, prognose, morgenWieder, art, erholung, muskeln]);
+  const geplantDauer = useMemo(() => (dauer === null ? vorschlagDauer
+    : erstelleEinheit(z, { ...basis, ...mitMuskeln, dauerMin: dauer }).geschaetzteDauerMin),
+  [z, jetzt, ortId, prognose, morgenWieder, art, erholung, muskeln, dauer, vorschlagDauer]);
+  const { min: dauerMin, max: dauerMax, schritt: dauerSchritt } = PROFIL.wunschdauerMin;
+  const dauerWert = dauer ?? Math.min(dauerMax, Math.max(dauerMin, Math.round(vorschlagDauer / dauerSchritt) * dauerSchritt));
+
   const erstelle = async (zirkelId?: string, workout?: EigenesWorkout) => {
     if (laeuft) return;
     setLaeuft(true);
     const zeit = lokaleZeit();
     const kraft = zirkelId === undefined && workout === undefined;
     const extra = {
-      ...(angebot !== null ? { erholungswoche: erholung } : {}), laenger: kraft && laenger,
+      ...(angebot !== null ? { erholungswoche: erholung } : {}), laenger: kraft && dauer !== null && dauer > vorschlagDauer,
       ...(fragen.prognoseAbfragen ? { tage } : {}),
     };
-    const eingabe = {
-      jetzt: zeit, ortId, prognose, morgenWieder: kraft && morgenWieder, laenger: extra.laenger, zirkelId,
+    const eingabe: EinheitEingabe = {
+      jetzt: zeit, ortId, prognose, morgenWieder: kraft && morgenWieder, laenger: false, zirkelId,
       klassisch: art === 'klassisch',
       ...(angebot !== null ? { erholungswoche: erholung } : {}),
+      ...(kraft ? mitMuskeln : {}),
+      ...(kraft && dauer !== null ? { dauerMin: dauer } : {}),
     };
     const einheit = workout ? workoutEinheit(z, workout, eingabe) : erstelleEinheit(z, eingabe);
     try {
@@ -213,15 +237,22 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
                   art === 'kombi' ? 'Kombi' : 'Klassisch',
                   morgenWieder ? 'morgen wieder' : 'morgen frei',
                 ].filter(Boolean).join(' · ')}
+                <span className="block text-hinweis font-normal text-gedaempft">{muskelText(gewaehlt)}</span>
               </p>
               <button type="button" onClick={() => setDetails(true)}
                 className="flex min-h-touch items-center text-basis font-semibold text-akzent">Ändern</button>
             </section>
-            {fragen.laengerAnbieten && (
-              <Karte titel="15 Min länger?" hinweis="Diese Woche hast du wenige Einheiten. Mit 15 Min mehr schaffst du mehr Sätze.">
-                <Auswahl optionen={JA_NEIN} wert={jaNein(laenger)} spalten={2} onChange={(w) => setLaenger(w === 'ja')} />
-              </Karte>
-            )}
+            <Karte titel="Wie lange trainierst du?"
+              hinweis={dauer === null
+                ? fragen.laengerAnbieten
+                  ? 'Diese Woche hast du wenige Einheiten. Mit mehr Zeit schaffst du mehr Sätze.'
+                  : 'Vorschlag der App. Zusätzliche Sätze kürzen spätere Einheiten der Woche nicht.'
+                : geplantDauer < dauer - 2
+                  ? `Mehr passt heute nicht: ca. ${geplantDauer} Min.`
+                  : `Geplant: ca. ${geplantDauer} Min. Zusätzliche Sätze kürzen spätere Einheiten der Woche nicht.`}>
+              <Stepper wert={dauerWert} min={dauerMin} max={dauerMax} schritt={dauerSchritt} einheit="Min"
+                label="Dauer" onChange={setDauer} />
+            </Karte>
           </>
         ) : (
           <>
@@ -233,13 +264,37 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
             </Karte>
             <Karte titel="Morgen wieder trainieren?"
               hinweis="Bei Ja trainierst du heute nur Ober- oder Unterkörper, damit morgen die andere Hälfte frisch ist.">
-              <Auswahl optionen={JA_NEIN} wert={jaNein(morgenWieder)} spalten={2} onChange={(w) => setMorgenWieder(w === 'ja')} />
+              <Auswahl optionen={JA_NEIN} wert={jaNein(morgenWieder)} spalten={2}
+                onChange={(w) => { setMorgenWieder(w === 'ja'); setMuskeln(null); }} />
             </Karte>
-            {fragen.laengerAnbieten && (
-              <Karte titel="15 Min länger?" hinweis="Diese Woche hast du wenige Einheiten. Mit 15 Min mehr schaffst du mehr Sätze.">
-                <Auswahl optionen={JA_NEIN} wert={jaNein(laenger)} spalten={2} onChange={(w) => setLaenger(w === 'ja')} />
-              </Karte>
-            )}
+            <Karte titel="Welche Muskeln heute?"
+              hinweis={vorschlag.nichtErholt.length > 0
+                ? 'Vorausgewählt ist der Vorschlag. Nicht erholte Muskeln kannst du trotzdem wählen; dann steigt das Risiko einer Überlastung.'
+                : 'Vorausgewählt ist der Vorschlag. Tippe, um Muskeln dazuzunehmen oder wegzulassen, z. B. bei Muskelkater.'}>
+              <div className="flex flex-wrap gap-2">
+                {MUSKELN.map((m) => {
+                  const an = gewaehlt.includes(m);
+                  return (
+                    <Chip key={m} aktiv={an}
+                      onClick={() => setMuskeln(an ? gewaehlt.filter((x) => x !== m) : MUSKELN.filter((x) => x === m || gewaehlt.includes(x)))}>
+                      {MUSKEL_NAMEN[m]}
+                      {vorschlag.nichtErholt.includes(m) && <span className="block text-hinweis font-normal text-gedaempft">nicht erholt</span>}
+                    </Chip>
+                  );
+                })}
+              </div>
+            </Karte>
+            <Karte titel="Wie lange trainierst du?"
+              hinweis={dauer === null
+                ? fragen.laengerAnbieten
+                  ? 'Diese Woche hast du wenige Einheiten. Mit mehr Zeit schaffst du mehr Sätze.'
+                  : 'Vorschlag der App. Zusätzliche Sätze kürzen spätere Einheiten der Woche nicht.'
+                : geplantDauer < dauer - 2
+                  ? `Mehr passt heute nicht: ca. ${geplantDauer} Min.`
+                  : `Geplant: ca. ${geplantDauer} Min. Zusätzliche Sätze kürzen spätere Einheiten der Woche nicht.`}>
+              <Stepper wert={dauerWert} min={dauerMin} max={dauerMax} schritt={dauerSchritt} einheit="Min"
+                label="Dauer" onChange={setDauer} />
+            </Karte>
           </>
         )}
       </div>
@@ -256,7 +311,8 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
           </>
         ) : (
           <>
-            <Knopf onClick={() => void erstelle()} deaktiviert={laeuft}>Einheit erstellen</Knopf>
+            {gewaehlt.length === 0 && <Hinweis>Wähle unter „Ändern“ mindestens einen Muskel.</Hinweis>}
+            <Knopf onClick={() => void erstelle()} deaktiviert={laeuft || gewaehlt.length === 0}>Einheit erstellen</Knopf>
             {mitZirkel && <Knopf art="schlicht" onClick={() => setZirkelModus(true)}>Stattdessen Zirkel</Knopf>}
             <Knopf art="schlicht" onClick={() => setModus('workout')}>Eigenes Workout</Knopf>
           </>
@@ -264,4 +320,11 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
       </div>
     </main>
   );
+}
+
+// Kurzfassung der Muskeln für die Zeile oben: alle zehn heißen „Ganzkörper“.
+function muskelText(muskeln: readonly Muskel[]): string {
+  if (muskeln.length === MUSKELN.length) return 'Ganzkörper';
+  if (muskeln.length === 0) return 'Keine Muskeln gewählt';
+  return muskeln.map((m) => MUSKEL_NAMEN[m]).join(', ');
 }
