@@ -109,7 +109,7 @@ export function TrainingSeite() {
         <div className="mt-4">
           <Schalter
             titel="Längere Einheiten anbieten" an={e.laengerAnbieten}
-            hinweis={`In Wochen mit 1 bis ${ZEITBUDGET.laengerBisPrognose} Einheiten fragt die App „${ZEITBUDGET.laengerMin} Min länger?“.`}
+            hinweis={`In Wochen mit 1 bis ${ZEITBUDGET.laengerBisPrognose} Einheiten weist die App vor dem Start darauf hin, dass mehr Zeit mehr Sätze bringt.`}
             onChange={(laengerAnbieten) => void setze({ laengerAnbieten })}
           />
         </div>

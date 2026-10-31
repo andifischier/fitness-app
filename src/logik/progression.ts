@@ -8,7 +8,7 @@ import { isoWoche, plusTage, stundenZwischen, wocheStart, wocheVerschoben } from
 import { alleUebungen, bandStufen, lastraster, uebungErlaubt } from './equipment';
 import {
   bereichFuer, dosisProMuskel, hauptvarianten, istErholungswoche, musterstufe, persoenlicheGrenze, startwerte,
-  wochenziele,
+  obendraufVon, wochenziele,
 } from './planung';
 import {
   BAND_STUFEN, MUSKELN, type AppZustand, type BandStufe, type Einheit, type Einstellungen, type Feedback, type MaxTest,
@@ -446,11 +446,16 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
   const leer = () => Object.fromEntries(MUSKELN.map((m) => [m, 0])) as Record<Muskel, number>;
   const erledigt = { ...(altWoche?.erledigt ?? leer()) };
   for (const m of MUSKELN) erledigt[m] += dosis[m];
+  // Sätze obendrauf (Entscheidung 31.10.2026): was über die geplante Basis hinaus erledigt wurde
+  const extra = obendraufVon(fertig, dosis);
+  const obendrauf = altWoche?.obendrauf || extra ? { ...(altWoche?.obendrauf ?? leer()) } : undefined;
+  if (obendrauf && extra) for (const m of MUSKELN) obendrauf[m] += extra[m];
   const woche: Woche = {
     id: wocheId, prognose, einheiten, erledigt,
     ziele: ort ? wochenziele(z, prognose, ort.id, start, altWoche?.erholungswoche) : (altWoche?.ziele ?? leer()),
     erholungswoche: altWoche?.erholungswoche ?? false, laengerAngenommen: altWoche?.laengerAngenommen ?? false,
     ...(altWoche?.tage ? { tage: altWoche.tage } : {}),
+    ...(obendrauf ? { obendrauf } : {}),
   };
 
   // Zirkel-Bestzeit je Zirkel, Ort und Variantensatz
