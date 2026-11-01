@@ -7,6 +7,7 @@ import {
 import { STANDARD_EINSTELLUNGEN, STANDARD_PRIORITAETEN } from '../konfiguration';
 import { KATALOG } from './katalog';
 import { grenzenNachPrioritaeten } from '../logik/einstellungen';
+import { bereinigeHauptvarianten } from '../logik/migration';
 
 // Früherer Standard der Isolations- und Kombi-Pause (bis Version 1 der Datenbank)
 const PAUSE_ALT = 75;
@@ -72,6 +73,13 @@ export class FitnessDb extends Dexie {
       await tx.table('muskeln').bulkPut(grenzenNachPrioritaeten(muskeln, PRIORITAETEN_ALT, STANDARD_PRIORITAETEN));
       await tx.table('einstellungen').put({ ...e, prioritaeten: { ...STANDARD_PRIORITAETEN } }, EINSTELLUNGEN_SCHLUESSEL);
     });
+    // Version 4 (Gutachten 01.11.2026): Sliding Leg Curls und Nordic Curls gehören zur neuen Bewegung
+    // „Beinbeuger“; als Hauptvariante der Hüfte gespeichert, werden sie dort entfernt. Verlauf und Werte bleiben.
+    this.version(4).upgrade(async (tx) => {
+      const muster: MusterZustand[] = await tx.table('muster').toArray();
+      const eigene: Uebung[] = await tx.table('eigeneUebungen').toArray();
+      await tx.table('muster').bulkPut(bereinigeHauptvarianten(muster, [...KATALOG.uebungen, ...eigene]));
+    });
   }
 }
 
@@ -88,6 +96,8 @@ export async function leseTabellen(d: FitnessDb = db): Promise<Tabellen> {
 export async function ersetzeTabellen(daten: Tabellen, d: FitnessDb = db): Promise<void> {
   await d.transaction('rw', TABELLEN.map((t) => d.table(t)), async () => {
     for (const t of TABELLEN) await d.table(t).clear();
+    // Ein älteres Backup kann Hauptvarianten im alten Muster enthalten (Version 4).
+    daten = { ...daten, muster: bereinigeHauptvarianten(daten.muster, [...KATALOG.uebungen, ...daten.eigeneUebungen]) };
     const einstellungen = daten.einstellungen[0];
     if (einstellungen) await d.einstellungen.put(einstellungen, EINSTELLUNGEN_SCHLUESSEL);
     for (const t of TABELLEN) {

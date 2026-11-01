@@ -9,6 +9,8 @@ import { zustand } from './testhilfe';
 import type { AppZustand, Einheit, Position } from './typen';
 import { uebungVon } from './verlauf';
 
+const positionVonEinheit = (e: Einheit) => e.bloecke[2]!.positionen[0]!;
+
 const pos = (uebungId: string, saetze: number, extra: Partial<Position> = {}): Position =>
   ({ uebungId, saetze, zielWdh: 10, ergebnisse: [], ...extra });
 
@@ -215,12 +217,37 @@ describe('Ziel und Vorgabe', () => {
     expect(satzVorgabe(z, MIX, liste[0]!)).toMatchObject({ art: 'maxTest', wert: 0, zaehlen: true });
   });
 
-  it('nennt die Reserve laut Einstellung und beim letzten Isolationssatz 0 bis 1', () => {
+  it('nennt die Reserve laut Einstellung; der letzte Satz ist der Messsatz (Entscheidungen 01.11.2026)', () => {
     expect(satzVorgabe(z, MIX, liste[1]!).reserve).toBe('Aufhören, wenn noch 1 bis 3 Wiederholungen gingen.');
+    expect(satzVorgabe(z, MIX, liste[1]!).messReserve).toBeUndefined();
     const schonend = { ...z, einstellungen: [{ ...z.einstellungen[0]!, zielReserve: '2-3' as const }] };
     expect(satzVorgabe(schonend, MIX, liste[1]!).reserve).toContain('2 bis 3');
-    expect(satzVorgabe(z, MIX, liste[6]!).reserve).not.toContain('0 bis 1');
-    expect(satzVorgabe(z, MIX, liste[7]!).reserve).toContain('Im letzten Satz genügen 0 bis 1.');
+    // Grundübung: Schluss, wenn noch 2 saubere gingen; Isolation: bis zur letzten sauberen.
+    expect(satzVorgabe(z, MIX, liste[5]!)).toMatchObject({ messReserve: 2 });
+    expect(satzVorgabe(z, MIX, liste[5]!).reserve).toBe('Letzter Satz: so viele saubere Wiederholungen wie möglich. Schluss, wenn noch 2 gingen.');
+    expect(satzVorgabe(z, MIX, liste[6]!).messReserve).toBeUndefined();
+    expect(satzVorgabe(z, MIX, liste[7]!)).toMatchObject({ messReserve: 0 });
+    expect(satzVorgabe(z, MIX, liste[7]!).reserve).toContain('bis keine saubere mehr geht');
+    // Schonend je eine mehr; Max-Test ohne Messsatz.
+    expect(satzVorgabe(schonend, MIX, liste[5]!).messReserve).toBe(3);
+    expect(satzVorgabe(schonend, MIX, liste[7]!).messReserve).toBe(1);
+    expect(satzVorgabe(z, MIX, liste[0]!).messReserve).toBeUndefined();
+  });
+
+  it('speichert im Messsatz Reserve und Technik; daraus folgt das Feedback der Übung', () => {
+    const curls = (wdh: number, reserve: number, technikUnsauber = false) =>
+      positionVonEinheit(trageSatzEin(z, trageSatzEin(z, MIX, liste[6]!, 12, '2026-10-20T18:20:00'), liste[7]!, wdh,
+        '2026-10-20T18:22:00', undefined, { reserve, technikUnsauber }));
+    expect(curls(13, 0)).toMatchObject({ reserve: 0, feedback: 'passend' });
+    expect(curls(13, 0).technikUnsauber).toBeUndefined();
+    expect(curls(12, 4)).toMatchObject({ reserve: 4, feedback: 'leicht' });
+    expect(curls(12, 0, true)).toMatchObject({ technikUnsauber: true, feedback: 'schwer' });
+    // Mit Ziel-Reserve 1 wären nur 8 gegangen (9 + 0 − 1), mehr als 2 unter dem Ziel 12: zu schwer.
+    expect(curls(9, 0)).toMatchObject({ feedback: 'schwer' });
+    expect(curls(12, 9).reserve).toBe(5);
+    // Ohne Messung (z. B. ältere Daten) bleibt das Feedback offen.
+    expect(trageSatzEin(z, MIX, liste[1]!, 10, '2026-10-20T18:10:00', undefined, { reserve: 2, technikUnsauber: false })
+      .bloecke[1]!.positionen[0]!.reserve).toBeUndefined();
   });
 
   it('speichert Halteübungen in Sekunden', () => {
@@ -368,7 +395,7 @@ describe('Fortschritt im Training', () => {
     const z = zustand({ katalog: 'voll' });
     const e = einheit([{ typ: 'einzeln', pauseSek: 90, positionen: [pos('liegestuetz', 3, { zielWdh: 12 })] }]);
     const h = fortschrittshinweis(z, e, { block: 0, position: 0, satz: 1 }, '2026-10-20T18:10:00')!;
-    expect(h).toMatchObject({ heute: 12, ab: 15, schritt: 'variante', naechste: 'Decline Pushups' });
+    expect(h).toMatchObject({ heute: 12, ab: 15, schritt: 'variante', naechste: 'Pause Pushups' });   // Zwischenstufe seit 01.11.2026
     expect(h.letztesMal).toBeUndefined();
   });
 

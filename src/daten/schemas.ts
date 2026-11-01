@@ -25,7 +25,7 @@ export const utensilSchema = z.object({
 export const uebungSchema = z.object({
   id: z.string().min(1), name: z.string().min(1), muster: musterId,
   primaer: z.array(muskel), sekundaer: z.array(muskel),
-  stufe: ganzzahl.min(1).max(10),
+  stufe: zahl.min(1).max(10).refine((s) => Number.isInteger(s * 2), 'Stufe: ganze oder halbe Zahl'),
   equipment: z.array(z.array(z.string().min(1)).min(1)),
   lasttyp: z.enum(['KG', 'Band', 'Last', 'Zeit']),
   bereich: z.object({ von: zahl.positive(), bis: zahl.positive(), einheit: z.enum(['Wdh.', 'Sek.']) })
@@ -38,6 +38,7 @@ export const uebungSchema = z.object({
   videoId: z.string().regex(/^[\w-]{11}$/).optional(),
   anleitung: z.array(z.string().min(1)).optional(),
   brauchtPlatz: z.boolean().optional(),
+  anteile: z.partialRecord(muskel, zahl.min(0).max(1)).optional(), vorrang: z.boolean().optional(), einseitig: z.boolean().optional(),
   herkunft: z.enum(['katalog', 'eigene']),
 });
 
@@ -116,13 +117,13 @@ export const varianteSchema = z.object({
 });
 
 export const musterZustandSchema = z.object({
-  muster: musterId, stufe: ganzzahl.min(1).max(10), hauptvarianten: z.array(z.string()),
+  muster: musterId, stufe: zahl.min(1).max(10), hauptvarianten: z.array(z.string()),   // halbe Stufen seit 01.11.2026
 });
 
 export const muskelZustandSchema = z.object({
   muskel, letzteBelastung: z.string().optional(), letzteDosis: zahl, letzteSchwer: z.boolean(),
   persoenlicheGrenze: zahl, gleichWochen: ganzzahl.nonnegative(),
-  leistung: z.array(z.object({ woche: z.string(), wert: zahl })),
+  leistung: z.array(z.object({ woche: z.string(), wert: zahl, schwelle: zahl.optional() })),
 });
 
 export const wocheSchema = z.object({
@@ -147,6 +148,7 @@ const positionSchema = z.object({
   uebungId: z.string().min(1), saetze: ganzzahl.nonnegative(), zielWdh: zahl, last: zahl.optional(),
   bandStufe: bandStufe.optional(), istMaxTest: z.boolean().optional(), istLasttest: z.boolean().optional(), istErsatz: z.boolean().optional(),
   getauschtVon: z.string().optional(), langsam: z.boolean().optional(), zielFolgesaetze: zahl.optional(), ergebnisse: z.array(satzSchema), feedback: z.enum(FEEDBACKS).optional(),
+  reserve: zahl.optional(), technikUnsauber: z.boolean().optional(),
 });
 
 export const einheitSchema = z.object({

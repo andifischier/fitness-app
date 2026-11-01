@@ -96,7 +96,9 @@ async function trainiere(d: FitnessDb, jetzt: string, woche: number, prognose: n
     const s = schritte(e)[aktuellerSchritt(e)]!;
     const v = satzVorgabe(zLauf, e, s);
     const wert = v.art === 'maxTest' ? (uebungVon(zLauf, e.bloecke[s.block]!.positionen[s.position]!.uebungId)?.bereich.einheit === 'Sek.' ? 55 : 14) : v.wert;
-    e = trageSatzEin(zLauf, e, s, wert, plusMinuten(start, 2 + i), v.kalibrierung ? v.last : undefined);
+    // Messsatz (Entscheidung 01.11.2026): Ziel geschafft, noch 2 saubere wären gegangen.
+    const messung = v.messReserve !== undefined ? { reserve: 2, technikUnsauber: false } : undefined;
+    e = trageSatzEin(zLauf, e, s, wert, plusMinuten(start, 2 + i), v.kalibrierung ? v.last : undefined, messung);
     for (const stelle of offeneFeedbacks(e)) e = setzeFeedback(e, stelle, 'passend');
     expect(await speichereLaufendeEinheit(e, d)).toBe(true);
   }

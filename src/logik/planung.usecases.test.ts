@@ -53,10 +53,13 @@ describe('Use Cases', () => {
           for (const m of GROSS) expect(erledigt[m], `${m}: ${erledigt[m]} von ${ziele[m]}`).toBeGreaterThanOrEqual(0.8 * ziele[m]);
           for (const m of MUSKELN) expect(erledigt[m], `${m}: ${erledigt[m]} von ${ziele[m]}`).toBeGreaterThanOrEqual(0.5 * ziele[m]);
         }
-        for (const e of einheiten) {
+        // Bei 1 bis 2 Einheiten kommen Bizeps und Trizeps außerhalb des Zeitbudgets dazu (Entscheidung 01.11.2026).
+        for (const [i, e] of einheiten.entries()) {
           const imBudget = e.bloecke.flatMap((b) => b.positionen)
             .filter((p) => !p.istMaxTest && MUSTER_ART[uebungVon(z, p.uebungId)!.muster] !== 'zusatz');
-          expect(imBudget.length).toBeLessThanOrEqual(EINHEIT.maxUebungen);
+          const prognose = fall.termine[i]?.prognose ?? fall.prognose;
+          const arme = prognose <= EINHEIT.armeZusatzBisPrognose ? EINHEIT.armeZusatzMuster.length : 0;
+          expect(imBudget.length).toBeLessThanOrEqual(EINHEIT.maxUebungen + arme);
         }
       });
     }
@@ -73,7 +76,8 @@ describe('Use Cases', () => {
   it('Wochenziele bei 40 Min wie in der Spezifikation', () => {
     const z = eingespielt(zustand());
     const jetzt = zeitpunkt(0, 18);
-    expect(wochenziele(z, 2, 'zuhause', jetzt)).toMatchObject({ Brust: 12, Quadrizeps: 9, Bauch: 6, Waden: 4 });
+    // Seit 01.11.2026 ohne Bauch und Waden in der Summe der Gewichte: Quadrizeps bei 2 Einheiten 10 statt 9.
+    expect(wochenziele(z, 2, 'zuhause', jetzt)).toMatchObject({ Brust: 12, Quadrizeps: 10, Bauch: 6, Waden: 4 });
     expect(wochenziele(z, 3, 'zuhause', jetzt)).toMatchObject({ Brust: 12, Quadrizeps: 10, Bauch: 6, Waden: 4 });
     expect(wochenziele(z, 5, 'zuhause', jetzt)).toMatchObject({ Brust: 12, Quadrizeps: 10, Bauch: 6, Waden: 4 });
   });

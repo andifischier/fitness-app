@@ -13,8 +13,10 @@ export const PROFIL = {
   musterstufeNachLevel: { einsteiger: 3, fortgeschritten: 5, erfahren: 6 },
   // Persönliche Volumengrenze (Start) relativ zur Tabelle „Wochenziel pro Muskel“
   grenzeNachLevel: { einsteiger: -2, fortgeschritten: 0, erfahren: 2 },
-  // Bereich für Grundübungen mit Last, wenn das Ziel „Kraft“ gewählt ist
-  kraftBereich: { von: 6, bis: 10 },
+  // Ziel „Kraft“ (Entscheidung 01.11.2026): Hauptvariante A jeder Grundbewegung mit Gewicht nutzt diesen
+  // Bereich und kommt zweimal dran, bevor B einmal dran ist (A, A, B)
+  kraftBereich: { von: 4, bis: 8 },
+  kraftAVorB: 2,
   // Vorschlag für den Zirkel-Anteil nach den Zielen (nur im Onboarding)
   zirkelMitAusdauer: '1proWoche',
   zirkelSonst: 'alle2Wochen',
@@ -115,6 +117,9 @@ export const ZEITBUDGET = {
   echteSatzdauerAbEinheit: 5,     // gleitender Mittelwert über die letzten 5 Einheiten je Format
   laengerMin: 15,
   laengerBisPrognose: 2,
+  // Einseitige Übungen (Gutachten 01.11.2026): beide Seiten nacheinander, also je Satz die Arbeitszeit
+  // noch einmal (`satzArbeitSek`) zusätzlich
+  einseitigZusatzSek: 45,
 } as const;
 
 // Wochenziel pro Muskel
@@ -122,6 +127,9 @@ export const WOCHENZIEL = {
   fraktionelleSaetzeProArbeitssatz: 1.7,
   anteilPrimaer: 1,
   anteilSekundaer: 0.5,
+  // Muskeln, deren Übungen außerhalb des Zeitbudgets laufen: Sie zählen nicht in der Summe der Gewichte,
+  // mit der das Wochenbudget verteilt wird (Entscheidung 01.11.2026)
+  ausserhalbBudget: ['Bauch', 'Waden'] as readonly Muskel[],
   prioritaet: {
     hoch: { gewicht: 1, untergrenze: 4, grenzeStart: 12, obergrenze: 20 },
     normal: { gewicht: 0.75, untergrenze: 4, grenzeStart: 10, obergrenze: 16 },
@@ -144,6 +152,11 @@ export const EINHEIT = {
   saetzeProUebung: { min: 2, max: 4, maxWenigEinheiten: 5, wenigBisPrognose: 2 },  // bei 1 bis 2 Einheiten bis 5 Sätze
   minOffenerBedarf: 0.25,
   maxSaetzeBauchWaden: 3,
+  // Arme bei 1 bis 2 Einheiten (Entscheidung 01.11.2026): je eine Bizeps- und Trizepsübung mit 2 bis 3
+  // Sätzen zusätzlich zum Zeitbudget, wenn für den Muskel noch Bedarf offen ist
+  armeZusatzBisPrognose: 2,
+  armeZusatzSaetze: { min: 2, max: 3 },
+  armeZusatzMuster: ['Bizeps', 'Trizeps'] as readonly MusterId[],
   // Neue Übung (noch nie trainiert): beim ersten Mal höchstens so viele Sätze (Entscheidung 30.10.2026)
   maxSaetzeErstesMal: 3,
   ruhetagUnterSaetzen: 6,
@@ -165,7 +178,7 @@ export const KOMBI = {
 // Zeitbudgets) oder Kondition (nur Zirkel und Aufwärmen)
 export const MUSTER_ART: Record<MusterId, 'grund' | 'isolation' | 'zusatz' | 'kondition'> = {
   hDruck: 'grund', vDruck: 'grund', hZug: 'grund', vZug: 'grund', Knie: 'grund', Einbein: 'grund', Huefte: 'grund',
-  Bizeps: 'isolation', Trizeps: 'isolation', Schulter: 'isolation',
+  Beinbeuger: 'isolation', Bizeps: 'isolation', Trizeps: 'isolation', Schulter: 'isolation',
   Rumpf: 'zusatz', Waden: 'zusatz', Kondition: 'kondition',
 };
 
@@ -173,7 +186,7 @@ export const MUSTER_ART: Record<MusterId, 'grund' | 'isolation' | 'zusatz' | 'ko
 // Rumpf und Kondition zählen zu keiner Hälfte
 export const KOERPERHAELFTE: Partial<Record<MusterId, 'oben' | 'unten'>> = {
   hDruck: 'oben', vDruck: 'oben', hZug: 'oben', vZug: 'oben', Bizeps: 'oben', Trizeps: 'oben', Schulter: 'oben',
-  Knie: 'unten', Einbein: 'unten', Huefte: 'unten', Waden: 'unten',
+  Knie: 'unten', Einbein: 'unten', Huefte: 'unten', Beinbeuger: 'unten', Waden: 'unten',
 };
 
 // Fokus-Gruppen; Bauch ist immer erlaubt
@@ -215,7 +228,7 @@ export const SPERREN_NACH_REGION: Record<string, { muster: readonly MusterId[]; 
     muster: ['Huefte'], uebungen: ['kh_rudern_vorgebeugt', 'lh_rudern'],
     ausnahmen: ['glute_bridge', 'mini_glute_bridge', 'hip_thrust_einbeinig'],
   },
-  knie: { muster: ['Knie', 'Einbein'], uebungen: ['sprung_kniebeuge', 'skater', 'burpees', 'kh_thruster'], ausnahmen: [] },
+  knie: { muster: ['Knie', 'Einbein', 'Beinbeuger'], uebungen: ['sprung_kniebeuge', 'skater', 'burpees', 'kh_thruster'], ausnahmen: [] },
   huefte: { muster: ['Einbein', 'Huefte'], uebungen: ['skater'], ausnahmen: [] },
 };
 
@@ -282,15 +295,13 @@ export const PROGRESSION = {
   einseitigKennzeichen: ['einbeinig', 'einarmig'] as readonly string[],
 } as const;
 
-// Persönliche Volumengrenze pro Muskel (Entscheidung 30.10.2026: „robust, behutsam mehr“): weniger Sätze
-// erst, wenn die Leistung so viele Wochen in Folge gefallen ist oder die Anstrengung hoch war; nach so vielen
-// guten Wochen in Folge (ohne Warnzeichen) mehr Sätze
+// Persönliche Volumengrenze pro Muskel (Entscheidung 01.11.2026: „nur bei Stillstand“): −2, wenn die
+// Leistung im Verlauf der letzten 4 Wochen fällt oder die Anstrengung hoch war; +2 nur, wenn sie über
+// 4 Wochen stagniert und die Erholung gut ist; bei Fortschritt bleibt sie
 export const VOLUMENGRENZE = {
   bewertenAbAnteilZiel: 0.8,
-  gefallenUeber: 0.03,
-  gefallenWochen: 2,
-  guteWochen: 4,
-  mittelWochen: 2,
+  stillstandWochen: 4,            // +2 frühestens so viele bewertete Wochen nach der letzten Änderung
+  senkenAbstandWochen: 2,         // −2 frühestens so viele bewertete Wochen nach der letzten Änderung
   anstrengungHoechstens: 3,
   anstrengungAb: 4,
   schritt: 2,
@@ -299,13 +310,42 @@ export const VOLUMENGRENZE = {
   bestesAusWochen: 4,
 } as const;
 
+// Leistungsverlauf (Entscheidung 01.11.2026): ein Maß für alle Lasttypen. Kapazität = Wiederholungen plus
+// Reserve des Messsatzes; Leistungswert = Teiler + Kapazität (bei Last mal Gewicht, also die Kraftschätzung),
+// so entspricht 1 Wdh. überall etwa 2 bis 3 %. Entschieden wird über die robuste Steigung der letzten 4 Wochen.
+export const LEISTUNG = {
+  wochen: 4,                      // Fenster des Verlaufs
+  minSitzungen: 3,                // so viele vergleichbare Einheiten einer Variante im Fenster
+  minSpanneTage: 10,              // und so weit auseinander
+  steigtAb: 0.01,                 // Fortschritt: mehr als 1 % über 4 Wochen
+  faelltMin: 0.03,                // gefallen: mindestens 3 % weniger über 4 Wochen …
+  faelltFaktorFehler: 2,          // … und mehr als das Doppelte des Messfehlers der Steigung
+} as const;
+
+// Messsatz (Entscheidungen 01.11.2026, „sauberes Limit“): Der letzte Satz jeder Übung mit Wiederholungen
+// endet bei dieser Reserve (Grundübungen 2, sonst bis zur letzten sauberen Wiederholung); bei Ziel-Reserve
+// „2 bis 3“ eine mehr. Danach tippt der Nutzer die Reserve an (0 bis 5, 5 = „5+“).
+export const MESSSATZ = {
+  reserveGrund: 2,
+  reserveIsolation: 0,
+  plusSchonend: 1,
+  reserveMax: 5,
+  leichtAbReserve: 4,             // so viel Reserve oder mehr: „zu leicht“
+} as const;
+
 // Erholungswochen und Trainingspause
 export const ERHOLUNGSWOCHE = {
-  musterMitAbfall: 2,
-  einheitenInFolge: 2,
-  abfallWdh: 2,
+  musterMitAbfall: 2,             // Muster mit gefallenem Verlauf (Entscheidung 01.11.2026)
   anstrengungWorkouts: 4,
-  anstrengungAb: 4.5,
+  anstrengungAb: 4.5,                 // ohne genug eigene Bewertungen
+  // Entscheidung 01.11.2026: Schnitt der letzten 4 mindestens so viel über dem eigenen Schnitt der
+  // 8 Wochen davor (dafür mindestens 4 bewertete Einheiten)
+  anstrengungUeberEigenem: 1,
+  anstrengungEigeneWochen: 8,
+  anstrengungEigeneMin: 4,
+  // In der Erholungswoche 1 Wdh. (Halteübungen 5 Sek.) mehr Reserve: Ziel entsprechend niedriger,
+  // Messsatz endet 1 früher; Ziel und Last der Variante bleiben unverändert
+  reservePlus: 1,
   wochenOhneEntlastung: 10,
   entlastungUnterAnteil: 0.6,
   ueblichesVolumenWochen: 4,
@@ -319,6 +359,10 @@ export const TRAININGSPAUSE = {
   wochenzielAnteil: 0.7,
   lastAbschlag: 0.1,
   wochenNachLangerPause: 2,
+  // Rückkehr leistungsgesteuert (Entscheidung 01.11.2026): Liegt die erste Einheit einer Variante nach der
+  // Pause bei mindestens diesem Anteil der Leistung davor, gelten wieder Ziel und Last von vor der Pause,
+  // und die zweite Woche nach langer Pause hat kein verringertes Wochenziel mehr
+  leistungZurueckAb: 0.95,
   // Ziel-Reserve 3 statt 1: erster Satz der ersten Einheit je Muster weniger (Entscheidung 20.10.2026)
   zielWeniger: 2,
   zeitWeniger: 10,
@@ -351,7 +395,6 @@ export const PLAYER = {
   vorlaufSek: 5,                    // Countdown und Stoppuhr: Zeit zum Bereitmachen (Entscheidung 29.10.2026)
   verlaufPunkte: 8,                 // kleine Kurve im ersten Satz: so viele letzte Einheiten
   reserveHaltenSek: { von: 5, bis: 10 },     // Hinweis bei Halteübungen
-  reserveLetzterIsolationssatz: { von: 0, bis: 1 },
   // Signal am Pausenende: drei kurze Töne und Vibration (Millisekunden)
   ton: { frequenzHz: 880, dauerMs: 180, abstandMs: 120, anzahl: 3, lautstaerke: 0.3 },
   vibration: [200, 100, 200, 100, 400],

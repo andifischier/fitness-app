@@ -452,3 +452,38 @@
 - **Warum:** Wunsch des Nutzers (Entscheidungen 31.10.2026): Mit vielen neuen Übungen (höchstens 3 Sätze)
   kam eine Einheit nur auf rund 20 Min. Der Nutzer will länger trainieren und selbst festlegen, welche
   Muskeln dran sind, ohne dass die übrigen Tage der Woche darunter leiden.
+
+## 01.11.2026: Gutachten, Schritt 1 (Messsatz und Verlauf über 4 Wochen)
+- **Was:**
+  - Gutachten in `docs/gutachten_2026-11-01.md` abgelegt, Abgleich und Umsetzungsplan in `docs/gutachten_abgleich.md`,
+    13 Entscheidungen in `docs/entscheidungen.md`.
+  - Letzter Satz jeder Übung mit Wiederholungen ist ein Messsatz: so viele saubere wie möglich, Grundübungen bis noch 2
+    gingen, Isolation bis zur letzten sauberen. Danach „Wie viele saubere wären noch gegangen?“ (0 bis 5+) oder „Technik
+    wurde unsauber“; daraus folgt das Feedback, die Bewertung am Ende entfällt für diese Übungen.
+  - Kraftschätzung und Ziel aus dem Messsatz mit seiner Reserve (plus Ermüdung der Sätze davor).
+  - Ein Leistungsmaß für Hantel, Körpergewicht und Band; Volumengrenze und Erholungswochen-Angebot entscheiden nach dem
+    Verlauf der letzten 4 Wochen. Volumengrenze: +2 nur bei Stillstand, bei Fortschritt unverändert.
+  - Neue Simulation mit Schätzfehlern (`messsatz.simulation.test.ts`).
+  - Geändert: `verlauf.ts`, `player.ts`, `progression.ts`, `typen.ts`, `schemas.ts`, `konfiguration.ts`, `Training.tsx`;
+    Tests in `player.test.ts`, `progression.test.ts`.
+- **Warum:** Externes Gutachten vom 01.11.2026: Die Daten waren beim Ziel abgeschnitten, drei Stufen zu grob, bei
+  Körpergewicht löste 1 fehlende Wiederholung einen Leistungsabfall aus, und das Volumen stieg ohne Bezug zum Fortschritt.
+  Simulation: bei stabiler Kraft 0,4 Fehlalarme je 12 Wochen, echter Einbruch um 10 % meist binnen 3 Wochen erkannt.
+
+## 01.11.2026: Gutachten, Schritt 2 (Abdeckung, Erholung, Feinschliff)
+- **Was:**
+  - Neue Bewegung „Beinbeuger“ (Sliding Leg Curls, Nordic Curls, neu Band Lying Leg Curls); Hip Thrusts und Glute Bridges
+    zählen für die hinteren Oberschenkel 0,25. Datenbank Version 4 entfernt die beiden Übungen aus den gespeicherten
+    Hauptübungen der Hüfte (Verlauf bleibt).
+  - Vorrang für Überkopf-Trizeps, Schrägbank-Curls und Seitheben (Auswahl und Tausch zu Zyklusbeginn).
+  - Bei 1 bis 2 Einheiten je Woche kommen Bizeps und Trizeps mit 2 bis 3 Sätzen zusätzlich zum Zeitbudget dazu.
+  - Erholungswoche mit 1 Wdh. mehr Reserve, Ziel und Last bleiben; Anstrengungs-Auslöser im Vergleich zum eigenen
+    Schnitt; nach einer Pause gelten Ziel und Last von vorher, sobald die erste Einheit 95 % der Leistung zeigt.
+  - Zwischenstufen Pause Pushups, Backpack Pushups, Backpack Squats (neues Utensil Rucksack); halbe Stufen möglich.
+  - Wochenbudget ohne Bauch und Waden in der Summe der Gewichte; einseitige Übungen kosten mehr Zeit.
+  - Ziel „Kraft“: Hauptvariante A mit 4 bis 8 Wdh. und im Rhythmus A, A, B.
+  - Geändert: `katalog.json`, `uebungskatalog.md`, `planung.ts`, `progression.ts`, `player.ts`, `migration.ts` (neu),
+    `db.ts`, `typen.ts`, `schemas.ts`, `konfiguration.ts`, `texte.ts`, `Profil.tsx`, `Detail.tsx`, `Testtag.tsx`;
+    neue Tests in `gutachten2.test.ts` und `speichern.test.ts`, angepasste Tests.
+- **Warum:** Entscheidungen vom 01.11.2026 zum Gutachten. Arme erreichen in Wochen mit 2 Einheiten jetzt ihr Ziel
+  (Beispielwoche UC3: 12 statt etwa 6 von 12 Sätzen).

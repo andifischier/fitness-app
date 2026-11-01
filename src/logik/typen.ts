@@ -1,7 +1,7 @@
 // Datenmodell laut Spezifikation, Abschnitt „Entitäten (verbindlich für die Umsetzung)“.
 
 export const MUSTER_IDS = [
-  'hDruck', 'vDruck', 'hZug', 'vZug', 'Knie', 'Einbein', 'Huefte',
+  'hDruck', 'vDruck', 'hZug', 'vZug', 'Knie', 'Einbein', 'Huefte', 'Beinbeuger',
   'Rumpf', 'Bizeps', 'Trizeps', 'Schulter', 'Waden', 'Kondition',
 ] as const;
 export const MUSKELN = [
@@ -24,7 +24,7 @@ export interface Utensil { id: string; name: string; details: string; immerVorha
 export interface Uebung {
   id: string; name: string; muster: MusterId;
   primaer: Muskel[]; sekundaer: Muskel[];
-  stufe: number;                    // 1 bis 10 innerhalb des Musters
+  stufe: number;                    // 1 bis 10 innerhalb des Musters, halbe Stufen für Zwischenstufen (01.11.2026)
   equipment: string[][];            // Gruppen; aus jeder Gruppe mind. ein Utensil nötig
   lasttyp: 'KG' | 'Band' | 'Last' | 'Zeit';
   bereich: { von: number; bis: number; einheit: 'Wdh.' | 'Sek.' };
@@ -36,6 +36,9 @@ export interface Uebung {
   videoId?: string;                 // festes YouTube-Video zum Einbetten (nur ausgewählte Katalogübungen)
   anleitung?: string[];             // Kurzanleitung in Stichpunkten (alle Katalogübungen)
   brauchtPlatz?: boolean;           // braucht Platz zum Gehen (z. B. Ausfallschritt gehend)
+  // Gutachten 01.11.2026: eigener Anteil je Muskel statt 0,5 (z. B. Hip Thrust für hintere Oberschenkel 0,25),
+  // Vorrang in der Variantenwahl (Last in der Dehnung bzw. seitliche Schulter), einseitig (doppelte Zeit je Satz)
+  anteile?: Partial<Record<Muskel, number>>; vorrang?: boolean; einseitig?: boolean;
   herkunft: 'katalog' | 'eigene';
 }
 export interface Zirkel {
@@ -105,7 +108,9 @@ export interface VarianteZustand {
 export interface MusterZustand { muster: MusterId; stufe: number; hauptvarianten: string[] } // letzter Test steht in maxTests
 export interface MuskelZustand {
   muskel: Muskel; letzteBelastung?: string; letzteDosis: number; letzteSchwer: boolean;
-  persoenlicheGrenze: number; gleichWochen: number; leistung: { woche: string; wert: number }[];
+  // `gleichWochen`: bewertete Wochen seit der letzten Änderung der Grenze (seit 01.11.2026).
+  // `leistung`: Veränderung der Leistung über die letzten 4 Wochen (Anteil) und die Schwelle für „gefallen“.
+  persoenlicheGrenze: number; gleichWochen: number; leistung: { woche: string; wert: number; schwelle?: number }[];
 }
 export interface Woche {
   id: string; prognose: number; einheiten: number;
@@ -128,6 +133,9 @@ export interface Position {
   langsam?: boolean;                // 3 Sek. absenken
   zielFolgesaetze?: number;         // im Training gesenktes Ziel der restlichen Sätze (Entscheidung 30.10.2026)
   ergebnisse: SatzErgebnis[]; feedback?: Feedback;
+  // Messsatz (Entscheidungen 01.11.2026): Wiederholungen, die im letzten Satz noch sauber gegangen wären
+  // (5 = 5 oder mehr), und ob die Technik unsauber wurde. Daraus folgt `feedback`.
+  reserve?: number; technikUnsauber?: boolean;
 }
 export interface Block {
   typ: 'einzeln' | 'supersatz' | 'zirkel'; positionen: Position[];

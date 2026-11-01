@@ -25,7 +25,8 @@ describe('Rangfolge der Hauptvarianten mit Sternen', () => {
 
   it('plant die Floor Press nur ohne Bank (Entscheidung 30.10.2026)', () => {
     const nurKh = ort(['KH']);
-    expect(ids(voll({}, { orte: [nurKh] }), 'hDruck', nurKh)).toEqual(['kh_bodendruecken', 'liegestuetz']);
+    // B ist die Zwischenstufe Pause Pushups (Stufe 4,5, am nächsten an der Musterstufe 5; Entscheidung 01.11.2026).
+    expect(ids(voll({}, { orte: [nurKh] }), 'hDruck', nurKh)).toEqual(['kh_bodendruecken', 'liegestuetz_pause']);
     expect(ids(voll())).not.toContain('kh_bodendruecken');
     expect(ids(voll({}, { orte: [ort(['KH', 'BANK'])] }), 'hDruck', ort(['KH', 'BANK']))[0]).toBe('kh_bankdruecken');
     // Auch eine gespeicherte Floor Press weicht am Ort mit Bank dem Bankdrücken.
@@ -69,11 +70,13 @@ describe('1 Stern ersetzt die Hauptvariante', () => {
   it('bleibt, wenn es keine Alternative mit mindestens 2 Sternen in der Nähe gibt', () => {
     const nurKh = ort(['KH']);
     const basis = { orte: [nurKh], ...gespeichert(['kh_bodendruecken', 'liegestuetz']) };
-    // Am Ort mit nur Kurzhanteln liegen Knieliegestütz (Stufe 1) und Archer (Stufe 8) zu weit weg.
-    expect(ids(voll({ kh_bodendruecken: 1 }, basis), 'hDruck', nurKh)).toEqual(['kh_bodendruecken', 'liegestuetz']);
+    // Am Ort mit nur Kurzhanteln liegen Knieliegestütz (Stufe 1) und Archer (Stufe 8) zu weit weg; die
+    // Pause Pushups (Stufe 4,5) haben hier ebenfalls 1 Stern.
+    expect(ids(voll({ kh_bodendruecken: 1, liegestuetz_pause: 1 }, basis), 'hDruck', nurKh)).toEqual(['kh_bodendruecken', 'liegestuetz']);
+    expect(ids(voll({ kh_bodendruecken: 1 }, basis), 'hDruck', nurKh)).toEqual(['liegestuetz_pause', 'liegestuetz']);
     const z = voll({ kh_bankdruecken: 1 }, gespeichert(['kh_bankdruecken', 'kh_schraegbank']));
     const alleSchlecht = mitBewertungen(z.einstellungen[0]!, {
-      liegestuetz_fuesse_erhoeht: 1, liegestuetz: 1, band_brustpresse: 1, liegestuetz_band: 1,
+      liegestuetz_fuesse_erhoeht: 1, liegestuetz: 1, band_brustpresse: 1, liegestuetz_band: 1, liegestuetz_pause: 1,
     });
     expect(ids({ ...z, einstellungen: [alleSchlecht] })).toEqual(['kh_bankdruecken', 'kh_schraegbank']);
     expect(uebernimmBewertungen({ ...z, einstellungen: [alleSchlecht] }, 'zuhause', JETZT).muster)
@@ -310,11 +313,12 @@ describe('Nächste Einheit nach dem Feedback', () => {
     expect(vorschauNaechstesMal(z, bank, { ...p, last: 16, feedback: 'passend' }, JETZT)).toMatchObject({ uebungId: 'kh_bankdruecken', last: 18, neueVariante: false });
     expect(vorschauNaechstesMal(z, bank, { ...p, last: 16, feedback: 'schwer' }, JETZT)).toMatchObject({ last: 16, zielWdh: 12 });
 
-    // Körpergewicht: erster Satz erreicht die Obergrenze, die nächste Variante folgt.
+    // Körpergewicht: erster Satz erreicht die Obergrenze, die nächste Variante folgt (seit 01.11.2026 die
+    // Zwischenstufe Pause Pushups).
     const ohneHanteln = { ...voll({}, gespeichert(['liegestuetz', 'liegestuetz_erhoeht_haende'])), orte: [ort(['ERH'])] };
     const kg = einheit('liegestuetz', 25);
     const n = vorschauNaechstesMal(ohneHanteln, kg, { ...kg.bloecke[0]!.positionen[0]!, zielWdh: 15, feedback: 'passend' }, JETZT);
-    expect(n).toMatchObject({ uebungId: 'liegestuetz_fuesse_erhoeht', neueVariante: true, kalibrierung: false });
+    expect(n).toMatchObject({ uebungId: 'liegestuetz_pause', neueVariante: true, kalibrierung: false });
     expect(STANDARD_EINSTELLUNGEN.bewertungen).toBeUndefined();
   });
 });

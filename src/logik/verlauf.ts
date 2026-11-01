@@ -1,6 +1,6 @@
 // Gemeinsame Hilfen für Planung und Progression: Einstellungen, Verlauf der Einheiten, Erholung,
 // Trainingspause, Kraftschätzung und Fälligkeit der Max-Tests. Rein und deterministisch.
-import { BEWERTUNG, ERHOLUNG, MAXTEST, PROGRESSION, STANDARD_EINSTELLUNGEN, TRAININGSPAUSE } from '../konfiguration';
+import { BEWERTUNG, ERHOLUNG, MAXTEST, MESSSATZ, MUSTER_ART, PROGRESSION, STANDARD_EINSTELLUNGEN, TRAININGSPAUSE } from '../konfiguration';
 import { stundenZwischen } from './datum';
 import { alleUebungen, uebungErlaubt } from './equipment';
 import type {
@@ -81,6 +81,32 @@ export function letzterSatz(p: Position): number | undefined {
   return s ? (s.wdh ?? s.sek) : undefined;
 }
 
+// ---------- Messsatz (Entscheidungen 01.11.2026) ----------
+
+// Reserve, bei der der letzte Satz endet: Grundübungen 2, Isolation, Bauch und Waden bis zur letzten
+// sauberen Wiederholung (0); bei Ziel-Reserve „2 bis 3“ je eine mehr.
+export function messReserve(e: Einstellungen, u: Uebung): number {
+  const basis = MUSTER_ART[u.muster] === 'grund' ? MESSSATZ.reserveGrund : MESSSATZ.reserveIsolation;
+  return basis + (e.zielReserve === '2-3' ? MESSSATZ.plusSchonend : 0);
+}
+
+// Letzter Satz, umgerechnet auf die Ziel-Reserve: Mit gemessener Reserve zählt, was mit Ziel-Reserve
+// gegangen wäre (Wiederholungen + Reserve − Ziel-Reserve). Ohne Messung das Geschaffte.
+export function letzterWirksam(e: Einstellungen, p: Position): number | undefined {
+  const letzter = letzterSatz(p);
+  if (letzter === undefined || p.reserve === undefined || p.ergebnisse.at(-1)?.sek !== undefined) return letzter;
+  return letzter + p.reserve - zielReserve(e);
+}
+
+// Feedback aus dem Messsatz: Technik unsauber = „zu schwer“; ab 4 Reserve „zu leicht“; sonst „zu schwer“,
+// wenn der letzte Satz mit Ziel-Reserve mehr als die Toleranz unter dem Ziel geblieben wäre, sonst „passend“.
+export function feedbackAusMesssatz(e: Einstellungen, p: Position): Feedback {
+  if (p.technikUnsauber) return 'schwer';
+  if ((p.reserve ?? 0) >= MESSSATZ.leichtAbReserve) return 'leicht';
+  const wirksam = letzterWirksam(e, p);
+  return wirksam !== undefined && wirksam < p.zielWdh - PROGRESSION.letzterSatzToleranz ? 'schwer' : 'passend';
+}
+
 // Feedback der Übung; fehlt es, gilt „zu schwer“, wenn der letzte Satz mehr als die Toleranz (2 Wdh.,
 // Halteübungen 10 Sek.) unter dem Ziel bleibt, sonst „passend“ (Entscheidung 30.10.2026).
 export function feedbackVon(p: Position): Feedback {
@@ -91,15 +117,42 @@ export function feedbackVon(p: Position): Feedback {
   return letzter !== undefined && letzter < p.zielWdh - toleranz ? 'schwer' : 'passend';
 }
 
-// Leistungswert einer Übung in einer Einheit: e1RM aus dem besten Satz (Last), sonst erster Satz.
+// Leistungswert einer Übung in einer Einheit. Last: Kraftschätzung, mit Messsatz aus ihm und seiner
+// Reserve (Entscheidung 01.11.2026), sonst aus dem besten Satz mit der Reserve laut Bewertung. Sonst der
+// erste Satz (Rekorde und Kurve im Training).
 export function leistungswert(e: Einstellungen, u: Uebung, p: Position): number | undefined {
   if (p.ergebnisse.length === 0) return undefined;
   if (u.lasttyp !== 'Last') return ersterSatz(p);
+  const letzter = p.ergebnisse.at(-1)!;
+  const letzteLast = letzter.last ?? p.last;
+  if (p.reserve !== undefined && letzteLast !== undefined && letzter.wdh !== undefined) {
+    return e1rm(letzteLast, letzter.wdh, p.reserve + ermuedungVor(p));
+  }
   const reserve = reserveFuer(feedbackVon(p), e);
   const werte = p.ergebnisse
     .map((s) => ((s.last ?? p.last) !== undefined && s.wdh !== undefined ? e1rm(s.last ?? p.last!, s.wdh, reserve) : undefined))
     .filter((w): w is number => w !== undefined);
   return werte.length > 0 ? Math.max(...werte) : undefined;
+}
+
+// Gemeinsames Leistungsmaß für den Verlauf (Entscheidung 01.11.2026): Last = Kraftschätzung; Körpergewicht
+// und Band = Teiler + Kapazität des letzten Satzes (Wiederholungen + Reserve; ohne Messung die Reserve
+// laut Bewertung). So bedeutet 1 Wdh. bei jedem Lasttyp etwa gleich viel. Halteübungen: Sekunden des
+// ersten Satzes.
+export function kapazitaetswert(e: Einstellungen, u: Uebung, p: Position): number | undefined {
+  if (p.ergebnisse.length === 0) return undefined;
+  if (u.lasttyp === 'Last') return leistungswert(e, u, p);
+  if (u.bereich.einheit === 'Sek.') return ersterSatz(p);
+  const letzter = letzterSatz(p);
+  if (letzter === undefined) return undefined;
+  return PROGRESSION.e1rmTeiler + letzter + ermuedungVor(p) + (p.reserve ?? reserveFuer(feedbackVon(p), e));
+}
+
+// Der Messsatz ist der letzte, müdeste Satz: Je Satz davor geht 1 Wdh. verloren. Für die Kraftschätzung
+// wird das wieder hinzugerechnet, damit sie die frische Kraft schätzt (wie die Regeln, die die Ermüdung
+// beim Ziel für den letzten Satz wieder abziehen).
+function ermuedungVor(p: Position): number {
+  return PROGRESSION.ermuedungProSatz * Math.max(0, p.ergebnisse.length - 1);
 }
 
 export interface Sitzung { zeit: string; einheit: Einheit; position: Position }
