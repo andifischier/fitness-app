@@ -13,8 +13,8 @@ import {
   type Einstellungen, type Muskel, type MusterId, type Ort, type Position, type Uebung, type Woche, type Zirkel,
 } from './typen';
 import {
-  einstellungenVon, faelligerMaxTest, fertigeEinheiten, istErholt, letzteEinheitZeit, seitRueckkehrTrainiert,
-  sterneVon, trainingspause, uebungVon, wdhBei, zielReserve, type Pause,
+  einstellungenVon, faelligerMaxTest, fertigeEinheiten, istErholt, kapazitaetswert, letzteEinheitZeit, seitRueckkehrTrainiert,
+  sitzungen, sterneVon, trainingspause, uebungVon, wdhBei, zielReserve, type Pause,
 } from './verlauf';
 import { workoutAmOrt } from './workouts';
 
@@ -53,12 +53,20 @@ export function gewicht(e: Einstellungen, m: Muskel): number {
   return WOCHENZIEL.prioritaet[e.prioritaeten[m]].gewicht;
 }
 
-// Beitrag einer Übung pro Satz zu jedem Muskel (fraktionelle Sätze).
-function beitrag(u: Uebung, primaer: number = WOCHENZIEL.anteilPrimaer, sekundaer: number = WOCHENZIEL.anteilSekundaer) {
+// Beitrag einer Übung pro Satz zu jedem Muskel (fraktionelle Sätze). Ein eigener Anteil im Katalog
+// (`anteile`, z. B. Hip Thrust für hintere Oberschenkel 0,25; Entscheidung 01.11.2026) ersetzt 0,5 und gilt
+// im Zirkel im selben Verhältnis.
+export function beitrag(u: Uebung, primaer: number = WOCHENZIEL.anteilPrimaer, sekundaer: number = WOCHENZIEL.anteilSekundaer) {
   return [
     ...u.primaer.map((m) => [m, primaer] as const),
-    ...u.sekundaer.map((m) => [m, sekundaer] as const),
+    ...u.sekundaer.map((m) => [m, sekundaer * ((u.anteile?.[m] ?? WOCHENZIEL.anteilSekundaer) / WOCHENZIEL.anteilSekundaer)] as const),
   ];
+}
+
+// Zeitkosten eines Satzes in mittleren Sätzen: Einseitige Übungen brauchen die Arbeitszeit doppelt
+// (Entscheidung 01.11.2026).
+function satzKosten(u: Uebung, satzdauer: number): number {
+  return u.einseitig ? 1 + ZEITBUDGET.einseitigZusatzSek / satzdauer : 1;
 }
 
 // ---------- Zeitbudget ----------
@@ -89,10 +97,12 @@ function satzdauerSupersatz(e: Einstellungen): number {
 
 // Arbeitssätze pro Einheit ohne Bauch und Waden. Das Wochenziel rechnet mit Kombi (Standard).
 export function arbeitssaetze(z: AppZustand, minuten: number, klassisch = false): number {
+  return Math.max(0, Math.floor(((minuten - ZEITBUDGET.aufwaermenMin) * 60) / mittlereSatzdauer(z, klassisch)));
+}
+
+function mittlereSatzdauer(z: AppZustand, klassisch: boolean): number {
   const e = einstellungenVon(z);
-  const dauer = echteSatzdauer(z, klassisch ? 'klassisch' : 'supersatz')
-    ?? (klassisch ? satzdauerKlassisch(e) : satzdauerSupersatz(e));
-  return Math.max(0, Math.floor(((minuten - ZEITBUDGET.aufwaermenMin) * 60) / dauer));
+  return echteSatzdauer(z, klassisch ? 'klassisch' : 'supersatz') ?? (klassisch ? satzdauerKlassisch(e) : satzdauerSupersatz(e));
 }
 
 // ---------- Wochenziel ----------
@@ -115,14 +125,41 @@ export function wochenzielFaktor(z: AppZustand, jetzt: string, erholungswoche = 
   const ab = isoWoche(pause.rueckkehr);
   const bis = isoWoche(plusTage(pause.rueckkehr, 7 * (wochen - 1)));
   const woche = isoWoche(jetzt);
-  return woche >= ab && woche <= bis ? TRAININGSPAUSE.wochenzielAnteil : 1;
+  if (woche < ab || woche > bis) return 1;
+  // Ab der zweiten Woche nach langer Pause nur noch, solange die Leistung nicht zurück ist (Entscheidung 01.11.2026).
+  return woche > ab && leistungNachPauseZurueck(z, pause, jetzt) ? 1 : TRAININGSPAUSE.wochenzielAnteil;
+}
+
+// Haben alle seit der Rückkehr trainierten Varianten mit Vergleich vor der Pause in ihrer ersten Einheit
+// danach mindestens 95 % der Leistung von davor erreicht (und mindestens eine)?
+export function leistungNachPauseZurueck(z: AppZustand, pause: Pause, jetzt: string): boolean {
+  const e = einstellungenVon(z);
+  const gesehen = new Set<string>();
+  let verglichen = false;
+  for (const einheit of fertigeEinheiten(z)) {
+    const t = einheit.gestartetAm ?? einheit.erstelltAm;
+    if (t < pause.rueckkehr || t >= jetzt || einheit.format === 'zirkel' || einheit.format === 'test') continue;
+    for (const p of einheit.bloecke.flatMap((b) => b.positionen)) {
+      const u = uebungVon(z, p.uebungId);
+      if (!u || p.istMaxTest || p.ergebnisse.length === 0 || gesehen.has(u.id)) continue;
+      gesehen.add(u.id);
+      const vorher = sitzungen(z, u.id, pause.rueckkehr).filter((x) => x.einheit.format !== 'test').at(-1);
+      const davor = vorher && kapazitaetswert(e, u, vorher.position);
+      const nachher = kapazitaetswert(e, u, p);
+      if (davor === undefined || nachher === undefined || davor <= 0) continue;
+      if (nachher < TRAININGSPAUSE.leistungZurueckAb * davor) return false;
+      verglichen = true;
+    }
+  }
+  return verglichen;
 }
 
 export function wochenziele(z: AppZustand, prognose: number, ortId: string, jetzt: string, erholungswoche = false): ProMuskel {
   const e = einstellungenVon(z);
   const faktor = wochenzielFaktor(z, jetzt, erholungswoche);
   const budget = prognose * arbeitssaetze(z, e.standardDauerMin) * WOCHENZIEL.fraktionelleSaetzeProArbeitssatz;
-  const summe = MUSKELN.reduce((s, m) => s + gewicht(e, m), 0);
+  // Bauch und Waden laufen außerhalb des Zeitbudgets und verbrauchen keinen Anteil (Entscheidung 01.11.2026).
+  const summe = MUSKELN.filter((m) => !WOCHENZIEL.ausserhalbBudget.includes(m)).reduce((s, m) => s + gewicht(e, m), 0);
   const ziele = leer();
   for (const m of MUSKELN) {
     const p = WOCHENZIEL.prioritaet[e.prioritaeten[m]];
@@ -185,14 +222,16 @@ export function musterstufe(z: AppZustand, e: Einstellungen, muster: MusterId): 
   return z.muster.find((x) => x.muster === muster)?.stufe ?? PROFIL.musterstufeNachLevel[e.level];
 }
 
-// Rangfolge: Favorit; Varianten mit 1 Stern ans Ende; Abstand zur Musterstufe; mehr Sterne;
-// Lasttyp; Katalogreihenfolge.
+// Rangfolge: Favorit; Varianten mit 1 Stern ans Ende; Vorrang laut Katalog (Last in der Dehnung bzw.
+// seitliche Schulter, Entscheidung 01.11.2026); Abstand zur Musterstufe; mehr Sterne; Lasttyp; Katalogreihenfolge.
+// Die ersten vier Schlüssel bestimmen, was als gleichauf gilt.
 function rangiere(z: AppZustand, e: Einstellungen, muster: MusterId, liste: Uebung[]) {
   const stufe = musterstufe(z, e, muster);
   const reihenfolge = alleUebungen(z).map((u) => u.id);
   const schluessel = (u: Uebung) => [
     e.favoriten.includes(u.id) ? 0 : 1,
     sterneVon(e, u.id) === 1 ? 1 : 0,
+    u.vorrang ? 0 : 1,
     u.lasttyp === 'Last' ? Math.max(0, u.stufe - stufe) : Math.abs(u.stufe - stufe),
     -sterneVon(e, u.id),
     LASTTYP_RANG[u.lasttyp],
@@ -226,7 +265,7 @@ export function hauptvarianten(z: AppZustand, muster: MusterId, ort: Ort, jetzt:
     const rest = sortiert.slice(1).filter((r) => r.u.lasttyp === 'Last' || r.u.stufe <= grenze);
     if (rest.length === 0) return [{ uebung: a.u, istErsatz: false }];
     // B: nächstbeste Variante, innerhalb derselben Stufe bevorzugt mit anderem Equipment.
-    const gleichAuf = rest.filter((r) => [0, 1, 2].every((i) => r.k[i] === rest[0]!.k[i]));
+    const gleichAuf = rest.filter((r) => [0, 1, 2, 3].every((i) => r.k[i] === rest[0]!.k[i]));
     const b = gleichAuf.find((r) => equipmentSchluessel(r.u) !== equipmentSchluessel(a.u)) ?? rest[0]!;
     return [a.u, b.u].slice(0, EINHEIT.maxHauptvarianten).map((u) => ({ uebung: u, istErsatz: false }));
   }
@@ -261,16 +300,23 @@ export function ohneEinStern(z: AppZustand, e: Einstellungen, liste: Uebung[], e
 // A und B wechseln sich ab: fällig ist die Variante, die zuletzt nicht dran war (Max-Tests und Zirkel
 // zählen nicht). Ohne Verlauf die mit mehr Sternen, bei Gleichstand A, bei zwei Varianten ohne Gewicht die
 // leichtere (Entscheidung 30.10.2026).
+// Ziel „Kraft“ (Entscheidung 01.11.2026): Bei Grundbewegungen kommt A zweimal, bevor B einmal dran ist.
 function faellige(z: AppZustand, kandidaten: Kandidat[]): Kandidat | undefined {
   const [a, b] = kandidaten;
   if (!a || !b) return a;
+  const e = einstellungenVon(z);
   const ids = new Set([a.uebung.id, b.uebung.id]);
+  const zuletzt: string[] = [];
+  const aVorB = e.ziele.includes('kraft') && istGrund(a.uebung) ? PROFIL.kraftAVorB : 1;
   for (const einheit of fertigeEinheiten(z).reverse()) {
     const p = einheit.bloecke.filter((bl) => bl.typ !== 'zirkel').flatMap((bl) => bl.positionen)
       .filter((x) => ids.has(x.uebungId) && !x.istMaxTest && x.ergebnisse.length > 0).at(-1);
-    if (p) return p.uebungId === a.uebung.id ? b : a;
+    if (!p) continue;
+    zuletzt.push(p.uebungId);
+    if (p.uebungId === b.uebung.id) return a;
+    if (zuletzt.length >= aVorB) return b;
   }
-  const e = einstellungenVon(z);
+  if (zuletzt.length > 0) return a;
   const sterne = sterneVon(e, b.uebung.id) - sterneVon(e, a.uebung.id);
   if (sterne !== 0) return sterne > 0 ? b : a;
   const ohneGewicht = a.uebung.lasttyp !== 'Last' && b.uebung.lasttyp !== 'Last';
@@ -301,8 +347,11 @@ function letzteUebungJeMuskel(z: AppZustand): Map<Muskel, Uebung> {
 
 // ---------- Startwerte einer Variante ----------
 
-export function bereichFuer(e: Einstellungen, u: Uebung): { von: number; bis: number } {
-  if (e.ziele.includes('kraft') && istGrund(u) && u.lasttyp === 'Last') return PROFIL.kraftBereich;
+// Bereich einer Übung. Ziel „Kraft“ (Entscheidung 01.11.2026): Die gespeicherte Hauptvariante A einer
+// Grundbewegung mit Gewicht nutzt 4 bis 8 Wiederholungen; ohne Zustand gilt der Katalogbereich.
+export function bereichFuer(e: Einstellungen, u: Uebung, z?: AppZustand): { von: number; bis: number } {
+  if (e.ziele.includes('kraft') && istGrund(u) && u.lasttyp === 'Last'
+    && z?.muster.find((x) => x.muster === u.muster)?.hauptvarianten[0] === u.id) return PROFIL.kraftBereich;
   return u.bereich;
 }
 
@@ -329,12 +378,12 @@ export function lastVorschlag(z: AppZustand, e: Einstellungen, ort: Ort, u: Uebu
   const basis = basisKraft(z, u);
   if (!ziel || raster.length === 0 || basis === undefined) return undefined;
   const schaetzung = basis * ziel.faktor * ABLEITUNG.sicherheit;
-  const U = bereichFuer(e, u).von;
+  const U = bereichFuer(e, u, z).von;
   return [...raster].reverse().find((kg) => wdhBei(schaetzung, kg, PROGRESSION.neueVarianteReserve) >= U) ?? raster[0];
 }
 
 export function startwerte(z: AppZustand, e: Einstellungen, ort: Ort, u: Uebung): Startwerte {
-  const bereich = bereichFuer(e, u);
+  const bereich = bereichFuer(e, u, z);
   const v = z.varianten.find((x) => x.uebungId === u.id);
   const werte: Startwerte = { zielWdh: v?.zielWdh ?? bereich.von };
 
@@ -472,15 +521,22 @@ function leereEinheit(eing: EinheitEingabe, format: Format = 'klassisch'): Einhe
   };
 }
 
-interface Kontext { z: AppZustand; e: Einstellungen; ort: Ort; jetzt: string; pause?: Pause }
+interface Kontext { z: AppZustand; e: Einstellungen; ort: Ort; jetzt: string; pause?: Pause; erholungswoche?: boolean }
 
 function neuePosition(c: Kontext, k: Kandidat, saetze: number): Position {
   const { z, e, ort, jetzt, pause } = c;
   const angepasst = pause && !seitRueckkehrTrainiert(z, k.uebung.muster, pause.rueckkehr, jetzt)
     ? nachPause(z, e, ort, k.uebung, pause, jetzt)
     : { uebung: k.uebung, werte: startwerte(z, e, ort, k.uebung) };
+  // Erholungswoche (Entscheidung 01.11.2026): 1 Wdh. (Halteübungen 5 Sek.) mehr Reserve, also ein
+  // niedrigeres Ziel; Ziel und Last der Variante bleiben gespeichert, wie sie sind.
+  const werte = { ...angepasst.werte };
+  if (c.erholungswoche && z.varianten.some((v) => v.uebungId === angepasst.uebung.id)) {
+    const inSek = angepasst.uebung.bereich.einheit === 'Sek.';
+    werte.zielWdh = Math.max(1, werte.zielWdh - ERHOLUNGSWOCHE.reservePlus * (inSek ? PROGRESSION.sekProWdh : 1));
+  }
   return {
-    uebungId: angepasst.uebung.id, saetze, ...angepasst.werte,
+    uebungId: angepasst.uebung.id, saetze, ...werte,
     ...(k.istErsatz ? { istErsatz: true } : {}), ergebnisse: [],
   };
 }
@@ -591,6 +647,7 @@ function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Pla
 
   // Schritt 6: Übungen gierig wählen aus den Hauptvarianten A und B aller Muster außer Rumpf und Waden
   const budget = budgetVorgabe ?? arbeitssaetze(z, e.standardDauerMin + (eing.laenger ? ZEITBUDGET.laengerMin : 0), eing.klassisch === true);
+  const kosten = (u: Uebung) => satzKosten(u, mittlereSatzdauer(z, eing.klassisch === true));
   // A und B wechseln sich je Muster strikt ab (Entscheidung 30.10.2026): Die nicht fällige Variante kommt
   // nur, wenn die fällige schon gewählt ist (zweite Übung derselben Bewegung). Haben A und B verschiedene
   // Hauptmuskeln (z. B. Rumänisches Kreuzheben und Hip Thrust), bleiben beide frei, sonst fehlte einem
@@ -687,15 +744,17 @@ function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Pla
     const h = hauptmuskel(beste.uebung)!;
     const max = maxSaetze(beste.uebung);
     if (max < Math.min(maxUeblich, Math.ceil(bedarf[h] - dosis[h]))) gedeckelt.add(h);
-    const saetze = Math.min(Math.max(min, Math.min(max, Math.ceil(bedarf[h] - dosis[h]))), budget - gesamt);
+    const saetze = Math.min(Math.max(min, Math.min(max, Math.ceil(bedarf[h] - dosis[h]))),
+      Math.floor((budget - gesamt) / kosten(beste.uebung) + 1e-9));
     if (saetze <= 0) break;
     gewaehlt.push({ k: beste, saetze });
     bedient.add(h);
-    gesamt += saetze;
+    gesamt += saetze * kosten(beste.uebung);
     for (const [m, v] of beitrag(beste.uebung)) dosis[m] += saetze * v;
   } };
   fuelle(EINHEIT.maxUebungen);
-  const bedarfOffen = gesamt >= budget && offen().length > 0;
+  // Zeitbudget voll: kein ganzer Satz passt mehr (einseitige Sätze kosten mehr als einer).
+  const bedarfOffen = budget - gesamt < 1 - 1e-9 && offen().length > 0;
 
   // Obendrauf (Entscheidung 31.10.2026): Bleibt bei einer Wunschdauer Zeit übrig, bekommen die gewählten
   // Muskeln mehr Sätze, bis zu `EINHEIT.maxSaetzeProMuskel` je Einheit: zuerst mehr Sätze der gewählten
@@ -711,9 +770,9 @@ function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Pla
         weiter = false;
         for (const a of gewaehlt) {
           const h = hauptmuskel(a.k.uebung)!;
-          if (gesamt >= budget || a.saetze >= maxSaetze(a.k.uebung) || bedarf[h] - dosis[h] < 1) continue;
+          if (gesamt + kosten(a.k.uebung) > budget + 1e-9 || a.saetze >= maxSaetze(a.k.uebung) || bedarf[h] - dosis[h] < 1) continue;
           a.saetze += 1;
-          gesamt += 1;
+          gesamt += kosten(a.k.uebung);
           for (const [m, v] of beitrag(a.k.uebung)) dosis[m] += v;
           weiter = true;
         }
@@ -739,13 +798,29 @@ function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Pla
     for (const [mm, v] of beitrag(k.uebung)) dosis[mm] += saetze * v;
   }
 
+  // Arme bei 1 bis 2 Einheiten (Entscheidung 01.11.2026): Ist für Bizeps oder Trizeps noch Bedarf offen und
+  // hat er keine eigene Übung, kommt eine mit 2 bis 3 Sätzen zusätzlich zum Zeitbudget dazu (wie Bauch und Waden).
+  if (prognose <= EINHEIT.armeZusatzBisPrognose) {
+    for (const muster of EINHEIT.armeZusatzMuster) {
+      const k = faellige(z, hauptvarianten(z, muster, ort, jetzt, e));
+      const m = k && hauptmuskel(k.uebung);
+      if (!k || !m || !erholt[m] || gewaehlt.some((a) => hauptmuskel(a.k.uebung) === m)) continue;
+      const offen = basisBedarf[m] - (dosis[m] - extra[m]);
+      if (offen < 1) continue;
+      const { min: amin, max: amax } = EINHEIT.armeZusatzSaetze;
+      const saetze = Math.min(maxSaetze(k.uebung), Math.max(amin, Math.min(amax, Math.ceil(offen))));
+      zusatz.push({ k, saetze });
+      for (const [mm, v] of beitrag(k.uebung)) dosis[mm] += saetze * v;
+    }
+  }
+
   // Das getestete Muster bekommt 50 % weniger weitere Sätze.
   if (testUebung) {
     for (const a of [...gewaehlt, ...zusatz]) {
       if (a.k.uebung.muster !== testUebung.muster) continue;
       // Höchstens bis auf 2 Sätze (Entscheidung 30.10.2026: keine Übung mit nur 1 Satz)
       const weniger = Math.min(a.saetze, Math.max(MAXTEST.minSaetzeNachTest, Math.round(a.saetze * MAXTEST.weitereSaetzeAnteil)));
-      if (gewaehlt.includes(a)) gesamt -= a.saetze - weniger;
+      if (gewaehlt.includes(a)) gesamt -= (a.saetze - weniger) * kosten(a.k.uebung);
       a.saetze = weniger;
     }
   }
@@ -756,7 +831,7 @@ function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Pla
     ...gewaehlt.filter((a) => !istGrund(a.k.uebung)),
     ...zusatz,
   ];
-  const c: Kontext = { z, e, ort, jetzt, pause: trainingspause(z, jetzt) };
+  const c: Kontext = { z, e, ort, jetzt, pause: trainingspause(z, jetzt), erholungswoche };
   const gebildet = bildeBloecke(c, liste, eing.klassisch === true);
   const format = gebildet.format;
   const bloecke: Block[] = testUebung
@@ -824,9 +899,12 @@ function vertragenSich(a: Uebung, b: Uebung): boolean {
 
 export function geschaetzteDauer(z: AppZustand, einheit: Einheit): number {
   const saetze = einheit.bloecke.reduce((s, b) => s + b.positionen.reduce((t, p) => t + p.saetze, 0), 0);
+  // Einseitige Übungen: je Satz die Arbeitszeit zusätzlich (Entscheidung 01.11.2026)
+  const einseitig = einheit.bloecke.reduce((s, b) => s + b.positionen
+    .reduce((t, p) => t + (uebungVon(z, p.uebungId)?.einseitig ? p.saetze : 0), 0), 0);
   const echte = echteSatzdauer(z, einheit.format);
-  let sek = 0;
-  if (echte !== undefined) sek = saetze * echte;
+  let sek = einseitig * ZEITBUDGET.einseitigZusatzSek;
+  if (echte !== undefined) sek += saetze * echte;
   else {
     for (const b of einheit.bloecke) {
       const s = b.positionen.map((p) => p.saetze);

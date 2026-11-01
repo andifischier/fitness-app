@@ -71,7 +71,8 @@ describe('Wochenziel und Prioritäten', () => {
 
   it('gespeicherte persönliche Grenze hat Vorrang', () => {
     const z = { ...zustand(), muskeln: [{ ...belastet('Brust', MO, 0), letzteBelastung: undefined, persoenlicheGrenze: 14 }] };
-    expect(wochenziele(z, 1, 'zuhause', MO).Brust).toBe(6); // Zeitbudget begrenzt
+    // Zeitbudget begrenzt; Bauch und Waden zählen seit 01.11.2026 nicht in der Summe der Gewichte (6,6 statt 6,0).
+    expect(wochenziele(z, 1, 'zuhause', MO).Brust).toBe(7);
     expect(wochenziele(z, 5, 'zuhause', MO).Brust).toBe(14);
   });
 });
@@ -342,13 +343,15 @@ describe('A und B wechseln sich ab (Entscheidung 30.10.2026)', () => {
 });
 
 describe('Startwerte und Ortswechsel', () => {
-  it('neue Variante: Untergrenze des Bereichs und kleinste Last; Ziel „Kraft“ nutzt 6 bis 10', () => {
+  it('neue Variante: Untergrenze des Bereichs und kleinste Last; Ziel „Kraft“: Hauptvariante A nutzt 4 bis 8', () => {
     const z = zustand();
     const e = z.einstellungen[0]!;
     expect(startwerte(z, e, z.orte[0]!, uebung(z, 'kh_bankdruecken'))).toEqual({ zielWdh: 8, last: 2 });
     const kraft = { ...e, ziele: ['kraft' as const] };
-    expect(startwerte(z, kraft, z.orte[0]!, uebung(z, 'kh_bankdruecken')).zielWdh).toBe(6);
-    expect(startwerte(z, kraft, z.orte[0]!, uebung(z, 'kh_curls')).zielWdh).toBe(10);
+    const mitA = { ...z, muster: [{ muster: 'hDruck' as const, stufe: 5, hauptvarianten: ['kh_bankdruecken', 'kh_schraegbank'] }] };
+    expect(startwerte(mitA, kraft, z.orte[0]!, uebung(z, 'kh_bankdruecken')).zielWdh).toBe(4);
+    expect(startwerte(mitA, kraft, z.orte[0]!, uebung(z, 'kh_schraegbank')).zielWdh).toBe(8);   // B: Katalogbereich
+    expect(startwerte(mitA, kraft, z.orte[0]!, uebung(z, 'kh_curls')).zielWdh).toBe(10);
   });
 
   it('Ortswechsel behält die Werte der Variante; fehlende Last wird nach unten angepasst', () => {

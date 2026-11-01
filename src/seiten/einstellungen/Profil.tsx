@@ -19,7 +19,7 @@ export function ProfilSeite() {
   const { min, max } = PROFIL.einheitenProWoche;
   return (
     <Seite titel="Profil" zurueck="/einstellungen">
-      <Karte titel="Ziele" hinweis={`Mehrfachauswahl. Kraft nutzt für Grundübungen mit Gewicht ${PROFIL.kraftBereich.von} bis ${PROFIL.kraftBereich.bis} Wiederholungen.`}>
+      <Karte titel="Ziele" hinweis={`Mehrfachauswahl. Kraft: Die Hauptübung jeder Grundbewegung mit Gewicht kommt 2 von 3 Malen dran und nutzt ${PROFIL.kraftBereich.von} bis ${PROFIL.kraftBereich.bis} Wiederholungen.`}>
         <Mehrfachauswahl
           optionen={optionen(ZIEL_NAMEN)} werte={e.ziele}
           onChange={(ziele) => { if (ziele.length > 0) void setze({ ziele }); }}

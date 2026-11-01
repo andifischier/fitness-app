@@ -144,7 +144,7 @@ function Lasttest({ z, ortId, p, u, onErledigt }: {
   const raster = ort ? lastraster(ort, u) : [];
   const [last, setLast] = useState(p.last ?? raster[0] ?? 0);
   const [wert, setWert] = useState(0);
-  const { von, bis } = bereichFuer(einstellungenAus(z), u);
+  const { von, bis } = bereichFuer(einstellungenAus(z), u, z);
   const pos = raster.indexOf(last);
   const teile = lastTeile(u, { last });
   return (

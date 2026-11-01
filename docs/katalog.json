@@ -134,6 +134,36 @@
    ]
   },
   {
+   "id": "liegestuetz_pause",
+   "name": "Pause Pushups",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 4.5,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Pause+Pushups+richtige+Ausf%C3%BChrung",
+   "videoId": "yFQGVCmY-NU",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Liegestützposition, Körper von Kopf bis Ferse gerade, Po und Bauch fest.",
+    "Brust bis knapp über den Boden senken und dort 2 Sekunden halten.",
+    "Ohne Schwung kräftig hochdrücken."
+   ]
+  },
+  {
    "id": "kh_bodendruecken",
    "name": "Dumbbell Floor Press",
    "muster": "hDruck",
@@ -200,6 +230,40 @@
     "Füße auf Stuhl oder Bank, Hände schulterbreit am Boden, Körper gerade.",
     "Brust kontrolliert zum Boden senken.",
     "Hochdrücken, die Hüfte nicht durchhängen lassen."
+   ]
+  },
+  {
+   "id": "liegestuetz_rucksack",
+   "name": "Backpack Pushups",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 5.5,
+   "equipment": [
+    [
+     "RUCKSACK"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Backpack+Pushups+richtige+Ausf%C3%BChrung",
+   "videoId": "jDvuRh9nYD4",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Rucksack mit Büchern oder Wasserflaschen fest auf den Rücken schnallen, Gurte eng.",
+    "Hände etwas breiter als schulterbreit, Körper gerade, Brust kontrolliert senken.",
+    "Hochdrücken, der Rucksack bleibt ruhig auf dem oberen Rücken."
    ]
   },
   {
@@ -518,7 +582,8 @@
     "Hände sehr breit, Körper gerade.",
     "Zu einer Seite senken, der andere Arm bleibt fast gestreckt.",
     "Hochdrücken und abwechselnd die Seite wechseln."
-   ]
+   ],
+   "einseitig": true
   },
   {
    "id": "band_schulterdruecken",
@@ -959,7 +1024,8 @@
     "Hand und Knie auf die Bank, Rücken gerade, Hantel hängt unter der Schulter.",
     "Hantel zur Hüfte ziehen, Ellbogen nah am Körper.",
     "Langsam ablassen, der Oberkörper dreht nicht mit."
-   ]
+   ],
+   "einseitig": true
   },
   {
    "id": "kh_rudern_vorgebeugt",
@@ -1503,6 +1569,39 @@
    ]
   },
   {
+   "id": "kniebeuge_rucksack",
+   "name": "Backpack Squats",
+   "muster": "Knie",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "RUCKSACK"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 10,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Backpack+Squats+richtige+Ausf%C3%BChrung",
+   "videoId": "yr-tPGfft5o",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Rucksack mit Gewicht fest auf den Rücken schnallen oder vor der Brust halten.",
+    "Füße schulterbreit, so tief wie möglich beugen, Knie über den Füßen.",
+    "Über die ganze Fußsohle hochdrücken, Oberkörper bleibt aufrecht."
+   ]
+  },
+  {
    "id": "goblet_squat",
    "name": "Goblet Squats",
    "muster": "Knie",
@@ -1602,7 +1701,8 @@
     "Auf einem Bein stehen, mit einer Hand an Stuhl oder Türrahmen festhalten.",
     "Auf dem Standbein so tief wie möglich beugen, das andere Bein nach vorn.",
     "Hochdrücken, die Hand hilft nur so viel wie nötig."
-   ]
+   ],
+   "einseitig": true
   },
   {
    "id": "pistol",
@@ -1631,7 +1731,8 @@
     "Auf einem Bein stehen, das andere Bein gestreckt nach vorn.",
     "Kontrolliert ganz tief beugen, Arme nach vorn als Gegengewicht.",
     "Ohne Schwung hochdrücken, Ferse bleibt am Boden."
-   ]
+   ],
+   "einseitig": true
   },
   {
    "id": "ausfallschritt_rueck",
@@ -1660,7 +1761,8 @@
     "Aufrecht stehen, mit einem Bein großen Schritt nach hinten.",
     "Hinteres Knie Richtung Boden senken, vorderes Knie über dem Fuß.",
     "Über die vordere Ferse zurückdrücken, Seite wechseln."
-   ]
+   ],
+   "einseitig": true
   },
   {
    "id": "step_up",
@@ -1693,7 +1795,8 @@
     "Einen Fuß komplett auf eine stabile Erhöhung stellen.",
     "Über das obere Bein hochdrücken, ohne Schwung vom unteren Bein.",
     "Kontrolliert wieder absteigen."
-   ]
+   ],
+   "einseitig": true
   },
   {
    "id": "bss_kg",
@@ -1728,7 +1831,8 @@
     "Rückwärts vor die Erhöhung, hinteren Fuß mit dem Rist darauf ablegen.",
     "Hinteres Knie Richtung Boden senken, vorderes Knie über dem Fuß.",
     "Über die vordere Ferse hochdrücken."
-   ]
+   ],
+   "einseitig": true
   },
   {
    "id": "kh_step_up",
@@ -1767,7 +1871,8 @@
     "Hanteln seitlich halten, einen Fuß auf die Erhöhung.",
     "Über das obere Bein hochdrücken.",
     "Kontrolliert absteigen."
-   ]
+   ],
+   "einseitig": true
   },
   {
    "id": "kh_ausfallschritt",
@@ -1802,7 +1907,8 @@
     "Hanteln seitlich halten, aufrecht stehen.",
     "Großen Schritt nach vorn, hinteres Knie Richtung Boden.",
     "Mit dem hinteren Bein nach vorn kommen und weitergehen."
-   ]
+   ],
+   "einseitig": true
   },
   {
    "id": "bss_kh",
@@ -1841,7 +1947,8 @@
     "Hanteln seitlich halten, hinteren Fuß auf die Erhöhung legen.",
     "Hinteres Knie Richtung Boden senken.",
     "Über die vordere Ferse hochdrücken."
-   ]
+   ],
+   "einseitig": true
   },
   {
    "id": "shrimp_squat",
@@ -1870,7 +1977,8 @@
     "Auf einem Bein stehen, den anderen Fuß hinten mit der Hand fassen.",
     "Hinteres Knie langsam zum Boden senken.",
     "Über das Standbein hochdrücken."
-   ]
+   ],
+   "einseitig": true
   },
   {
    "id": "glute_bridge",
@@ -1899,7 +2007,10 @@
     "Rücklings, Knie gebeugt, Füße hüftbreit nah am Po.",
     "Hüfte hochdrücken, bis Knie, Hüfte und Schultern eine Linie bilden.",
     "Oben den Po fest anspannen, langsam ablassen."
-   ]
+   ],
+   "anteile": {
+    "HintereOS": 0.25
+   }
   },
   {
    "id": "mini_glute_bridge",
@@ -1932,7 +2043,10 @@
     "Mini-Band über den Knien, rücklings, Knie gebeugt.",
     "Knie gegen das Band nach außen drücken und die Hüfte hochdrücken.",
     "Oben Po anspannen, langsam ablassen."
-   ]
+   ],
+   "anteile": {
+    "HintereOS": 0.25
+   }
   },
   {
    "id": "band_pull_through",
@@ -2004,12 +2118,16 @@
     "Schulterblätter an die Bankkante, ein Fuß am Boden, das andere Bein angehoben.",
     "Hüfte hochdrücken, bis der Körper gerade ist.",
     "Oben Po anspannen, langsam ablassen."
-   ]
+   ],
+   "anteile": {
+    "HintereOS": 0.25
+   },
+   "einseitig": true
   },
   {
    "id": "sliding_leg_curl",
    "name": "Sliding Leg Curls",
-   "muster": "Huefte",
+   "muster": "Beinbeuger",
    "primaer": [
     "HintereOS"
    ],
@@ -2033,6 +2151,41 @@
     "Rücklings, Fersen auf ein Handtuch auf glattem Boden.",
     "Hüfte heben und die Fersen zum Po ziehen.",
     "Langsam wieder ausstrecken, die Hüfte bleibt oben."
+   ]
+  },
+  {
+   "id": "band_beincurl",
+   "name": "Band Lying Leg Curls",
+   "muster": "Beinbeuger",
+   "primaer": [
+    "HintereOS"
+   ],
+   "sekundaer": [],
+   "stufe": 2,
+   "equipment": [
+    [
+     "BAND"
+    ],
+    [
+     "ANKER",
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Band+Lying+Leg+Curls+richtige+Ausf%C3%BChrung",
+   "videoId": "zTZG6yJurJU",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Band tief befestigen, auf den Bauch legen, Schlaufe um die Knöchel, Band schon leicht gespannt.",
+    "Fersen zum Po ziehen, Hüfte bleibt am Boden.",
+    "Langsam strecken, bis die Beine fast gerade sind."
    ]
   },
   {
@@ -2071,7 +2224,10 @@
     "Schulterblätter an die Bankkante, Hantel auf der Hüfte.",
     "Hüfte hochdrücken, bis Knie, Hüfte und Schultern eine Linie bilden.",
     "Oben Po anspannen, kontrolliert ablassen."
-   ]
+   ],
+   "anteile": {
+    "HintereOS": 0.25
+   }
   },
   {
    "id": "kh_rdl",
@@ -2140,7 +2296,8 @@
     "Auf einem Bein stehen, Hantel in der Gegenhand.",
     "Oberkörper nach vorn neigen, das freie Bein gerade nach hinten, Hüfte bleibt waagerecht.",
     "Über das Standbein zurück in den Stand."
-   ]
+   ],
+   "einseitig": true
   },
   {
    "id": "kb_swing",
@@ -2213,7 +2370,7 @@
   {
    "id": "nordic_curl",
    "name": "Nordic Curls",
-   "muster": "Huefte",
+   "muster": "Beinbeuger",
    "primaer": [
     "HintereOS"
    ],
@@ -2316,7 +2473,8 @@
     "Seitlich auf einen Unterarm stützen, Ellbogen unter der Schulter.",
     "Hüfte heben, Körper bildet eine gerade Linie.",
     "Halten, dann die Seite wechseln."
-   ]
+   ],
+   "einseitig": true
   },
   {
    "id": "band_pallof",
@@ -2605,7 +2763,8 @@
     "Sitzen, Ellbogen innen am Oberschenkel abstützen.",
     "Hantel zur Schulter beugen.",
     "Langsam ablassen bis zum fast gestreckten Arm."
-   ]
+   ],
+   "einseitig": true
   },
   {
    "id": "schraegbank_curls",
@@ -2640,7 +2799,8 @@
     "Rücklings auf die schräge Bank, Arme hängen gestreckt nach unten.",
     "Hanteln zu den Schultern beugen, Oberarme bleiben senkrecht.",
     "Langsam ablassen."
-   ]
+   ],
+   "vorrang": true
   },
   {
    "id": "lh_curls",
@@ -2805,7 +2965,8 @@
     "Eine Hantel mit beiden Händen über dem Kopf.",
     "Hinter dem Kopf senken, Ellbogen zeigen nach vorn und bleiben eng.",
     "Wieder nach oben strecken."
-   ]
+   ],
+   "vorrang": true
   },
   {
    "id": "kh_trizeps_liegend",
@@ -2934,7 +3095,8 @@
     "Auf das Band stellen, Griffe seitlich.",
     "Arme leicht gebeugt seitlich bis Schulterhöhe heben.",
     "Langsam ablassen."
-   ]
+   ],
+   "vorrang": true
   },
   {
    "id": "kh_seitheben",
@@ -2966,7 +3128,8 @@
     "Hanteln seitlich, Ellbogen leicht gebeugt.",
     "Seitlich bis Schulterhöhe heben, Ellbogen führen.",
     "Langsam ablassen, nicht schwingen."
-   ]
+   ],
+   "vorrang": true
   },
   {
    "id": "kh_reverse_flys",
@@ -3062,7 +3225,8 @@
     "Auf einem Fußballen auf der Stufe, leicht festhalten.",
     "Ferse ganz hoch heben, oben kurz halten.",
     "Langsam tief absenken."
-   ]
+   ],
+   "einseitig": true
   },
   {
    "id": "kh_wadenheben",
@@ -3521,6 +3685,9 @@
     "10 Good Mornings",
     "30 Sek. Kneeling Hip Flexor Stretch je Seite"
    ],
+   "Beinbeuger": [
+    "10 Good Mornings"
+   ],
    "Rumpf": [
     "8 Cat-Cow"
    ]
@@ -3720,6 +3887,13 @@
    "id": "GRIFFE",
    "name": "Liegestützgriffe",
    "details": "keine",
+   "immerVorhanden": false,
+   "eigenes": false
+  },
+  {
+   "id": "RUCKSACK",
+   "name": "Rucksack mit Gewicht",
+   "details": "Rucksack, gefüllt z. B. mit Büchern oder Wasserflaschen",
    "immerVorhanden": false,
    "eigenes": false
   }

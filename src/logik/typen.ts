@@ -1,7 +1,7 @@
 // Datenmodell laut Spezifikation, Abschnitt „Entitäten (verbindlich für die Umsetzung)“.
 
 export const MUSTER_IDS = [
-  'hDruck', 'vDruck', 'hZug', 'vZug', 'Knie', 'Einbein', 'Huefte',
+  'hDruck', 'vDruck', 'hZug', 'vZug', 'Knie', 'Einbein', 'Huefte', 'Beinbeuger',
   'Rumpf', 'Bizeps', 'Trizeps', 'Schulter', 'Waden', 'Kondition',
 ] as const;
 export const MUSKELN = [
@@ -24,7 +24,7 @@ export interface Utensil { id: string; name: string; details: string; immerVorha
 export interface Uebung {
   id: string; name: string; muster: MusterId;
   primaer: Muskel[]; sekundaer: Muskel[];
-  stufe: number;                    // 1 bis 10 innerhalb des Musters
+  stufe: number;                    // 1 bis 10 innerhalb des Musters, halbe Stufen für Zwischenstufen (01.11.2026)
   equipment: string[][];            // Gruppen; aus jeder Gruppe mind. ein Utensil nötig
   lasttyp: 'KG' | 'Band' | 'Last' | 'Zeit';
   bereich: { von: number; bis: number; einheit: 'Wdh.' | 'Sek.' };
@@ -36,6 +36,9 @@ export interface Uebung {
   videoId?: string;                 // festes YouTube-Video zum Einbetten (nur ausgewählte Katalogübungen)
   anleitung?: string[];             // Kurzanleitung in Stichpunkten (alle Katalogübungen)
   brauchtPlatz?: boolean;           // braucht Platz zum Gehen (z. B. Ausfallschritt gehend)
+  // Gutachten 01.11.2026: eigener Anteil je Muskel statt 0,5 (z. B. Hip Thrust für hintere Oberschenkel 0,25),
+  // Vorrang in der Variantenwahl (Last in der Dehnung bzw. seitliche Schulter), einseitig (doppelte Zeit je Satz)
+  anteile?: Partial<Record<Muskel, number>>; vorrang?: boolean; einseitig?: boolean;
   herkunft: 'katalog' | 'eigene';
 }
 export interface Zirkel {

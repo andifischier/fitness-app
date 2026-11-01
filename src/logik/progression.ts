@@ -2,7 +2,7 @@
 // Max-Tests“. Rein und deterministisch: Die aktuelle Zeit wird übergeben; der Zustand wird nur
 // gelesen und als neuer Zustand zurückgegeben.
 import {
-  BEWERTUNG, EINHEIT, ERHOLUNGSWOCHE, LASTTYP_RANG, LEISTUNG, MUSTER_ART, PROGRESSION, VOLUMENGRENZE, WOCHENZIEL,
+  BEWERTUNG, EINHEIT, ERHOLUNGSWOCHE, LASTTYP_RANG, LEISTUNG, MUSTER_ART, PROGRESSION, TRAININGSPAUSE, VOLUMENGRENZE, WOCHENZIEL,
 } from '../konfiguration';
 import { isoWoche, plusTage, stundenZwischen, wocheStart, wocheVerschoben } from './datum';
 import { alleUebungen, bandStufen, lastraster, uebungErlaubt } from './equipment';
@@ -17,7 +17,8 @@ import {
 } from './typen';
 import {
   e1rm, einheitZeit, einstellungenVon, ersterSatz, faelligerMaxTest, feedbackVon, fertigeEinheiten, kapazitaetswert,
-  leistungswert, letzterWirksam, reserveFuer, sitzungen, sterneVon, uebungVon, wdhBei, zielReserve, type Sitzung,
+  leistungswert, letzterWirksam, reserveFuer, seitRueckkehrTrainiert, sitzungen, sterneVon, trainingspause, uebungVon, wdhBei,
+  zielReserve, type Pause, type Sitzung,
 } from './verlauf';
 
 const begrenze = (x: number, min: number, max: number) => Math.min(max, Math.max(min, x));
@@ -156,7 +157,7 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
   const letzter = letzterWirksam(e, p);
   const gemessen = p.reserve !== undefined && u.bereich.einheit === 'Wdh.';
   if (erster === undefined || letzter === undefined) return { variante: alt ?? v, muster };
-  const { von: U, bis: O } = bereichFuer(e, u);
+  const { von: U, bis: O } = bereichFuer(e, u, z);
 
   if (p.istMaxTest) {
     // Ergebnis über dem Bereich der getesteten Variante: nächstschwerere Variante ab der nächsten Einheit.
@@ -379,7 +380,7 @@ export function vorschauNaechstesMal(z: AppZustand, einheit: Einheit, position: 
     const z2 = { ...z1, varianten: ersetze(z1.varianten, variante, (x) => x.uebungId === variante.uebungId) };
     const werte = startwerte(z2, e, ort, neu);
     const kalibrierung = neu.lasttyp === 'Last' && !z2.varianten.some((v) => v.uebungId === neu.id && v.last !== undefined);
-    return { uebungId: neu.id, ...werte, ...(kalibrierung ? { zielWdh: bereichFuer(e, neu).von } : {}), neueVariante: true, kalibrierung };
+    return { uebungId: neu.id, ...werte, ...(kalibrierung ? { zielWdh: bereichFuer(e, neu, z).von } : {}), neueVariante: true, kalibrierung };
   }
   return {
     uebungId: u.id, zielWdh: variante.zielWdh,
@@ -411,6 +412,10 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
 
   if (ort) neu = legeHauptvariantenFest(neu, fertig, ort, start);
 
+  // Erholungswoche (Entscheidung 01.11.2026): Ziel und Last der Varianten bleiben unverändert.
+  const erholung = fertig.format !== 'test' && istErholungswoche(z, start);
+  const pause = trainingspause(z, start);
+
   // Progression je Übung und Max-Tests
   for (const p of positionen) {
     const u = uebungVon(neu, p.uebungId);
@@ -427,7 +432,13 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
       neu = { ...neu, maxTests: ersetze(neu.maxTests, test, (x) => x.id === test.id) };
       if (fertig.format === 'test') continue;
     }
-    const { variante, muster } = werteUebungAus(neu, p, jetzt, ort.id);
+    const ausgewertet = werteUebungAus(neu, p, jetzt, ort.id);
+    let { variante } = ausgewertet;
+    const { muster } = ausgewertet;
+    const alt = neu.varianten.find((x) => x.uebungId === p.uebungId);
+    // Erholungswoche oder erste Einheit des Musters nach einer Pause, in der die Leistung schon wieder da
+    // ist (Entscheidung 01.11.2026): Ziel und Last von vorher bleiben, nur das Datum wird fortgeschrieben.
+    if (alt && !p.istMaxTest && (erholung || (pause && leistungZurueck(z, u, p, pause, start)))) variante = { ...alt, zuletzt: jetzt };
     if (!p.istMaxTest) neu = { ...neu, varianten: ersetze(neu.varianten, variante, (x) => x.uebungId === variante.uebungId) };
     neu = { ...neu, muster: ersetze(neu.muster, muster, (x) => x.muster === muster.muster) };
   }
@@ -484,6 +495,18 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
     wochen: fertig.format === 'test' ? neu.wochen : ersetze(neu.wochen, woche, (w) => w.id === wocheId),
     einheiten: ersetze(neu.einheiten, fertig, (x) => x.id === fertig.id),
   };
+}
+
+// Rückkehr nach einer Pause (Entscheidung 01.11.2026): Ist dies die erste Einheit des Musters seit der
+// Rückkehr und liegt ihre Leistung (gemeinsames Maß, `kapazitaetswert`) bei mindestens 95 % der letzten
+// Einheit derselben Variante vor der Pause?
+export function leistungZurueck(z: AppZustand, u: Uebung, p: Position, pause: Pause, jetzt: string): boolean {
+  if (seitRueckkehrTrainiert(z, u.muster, pause.rueckkehr, jetzt)) return false;
+  const e = einstellungenVon(z);
+  const vorher = sitzungen(z, u.id, pause.rueckkehr).filter((s) => s.einheit.format !== 'test').at(-1);
+  const davor = vorher && kapazitaetswert(e, u, vorher.position);
+  const jetztWert = kapazitaetswert(e, u, p);
+  return davor !== undefined && jetztWert !== undefined && davor > 0 && jetztWert >= TRAININGSPAUSE.leistungZurueckAb * davor;
 }
 
 function vorstand(z: AppZustand, positionen: Position[]): Vorstand {
@@ -622,9 +645,13 @@ function tauscheNebenuebungen(z: AppZustand, laufend: Zyklus, jetzt: string): Mu
     const u = uebungVon(z, id);
     if (!u || e.favoriten.includes(id) || (sterne(id) >= BEWERTUNG.bleibtAbSterne && !pause.has(id))) return [];
     const mindestens = sterne(id) < BEWERTUNG.neutral ? BEWERTUNG.ersatzMinSterne : BEWERTUNG.tauschMinSterne;
+    // Vorrang (Entscheidung 01.11.2026): Eine Variante mit Vorrang wird nur gegen eine andere mit Vorrang
+    // getauscht; mit 1 oder 2 Sternen auch gegen andere.
+    const nurVorrang = u.vorrang === true && sterne(id) >= BEWERTUNG.neutral;
     const kandidaten = alleUebungen(z).filter((v) => v.muster === u.muster && v.stufe === u.stufe
-      && !mz.hauptvarianten.includes(v.id) && !pause.has(v.id) && sterne(v.id) >= mindestens && uebungErlaubt(e, ort, v, jetzt))
-      .sort((a, b) => sterne(b.id) - sterne(a.id)).map((v) => v.id);
+      && !mz.hauptvarianten.includes(v.id) && !pause.has(v.id) && sterne(v.id) >= mindestens && uebungErlaubt(e, ort, v, jetzt)
+      && (!nurVorrang || v.vorrang === true))
+      .sort((a, b) => Number(b.vorrang === true) - Number(a.vorrang === true) || sterne(b.id) - sterne(a.id)).map((v) => v.id);
     return [{ muster: mz.muster, id, kandidaten }];
   }));
   const nieTrainiert = (id: string) => sitzungen(z, id).length === 0;
@@ -736,9 +763,17 @@ export function erholungswocheAngebot(z: AppZustand, jetzt: string): Erholungswo
   }
   if (muster >= ERHOLUNGSWOCHE.musterMitAbfall) return 'leistung';
 
-  const bewertungen = fertigeEinheiten(z).filter((x) => einheitZeit(x) < bis && x.gesamtbewertung !== undefined)
-    .slice(-ERHOLUNGSWOCHE.anstrengungWorkouts).map((x) => x.gesamtbewertung!);
-  if (bewertungen.length === ERHOLUNGSWOCHE.anstrengungWorkouts && mittel(bewertungen)! >= ERHOLUNGSWOCHE.anstrengungAb) return 'anstrengung';
+  // Gesamtanstrengung (Entscheidung 01.11.2026): Schnitt der letzten 4 bewerteten Einheiten mindestens 1 Punkt
+  // über dem eigenen Schnitt der 8 Wochen davor; ohne genug eigene Bewertungen gilt fest 4,5.
+  const bewertet = fertigeEinheiten(z).filter((x) => einheitZeit(x) < bis && x.gesamtbewertung !== undefined);
+  const letzte = bewertet.slice(-ERHOLUNGSWOCHE.anstrengungWorkouts);
+  if (letzte.length === ERHOLUNGSWOCHE.anstrengungWorkouts) {
+    const ab = plusTage(einheitZeit(letzte[0]!), -7 * ERHOLUNGSWOCHE.anstrengungEigeneWochen);
+    const eigene = bewertet.slice(0, -ERHOLUNGSWOCHE.anstrengungWorkouts).filter((x) => einheitZeit(x) >= ab).map((x) => x.gesamtbewertung!);
+    const schwelle = eigene.length >= ERHOLUNGSWOCHE.anstrengungEigeneMin
+      ? mittel(eigene)! + ERHOLUNGSWOCHE.anstrengungUeberEigenem : ERHOLUNGSWOCHE.anstrengungAb;
+    if (mittel(letzte.map((x) => x.gesamtbewertung!))! >= schwelle) return 'anstrengung';
+  }
 
   // 10 Wochen ohne eine Woche unter 60 % des üblichen Volumens
   const erste = z.wochen.map((w) => w.id).sort()[0];

@@ -76,7 +76,7 @@ function UebungAnsicht({ z, u, zurueck }: { z: AppZustand; u: Uebung; zurueck: s
         <Angabe titel="Muster" wert={MUSTER_NAMEN[u.muster]} />
         <Angabe titel="Hauptmuskeln" wert={muskeln(u.primaer)} />
         <Angabe titel="Mitbeteiligt" wert={muskeln(u.sekundaer)} />
-        <Angabe titel="Schwierigkeit" wert={`Stufe ${u.stufe} von 10`} />
+        <Angabe titel="Schwierigkeit" wert={`Stufe ${String(u.stufe).replace('.', ',')} von 10`} />
         <Angabe titel="Equipment" wert={equipmentText(u.equipment, alleUtensilien(z))} />
         <Angabe titel="Belastung" wert={`${LASTTYP_NAMEN[u.lasttyp]}${u.unterstuetzend ? ', Band unterstützt' : ''}`} />
         <Angabe titel="Bereich" wert={`${u.bereich.von} bis ${u.bereich.bis} ${u.bereich.einheit}`} />

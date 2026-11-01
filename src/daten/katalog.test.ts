@@ -8,10 +8,10 @@ const kopie = () => structuredClone(katalogDatei) as unknown as typeof KATALOG;
 describe('Katalog', () => {
   it('lädt den mitgelieferten Katalog vollständig', () => {
     expect(KATALOG.schemaVersion).toBe(2);
-    expect(KATALOG.uebungen).toHaveLength(101);
-    expect(KATALOG.utensilien).toHaveLength(15);
+    expect(KATALOG.uebungen).toHaveLength(105);       // seit 01.11.2026 mit Band-Beincurls und 3 Zwischenstufen
+    expect(KATALOG.utensilien).toHaveLength(16);      // Rucksack
     expect(KATALOG.zirkel).toHaveLength(5);
-    expect(new Set(KATALOG.uebungen.map((u) => u.muster)).size).toBe(13);
+    expect(new Set(KATALOG.uebungen.map((u) => u.muster)).size).toBe(14);   // Beinbeuger
     expect(KATALOG.uebungen.filter((u) => u.anzahlGewichte !== undefined)).toHaveLength(33);
   });
 

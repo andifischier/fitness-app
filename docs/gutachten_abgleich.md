@@ -69,7 +69,7 @@ Umsetzung, die ich ohne Frage erledige.
 5. Volumengrenze: +2 nur bei Stillstand mit guter Erholung, −2 bei fallendem Verlauf oder hoher Anstrengung.
 6. Simulation mit realistischen Schätzfehlern; Kennzahl Fehlalarme.
 
-**Schritt 2: Abdeckung, Erholung, Feinschliff**
+**Schritt 2: Abdeckung, Erholung, Feinschliff** (umgesetzt am 01.11.2026)
 1. Bewegung „Beinbeuger“ (Sliding Leg Curls, Nordic Curls, Band-Beincurls) mit Datenbank-Migration der gespeicherten Hauptvarianten; Hip Thrust und Brücken zählen für hintere Oberschenkel 0,25.
 2. Vorrang für Übungen mit Last in der Dehnung (Überkopf-Trizeps, Schrägbank-Curls, Seitheben).
 3. Arme bei 1 bis 2 Einheiten zusätzlich zum Zeitbudget.

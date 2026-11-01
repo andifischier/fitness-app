@@ -211,7 +211,8 @@ describe('Progression ohne Last', () => {
     const gedeckelt = { ...z, varianten: [variante('liegestuetz', { zielWdh: 12, bestErsterSatz: 9 })] };
     expect(werteUebungAus(gedeckelt, position('liegestuetz', 12, [10], { feedback: 'leicht' }), MO, 'zuhause').variante.zielWdh).toBe(12);
     const oben = werteUebungAus(z, position('liegestuetz', 15, [15], { feedback: 'passend' }), MO, 'zuhause');
-    expect(oben.muster.hauptvarianten).toEqual(['liegestuetz_fuesse_erhoeht', 'kh_bankdruecken']);
+    // Seit 01.11.2026 zuerst die Zwischenstufe Pause Pushups (Stufe 4,5).
+    expect(oben.muster.hauptvarianten).toEqual(['liegestuetz_pause', 'kh_bankdruecken']);
     expect(oben.muster.stufe).toBe(4);
   });
 
@@ -299,7 +300,7 @@ describe('Abschluss einer Einheit', () => {
     const fertig = fuehreDurch(setzePrognose(z, MO, 3), e, MO, {}, (p) => ({ wdh: p.istMaxTest ? 22 : p.zielWdh }));
     expect(fertig.maxTests).toHaveLength(1);
     expect(fertig.maxTests[0]).toMatchObject({ muster: 'hDruck', uebungId: 'liegestuetz', ergebnis: 22, einheit: 'Wdh.' });
-    expect(fertig.muster.find((m) => m.muster === 'hDruck')).toMatchObject({ stufe: 5, hauptvarianten: ['liegestuetz_fuesse_erhoeht', 'kh_bankdruecken'] });
+    expect(fertig.muster.find((m) => m.muster === 'hDruck')).toMatchObject({ stufe: 4.5, hauptvarianten: ['liegestuetz_pause', 'kh_bankdruecken'] });
   });
 
   it('Zirkel: Ergebnis mit Zeit je Zirkel und Ort; Bestzeit als Rekord', () => {
@@ -404,7 +405,7 @@ describe('Trainingspause', () => {
     expect(wochenziele(z2, 3, 'zuhause', plusTage(zurueck, 7)).Brust).toBe(12);
   });
 
-  it('über 21 Tage: zusätzlich 10 % weniger Last; Wochenziel 2 Wochen lang 70 %', () => {
+  it('über 21 Tage: zusätzlich 10 % weniger Last; Wochenziel in der zweiten Woche nur 70 %, solange die Leistung nicht zurück ist', () => {
     const z0 = setzePrognose(zustand(), MO, 3);
     const stark = { ...z0, varianten: [variante('kh_bankdruecken', { last: 20, zielWdh: 10, e1rm: 28 }), variante('kh_schraegbank', { last: 20, zielWdh: 10, e1rm: 28 })] };
     const z1 = fuehreDurch(stark, plane(stark, MO), MO);
@@ -413,12 +414,35 @@ describe('Trainingspause', () => {
     const bank = e.bloecke.flatMap((b) => b.positionen).find((p) => p.uebungId.startsWith('kh_') && uebung(z1, p.uebungId).muster === 'hDruck')!;
     const vorher = z1.varianten.find((v) => v.uebungId === bank.uebungId)!;
     expect(bank.last).toBe(Math.floor((vorher.last! * 0.9) / 2) * 2);
-    const z2 = fuehreDurch(setzePrognose(z1, zurueck, 3), e, zurueck);
+    // Deutlich weniger geschafft als vor der Pause: auch die zweite Woche 70 % (Entscheidung 01.11.2026).
+    const schwach = (p: Position) => ({ wdh: Math.max(1, (p.zielWdh || 10) - 4) });
+    const z2 = fuehreDurch(setzePrognose(z1, zurueck, 3), e, zurueck, {}, schwach);
     expect(wochenziele(z2, 3, 'zuhause', plusTage(zurueck, 7)).Brust).toBe(8);
     const z3 = fuehreDurch(setzePrognose(z2, plusTage(zurueck, 5), 3), plane(z2, plusTage(zurueck, 5)), plusTage(zurueck, 5));
     const z4 = fuehreDurch(setzePrognose(z3, plusTage(zurueck, 11), 3), plane(z3, plusTage(zurueck, 11)), plusTage(zurueck, 11));
     expect(wochenziele(z4, 3, 'zuhause', plusTage(zurueck, 12)).Brust).toBe(8);
     expect(wochenziele(z4, 3, 'zuhause', plusTage(zurueck, 14)).Brust).toBe(12);
+    // Leistung schon in der ersten Einheit wieder da (mindestens 95 %): ab der zweiten Woche wieder 100 %.
+    const gut = fuehreDurch(setzePrognose(z1, zurueck, 3), e, zurueck, {}, (p) => ({ wdh: (p.zielWdh || 10) + 4 }));
+    expect(wochenziele(gut, 3, 'zuhause', plusTage(zurueck, 7)).Brust).toBe(12);
+  });
+
+  it('Rückkehr nach Pause: Leistung in der ersten Einheit zurück, dann gelten Ziel und Last von vorher', () => {
+    const z0 = setzePrognose(zustand(), MO, 3);
+    const stark = { ...z0, varianten: [variante('kh_bankdruecken', { last: 20, zielWdh: 10, e1rm: 28 }), variante('kh_schraegbank', { last: 20, zielWdh: 10, e1rm: 28 })] };
+    // Zwei Einheiten vor der Pause, damit A und B je eine haben.
+    const z1 = fuehreDurch(fuehreDurch(stark, plane(stark, MO), MO), plane(fuehreDurch(stark, plane(stark, MO), MO), plusTage(MO, 2)), plusTage(MO, 2));
+    const zurueck = plusTage(MO, 30);
+    const e = plane(setzePrognose(z1, zurueck, 3), zurueck);
+    const pos = e.bloecke.flatMap((b) => b.positionen).find((p) => z1.varianten.some((v) => v.uebungId === p.uebungId && v.last !== undefined)
+      && z1.einheiten.some((x) => x.bloecke.some((b) => b.positionen.some((q) => q.uebungId === p.uebungId))))!;
+    const vorher = z1.varianten.find((v) => v.uebungId === pos.uebungId)!;
+    expect(pos.last).toBeLessThan(vorher.last!);
+    // Mit dem leichteren Gewicht 6 Wdh. mehr als geplant: Kraftschätzung wie vorher, Werte von vorher bleiben.
+    const gut = fuehreDurch(setzePrognose(z1, zurueck, 3), e, zurueck, {}, (p) => ({ wdh: (p.zielWdh || 10) + 6 }));
+    expect(gut.varianten.find((v) => v.uebungId === pos.uebungId)).toMatchObject({ last: vorher.last, zielWdh: vorher.zielWdh });
+    const schwach = fuehreDurch(setzePrognose(z1, zurueck, 3), e, zurueck, {}, (p) => ({ wdh: Math.max(1, (p.zielWdh || 10) - 2) }));
+    expect(schwach.varianten.find((v) => v.uebungId === pos.uebungId)!.last).toBe(pos.last);
   });
 
   it('über 21 Tage: Körpergewicht eine Variantenstufe leichter', () => {
@@ -508,7 +532,12 @@ describe('Erholungswoche', () => {
     const e = plane(erholung, MO);
     expect(e.bloecke.flatMap((b) => b.positionen).some((p) => p.istMaxTest)).toBe(false);
     const bank = e.bloecke.flatMap((b) => b.positionen).find((p) => p.uebungId === 'kh_bankdruecken');
-    if (bank) expect(bank).toMatchObject({ last: 16, zielWdh: 10 });
+    // Last gleich, 1 Wdh. mehr Reserve (Entscheidung 01.11.2026); nach der Einheit bleiben Ziel und Last.
+    if (bank) {
+      expect(bank).toMatchObject({ last: 16, zielWdh: 9 });
+      const danach = fuehreDurch(erholung, e, MO);
+      expect(danach.varianten.find((v) => v.uebungId === 'kh_bankdruecken')).toMatchObject({ last: 16, zielWdh: 10 });
+    }
     expect(startfragen(erholung, MO)).toMatchObject({ zirkelVorschlag: false, finisherAnbieten: false });
     expect(dosisProMuskel(z, e).Brust).toBeLessThanOrEqual(dosisProMuskel(z, plane(normal, MO)).Brust);
   });
@@ -614,7 +643,8 @@ describe('Wochenabschluss und persönliche Volumengrenze', () => {
   it('Zyklus endet nach 6 Wochen oder mit einer Erholungswoche; Nebenübungen wechseln, Favoriten bleiben', () => {
     const basis = { ...voll(), zyklen: [{ nr: 1, start: plusTage(MONTAG, -35) }],
       muster: [
-        { muster: 'Schulter' as const, stufe: 3, hauptvarianten: ['kh_seitheben'] },
+        { muster: 'Schulter' as const, stufe: 3, hauptvarianten: ['kh_reverse_flys'] },
+        { muster: 'Trizeps' as const, stufe: 3, hauptvarianten: ['kh_trizeps_ueberkopf'] },
         { muster: 'hDruck' as const, stufe: 5, hauptvarianten: ['kh_bankdruecken', 'kh_schraegbank'] },
       ],
       wochen: [{ id: '2026-W43', prognose: 3, einheiten: 0, ziele: null10(), erledigt: null10(), erholungswoche: false, laengerAngenommen: false }] };
@@ -623,10 +653,13 @@ describe('Wochenabschluss und persönliche Volumengrenze', () => {
       { nr: 1, start: plusTage(MONTAG, -35), ende: plusTage(MONTAG, 7), grund: 'zeitablauf' },
       { nr: 2, start: plusTage(MONTAG, 7) },
     ]);
-    expect(z.muster.find((m) => m.muster === 'Schulter')!.hauptvarianten).toEqual(['kh_reverse_flys']);
+    // Getauscht wird gegen eine Variante gleicher Stufe, Varianten mit Vorrang zuerst (Seitheben).
+    expect(z.muster.find((m) => m.muster === 'Schulter')!.hauptvarianten).toEqual(['kh_seitheben']);
+    // Eine Variante mit Vorrang (Überkopf-Trizeps) bleibt, wenn es keine andere mit Vorrang gibt (Entscheidung 01.11.2026).
+    expect(z.muster.find((m) => m.muster === 'Trizeps')!.hauptvarianten).toEqual(['kh_trizeps_ueberkopf']);
     expect(z.muster.find((m) => m.muster === 'hDruck')!.hauptvarianten).toEqual(['kh_bankdruecken', 'kh_schraegbank']);
-    const favorit = wochenabschluss({ ...basis, einstellungen: [{ ...basis.einstellungen[0]!, favoriten: ['kh_seitheben'] }] }, '2026-W43');
-    expect(favorit.muster.find((m) => m.muster === 'Schulter')!.hauptvarianten).toEqual(['kh_seitheben']);
+    const favorit = wochenabschluss({ ...basis, einstellungen: [{ ...basis.einstellungen[0]!, favoriten: ['kh_reverse_flys'] }] }, '2026-W43');
+    expect(favorit.muster.find((m) => m.muster === 'Schulter')!.hauptvarianten).toEqual(['kh_reverse_flys']);
     const frueh = wochenabschluss({ ...basis, zyklen: [{ nr: 1, start: plusTage(MONTAG, -14) }] }, '2026-W43');
     expect(frueh.zyklen).toHaveLength(1);
     const erholung = wochenabschluss({ ...basis, zyklen: [{ nr: 1, start: plusTage(MONTAG, -14) }], wochen: basis.wochen.map((w) => ({ ...w, erholungswoche: true })) }, '2026-W43');

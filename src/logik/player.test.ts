@@ -395,7 +395,7 @@ describe('Fortschritt im Training', () => {
     const z = zustand({ katalog: 'voll' });
     const e = einheit([{ typ: 'einzeln', pauseSek: 90, positionen: [pos('liegestuetz', 3, { zielWdh: 12 })] }]);
     const h = fortschrittshinweis(z, e, { block: 0, position: 0, satz: 1 }, '2026-10-20T18:10:00')!;
-    expect(h).toMatchObject({ heute: 12, ab: 15, schritt: 'variante', naechste: 'Decline Pushups' });
+    expect(h).toMatchObject({ heute: 12, ab: 15, schritt: 'variante', naechste: 'Pause Pushups' });   // Zwischenstufe seit 01.11.2026
     expect(h.letztesMal).toBeUndefined();
   });
 

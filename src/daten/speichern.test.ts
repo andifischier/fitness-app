@@ -405,3 +405,22 @@ describe('Datenbank Version 3', () => {
     expect((await d.muskeln.get('Bauch'))?.persoenlicheGrenze).toBe(12);
   });
 });
+
+describe('Datenbank Version 4', () => {
+  it('entfernt Sliding Leg Curls und Nordic Curls aus den Hauptvarianten der Hüfte; Werte und Verlauf bleiben', async () => {
+    const name = `migration-${Math.random()}`;
+    const alt = new Dexie(name);
+    alt.version(3).stores({ muster: 'muster', varianten: 'uebungId', eigeneUebungen: 'id' });
+    await alt.table('muster').bulkPut([
+      { muster: 'Huefte', stufe: 5, hauptvarianten: ['kh_hip_thrust', 'sliding_leg_curl'] },
+      { muster: 'hDruck', stufe: 5, hauptvarianten: ['kh_bankdruecken', 'kh_schraegbank'] },
+    ]);
+    await alt.table('varianten').put({ uebungId: 'sliding_leg_curl', zielWdh: 12, seitSteigerung: 3, schwerSerie: 0 });
+    alt.close();
+    const d = new FitnessDb(name);
+    expect(await d.muster.get('Huefte')).toEqual({ muster: 'Huefte', stufe: 5, hauptvarianten: ['kh_hip_thrust'] });
+    expect((await d.muster.get('hDruck'))?.hauptvarianten).toEqual(['kh_bankdruecken', 'kh_schraegbank']);
+    expect((await d.varianten.get('sliding_leg_curl'))?.zielWdh).toBe(12);
+    d.close();
+  });
+});
