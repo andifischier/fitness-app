@@ -1,8 +1,8 @@
 # Abgleich: Gutachten vom 01.11.2026 mit dem Stand der App
 
 Grundlage: `docs/gutachten_2026-11-01.md`, abgeglichen mit `docs/spezifikation.md`, `docs/katalog.json`
-und dem Code (Stand Commit efb105c). Status: **Fragen an den Nutzer offen** (F1 bis F12 unten).
-Nach den Antworten werden die Entscheidungen in `docs/entscheidungen.md` übertragen.
+und dem Code (Stand Commit efb105c). Status: **entschieden am 01.11.2026**, siehe `docs/entscheidungen.md`.
+Die Fragen F1 bis F12 wurden in angepasster Form gestellt (Satzende mit Blick auf saubere Technik, F3 darin aufgegangen).
 
 ## 1. Wo das Gutachten den Stand der App nicht ganz trifft
 
@@ -58,3 +58,21 @@ Umsetzung, die ich ohne Frage erledige.
 | Zirkel-Station nur mit höchstens 3 Reserve zählen | Im Zirkel nicht messbar; Zirkel zählen bereits nur 0,5. |
 | Ziel „Kraft“: Testvariante A, A, B | Nur relevant, wenn „Kraft“ als Ziel gewählt ist; bei Bedarf eigener Auftrag. |
 | Schnellkraft- und Beweglichkeitsmodul | Optional laut Gutachten, kein Bezug zu einem Problem der App. |
+
+## 4. Umsetzungsplan nach den Entscheidungen vom 01.11.2026
+
+**Schritt 1: Messung und Auswertung**
+1. Letzter Satz als Messsatz („sauberes Limit“): Grundübungen Schluss bei 2 sauberen Wiederholungen übrig, Isolation bis zur letzten sauberen; Zähler ohne Deckel beim Ziel.
+2. Reserve direkt nach dem letzten Satz (0 bis 5+, „Technik wurde unsauber“); Feedback am Ende entfällt und wird daraus abgeleitet.
+3. Kraftschätzung und Ziel aus dem Messsatz mit seiner eigenen Reserve.
+4. Ein Leistungsmaß für alle Lasttypen (Kapazität = Wiederholungen + Reserve), Entscheidung über den Verlauf von 4 Wochen.
+5. Volumengrenze: +2 nur bei Stillstand mit guter Erholung, −2 bei fallendem Verlauf oder hoher Anstrengung.
+6. Simulation mit realistischen Schätzfehlern; Kennzahl Fehlalarme.
+
+**Schritt 2: Abdeckung, Erholung, Feinschliff**
+1. Bewegung „Beinbeuger“ (Sliding Leg Curls, Nordic Curls, Band-Beincurls) mit Datenbank-Migration der gespeicherten Hauptvarianten; Hip Thrust und Brücken zählen für hintere Oberschenkel 0,25.
+2. Vorrang für Übungen mit Last in der Dehnung (Überkopf-Trizeps, Schrägbank-Curls, Seitheben).
+3. Arme bei 1 bis 2 Einheiten zusätzlich zum Zeitbudget.
+4. Erholungswoche mit 1 Wdh. mehr Reserve, Anstrengung relativ zum eigenen Schnitt, Rückkehr nach Pause leistungsgesteuert.
+5. Zwischenstufen bei Körpergewicht, Wochenbudget ohne Bauch und Waden in der Gewichtssumme, einseitige Übungen mit doppelter Zeit.
+6. Ziel „Kraft“: Hauptvariante A, A, B und schwere Sätze (nur bei gewähltem Ziel).
