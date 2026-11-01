@@ -2,7 +2,7 @@
 // Max-Tests“. Rein und deterministisch: Die aktuelle Zeit wird übergeben; der Zustand wird nur
 // gelesen und als neuer Zustand zurückgegeben.
 import {
-  BEWERTUNG, EINHEIT, ERHOLUNGSWOCHE, LASTTYP_RANG, MUSTER_ART, PROGRESSION, VOLUMENGRENZE, WOCHENZIEL,
+  BEWERTUNG, EINHEIT, ERHOLUNGSWOCHE, LASTTYP_RANG, LEISTUNG, MUSTER_ART, PROGRESSION, VOLUMENGRENZE, WOCHENZIEL,
 } from '../konfiguration';
 import { isoWoche, plusTage, stundenZwischen, wocheStart, wocheVerschoben } from './datum';
 import { alleUebungen, bandStufen, lastraster, uebungErlaubt } from './equipment';
@@ -16,8 +16,8 @@ import {
   type VarianteZustand, type Vorstand, type Woche, type Zyklus,
 } from './typen';
 import {
-  e1rm, einheitZeit, einstellungenVon, ersterSatz, faelligerMaxTest, feedbackVon, fertigeEinheiten, letzterSatz,
-  leistungswert, reserveFuer, sitzungen, sterneVon, uebungVon, wdhBei, zielReserve, type Sitzung,
+  e1rm, einheitZeit, einstellungenVon, ersterSatz, faelligerMaxTest, feedbackVon, fertigeEinheiten, kapazitaetswert,
+  leistungswert, letzterWirksam, reserveFuer, sitzungen, sterneVon, uebungVon, wdhBei, zielReserve, type Sitzung,
 } from './verlauf';
 
 const begrenze = (x: number, min: number, max: number) => Math.min(max, Math.max(min, x));
@@ -79,9 +79,12 @@ function leichtereVariante(z: AppZustand, ort: Ort, u: Uebung, jetzt: string, ha
 // Reserve laut Bewertung ergibt, was in diesem Satz bis zum Versagen gegangen wäre. Eine Ausgleichsgerade
 // über die Sätze schätzt daraus das Nachlassen (nie eine Zunahme) und den letzten Satz; das Ziel ist
 // dieser letzte Satz minus Ziel-Reserve, damit auch der letzte Satz es mit 1 bis 3 Reserve schafft.
+// Mit Messsatz (Entscheidung 01.11.2026) ist dessen Kapazität (Wiederholungen + angetippte Reserve) direkt
+// gemessen: Ziel = Kapazität minus Ziel-Reserve; die Sätze davor enden beim Ziel und sagen nichts darüber.
 export function zielAusSaetzen(e: Einstellungen, p: Position, fb: Feedback): number | undefined {
   const werte = p.ergebnisse.map((s) => s.wdh ?? s.sek).filter((w): w is number => w !== undefined);
   if (werte.length === 0) return undefined;
+  if (p.reserve !== undefined) return Math.floor(werte.at(-1)! + p.reserve - zielReserve(e) + 1e-6);
   const r = reserveFuer(fb, e);
   const kapazitaet = werte.map((w) => w + r);
   const n = kapazitaet.length;
@@ -149,7 +152,9 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
     p = { ...p, ergebnisse: p.ergebnisse.slice(1) };
   }
   const erster = ersterSatz(p);
-  const letzter = letzterSatz(p);
+  // Mit Messsatz zählt, was der letzte Satz mit Ziel-Reserve geschafft hätte (Entscheidung 01.11.2026).
+  const letzter = letzterWirksam(e, p);
+  const gemessen = p.reserve !== undefined && u.bereich.einheit === 'Wdh.';
   if (erster === undefined || letzter === undefined) return { variante: alt ?? v, muster };
   const { von: U, bis: O } = bereichFuer(e, u);
 
@@ -247,12 +252,14 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
       const neu = Math.max(ziel, Math.min(ziel + plus, wdhBei(schaetzung, last, zielReserve(e))));
       // „Zu leicht“ (Entscheidung 30.10.2026): sofort eine Gewichtsstufe mehr, wenn die Schätzung dort
       // mindestens U − 1 Wiederholungen im letzten Satz zulässt; sonst wie bisher mehr Wiederholungen.
+      // Mit Messsatz: Lag der letzte Satz mit Ziel-Reserve schon über O, wird wie bei einem Ziel über O
+      // geprüft, ob das nächste Gewicht geht.
       if (fb === 'leicht' && hoeher !== null && moeglich >= U - PROGRESSION.leichtSchwererAbUnterU) steigern();
-      else if (neu <= O) v.zielWdh = neu;
+      else if (neu <= O && !(gemessen && letzter > O && hoeher !== null)) v.zielWdh = neu;
       else {
         if (hoeher !== null) {
           if (moeglich >= U || neu > O + PROGRESSION.dehnungUeberO) steigern();
-          else v.zielWdh = neu;
+          else v.zielWdh = Math.min(neu, O + PROGRESSION.dehnungUeberO);
         } else if (!v.langsam) {
           // Die Last geht aus: 1. langsameres Tempo, 2. Bereich bis O + 5, 3. einseitig, 4. nächste Variante
           v.langsam = true;
@@ -497,39 +504,75 @@ function anstrengung(z: AppZustand, wocheId: string): number | undefined {
     .map((x) => x.gesamtbewertung!));
 }
 
-// Bedingung, unter der eine Leistung gemessen wurde: Gewicht (des ersten Satzes), Band und Tempo. Nur
-// Sitzungen mit gleicher Bedingung sind vergleichbar (Entscheidung 30.10.2026): Ein leichteres Gewicht,
-// ein anderes Band oder langsames Absenken sind kein Leistungsabfall.
-const bedingung = (s: Sitzung) =>
-  `${s.position.ergebnisse[0]?.last ?? s.position.last ?? ''}|${s.position.bandStufe ?? ''}|${s.position.langsam ? 1 : 0}`;
+// Bedingung, unter der eine Leistung gemessen wurde: Band und Tempo (Entscheidung 30.10.2026: langsames
+// Absenken oder ein anderes Band sind kein Leistungsabfall). Das Gewicht zählt seit 01.11.2026 nicht mehr:
+// Die Kraftschätzung rechnet es heraus, so bleibt der Verlauf über eine Laststeigerung hinweg vergleichbar.
+const bedingung = (s: Sitzung) => `${s.position.bandStufe ?? ''}|${s.position.langsam ? 1 : 0}`;
 
-function wochenwert(e: Einstellungen, u: Uebung, liste: Sitzung[], wocheId: string): number | undefined {
-  return mittel(liste.filter((s) => s.einheit.woche === wocheId)
-    .map((s) => leistungswert(e, u, s.position)).filter((w): w is number => w !== undefined));
-}
+const median = (l: number[]) => {
+  const x = [...l].sort((a, b) => a - b);
+  const m = Math.floor(x.length / 2);
+  return x.length % 2 ? x[m]! : (x[m - 1]! + x[m]!) / 2;
+};
 
-// Leistung eines Muskels: mittlere relative Veränderung seiner Hauptvarianten (Muskel primär)
-// gegenüber dem 2-Wochen-Mittel davor, je Variante nur unter gleicher Bedingung wie ihre letzte Sitzung
-// der Woche. Die erste Sitzung einer Variante (Kalibrierungssatz bzw. neue Übung) und der Testtag zählen
-// nicht. Varianten ohne Vergleich zählen nicht.
-export function muskelLeistung(z: AppZustand, m: Muskel, wocheId: string): number | undefined {
+export interface Trend { aenderung: number; schwelle: number }
+
+// Leistungsverlauf einer Variante über die letzten 4 Wochen bis einschließlich `wocheId` (Entscheidung
+// 01.11.2026): robuste Steigung (Median aller paarweisen Steigungen) des Logarithmus des Leistungswerts über
+// die Tage, umgerechnet auf die Veränderung in 4 Wochen. `schwelle` ist die Grenze für „gefallen“: mindestens
+// 3 % und das Doppelte des Messfehlers der Steigung (aus der Streuung um die Gerade). Nur Einheiten unter
+// gleicher Bedingung wie die letzte im Fenster; die erste Einheit einer Variante und der Testtag zählen nicht.
+export function variantenTrend(z: AppZustand, u: Uebung, wocheId: string): Trend | undefined {
   const e = einstellungenVon(z);
-  const ids = new Set(z.muster.flatMap((x) => x.hauptvarianten));
-  const davor = Array.from({ length: VOLUMENGRENZE.mittelWochen }, (_, i) => wocheVerschoben(wocheId, -1 - i));
-  const aenderungen: number[] = [];
-  for (const id of ids) {
-    const u = uebungVon(z, id);
-    if (!u || !u.primaer.includes(m)) continue;
-    const liste = sitzungen(z, id).filter((s) => s.einheit.format !== 'test').slice(1);
-    const letzte = liste.filter((s) => s.einheit.woche === wocheId).at(-1);
-    if (!letzte) continue;
-    const vergleichbar = liste.filter((s) => bedingung(s) === bedingung(letzte));
-    const aktuell = wochenwert(e, u, vergleichbar, wocheId);
-    const vorher = mittel(davor.map((w) => wochenwert(e, u, vergleichbar, w)).filter((w): w is number => w !== undefined));
-    if (aktuell !== undefined && vorher) aenderungen.push(aktuell / vorher - 1);
+  const ab = wocheStart(wocheVerschoben(wocheId, -(LEISTUNG.wochen - 1)));
+  const bis = wocheStart(wocheVerschoben(wocheId, 1));
+  const liste = sitzungen(z, u.id, bis).filter((s) => s.einheit.format !== 'test').slice(1).filter((s) => s.zeit >= ab);
+  const letzte = liste.at(-1);
+  if (!letzte) return undefined;
+  const punkte = liste.filter((s) => bedingung(s) === bedingung(letzte)).flatMap((s) => {
+    const w = kapazitaetswert(e, u, s.position);
+    return w !== undefined && w > 0 ? [{ x: stundenZwischen(ab, s.zeit) / 24, y: Math.log(w) }] : [];
+  });
+  if (punkte.length < LEISTUNG.minSitzungen) return undefined;
+  const xs = punkte.map((q) => q.x);
+  if (Math.max(...xs) - Math.min(...xs) < LEISTUNG.minSpanneTage) return undefined;
+  const steigungen: number[] = [];
+  for (let i = 0; i < punkte.length; i++) {
+    for (let j = i + 1; j < punkte.length; j++) {
+      const dx = punkte[j]!.x - punkte[i]!.x;
+      if (dx > 0) steigungen.push((punkte[j]!.y - punkte[i]!.y) / dx);
+    }
   }
-  return mittel(aenderungen);
+  if (steigungen.length === 0) return undefined;
+  const steigung = median(steigungen);
+  const achse = median(punkte.map((q) => q.y - steigung * q.x));
+  // Streuung um die Gerade (robust: 1,4826 × mittlere absolute Abweichung) und daraus der Fehler der Steigung
+  const streuung = 1.4826 * median(punkte.map((q) => Math.abs(q.y - achse - steigung * q.x)));
+  const mx = mittel(xs)!;
+  const sxx = xs.reduce((sum, x) => sum + (x - mx) ** 2, 0);
+  const tage = LEISTUNG.wochen * 7;
+  const fehler = sxx > 0 ? (streuung * tage) / Math.sqrt(sxx) : Infinity;
+  return {
+    aenderung: Math.exp(steigung * tage) - 1,
+    schwelle: Math.max(LEISTUNG.faelltMin, LEISTUNG.faelltFaktorFehler * fehler),
+  };
 }
+
+// Leistung eines Muskels: Mittel der Verläufe seiner Hauptvarianten (Muskel primär); Varianten ohne
+// genug Einheiten im Fenster zählen nicht.
+export function muskelTrend(z: AppZustand, m: Muskel, wocheId: string): Trend | undefined {
+  const ids = new Set(z.muster.flatMap((x) => x.hauptvarianten));
+  const trends = [...ids].flatMap((id) => {
+    const u = uebungVon(z, id);
+    const t = u && u.primaer.includes(m) ? variantenTrend(z, u, wocheId) : undefined;
+    return t ? [t] : [];
+  });
+  if (trends.length === 0) return undefined;
+  return { aenderung: mittel(trends.map((t) => t.aenderung))!, schwelle: mittel(trends.map((t) => t.schwelle))! };
+}
+
+export const istGefallen = (t: Trend | undefined) => t !== undefined && t.aenderung < -t.schwelle;
+export const steigt = (t: Trend | undefined) => t !== undefined && t.aenderung > LEISTUNG.steigtAb;
 
 // Ein „zu schwer“ in der Woche, das nicht in eine Eingewöhnung fällt (die ersten 2 Einheiten einer
 // Variante oder nach einer Steigerung von Last bzw. Band).
@@ -619,34 +662,36 @@ export function wochenabschluss(z: AppZustand, wocheId: string): AppZustand {
       muskel: m, letzteDosis: 0, letzteSchwer: false, persoenlicheGrenze: persoenlicheGrenze(z, e, m), gleichWochen: 0, leistung: [],
     };
     const mz: MuskelZustand = { ...alt, leistung: [...alt.leistung] };
-    const leistung = muskelLeistung(z, m, wocheId);
-    if (leistung !== undefined) mz.leistung = ersetze(mz.leistung, { woche: wocheId, wert: leistung }, (x) => x.woche === wocheId);
+    const trend = muskelTrend(z, m, wocheId);
+    if (trend) mz.leistung = ersetze(mz.leistung, { woche: wocheId, wert: trend.aenderung, schwelle: trend.schwelle }, (x) => x.woche === wocheId);
     // Bewertet werden nur Muskeln mit mindestens 80 % ihres Ziels; Erholungswochen verändern nichts.
     const ziel = woche.ziele[m];
     if (woche.erholungswoche || ziel <= 0 || woche.erledigt[m] < g.bewertenAbAnteilZiel * ziel) return mz;
     const p = WOCHENZIEL.prioritaet[e.prioritaeten[m]];
-    // Warnzeichen (Entscheidung 30.10.2026): Leistung mehrere Wochen in Folge gefallen oder hohe Anstrengung.
-    // Eine einzelne schwache Woche senkt nichts; nach mehreren guten Wochen in Folge gibt es mehr Sätze.
-    // `gleichWochen` zählt seitdem die guten Wochen in Folge.
-    const gefallen = (wert: number | undefined) => wert !== undefined && wert < -g.gefallenUeber;
-    const fruehere = Array.from({ length: g.gefallenWochen - 1 }, (_, i) => wocheVerschoben(wocheId, -1 - i))
-      .map((w) => alt.leistung.find((x) => x.woche === w)?.wert);
+    // Entscheidung 01.11.2026 („nur bei Stillstand“): `gleichWochen` zählt die bewerteten Wochen seit der
+    // letzten Änderung. −2 bei gefallenem Verlauf der letzten 4 Wochen oder hoher Anstrengung; +2 nur, wenn
+    // der Verlauf stagniert (weder gefallen noch gestiegen) und die Erholung gut war; bei Fortschritt bleibt
+    // die Grenze. Ohne genug Einheiten für einen Verlauf ändert sich nichts.
+    const seit = mz.gleichWochen + 1;
+    mz.gleichWochen = seit;
     const hoheAnstrengung = schnitt !== undefined && schnitt >= g.anstrengungAb;
-    if (hoheAnstrengung || (gefallen(leistung) && fruehere.every(gefallen))) {
-      mz.persoenlicheGrenze = Math.min(mz.persoenlicheGrenze, Math.max(p.untergrenze + g.minUeberUntergrenze, mz.persoenlicheGrenze - g.schritt));
-      mz.gleichWochen = 0;
-    } else if (!gefallen(leistung) && !schwerAusserhalbEingewoehnung(z, m, wocheId)
-      && (schnitt === undefined || schnitt <= g.anstrengungHoechstens)) {
-      mz.gleichWochen += 1;
-      if (mz.gleichWochen >= g.guteWochen) {
-        // Deckel: höchstens 4 Sätze über dem besten Wochenvolumen der letzten 4 Wochen.
-        const hoeher = Math.min(mz.persoenlicheGrenze + g.schritt, p.obergrenze, bestesVolumen(z, m, wocheId) + g.maxUeberBestem);
-        if (hoeher > mz.persoenlicheGrenze) {
-          mz.persoenlicheGrenze = hoeher;
+    if (hoheAnstrengung || istGefallen(trend)) {
+      if (seit >= g.senkenAbstandWochen) {
+        const tiefer = Math.max(p.untergrenze + g.minUeberUntergrenze, mz.persoenlicheGrenze - g.schritt);
+        if (tiefer < mz.persoenlicheGrenze) {
+          mz.persoenlicheGrenze = tiefer;
           mz.gleichWochen = 0;
         }
       }
-    } else mz.gleichWochen = 0;
+    } else if (trend && !steigt(trend) && seit >= g.stillstandWochen && !schwerAusserhalbEingewoehnung(z, m, wocheId)
+      && (schnitt === undefined || schnitt <= g.anstrengungHoechstens)) {
+      // Deckel: höchstens 4 Sätze über dem besten Wochenvolumen der letzten 4 Wochen.
+      const hoeher = Math.min(mz.persoenlicheGrenze + g.schritt, p.obergrenze, bestesVolumen(z, m, wocheId) + g.maxUeberBestem);
+      if (hoeher > mz.persoenlicheGrenze) {
+        mz.persoenlicheGrenze = hoeher;
+        mz.gleichWochen = 0;
+      }
+    }
     return mz;
   });
 
@@ -673,26 +718,6 @@ export function wochenabschluss(z: AppZustand, wocheId: string): AppZustand {
 
 export type ErholungswocheGrund = 'leistung' | 'anstrengung' | 'zehnWochen';
 
-// Sinkt die Leistung einer Variante in ihren letzten 2 Einheiten? Last: weniger Wdh. bei gleicher
-// Last als in der Einheit davor; KG und Band: erster Satz 2 Wdh. unter dem Mittel der beiden davor.
-function leistungSinkt(u: Uebung, liste: Sitzung[]): boolean {
-  const erster = (s: Sitzung) => ersterSatz(s.position) ?? 0;
-  const sinkt = (j: number) => {
-    const s = liste[j];
-    if (!s || j < 1) return false;
-    if (u.lasttyp === 'Last') {
-      const davor = liste[j - 1]!;
-      return s.position.last === davor.position.last && erster(s) < erster(davor);
-    }
-    if (j < 2) return false;
-    const vor = [liste[j - 1]!, liste[j - 2]!];
-    if (u.lasttyp === 'Band' && vor.some((x) => x.position.bandStufe !== s.position.bandStufe)) return false;
-    return erster(s) <= (erster(vor[0]!) + erster(vor[1]!)) / 2 - ERHOLUNGSWOCHE.abfallWdh;
-  };
-  const n = liste.length;
-  return Array.from({ length: ERHOLUNGSWOCHE.einheitenInFolge }, (_, i) => n - 1 - i).every(sinkt);
-}
-
 // Angebot einer Erholungswoche bei der ersten Einheit der Woche (Entscheidung 20.10.2026: alle
 // Auslöser nur als Angebot). Ausgewertet werden nur Daten vor dieser Woche.
 export function erholungswocheAngebot(z: AppZustand, jetzt: string): ErholungswocheGrund | null {
@@ -701,11 +726,13 @@ export function erholungswocheAngebot(z: AppZustand, jetzt: string): Erholungswo
   if (z.wochen.find((w) => w.id === wocheVerschoben(wocheId, -1))?.erholungswoche) return null;
   const bis = wocheStart(wocheId);
 
+  // Leistung gefallen (Entscheidung 01.11.2026): Verlauf der letzten 4 Wochen bis zur Vorwoche bei
+  // mindestens 2 Mustern deutlich gefallen (gleiches Maß wie bei der Volumengrenze).
+  const vorwoche = wocheVerschoben(wocheId, -1);
   let muster = 0;
   for (const mId of new Set(alleUebungen(z).map((u) => u.muster))) {
     if (MUSTER_ART[mId] === 'kondition') continue;
-    const sinkt = alleUebungen(z).filter((u) => u.muster === mId).some((u) => leistungSinkt(u, sitzungen(z, u.id, bis)));
-    if (sinkt) muster += 1;
+    if (alleUebungen(z).some((u) => u.muster === mId && istGefallen(variantenTrend(z, u, vorwoche)))) muster += 1;
   }
   if (muster >= ERHOLUNGSWOCHE.musterMitAbfall) return 'leistung';
 

@@ -122,7 +122,7 @@ export const musterZustandSchema = z.object({
 export const muskelZustandSchema = z.object({
   muskel, letzteBelastung: z.string().optional(), letzteDosis: zahl, letzteSchwer: z.boolean(),
   persoenlicheGrenze: zahl, gleichWochen: ganzzahl.nonnegative(),
-  leistung: z.array(z.object({ woche: z.string(), wert: zahl })),
+  leistung: z.array(z.object({ woche: z.string(), wert: zahl, schwelle: zahl.optional() })),
 });
 
 export const wocheSchema = z.object({
@@ -147,6 +147,7 @@ const positionSchema = z.object({
   uebungId: z.string().min(1), saetze: ganzzahl.nonnegative(), zielWdh: zahl, last: zahl.optional(),
   bandStufe: bandStufe.optional(), istMaxTest: z.boolean().optional(), istLasttest: z.boolean().optional(), istErsatz: z.boolean().optional(),
   getauschtVon: z.string().optional(), langsam: z.boolean().optional(), zielFolgesaetze: zahl.optional(), ergebnisse: z.array(satzSchema), feedback: z.enum(FEEDBACKS).optional(),
+  reserve: zahl.optional(), technikUnsauber: z.boolean().optional(),
 });
 
 export const einheitSchema = z.object({

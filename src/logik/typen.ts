@@ -105,7 +105,9 @@ export interface VarianteZustand {
 export interface MusterZustand { muster: MusterId; stufe: number; hauptvarianten: string[] } // letzter Test steht in maxTests
 export interface MuskelZustand {
   muskel: Muskel; letzteBelastung?: string; letzteDosis: number; letzteSchwer: boolean;
-  persoenlicheGrenze: number; gleichWochen: number; leistung: { woche: string; wert: number }[];
+  // `gleichWochen`: bewertete Wochen seit der letzten Änderung der Grenze (seit 01.11.2026).
+  // `leistung`: Veränderung der Leistung über die letzten 4 Wochen (Anteil) und die Schwelle für „gefallen“.
+  persoenlicheGrenze: number; gleichWochen: number; leistung: { woche: string; wert: number; schwelle?: number }[];
 }
 export interface Woche {
   id: string; prognose: number; einheiten: number;
@@ -128,6 +130,9 @@ export interface Position {
   langsam?: boolean;                // 3 Sek. absenken
   zielFolgesaetze?: number;         // im Training gesenktes Ziel der restlichen Sätze (Entscheidung 30.10.2026)
   ergebnisse: SatzErgebnis[]; feedback?: Feedback;
+  // Messsatz (Entscheidungen 01.11.2026): Wiederholungen, die im letzten Satz noch sauber gegangen wären
+  // (5 = 5 oder mehr), und ob die Technik unsauber wurde. Daraus folgt `feedback`.
+  reserve?: number; technikUnsauber?: boolean;
 }
 export interface Block {
   typ: 'einzeln' | 'supersatz' | 'zirkel'; positionen: Position[];

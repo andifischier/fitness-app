@@ -5,14 +5,14 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { beendeEinheit, speichereAbschluss, speichereLaufendeEinheit, starteEinheit } from '../../daten/speichern';
 import { lokaleZeit } from '../../daten/zeit';
-import { PLAYER, PROGRESSION } from '../../konfiguration';
+import { MESSSATZ, PLAYER, PROGRESSION } from '../../konfiguration';
 import { lastraster } from '../../logik/equipment';
 import { zirkelBestzeit, zirkelVorgaben } from '../../logik/heute';
 import { kannTauschen, lastAnzeige, mobilityZeilen, musterNachSaetzen, tausche } from '../../logik/planung';
 import {
   aktuellerBlock, aktuellerSchritt, balkenAbschnitte, beende, bewerteAlle, blockwechselNach, erledigteSaetze, fortschrittshinweis, letzterSatzAm, letztesMal,
   offeneFeedbacks, pauseNach, positionVon, satzVorgabe, schritte, feedbackVorschlag, lastWaehlbar, starte, sternFragen, trageSatzEin,
-  type Balkenschritt, type SatzVorgabe, type Schritt, type Stelle,
+  type Balkenschritt, type Messung, type SatzVorgabe, type Schritt, type Stelle,
 } from '../../logik/player';
 import { neueRekorde, vorschauNaechstesMal } from '../../logik/progression';
 import type { AppZustand, Einheit, Feedback, Sterne, Uebung } from '../../logik/typen';
@@ -97,10 +97,10 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
     }
   };
 
-  const erledigt = async (wert: number, last?: number) => {
+  const erledigt = async (wert: number, last?: number, messung?: Messung) => {
     if (!schritt) return;
     bereiteTonVor();
-    const neu = trageSatzEin(z, einheit, schritt, wert, lokaleZeit(), last);
+    const neu = trageSatzEin(z, einheit, schritt, wert, lokaleZeit(), last, messung);
     try {
       if (!(await speichereLaufendeEinheit(neu))) throw new Error('nicht gespeichert');
     } catch {
@@ -228,7 +228,7 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
         ? <Station key={`${index}-${u.id}`} z={z} einheit={einheit} schritt={schritt} u={u} letzte={index === liste.length - 1}
             onTauschen={onTauschen} onWeiter={() => void erledigt(positionVon(einheit, schritt).zielWdh)} />
         : <Satz key={`${index}-${u.id}`} z={z} einheit={einheit} schritt={schritt} u={u} farbe={farbe} onTauschen={onTauschen}
-            onErledigt={(w, l) => void erledigt(w, l)} />)}
+            onErledigt={(w, l, m) => void erledigt(w, l, m)} />)}
     </Rahmen>
   );
 }
@@ -357,12 +357,18 @@ function Kopf({ z, u, label, farbe = BLOCKFARBEN[0], onTauschen }: {
 }
 
 function Satz({ z, einheit, schritt, u, farbe, onTauschen, onErledigt }: {
-  z: AppZustand; einheit: Einheit; schritt: Schritt; u: Uebung; farbe: Blockfarbe; onTauschen?: () => void; onErledigt: (wert: number, last?: number) => void;
+  z: AppZustand; einheit: Einheit; schritt: Schritt; u: Uebung; farbe: Blockfarbe; onTauschen?: () => void;
+  onErledigt: (wert: number, last?: number, messung?: Messung) => void;
 }) {
   const p = positionVon(einheit, schritt);
   const v = satzVorgabe(z, einheit, schritt);
   const [wert, setWert] = useState(v.wert);
   const [last, setLast] = useState(v.last);
+  const [reserve, setReserve] = useState<number>();
+  const [unsauber, setUnsauber] = useState(false);
+  const messsatz = v.messReserve !== undefined;
+  const messung: Messung | undefined = messsatz && (reserve !== undefined || unsauber)
+    ? { reserve: unsauber ? 0 : reserve!, technikUnsauber: unsauber } : undefined;
   const ort = z.orte.find((o) => o.id === einheit.ortId);
   const letztes = letztesMal(z, u.id, einheit.id);
   const fortschritt = useMemo(() => fortschrittshinweis(z, einheit, schritt, lokaleZeit()), [z, einheit, schritt]);
@@ -380,15 +386,49 @@ function Satz({ z, einheit, schritt, u, farbe, onTauschen, onErledigt }: {
       {v.art !== 'maxTest' && v.inSek && <Countdown ziel={v.wert} onStopp={setWert} />}
       {!(v.art === 'maxTest' && v.inSek) && (
         <Zaehler wert={wert} onChange={setWert} einheit={v.inSek ? 'Sekunden' : 'Wiederholungen'}
-          hinweis={v.art === 'ziel' && !v.kalibrierung ? 'Weniger geschafft? Mit − anpassen.' : undefined} />
+          hinweis={messsatz ? 'Mehr oder weniger geschafft? Mit + oder − anpassen.'
+            : v.art === 'ziel' && !v.kalibrierung ? 'Weniger geschafft? Mit − anpassen.' : undefined} />
+      )}
+      {messsatz && (
+        <Reservewahl reserve={unsauber ? undefined : reserve} unsauber={unsauber}
+          onReserve={(r) => { setReserve(r); setUnsauber(false); }} onUnsauber={() => { setUnsauber(!unsauber); setReserve(undefined); }} />
       )}
       {fortschritt
         ? <Fortschritt h={fortschritt} />
         : letztes && !p.istMaxTest && <p className="mt-3 text-center text-basis text-gedaempft">Letztes Mal: {letztesText(u, letztes)}</p>}
       <div className="mt-auto pt-8">
-        <Knopf onClick={() => onErledigt(wert, last)}>{p.istMaxTest ? 'Test erledigt' : 'Satz erledigt'}</Knopf>
+        <Knopf deaktiviert={messsatz && !messung} onClick={() => onErledigt(wert, last, messung)}>
+          {p.istMaxTest ? 'Test erledigt' : 'Satz erledigt'}
+        </Knopf>
       </div>
     </div>
+  );
+}
+
+// Messsatz (Entscheidungen 01.11.2026): Nach dem letzten Satz einer Übung tippt der Nutzer an, wie viele
+// saubere Wiederholungen noch gegangen wären, oder dass die Technik unsauber wurde. Erst dann geht es weiter.
+function Reservewahl({ reserve, unsauber, onReserve, onUnsauber }: {
+  reserve?: number; unsauber: boolean; onReserve: (r: number) => void; onUnsauber: () => void;
+}) {
+  const werte = Array.from({ length: MESSSATZ.reserveMax + 1 }, (_, i) => i);
+  return (
+    <section className="mt-5">
+      <p className="text-gross font-bold">Wie viele saubere wären noch gegangen?</p>
+      <div role="radiogroup" aria-label="Wiederholungen in Reserve" className="mt-3 grid grid-cols-6 gap-2">
+        {werte.map((r) => (
+          <button key={r} type="button" role="radio" aria-checked={reserve === r} onClick={() => onReserve(r)}
+            className={`min-h-primaer rounded-xl text-gross ${reserve === r
+              ? 'border-2 border-akzent bg-akzent-hell font-extrabold text-akzent' : 'border border-rand bg-flaeche font-semibold'}`}>
+            {r === MESSSATZ.reserveMax ? `${r}+` : r}
+          </button>
+        ))}
+      </div>
+      <button type="button" role="checkbox" aria-checked={unsauber} onClick={onUnsauber}
+        className={`mt-2 min-h-touch w-full rounded-xl px-4 text-basis ${unsauber
+          ? 'border-2 border-akzent bg-akzent-hell font-bold text-akzent' : 'border border-rand bg-flaeche font-semibold'}`}>
+        Technik wurde unsauber
+      </button>
+    </section>
   );
 }
 

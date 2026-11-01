@@ -61,7 +61,7 @@ Umsetzung, die ich ohne Frage erledige.
 
 ## 4. Umsetzungsplan nach den Entscheidungen vom 01.11.2026
 
-**Schritt 1: Messung und Auswertung**
+**Schritt 1: Messung und Auswertung** (umgesetzt am 01.11.2026)
 1. Letzter Satz als Messsatz („sauberes Limit“): Grundübungen Schluss bei 2 sauberen Wiederholungen übrig, Isolation bis zur letzten sauberen; Zähler ohne Deckel beim Ziel.
 2. Reserve direkt nach dem letzten Satz (0 bis 5+, „Technik wurde unsauber“); Feedback am Ende entfällt und wird daraus abgeleitet.
 3. Kraftschätzung und Ziel aus dem Messsatz mit seiner eigenen Reserve.

@@ -282,15 +282,13 @@ export const PROGRESSION = {
   einseitigKennzeichen: ['einbeinig', 'einarmig'] as readonly string[],
 } as const;
 
-// Persönliche Volumengrenze pro Muskel (Entscheidung 30.10.2026: „robust, behutsam mehr“): weniger Sätze
-// erst, wenn die Leistung so viele Wochen in Folge gefallen ist oder die Anstrengung hoch war; nach so vielen
-// guten Wochen in Folge (ohne Warnzeichen) mehr Sätze
+// Persönliche Volumengrenze pro Muskel (Entscheidung 01.11.2026: „nur bei Stillstand“): −2, wenn die
+// Leistung im Verlauf der letzten 4 Wochen fällt oder die Anstrengung hoch war; +2 nur, wenn sie über
+// 4 Wochen stagniert und die Erholung gut ist; bei Fortschritt bleibt sie
 export const VOLUMENGRENZE = {
   bewertenAbAnteilZiel: 0.8,
-  gefallenUeber: 0.03,
-  gefallenWochen: 2,
-  guteWochen: 4,
-  mittelWochen: 2,
+  stillstandWochen: 4,            // +2 frühestens so viele bewertete Wochen nach der letzten Änderung
+  senkenAbstandWochen: 2,         // −2 frühestens so viele bewertete Wochen nach der letzten Änderung
   anstrengungHoechstens: 3,
   anstrengungAb: 4,
   schritt: 2,
@@ -299,11 +297,32 @@ export const VOLUMENGRENZE = {
   bestesAusWochen: 4,
 } as const;
 
+// Leistungsverlauf (Entscheidung 01.11.2026): ein Maß für alle Lasttypen. Kapazität = Wiederholungen plus
+// Reserve des Messsatzes; Leistungswert = Teiler + Kapazität (bei Last mal Gewicht, also die Kraftschätzung),
+// so entspricht 1 Wdh. überall etwa 2 bis 3 %. Entschieden wird über die robuste Steigung der letzten 4 Wochen.
+export const LEISTUNG = {
+  wochen: 4,                      // Fenster des Verlaufs
+  minSitzungen: 3,                // so viele vergleichbare Einheiten einer Variante im Fenster
+  minSpanneTage: 10,              // und so weit auseinander
+  steigtAb: 0.01,                 // Fortschritt: mehr als 1 % über 4 Wochen
+  faelltMin: 0.03,                // gefallen: mindestens 3 % weniger über 4 Wochen …
+  faelltFaktorFehler: 2,          // … und mehr als das Doppelte des Messfehlers der Steigung
+} as const;
+
+// Messsatz (Entscheidungen 01.11.2026, „sauberes Limit“): Der letzte Satz jeder Übung mit Wiederholungen
+// endet bei dieser Reserve (Grundübungen 2, sonst bis zur letzten sauberen Wiederholung); bei Ziel-Reserve
+// „2 bis 3“ eine mehr. Danach tippt der Nutzer die Reserve an (0 bis 5, 5 = „5+“).
+export const MESSSATZ = {
+  reserveGrund: 2,
+  reserveIsolation: 0,
+  plusSchonend: 1,
+  reserveMax: 5,
+  leichtAbReserve: 4,             // so viel Reserve oder mehr: „zu leicht“
+} as const;
+
 // Erholungswochen und Trainingspause
 export const ERHOLUNGSWOCHE = {
-  musterMitAbfall: 2,
-  einheitenInFolge: 2,
-  abfallWdh: 2,
+  musterMitAbfall: 2,             // Muster mit gefallenem Verlauf (Entscheidung 01.11.2026)
   anstrengungWorkouts: 4,
   anstrengungAb: 4.5,
   wochenOhneEntlastung: 10,
@@ -351,7 +370,6 @@ export const PLAYER = {
   vorlaufSek: 5,                    // Countdown und Stoppuhr: Zeit zum Bereitmachen (Entscheidung 29.10.2026)
   verlaufPunkte: 8,                 // kleine Kurve im ersten Satz: so viele letzte Einheiten
   reserveHaltenSek: { von: 5, bis: 10 },     // Hinweis bei Halteübungen
-  reserveLetzterIsolationssatz: { von: 0, bis: 1 },
   // Signal am Pausenende: drei kurze Töne und Vibration (Millisekunden)
   ton: { frequenzHz: 880, dauerMs: 180, abstandMs: 120, anzahl: 3, lautstaerke: 0.3 },
   vibration: [200, 100, 200, 100, 400],

@@ -2,14 +2,15 @@
 // Kalibrierungssatz und „Letztes Mal“. Rein und deterministisch: Die Zeit wird übergeben. Wo das
 // Training steht, ergibt sich allein aus den gespeicherten Satzergebnissen; so setzt ein
 // Neustart der App am richtigen Satz fort.
-import { BEWERTUNG, MUSTER_ART, PLAYER, PROGRESSION } from '../konfiguration';
+import { BEWERTUNG, MESSSATZ, PLAYER, PROGRESSION } from '../konfiguration';
 import { stundenZwischen } from './datum';
 import { lastraster } from './equipment';
 import { bereichFuer, lastAnzeige } from './planung';
 import type { AppZustand, BandStufe, Block, Einheit, Feedback, Position, SatzErgebnis, Uebung } from './typen';
 import { naechsteVariante } from './progression';
 import {
-  e1rm, einstellungenVon, feedbackVon, letzterSatz, fertigeEinheiten, leistungswert, sitzungen, uebungVon, wdhBei, zielReserve,
+  e1rm, einstellungenVon, feedbackAusMesssatz, feedbackVon, letzterSatz, fertigeEinheiten, leistungswert, messReserve, sitzungen,
+  uebungVon, wdhBei, zielReserve,
 } from './verlauf';
 
 // Ein Schritt ist ein Satz (bzw. eine Zirkel-Station in einer Runde).
@@ -132,6 +133,9 @@ export interface SatzVorgabe {
   langsam: boolean;
   zaehlen: boolean;                   // Geschafftes eingeben, vorbelegt mit dem Ziel (Entscheidung 30.10.2026)
   gesenkt: boolean;                   // Ziel im Training gesenkt, weil ein Satz deutlich darunter blieb
+  // Messsatz (Entscheidungen 01.11.2026): letzter Satz einer Übung mit Wiederholungen; so viele saubere
+  // wie möglich bis zu dieser Reserve, danach die Reserve antippen
+  messReserve?: number;
 }
 
 // Was ein Satz anzeigt: Ziel, Last und Hinweis zur Reserve. Seit 30.10.2026 (Entscheidung) lässt sich in
@@ -151,24 +155,31 @@ export function satzVorgabe(z: AppZustand, einheit: Einheit, s: Schritt): SatzVo
   }
   if (b.typ === 'zirkel') return { ...basis, art: 'station', wert: p.zielWdh, reserve: '' };
   const kalibrierung = istKalibrierung(z, einheit, s);
+  const mess = u && !kalibrierung && istMesssatz(u, p, s) ? messReserve(e, u) : undefined;
   const reserve = kalibrierung
     ? `${u && lastAnzeige(z, u) === 'vorschlag'
       ? `Vorschlag aus deinem Testtag für etwa ${bereich!.von} Wiederholungen; passt es nicht, ändere es.`
       : `Wähle ein Gewicht für etwa ${bereich!.von} Wiederholungen.`} Aufhören, wenn noch ${PROGRESSION.neueVarianteReserve} gingen.`
-    : reserveText(e.zielReserve, inSek, letzterIsolationssatz(u, p, s));
+    : mess !== undefined ? messText(mess) : reserveText(e.zielReserve, inSek);
   const gesenkt = !kalibrierung && s.satz > 1 && p.zielFolgesaetze !== undefined && p.zielFolgesaetze < p.zielWdh;
   const wert = kalibrierung ? bereich!.von : gesenkt ? p.zielFolgesaetze! : p.zielWdh;
-  return { ...basis, art: 'ziel', wert, bereich, reserve, kalibrierung, zaehlen: true, gesenkt };
+  return { ...basis, art: 'ziel', wert, bereich, reserve, kalibrierung, zaehlen: true, gesenkt, ...(mess !== undefined ? { messReserve: mess } : {}) };
 }
 
-const letzterIsolationssatz = (u: Uebung | undefined, p: Position, s: Schritt) =>
-  u !== undefined && MUSTER_ART[u.muster] === 'isolation' && s.satz === p.saetze;
+// Messsatz: letzter Satz einer Übung mit Wiederholungen (nicht Halteübung, Max-Test oder Zirkel).
+const istMesssatz = (u: Uebung, p: Position, s: Schritt) =>
+  u.bereich.einheit === 'Wdh.' && !p.istMaxTest && s.satz === p.saetze;
 
-function reserveText(zielReserve: '1-3' | '2-3', inSek: boolean, letzterIsolation: boolean): string {
-  const { reserveHaltenSek: h, reserveLetzterIsolationssatz: l } = PLAYER;
+function messText(reserve: number): string {
+  return reserve === 0
+    ? 'Letzter Satz: so viele saubere Wiederholungen wie möglich, bis keine saubere mehr geht.'
+    : `Letzter Satz: so viele saubere Wiederholungen wie möglich. Schluss, wenn noch ${reserve} gingen.`;
+}
+
+function reserveText(zielReserve: '1-3' | '2-3', inSek: boolean): string {
+  const h = PLAYER.reserveHaltenSek;
   if (inSek) return `Aufhören, wenn noch ${h.von} bis ${h.bis} Sekunden gingen.`;
-  const text = `Aufhören, wenn noch ${zielReserve === '2-3' ? '2 bis 3' : '1 bis 3'} Wiederholungen gingen.`;
-  return letzterIsolation ? `${text} Im letzten Satz genügen ${l.von} bis ${l.bis}.` : text;
+  return `Aufhören, wenn noch ${zielReserve === '2-3' ? '2 bis 3' : '1 bis 3'} Wiederholungen gingen.`;
 }
 
 // Last und Ziel der restlichen Sätze nach dem Kalibrierungssatz: schwerste Last am Ort, bei der die
@@ -204,7 +215,9 @@ export function lastWaehlbar(z: AppZustand, einheit: Einheit, s: Schritt): boole
 // Trägt einen erledigten Satz ein (Zirkel-Station: Vorgabe), mit der gewählten Last. Nach dem
 // Kalibrierungssatz bekommen die restlichen Sätze Last und Ziel aus `kalibriere`. Bleibt ein Satz
 // deutlich unter seinem Ziel, ist das Geschaffte das Ziel der restlichen Sätze (Entscheidung 30.10.2026).
-export function trageSatzEin(z: AppZustand, einheit: Einheit, s: Schritt, wert: number, jetzt: string, last?: number): Einheit {
+export interface Messung { reserve: number; technikUnsauber: boolean }
+
+export function trageSatzEin(z: AppZustand, einheit: Einheit, s: Schritt, wert: number, jetzt: string, last?: number, messung?: Messung): Einheit {
   const neu = structuredClone(einheit);
   const p = positionVon(neu, s);
   const u = uebungVon(z, p.uebungId);
@@ -224,6 +237,14 @@ export function trageSatzEin(z: AppZustand, einheit: Einheit, s: Schritt, wert: 
   else if (vorgabe.art === 'ziel' && !kalibrierung) {
     const ab = PROGRESSION.folgesatzSenkenAb * (inSek ? PROGRESSION.sekProWdh : 1);
     if (wert <= vorgabe.wert - ab) p.zielFolgesaetze = Math.max(1, wert);
+  }
+  // Messsatz: Reserve und Technik speichern; das Feedback der Übung ergibt sich daraus (Entscheidung
+  // 01.11.2026, die drei Stufen am Ende entfallen hier).
+  if (vorgabe.messReserve !== undefined && messung) {
+    p.reserve = Math.max(0, Math.min(MESSSATZ.reserveMax, Math.round(messung.reserve)));
+    if (messung.technikUnsauber) p.technikUnsauber = true;
+    else delete p.technikUnsauber;
+    p.feedback = feedbackAusMesssatz(einstellungenVon(z), p);
   }
   return neu;
 }
