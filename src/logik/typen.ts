@@ -132,6 +132,7 @@ export interface Position {
   istLasttest?: boolean;             // Gewichtstest am Testtag (Entscheidung 21.10.2026)
   langsam?: boolean;                // 3 Sek. absenken
   zielFolgesaetze?: number;         // im Training gesenktes Ziel der restlichen Sätze (Entscheidung 30.10.2026)
+  vorbelastet?: number;             // um so viel gesenktes Ziel, weil der Hauptmuskel schon gearbeitet hat (Entscheidung 02.11.2026)
   ergebnisse: SatzErgebnis[]; feedback?: Feedback;
   // Messsatz (Entscheidungen 01.11.2026): Wiederholungen, die im letzten Satz noch sauber gegangen wären
   // (5 = 5 oder mehr), und ob die Technik unsauber wurde. Daraus folgt `feedback`.

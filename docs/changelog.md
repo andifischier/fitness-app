@@ -487,3 +487,14 @@
     neue Tests in `gutachten2.test.ts` und `speichern.test.ts`, angepasste Tests.
 - **Warum:** Entscheidungen vom 01.11.2026 zum Gutachten. Arme erreichen in Wochen mit 2 Einheiten jetzt ihr Ziel
   (Beispielwoche UC3: 12 statt etwa 6 von 12 Sätzen).
+
+## 02.11.2026: Schwerere Variante zuerst, Ziel bei vorbelasteten Muskeln, Videos ohne Ton
+- **Was:**
+  - Zwei Varianten derselben Bewegung in einer Einheit: die schwerere zuerst (auch in Kombi-Runden).
+  - Übungen, deren Hauptmuskel in der Einheit schon gearbeitet hat, bekommen ein 2 Wdh. (Halteübungen 10 Sek.)
+    tieferes Ziel mit Hinweis im Satz; ausgewertet werden sie wie ausgeruht, Müdigkeit senkt das Ziel der Variante nicht.
+  - Eingebettete Übungsvideos starten nach dem Tipp sofort und ohne Ton.
+  - Geändert: `planung.ts`, `progression.ts`, `player.ts`, `verlauf.ts`, `anpassen.ts`, `loeschen.ts`, `typen.ts`,
+    `schemas.ts`, `konfiguration.ts`, `technik.tsx`; neue Tests in `vorbelastung.test.ts`, angepasst `abnahme.test.ts`.
+- **Warum:** Rückmeldung des Nutzers: Pause Pushups kamen nach 4 Sätzen Pushups, und ein verfehltes Ziel aus Müdigkeit
+  zählte wie „zu schwer“. Videos unterbrachen den Podcast.

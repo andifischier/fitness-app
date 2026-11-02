@@ -152,6 +152,9 @@ export const EINHEIT = {
   saetzeProUebung: { min: 2, max: 4, maxWenigEinheiten: 5, wenigBisPrognose: 2 },  // bei 1 bis 2 Einheiten bis 5 Sätze
   minOffenerBedarf: 0.25,
   maxSaetzeBauchWaden: 3,
+  // Vorbelastung (Entscheidung 02.11.2026): Hat der Hauptmuskel einer Übung in dieser Einheit schon
+  // gearbeitet, liegt ihr Ziel so viele Wdh. tiefer (Halteübungen × PROGRESSION.sekProWdh Sek.)
+  vorbelastungWeniger: 2,
   // Arme bei 1 bis 2 Einheiten (Entscheidung 01.11.2026): je eine Bizeps- und Trizepsübung mit 2 bis 3
   // Sätzen zusätzlich zum Zeitbudget, wenn für den Muskel noch Bedarf offen ist
   armeZusatzBisPrognose: 2,

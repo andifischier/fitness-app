@@ -826,11 +826,11 @@ function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Pla
   }
 
   // Schritt 8: Reihenfolge und Supersatz-Paare
-  const liste = [
+  const liste = schwerereZuerst([
     ...gewaehlt.filter((a) => istGrund(a.k.uebung)),
     ...gewaehlt.filter((a) => !istGrund(a.k.uebung)),
     ...zusatz,
-  ];
+  ]);
   const c: Kontext = { z, e, ort, jetzt, pause: trainingspause(z, jetzt), erholungswoche };
   const gebildet = bildeBloecke(c, liste, eing.klassisch === true);
   const format = gebildet.format;
@@ -840,18 +840,60 @@ function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Pla
       positionen: [{ uebungId: testUebung.id, saetze: 1, zielWdh: 0, istMaxTest: true, ergebnisse: [] }],
     }, ...gebildet.bloecke]
     : gebildet.bloecke;
-  const einheit: Einheit = {
+  const einheit: Einheit = setzeVorbelastung(z, {
     ...leereEinheit(eing, format),
     fokus,
     aufwaermen: aufwaermenFuer(z, ort, bloecke),
     bloecke,
-  };
+  });
   if (MUSKELN.some((m) => extra[m] > 0)) {
     const geplant = dosisProMuskel(z, einheit);
     einheit.basisDosis = Object.fromEntries(MUSKELN.map((m) => [m, Math.max(0, geplant[m] - extra[m])])) as ProMuskel;
   }
   einheit.geschaetzteDauerMin = geschaetzteDauer(z, einheit);
   return { einheit, budgetSaetze: gesamt, freieSaetze: budget - gesamt, bedarfOffen };
+}
+
+// Zwei Varianten desselben Musters in einer Einheit: die schwerere (höhere Stufe) zuerst, solange man
+// frisch ist (Entscheidung 02.11.2026). Die Übungen tauschen nur ihre Plätze; bei gleicher Stufe bleibt
+// die Reihenfolge.
+function schwerereZuerst(liste: Auswahl[]): Auswahl[] {
+  const neu = [...liste];
+  for (const muster of new Set(liste.map((a) => a.k.uebung.muster))) {
+    const plaetze = liste.flatMap((a, i) => (a.k.uebung.muster === muster ? [i] : []));
+    if (plaetze.length < 2) continue;
+    const sortiert = plaetze.map((i) => liste[i]!).sort((a, b) => b.k.uebung.stufe - a.k.uebung.stufe);
+    plaetze.forEach((i, j) => { neu[i] = sortiert[j]!; });
+  }
+  return neu;
+}
+
+// Vorbelastung (Entscheidung 02.11.2026): Hat der Hauptmuskel einer Übung in einem früheren Block der
+// Einheit schon als Primärmuskel gearbeitet (auch im Max-Test), liegt ihr Ziel um
+// `EINHEIT.vorbelastungWeniger` Wdh. (Halteübungen × `PROGRESSION.sekProWdh` Sek.) tiefer, mindestens 1.
+// Übungen einer Kombi-Runde belasten sich nicht gegenseitig vor. Neu bestimmt nach jeder Änderung der
+// Einheit; Übungen mit erledigten Sätzen bleiben, wie sie sind. Zirkel und Testtag nicht.
+export function setzeVorbelastung(z: AppZustand, einheit: Einheit): Einheit {
+  if (einheit.format === 'zirkel' || einheit.format === 'test') return einheit;
+  const gearbeitet = new Set<Muskel>();
+  const bloecke = einheit.bloecke.map((b) => {
+    if (b.typ === 'zirkel') return b;
+    const positionen = b.positionen.map((p) => {
+      const u = uebungVon(z, p.uebungId);
+      if (!u || p.istMaxTest || p.ergebnisse.length > 0) return p;
+      const h = hauptmuskel(u);
+      const weniger = h && gearbeitet.has(h)
+        ? EINHEIT.vorbelastungWeniger * (u.bereich.einheit === 'Sek.' ? PROGRESSION.sekProWdh : 1) : 0;
+      const basis = p.zielWdh + (p.vorbelastet ?? 0);
+      const neu: Position = { ...p, zielWdh: Math.max(1, basis - weniger) };
+      if (neu.zielWdh < basis) neu.vorbelastet = basis - neu.zielWdh;
+      else delete neu.vorbelastet;
+      return neu;
+    });
+    for (const p of b.positionen) for (const m of uebungVon(z, p.uebungId)?.primaer ?? []) gearbeitet.add(m);
+    return { ...b, positionen };
+  });
+  return { ...einheit, bloecke };
 }
 
 // Schritt 8: Kombi (Standard) bildet Runden aus bis zu `KOMBI.maxUebungen` Übungen, die sich nicht
@@ -874,7 +916,9 @@ function bildeBloecke(c: Kontext, liste: Auswahl[], klassisch: boolean): { bloec
     const groesse = frei.length <= max ? frei.length : frei.length === max + 1 ? Math.ceil(frei.length / 2) : max;
     const runde = [frei.shift()!];
     while (runde.length < groesse) {
-      const passend = frei.filter((x) => runde.every((r) => vertragenSich(r.k.uebung, x.k.uebung)));
+      // Eine spätere Variante eines Musters rückt nicht vor die frühere (schwerere zuerst, Entscheidung 02.11.2026).
+      const passend = frei.filter((x) => runde.every((r) => vertragenSich(r.k.uebung, x.k.uebung))
+        && frei.find((y) => y.k.uebung.muster === x.k.uebung.muster) === x);
       if (passend.length === 0) break;
       const ziel = runde[0]!.saetze;
       const naechste = passend.reduce((b, x) => (Math.abs(x.saetze - ziel) < Math.abs(b.saetze - ziel) ? x : b));
@@ -988,7 +1032,7 @@ export function workoutEinheit(z: AppZustand, w: EigenesWorkout, eing: EinheitEi
   }
   const liste: Auswahl[] = eintraege.map(({ eintrag, uebung }) => ({ k: { uebung, istErsatz: false }, saetze: eintrag.saetze }));
   const { bloecke, format } = bildeBloecke(c, liste, eing.klassisch === true);
-  const einheit: Einheit = { ...leereEinheit(eing, format), name: w.name, aufwaermen: aufwaermenFuer(z, ort, bloecke), bloecke };
+  const einheit: Einheit = setzeVorbelastung(z, { ...leereEinheit(eing, format), name: w.name, aufwaermen: aufwaermenFuer(z, ort, bloecke), bloecke });
   einheit.geschaetzteDauerMin = geschaetzteDauer(z, einheit);
   return einheit;
 }
@@ -1129,5 +1173,5 @@ export function tausche(z: AppZustand, einheit: Einheit, block: number, position
   };
   neu.bloecke[block]!.positionen[position] = ersetzt;
   if (neu.format !== 'zirkel' && neu.status === 'geplant') neu.aufwaermen = aufwaermenFuer(z, ort, neu.bloecke);
-  return neu;
+  return setzeVorbelastung(z, neu);
 }

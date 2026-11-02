@@ -147,7 +147,7 @@ const satzSchema = z.object({
 const positionSchema = z.object({
   uebungId: z.string().min(1), saetze: ganzzahl.nonnegative(), zielWdh: zahl, last: zahl.optional(),
   bandStufe: bandStufe.optional(), istMaxTest: z.boolean().optional(), istLasttest: z.boolean().optional(), istErsatz: z.boolean().optional(),
-  getauschtVon: z.string().optional(), langsam: z.boolean().optional(), zielFolgesaetze: zahl.optional(), ergebnisse: z.array(satzSchema), feedback: z.enum(FEEDBACKS).optional(),
+  getauschtVon: z.string().optional(), langsam: z.boolean().optional(), zielFolgesaetze: zahl.optional(), vorbelastet: zahl.optional(), ergebnisse: z.array(satzSchema), feedback: z.enum(FEEDBACKS).optional(),
   reserve: zahl.optional(), technikUnsauber: z.boolean().optional(),
 });
 

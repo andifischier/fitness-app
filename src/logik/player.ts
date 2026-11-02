@@ -9,7 +9,7 @@ import { bereichFuer, istErholungswoche, lastAnzeige } from './planung';
 import type { AppZustand, BandStufe, Block, Einheit, Feedback, Position, SatzErgebnis, Uebung } from './typen';
 import { naechsteVariante } from './progression';
 import {
-  e1rm, einstellungenVon, feedbackAusMesssatz, feedbackVon, letzterSatz, fertigeEinheiten, leistungswert, messReserve, sitzungen,
+  ausgeruht, e1rm, einstellungenVon, feedbackAusMesssatz, feedbackVon, letzterSatz, fertigeEinheiten, leistungswert, messReserve, sitzungen,
   uebungVon, wdhBei, zielReserve,
 } from './verlauf';
 
@@ -162,7 +162,7 @@ export function satzVorgabe(z: AppZustand, einheit: Einheit, s: Schritt): SatzVo
     ? `${u && lastAnzeige(z, u) === 'vorschlag'
       ? `Vorschlag aus deinem Testtag für etwa ${bereich!.von} Wiederholungen; passt es nicht, ändere es.`
       : `Wähle ein Gewicht für etwa ${bereich!.von} Wiederholungen.`} Aufhören, wenn noch ${PROGRESSION.neueVarianteReserve} gingen.`
-    : `${mess !== undefined ? messText(mess) : reserveText(e.zielReserve, inSek)}${erholung ? ' Erholungswoche: Ziel und Messsatz mit 1 Wiederholung mehr Reserve.' : ''}`;
+    : `${mess !== undefined ? messText(mess) : reserveText(e.zielReserve, inSek)}${erholung ? ' Erholungswoche: Ziel und Messsatz mit 1 Wiederholung mehr Reserve.' : ''}${p.vorbelastet ? ` Der Muskel hat heute schon gearbeitet, darum ist das Ziel ${p.vorbelastet}${inSek ? ' Sek.' : ''} niedriger.` : ''}`;
   const gesenkt = !kalibrierung && s.satz > 1 && p.zielFolgesaetze !== undefined && p.zielFolgesaetze < p.zielWdh;
   const wert = kalibrierung ? bereich!.von : gesenkt ? p.zielFolgesaetze! : p.zielWdh;
   return { ...basis, art: 'ziel', wert, bereich, reserve, kalibrierung, zaehlen: true, gesenkt, ...(mess !== undefined ? { messReserve: mess } : {}) };
@@ -235,7 +235,11 @@ export function trageSatzEin(z: AppZustand, einheit: Einheit, s: Schritt, wert: 
     zeit: jetzt,
   };
   p.ergebnisse.push(ergebnis);
-  if (kalibrierung && u && gewicht !== undefined) Object.assign(p, kalibriere(z, neu.ortId, u, gewicht, wert));
+  if (kalibrierung && u && gewicht !== undefined) {
+    // Kalibrierung mit dem Geschafften, wie ausgeruht; das neue Ziel dann wieder um die Vorbelastung tiefer.
+    const k = kalibriere(z, neu.ortId, u, gewicht, wert > 0 ? wert + (p.vorbelastet ?? 0) : wert);
+    Object.assign(p, { ...k, zielWdh: Math.max(1, k.zielWdh - (p.vorbelastet ?? 0)) });
+  }
   else if (vorgabe.art === 'ziel' && !kalibrierung) {
     const ab = PROGRESSION.folgesatzSenkenAb * (inSek ? PROGRESSION.sekProWdh : 1);
     if (wert <= vorgabe.wert - ab) p.zielFolgesaetze = Math.max(1, wert);
@@ -377,7 +381,7 @@ export function fortschrittshinweis(z: AppZustand, einheit: Einheit, s: Schritt,
   const bisher = sitzungen(z, u.id).filter((x) => x.einheit.id !== einheit.id);
   const letzte = bisher.at(-1);
   const letztesMal = letzte ? letzterSatz(letzte.position) : undefined;
-  const verlauf = bisher.map((x) => leistungswert(e, u, x.position)).filter((w): w is number => w !== undefined)
+  const verlauf = bisher.map((x) => leistungswert(e, u, ausgeruht(x.position))).filter((w): w is number => w !== undefined)
     .slice(-PLAYER.verlaufPunkte);
   const { bis } = bereichFuer(e, u, z);
   const naechste = ort && (u.lasttyp === 'KG' || u.lasttyp === 'Zeit') ? naechsteVariante(z, ort, u, jetzt) : undefined;

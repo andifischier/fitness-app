@@ -2,7 +2,7 @@
 // entfernen und hinzufügen, zusätzlich zum Tauschen. Gilt nicht für Zirkel. Rein und deterministisch.
 import { MUSTER_ART, WORKOUT } from '../konfiguration';
 import { alleUebungen, uebungErlaubt } from './equipment';
-import { aufwaermenFuer, geschaetzteDauer, startwerte } from './planung';
+import { aufwaermenFuer, geschaetzteDauer, setzeVorbelastung, startwerte } from './planung';
 import type { AppZustand, Block, Einheit, Uebung } from './typen';
 import { einstellungenVon, uebungVon } from './verlauf';
 
@@ -30,7 +30,7 @@ function aufgeraeumt(z: AppZustand, einheit: Einheit): Einheit {
   const kombi = normal.filter((t) => t === 'supersatz').length;
   const format: Einheit['format'] = kombi === 0 ? 'klassisch' : kombi === normal.length ? 'supersatz' : 'mix';
   const ort = z.orte.find((o) => o.id === einheit.ortId);
-  const neu: Einheit = { ...einheit, bloecke, format, aufwaermen: ort ? aufwaermenFuer(z, ort, bloecke) : einheit.aufwaermen };
+  const neu: Einheit = setzeVorbelastung(z, { ...einheit, bloecke, format, aufwaermen: ort ? aufwaermenFuer(z, ort, bloecke) : einheit.aufwaermen });
   neu.geschaetzteDauerMin = geschaetzteDauer(z, neu);
   return neu;
 }

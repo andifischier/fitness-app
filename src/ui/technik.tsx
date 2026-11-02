@@ -33,8 +33,10 @@ export function Technik({ e, u, offen: start = false }: { e: Einstellungen; u: T
           )}
           {id && (video ? (
             <div className="aspect-video w-full overflow-hidden rounded-xl bg-linie">
-              <iframe className="size-full" src={`https://www.youtube-nocookie.com/embed/${id}?rel=0`}
-                title={`Video: ${u.name}`} allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen />
+              {/* Startet sofort und ohne Ton, damit Musik oder Podcast weiterlaufen; Ton über den Knopf im Video
+                  (Entscheidung 02.11.2026). */}
+              <iframe className="size-full" src={`https://www.youtube-nocookie.com/embed/${id}?rel=0&autoplay=1&mute=1&playsinline=1`}
+                title={`Video: ${u.name}`} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen />
             </div>
           ) : (
             <button type="button" onClick={() => setVideo(true)}
