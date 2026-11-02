@@ -220,12 +220,13 @@ describe('Endabnahme: 12 Wochen im Ablauf der App', () => {
     }
 
     // Feedback verändert die nächste Einheit: Wer „passend“ gibt und das Ziel schafft, bekommt bei
-    // Last-Übungen am selben Ort Ziel und Last aus dem gespeicherten Zustand der Variante.
+    // Last-Übungen am selben Ort Ziel und Last aus dem gespeicherten Zustand der Variante (vorbelastet
+    // um die Senkung tiefer, Entscheidung 02.11.2026).
     for (const p of protokoll.filter((x) => x.einheit.ortId === ZUHAUSE.id && !x.erholungswoche)) {
       for (const pos of p.einheit.bloecke.flatMap((b) => b.positionen)) {
         const v = p.zustandVorher.varianten.find((x) => x.uebungId === pos.uebungId);
         if (!v || pos.istMaxTest || p.einheit.format === 'zirkel' || v.last === undefined) continue;
-        expect({ last: pos.last, ziel: pos.zielWdh }, `${pos.uebungId} am ${p.jetzt}`).toEqual({ last: v.last, ziel: v.zielWdh });
+        expect({ last: pos.last, ziel: pos.zielWdh + (pos.vorbelastet ?? 0) }, `${pos.uebungId} am ${p.jetzt}`).toEqual({ last: v.last, ziel: v.zielWdh });
       }
     }
     // … und die Ziele steigen über die Wochen.

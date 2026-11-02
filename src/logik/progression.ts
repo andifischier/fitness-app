@@ -16,7 +16,7 @@ import {
   type VarianteZustand, type Vorstand, type Woche, type Zyklus,
 } from './typen';
 import {
-  e1rm, einheitZeit, einstellungenVon, ersterSatz, faelligerMaxTest, feedbackVon, fertigeEinheiten, kapazitaetswert,
+  ausgeruht, e1rm, einheitZeit, einstellungenVon, ersterSatz, faelligerMaxTest, feedbackVon, fertigeEinheiten, kapazitaetswert,
   leistungswert, letzterWirksam, reserveFuer, seitRueckkehrTrainiert, sitzungen, sterneVon, trainingspause, uebungVon, wdhBei,
   zielReserve, type Pause, type Sitzung,
 } from './verlauf';
@@ -128,7 +128,8 @@ function wechsle(muster: MusterZustand, von: string, zu: string) {
 // `ortId` ist der Ort der Einheit; er bestimmt Lastraster, Bänder und die nächste Variante.
 export function werteUebungAus(z: AppZustand, position: Position, jetzt: string, ortId: string): { variante: VarianteZustand; muster: MusterZustand } {
   const e = einstellungenVon(z);
-  let p = position;
+  // Vorbelastet (Entscheidung 02.11.2026): ausgewertet wie ausgeruht, also mit Ziel und Sätzen ohne Senkung.
+  let p = ausgeruht(position);
   const u = uebungVon(z, p.uebungId);
   const ort = ortVon(z, ortId);
   if (!u || !ort) throw new Error(`Übung ${p.uebungId} oder Ort ${ortId} fehlt.`);

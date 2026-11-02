@@ -36,7 +36,7 @@ export function loescheEinheit(z: AppZustand, einheitId: string): AppZustand | u
     for (const p of trainiert(e)) {
       const alt = varianten.find((v) => v.uebungId === p.uebungId);
       if (p.istMaxTest || !alt || spaeterUebungen.has(p.uebungId)) continue;
-      const neu: VarianteZustand = { ...alt, zielWdh: p.zielWdh };
+      const neu: VarianteZustand = { ...alt, zielWdh: p.zielWdh + (p.vorbelastet ?? 0) };
       delete neu.last;
       delete neu.bandStufe;
       delete neu.langsam;

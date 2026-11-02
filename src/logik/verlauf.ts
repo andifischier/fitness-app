@@ -135,11 +135,29 @@ export function leistungswert(e: Einstellungen, u: Uebung, p: Position): number 
   return werte.length > 0 ? Math.max(...werte) : undefined;
 }
 
+// Vorbelastete Übung (Entscheidung 02.11.2026) so umrechnen, als wäre sie ausgeruht gemacht worden: Ziel
+// und jeder geschaffte Satz um die Senkung höher. So vergleichen Progression und Verlauf Gleiches mit Gleichem.
+export function ausgeruht(p: Position): Position {
+  const a = p.vorbelastet;
+  if (!a) return p;
+  const plus = (x: number) => (x > 0 ? x + a : x);
+  const rest = { ...p };
+  delete rest.vorbelastet;
+  return {
+    ...rest, zielWdh: p.zielWdh + a,
+    ...(p.zielFolgesaetze !== undefined ? { zielFolgesaetze: p.zielFolgesaetze + a } : {}),
+    ergebnisse: p.ergebnisse.map((s) => ({
+      ...s, ...(s.wdh !== undefined ? { wdh: plus(s.wdh) } : {}), ...(s.sek !== undefined ? { sek: plus(s.sek) } : {}),
+    })),
+  };
+}
+
 // Gemeinsames Leistungsmaß für den Verlauf (Entscheidung 01.11.2026): Last = Kraftschätzung; Körpergewicht
 // und Band = Teiler + Kapazität des letzten Satzes (Wiederholungen + Reserve; ohne Messung die Reserve
 // laut Bewertung). So bedeutet 1 Wdh. bei jedem Lasttyp etwa gleich viel. Halteübungen: Sekunden des
 // ersten Satzes.
-export function kapazitaetswert(e: Einstellungen, u: Uebung, p: Position): number | undefined {
+export function kapazitaetswert(e: Einstellungen, u: Uebung, roh: Position): number | undefined {
+  const p = ausgeruht(roh);
   if (p.ergebnisse.length === 0) return undefined;
   if (u.lasttyp === 'Last') return leistungswert(e, u, p);
   if (u.bereich.einheit === 'Sek.') return ersterSatz(p);
