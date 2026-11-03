@@ -19,7 +19,7 @@ describe('Video bei „So geht\'s“ (Entscheidung 03.11.2026)', () => {
   });
 
   it('ohne festes Video kein Fenster, nur der Link', () => {
-    const superman = z.katalog.uebungen.find((u) => u.id === 'superman')!;
-    expect(renderToStaticMarkup(<Technik e={e} u={superman} autoVideo />)).not.toContain('<iframe');
+    const { videoId: _, ...ohne } = pushups;
+    expect(renderToStaticMarkup(<Technik e={e} u={ohne} autoVideo />)).not.toContain('<iframe');
   });
 });

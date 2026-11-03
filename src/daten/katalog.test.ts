@@ -3,15 +3,6 @@ import katalogDatei from '../../docs/katalog.json';
 import { aufwaermSchritt } from '../logik/aufwaermen';
 import { KATALOG, pruefeKatalog } from './katalog';
 
-// Neu am 03.11.2026: noch ohne festes Video, bis die Videolänge geprüft ist (YouTube war aus der
-// Entwicklungsumgebung nicht erreichbar); bis dahin führt „Auf YouTube öffnen“ zur Suche.
-const VIDEO_OFFEN = new Set([
-  'superman', 'bird_dog', 'reverse_snow_angels', 'prone_ytw',
-  'Butt Kicks', 'Arm Swings', 'Cross-Body Arm Swings', 'Torso Twists', 'Inchworms', 'Scapula Pushups', 'Lateral Leg Swings',
-  'Hip Circles', 'Fire Hydrants', "World's Greatest Stretch", 'Thoracic Rotations', 'Band Dislocates', 'Lateral Lunges',
-  'Deep Squat Hold',
-]);
-
 const kopie = () => structuredClone(katalogDatei) as unknown as typeof KATALOG;
 
 describe('Katalog', () => {
@@ -28,11 +19,9 @@ describe('Katalog', () => {
     for (const u of KATALOG.uebungen) {
       expect(u.anleitung?.length, u.id).toBeGreaterThanOrEqual(3);
       for (const zeile of u.anleitung!) expect(zeile, u.id).not.toMatch(/[–—]/);
-      if (VIDEO_OFFEN.has(u.id)) expect(u.videoId, u.id).toBeUndefined();
-      else expect(u.videoId, u.id).toMatch(/^[\w-]{11}$/);
+      expect(u.videoId, u.id).toMatch(/^[\w-]{11}$/);
     }
-    const mitVideo = KATALOG.uebungen.filter((u) => u.videoId !== undefined);
-    expect(new Set(mitVideo.map((u) => u.videoId)).size).toBe(mitVideo.length);
+    expect(new Set(KATALOG.uebungen.map((u) => u.videoId)).size).toBe(KATALOG.uebungen.length);
   });
 
   it("hat für jede Aufwärmübung „So geht's“: Katalogübung oder Anleitung mit eigenem Video (Entscheidung 30.10.2026)", () => {
@@ -48,7 +37,6 @@ describe('Katalog', () => {
       else {
         expect(eintrag!.anleitung?.length, name).toBeGreaterThanOrEqual(3);
         for (const z of eintrag!.anleitung!) expect(z, name).not.toMatch(/[–—]/);
-        if (VIDEO_OFFEN.has(name)) { expect(eintrag!.videoId, name).toBeUndefined(); continue; }
         expect(eintrag!.videoId, name).toMatch(/^[\w-]{11}$/);
         expect(videos.has(eintrag!.videoId), name).toBe(false);
         videos.add(eintrag!.videoId);

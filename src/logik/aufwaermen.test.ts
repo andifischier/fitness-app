@@ -46,9 +46,9 @@ describe("So geht's beim Aufwärmen (Entscheidung 30.10.2026)", () => {
   it('verweist auf die Katalogübung oder liefert Anleitung und Video', () => {
     expect(aufwaermTechnik(z, { uebungId: '', vorgabe: '50 Jumping Jacks' }).id).toBe('hampelmann');
     const katze = aufwaermTechnik(z, { uebungId: '', vorgabe: '8 Cat-Cow' });
-    expect(katze).toMatchObject({ name: 'Cat-Cow', videoId: '5KYLaU6Lg2E' });
+    expect(katze).toMatchObject({ name: 'Cat-Cow', videoId: 'LIVJZZyZ2qM' });
     expect(katze.anleitung).toHaveLength(3);
-    expect(aufwaermTechnik(z, { uebungId: '', vorgabe: '30 Sek. Kneeling Hip Flexor Stretch je Seite' }).videoId).toBe('UU7Nqd_Dric');
+    expect(aufwaermTechnik(z, { uebungId: '', vorgabe: '30 Sek. Kneeling Hip Flexor Stretch je Seite' }).videoId).toBe('bnVfloe6yTo');
   });
 
   it('ohne Eintrag bleibt die YouTube-Suche', () => {

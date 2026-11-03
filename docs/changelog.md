@@ -510,3 +510,9 @@
     `aufwaermen.tsx`, `Training.tsx`, `Testtag.tsx`; neue Tests in `planung.test.ts` und `technik.test.tsx`.
 - **Warum:** Rückmeldung des Nutzers: Aufwärmen immer gleich, Superman fehlte, Video soll von selbst laufen.
   Offen: kurze Videos für die 18 neuen Übungen, sobald YouTube erreichbar ist.
+
+## 03.11.2026: Kurze Videos für alle Übungen
+- **Was:** Alle 109 Übungs- und 23 Aufwärmvideos neu gewählt: höchstens 72 Sek. (im Mittel 25 Sek.), Querformat,
+  einbettbar. Die 18 neuen Übungen vom selben Tag haben jetzt auch ein Video. Geändert: `katalog.json`,
+  `katalog.test.ts`, `aufwaermen.test.ts`, `technik.test.tsx`.
+- **Warum:** Wunsch des Nutzers: Das automatisch laufende Video soll kurz sein und nur die Ausführung zeigen.
