@@ -26,11 +26,11 @@ describe('Aufwärmen Schritt für Schritt (Entscheidung 29.10.2026)', () => {
 
   it('im Katalog haben nur Halteübungen eine Zeitangabe, alles andere wird gezählt', () => {
     const a = KATALOG.aufwaermen;
-    const zeilen = [...a.allgemein.immer, ...a.allgemein.oben, ...a.allgemein.unten, ...Object.values(a.mobility).flat()]
+    const zeilen = [...a.allgemein.immer, ...a.allgemein.oben, ...a.allgemein.unten, ...Object.values(a.mobility).flat()].flat()
       .map((z) => z.replace(/\s*\(nur mit [A-Z]+\)$/, ''));
     for (const z of zeilen) {
       const s = aufwaermSchritt(z);
-      if (s.sek !== undefined) expect(s.name).toMatch(/Stretch/);
+      if (s.sek !== undefined) expect(s.name).toMatch(/Stretch|Hold/);
       else expect(s.wdh).toBeGreaterThan(0);
     }
   });

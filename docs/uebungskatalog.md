@@ -161,6 +161,12 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | sprung\_kniebeuge | Jump Squats | Kondition | Quadrizeps | Gesäß | 4 | keins | KG | 10 bis 20 Wdh. | ja |
 | burpees | Burpees | Kondition | Brust | Quadrizeps, Schultern | 5 | keins | KG | 8 bis 20 Wdh. | ja |
 | kh\_thruster | Dumbbell Thrusters | Kondition | Quadrizeps | Schultern, Gesäß, Trizeps | 5 | KH | Last | 8 bis 15 Wdh. | ja |
+| superman | Superman | Kondition | Ganzkörper | keine | 1 | keins | KG | 8 bis 15 Wdh. | ja |
+| bird\_dog | Bird Dogs | Kondition | Ganzkörper | keine | 1 | keins | KG | 6 bis 12 Wdh. | ja |
+| reverse\_snow\_angels | Reverse Snow Angels | Kondition | Ganzkörper | keine | 2 | keins | KG | 8 bis 15 Wdh. | ja |
+| prone\_ytw | Prone Y-T-W Raises | Kondition | Ganzkörper | keine | 2 | keins | KG | 6 bis 12 Wdh. | ja |
+
+Die vier Übungen für den unteren Rücken (Entscheidung 03.11.2026) stehen im Aufwärmen und in den Zirkeln (Fundament, eigene Workouts). Als „Ganzkörper“ zählen sie nicht zum Muskelvolumen; die Trainingsplanung bleibt unverändert.
 
 ## Zirkel
 
@@ -169,7 +175,7 @@ Fünf feste Zirkel im Freeletics-Stil, jeweils auf Zeit. Eine Station nennt ein 
 | Zirkel | Runden | Dauer | Stationen (Muster: Vorgabe) |
 | --- | --- | --- | --- |
 | Sprint | 4 | ca. 10 Min | Kondition: 10 (Burpees bevorzugt); Knie: 20; hDruck: 10; Kondition: 20 (Climbers bevorzugt) |
-| Fundament | 5 | ca. 15 Min | Knie: 15; hDruck: 10; hZug: 10; Rumpf: 30 Sek. (Plank bevorzugt) |
+| Fundament | 5 | ca. 18 Min | Knie: 15; hDruck: 10; hZug: 10; Rumpf: 30 Sek. (Plank bevorzugt); Kondition: 10 (Superman bevorzugt, seit 03.11.2026) |
 | Leiter | 1 | ca. 12 Min | Stufen 2, 4, 6, 8, 10 Wiederholungen, auf jeder Stufe alle drei Stationen: hDruck, Knie, Rumpf (Dead Bugs oder Knee Raises) |
 | Kraftprobe | 4 | ca. 15 Min | Kondition: 10 (Thrusters, ohne Kurzhanteln Jump Squats); hZug: 10; Einbein: 10 je Seite; vDruck: 10 |
 | Ausdauer | 3 | ca. 16 Min | Kondition: 50 (Jumping Jacks bevorzugt); Huefte: 15; hDruck: 12; Einbein: 20 gesamt; Rumpf: 30 Sek. Side Plank je Seite |
@@ -178,19 +184,25 @@ Als Finisher (siehe Planungslogik) wird der Zirkel verwendet, dessen Dauer in di
 
 ## Aufwärmen
 
-Das Aufwärmen (ca. 5 Min) setzt sich aus drei Teilen zusammen und wird beim Erzeugen der Einheit festgelegt. Es zählt nicht zum Volumen. Alle Vorgaben sind Wiederholungen, nur Halteübungen (Dehnungen) stehen in Sekunden (Entscheidung 29.10.2026).
+Das Aufwärmen (ca. 5 Min) setzt sich aus drei Teilen zusammen und wird beim Erzeugen der Einheit festgelegt. Es zählt nicht zum Volumen. Alle Vorgaben sind Wiederholungen, nur Halteübungen (Dehnungen, Deep Squat Hold) stehen in Sekunden (Entscheidung 29.10.2026). Jeder Platz ist eine Auswahl, getrennt durch „/“; je Einheit zieht die App zufällig eine am Ort mögliche Übung (Entscheidung 03.11.2026). Übungen mit „mit Band“, „mit Stange“ oder „mit Seil“ kommen nur an Orten mit diesem Utensil.
 
 | Teil | Inhalt |
 | --- | --- |
-| Allgemein (immer, ca. 2 Min) | 50 Jumping Jacks; dazu nach Körperhälfte (Entscheidung 29.10.2026): nur Oberkörper 10 Arm Circles je Richtung und 10 Backward Shoulder Circles; nur Unterkörper 10 Squats (ohne Last) und 10 Leg Swings je Bein; sonst Arm Circles und Squats |
-| Mobility für hDruck oder vDruck | 10 Wall Slides; mit Band zusätzlich 10 Band Pull-Aparts |
-| Mobility für hZug oder vZug | 10 Scapula Squeezes (Schulterblätter im Stand zusammenziehen, ohne Gewicht); mit Stange 5 Scapula Pullups |
-| Mobility für Knie oder Einbein | 5 Lunges with Twist (Ausfallschritt mit Oberkörperdrehung) je Seite |
-| Mobility für Huefte | 10 Good Mornings ohne Last, 30 Sek. Kneeling Hip Flexor Stretch (Hüftbeuger-Dehnung kniend) je Seite |
-| Mobility für Beinbeuger | 10 Good Mornings ohne Last |
-| Mobility für Rumpf | 8 Cat-Cow |
+| Allgemein, Anfang (immer) | 50 Jumping Jacks / 30 High Knees / 30 Butt Kicks / 20 Climbers / mit Seil 50 Jump Rope |
+| Allgemein, oben (1. Platz) | 10 Arm Circles je Richtung / 10 Arm Swings / 10 Cross-Body Arm Swings / 10 Reverse Snow Angels / 8 Prone Y-T-W Raises |
+| Allgemein, oben (2. Platz) | 10 Backward Shoulder Circles / 10 Torso Twists / 5 Inchworms / 10 Scapula Pushups |
+| Allgemein, unten (1. Platz) | 10 Squats / 10 Glute Bridges / 5 Reverse Lunges je Bein / 10 Superman / 8 Bird Dogs je Seite |
+| Allgemein, unten (2. Platz) | 10 Leg Swings je Bein / 10 Lateral Leg Swings je Bein / 5 Hip Circles je Richtung / 8 Fire Hydrants je Seite / 5 World's Greatest Stretch je Seite |
+| Mobility für hDruck | 10 Wall Slides / 10 Reverse Snow Angels / 8 Thoracic Rotations je Seite; dazu mit Band 10 Band Pull-Aparts / 10 Scapula Pushups / 8 Prone Y-T-W Raises |
+| Mobility für vDruck | wie hDruck, im 2. Platz statt Scapula Pushups mit Band 10 Band Dislocates |
+| Mobility für hZug | 10 Scapula Squeezes / 8 Prone Y-T-W Raises / 10 Reverse Snow Angels; dazu mit Stange 5 Scapula Pullups / mit Band 10 Band Pull-Aparts / 10 Superman |
+| Mobility für vZug | 10 Scapula Squeezes / 8 Prone Y-T-W Raises / 8 Thoracic Rotations je Seite; dazu mit Stange 5 Scapula Pullups / 10 Superman |
+| Mobility für Knie oder Einbein | 5 Lunges with Twist je Seite / 5 Lateral Lunges je Seite / 30 Sek. Deep Squat Hold / 5 World's Greatest Stretch je Seite |
+| Mobility für Huefte | 10 Good Mornings / 10 Glute Bridges / 10 Superman; dazu 30 Sek. Kneeling Hip Flexor Stretch je Seite / 8 Fire Hydrants je Seite / 5 World's Greatest Stretch je Seite |
+| Mobility für Beinbeuger | 10 Good Mornings / 5 Inchworms / 10 Leg Swings je Bein |
+| Mobility für Rumpf | 8 Cat-Cow / 8 Bird Dogs je Seite / 10 Superman / 8 Dead Bugs je Seite |
 | Aufwärmsatz | 1 Satz der ersten Grundübung mit etwa 50 % der Last (bzw. leichterer Variante), 8 Wiederholungen |
 
-**„So geht's“ beim Aufwärmen** (`aufwaermen.anleitungen` in `katalog.json`, Entscheidung 30.10.2026): Jumping Jacks, Squats, Band Pull-Aparts und Scapula Pullups zeigen die Katalogübung; Arm Circles, Backward Shoulder Circles, Leg Swings, Wall Slides, Scapula Squeezes, Lunges with Twist, Good Mornings, Kneeling Hip Flexor Stretch und Cat-Cow haben eine eigene Kurzanleitung (3 Stichpunkte) und ein festes Video. Der Aufwärmsatz zeigt die Übung selbst.
+**„So geht's“ beim Aufwärmen** (`aufwaermen.anleitungen` in `katalog.json`, Entscheidung 30.10.2026): Jumping Jacks, Squats, Band Pull-Aparts und Scapula Pullups zeigen die Katalogübung; Arm Circles, Backward Shoulder Circles, Leg Swings, Wall Slides, Scapula Squeezes, Lunges with Twist, Good Mornings, Kneeling Hip Flexor Stretch und Cat-Cow haben eine eigene Kurzanleitung (3 Stichpunkte) und ein festes Video. Der Aufwärmsatz zeigt die Übung selbst. Seit 03.11.2026 verweisen auch High Knees, Climbers, Jump Rope, Glute Bridges, Reverse Lunges, Dead Bugs und die vier Rückenübungen auf die Katalogübung; die übrigen neuen Aufwärmübungen haben eine eigene Kurzanleitung. Die neuen Übungen haben noch kein festes Video (Link zur YouTube-Suche), bis kurze Videos geprüft sind.
 
 Es werden höchstens drei Mobility-Zeilen gewählt, nach den Mustern mit den meisten Sätzen der Einheit.

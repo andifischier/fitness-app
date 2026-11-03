@@ -338,15 +338,16 @@ function kennzeichnung(einheit: Einheit, s: Schritt): string | undefined {
   return `${blockName(einheit, s.block)} · Übung ${s.position + 1} von ${b.positionen.length}`;
 }
 
-// Name, „So geht's“ und, solange der erste Satz der Übung offen ist, „Tauschen“.
-function Kopf({ z, u, label, farbe = BLOCKFARBEN[0], onTauschen }: {
-  z: AppZustand; u: Uebung; label?: string; farbe?: Blockfarbe; onTauschen?: () => void;
+// Name, „So geht's“ und, solange der erste Satz der Übung offen ist, „Tauschen“. Beim ersten Satz bzw.
+// in der ersten Runde läuft das Video gleich mit (Entscheidung 03.11.2026), danach auf Tipp.
+function Kopf({ z, u, label, farbe = BLOCKFARBEN[0], onTauschen, autoVideo }: {
+  z: AppZustand; u: Uebung; label?: string; farbe?: Blockfarbe; onTauschen?: () => void; autoVideo?: boolean;
 }) {
   return (
     <>
       {label && <p className={`mt-6 text-hinweis font-bold tracking-wide uppercase ${farbe.text}`}>{label}</p>}
       <h1 className={`${label ? 'mt-1' : 'mt-6'} text-titel leading-tight font-extrabold`}>{u.name}</h1>
-      <Technik key={u.id} e={einstellungenAus(z)} u={u} />
+      <Technik key={u.id} e={einstellungenAus(z)} u={u} autoVideo={autoVideo} />
       {onTauschen && (
         <button type="button" onClick={onTauschen} className="flex min-h-touch items-center gap-2 self-start text-gross font-semibold text-akzent">
           <Icon name="tauschen" groesse={22} /> Tauschen
@@ -374,7 +375,7 @@ function Satz({ z, einheit, schritt, u, farbe, onTauschen, onErledigt }: {
   const fortschritt = useMemo(() => fortschrittshinweis(z, einheit, schritt, lokaleZeit()), [z, einheit, schritt]);
   return (
     <div className="flex flex-1 flex-col">
-      <Kopf z={z} u={u} label={kennzeichnung(einheit, schritt)} farbe={farbe} onTauschen={onTauschen} />
+      <Kopf z={z} u={u} label={kennzeichnung(einheit, schritt)} farbe={farbe} onTauschen={onTauschen} autoVideo={schritt.satz === 1} />
       {!p.istMaxTest && <Satzpunkte satz={schritt.satz} von={p.saetze} farbe={farbe} />}
       <Vorgabekarte u={u} v={v} farbe={farbe} last={last} raster={lastWaehlbar(z, einheit, schritt) && ort ? lastraster(ort, u) : []} onLast={setLast} />
       {v.gesenkt && (
@@ -669,7 +670,7 @@ function Station({ z, einheit, schritt, u, letzte, onTauschen, onWeiter }: {
   const sekunden = sek !== undefined ? Number(sek) : undefined;
   return (
     <div className="flex flex-1 flex-col">
-      <Kopf z={z} u={u} label={`Station ${schritt.position + 1} von ${b.positionen.length}`} onTauschen={onTauschen} />
+      <Kopf z={z} u={u} label={`Station ${schritt.position + 1} von ${b.positionen.length}`} onTauschen={onTauschen} autoVideo={schritt.satz === 1} />
       <section className="mt-5 rounded-karte border border-rand bg-flaeche p-5">
         <p className="text-basis text-gedaempft">Vorgabe</p>
         <p className="text-titel leading-tight font-extrabold">{text}</p>
@@ -783,7 +784,7 @@ function Abschluss({ z, einheit, fehler, onSpeichern }: {
   const trainiert = e.bloecke.flatMap((b) => b.positionen).filter((p) => !p.istMaxTest && p.ergebnisse.length > 0);
   const ort = z.orte.find((o) => o.id === e.ortId);
   const mobility = ort
-    ? mobilityZeilen(z, ort, musterNachSaetzen(z, trainiert)).slice(0, z.katalog.aufwaermen.maxMobilityZeilen)
+    ? mobilityZeilen(z, ort, musterNachSaetzen(z, trainiert), e.erstelltAm).slice(0, z.katalog.aufwaermen.maxMobilityZeilen)
     : [];
   const inSek = stellen.every((s) => uebungVon(z, positionVon(einheit, { ...s, satz: 1 }).uebungId)?.bereich.einheit === 'Sek.');
   const speichern = () => {

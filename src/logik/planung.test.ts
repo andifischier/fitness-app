@@ -7,7 +7,8 @@ import {
 } from './planung';
 import { absolviere, eingespielt, ort, setzePrognose, simuliereWoche, zeitpunkt, zustand } from './testhilfe';
 import { uebungVon } from './verlauf';
-import { MUSKELN, type AppZustand, type Block, type Einheit, type MuskelZustand, type Muskel } from './typen';
+import { aufwaermSchritt } from './aufwaermen';
+import { MUSKELN, type AppZustand, type AufwaermPlatz, type Block, type Einheit, type MuskelZustand, type Muskel } from './typen';
 
 const ids = (e: Einheit) => e.bloecke.flatMap((b) => b.positionen.map((p) => p.uebungId));
 const uebung = (z: AppZustand, id: string) => z.katalog.uebungen.find((u) => u.id === id)!;
@@ -195,9 +196,13 @@ describe('Aufbau der Einheit', () => {
   it('Aufwärmen: allgemein, Mobility der Tagesmuster, Aufwärmsatz der ersten Grundübung', () => {
     const e = plane(eingespielt(zustand()));
     const texte = e.aufwaermen.map((a) => a.vorgabe);
-    // Ganzkörper: Jumping Jacks, je die erste Zeile für oben und unten (Entscheidung 29.10.2026)
-    expect(texte.slice(0, 3)).toEqual(['50 Jumping Jacks', '10 Arm Circles je Richtung', '10 Squats']);
-    expect(texte).toContain('10 Band Pull-Aparts');
+    // Ganzkörper: der Anfang, je der erste Platz für oben und unten (Entscheidung 29.10.2026), jeder Platz
+    // gezogen aus seiner Auswahl (Entscheidung 03.11.2026)
+    const a = zustand().katalog.aufwaermen.allgemein;
+    const auswahl = (p: AufwaermPlatz) => (typeof p === 'string' ? [p] : p).map((x) => x.replace(/\s*\(nur mit [A-Z]+\)$/, ''));
+    expect(auswahl(a.immer[0]!)).toContain(texte[0]);
+    expect(auswahl(a.oben[0]!)).toContain(texte[1]);
+    expect(auswahl(a.unten[0]!)).toContain(texte[2]);
     const erste = e.bloecke[0]!.positionen[0]!;
     const name = uebungVon(zustand(), erste.uebungId)!.name;
     // Ohne bekannte Last folgt die Kalibrierung: kein Gewicht, das wie eine Vorgabe wirkt (Entscheidung 21.10.2026).
@@ -225,6 +230,54 @@ describe('Aufbau der Einheit', () => {
     // Rumpf mit den meisten Sätzen zuerst; höchstens 3 Mobility-Zeilen
     const mobility = texte([block(['liegestuetz', 2], ['plank', 4], ['kniebeuge', 3], ['kh_rudern_einarmig', 1])]).slice(3);
     expect(mobility).toEqual(['8 Cat-Cow', '5 Lunges with Twist je Seite', '10 Wall Slides']);
+  });
+
+  describe('Aufwärmen mit Abwechslung (Entscheidung 03.11.2026)', () => {
+    const z = zustand({ katalog: 'voll' });
+    const o = z.orte[0]!;
+    const ganz: Block[] = [{
+      typ: 'einzeln', pauseSek: 90,
+      positionen: [['liegestuetz', 3], ['kniebeuge', 3], ['kh_rudern_einarmig', 3], ['plank', 2]]
+        .map(([uebungId, saetze]) => ({ uebungId: uebungId as string, saetze: saetze as number, zielWdh: 10, ergebnisse: [] })),
+    }];
+    const texte = (saat: string, ortX = o) => aufwaermenFuer(z, ortX, ganz, saat).map((a) => a.vorgabe);
+    const saaten = Array.from({ length: 20 }, (_, i) => plusTage(MO, i));
+
+    it('zieht je Einheit andere Übungen, dieselbe Saat ergibt dasselbe Aufwärmen', () => {
+      expect(texte(MO)).toEqual(texte(MO));
+      expect(new Set(saaten.map((t) => texte(t)[0])).size).toBeGreaterThanOrEqual(3);
+      expect(new Set(saaten.map((t) => texte(t).join('|'))).size).toBeGreaterThanOrEqual(15);
+    });
+
+    it('keine Übung doppelt, höchstens 3 Mobility-Zeilen, Länge wie bisher', () => {
+      for (const t of saaten) {
+        const zeilen = texte(t).filter((x) => !x.includes(': '));
+        const namen = zeilen.map((x) => aufwaermSchritt(x).name);
+        expect(new Set(namen).size, t).toBe(namen.length);
+        expect(zeilen.length, t).toBeGreaterThanOrEqual(5);
+        expect(zeilen.length, t).toBeLessThanOrEqual(6);
+      }
+    });
+
+    it('nur Übungen, deren Utensil am Ort ist', () => {
+      const ohne = ort(['KH', 'TISCH', 'ERH']);
+      const alle = saaten.flatMap((t) => texte(t, ohne)).join();
+      expect(alle).not.toMatch(/Jump Rope|Band|Scapula Pullups/);
+      const mitSeil = ort(['SEIL', 'BAND', 'STANGE', 'TISCH', 'ERH']);
+      expect(saaten.flatMap((t) => texte(t, mitSeil)).join()).toMatch(/Jump Rope/);
+    });
+
+    it('Superman und Co. kommen im Aufwärmen vor', () => {
+      const alle = saaten.flatMap((t) => texte(t)).join();
+      for (const name of ['Superman', 'Bird Dogs', 'Reverse Snow Angels', 'Prone Y-T-W Raises']) expect(alle).toContain(name);
+    });
+
+    it('Tauschen behält das gezogene Aufwärmen', () => {
+      const e = plane(z);
+      const ziel = alternativen(z, e, 0, 0)[0]!;
+      const neu = tausche(z, e, 0, 0, ziel.uebungId);
+      expect(neu.aufwaermen.slice(0, 3)).toEqual(e.aufwaermen.slice(0, 3));
+    });
   });
 
   it('Einheit ist geplant, gehört zur Woche und hat Ziel und Last je Position', () => {
@@ -426,8 +479,10 @@ describe('Zirkel', () => {
     expect(e.bloecke).toHaveLength(1);
     expect(e.bloecke[0]).toMatchObject({ typ: 'zirkel', zirkelId: 'fundament', runden: 5 });
     const stationen = e.bloecke[0]!.positionen;
-    expect(stationen.map((p) => uebung(z, p.uebungId).muster)).toEqual(['Knie', 'hDruck', 'hZug', 'Rumpf']);
+    expect(stationen.map((p) => uebung(z, p.uebungId).muster)).toEqual(['Knie', 'hDruck', 'hZug', 'Rumpf', 'Kondition']);
     for (const p of stationen) expect(uebung(z, p.uebungId).stufe).toBeLessThanOrEqual(3);
+    // Superman (Entscheidung 03.11.2026) zählt zu keinem Muskel, das Volumen bleibt wie bisher
+    expect(stationen[4]!.uebungId).toBe('superman');
     expect(stationen[3]!.zielWdh).toBe(30);
     expect(dosisProMuskel(z, e).Bauch).toBe(2.5);
     expect(dosisProMuskel(z, e).Quadrizeps).toBe(2.5);

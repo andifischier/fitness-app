@@ -47,14 +47,17 @@ export const zirkelSchema = z.object({
   stationen: z.array(z.object({ muster: musterId, vorgabe: z.union([zahl, z.string()]), hinweis: z.string() })).min(1),
 });
 
+const platz = z.union([z.string().min(1), z.array(z.string().min(1)).min(1)]);
+
 export const katalogSchema = z.object({
   schemaVersion: z.literal(2),
   utensilien: z.array(utensilSchema),
   uebungen: z.array(uebungSchema),
   zirkel: z.array(zirkelSchema),
   aufwaermen: z.object({
-    allgemein: z.object({ immer: z.array(z.string()), oben: z.array(z.string()), unten: z.array(z.string()) }),
-    mobility: z.partialRecord(musterId, z.array(z.string())),
+    // Je Platz eine feste Zeile oder eine Auswahl (Entscheidung 03.11.2026)
+    allgemein: z.object({ immer: z.array(platz), oben: z.array(platz), unten: z.array(platz) }),
+    mobility: z.partialRecord(musterId, z.array(platz)),
     maxMobilityZeilen: ganzzahl.positive(),
     aufwaermsatz: z.object({ anteilLast: zahl.positive().max(1), wdh: ganzzahl.positive() }),
     // „So geht's“ je Aufwärmübung (Name wie in den Zeilen): Verweis auf eine Katalogübung oder eigene Anleitung

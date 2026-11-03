@@ -1,6 +1,7 @@
 // Aufwärmen Schritt für Schritt (Entscheidung 29.10.2026), im Training und am Testtag: je Übung ein
 // Bildschirm mit Vorgabe, weiter mit „Weiter“; Halteübungen mit Countdown. Den Schritt hält die Seite.
-// Wie bei den Übungen gibt es zu jedem Schritt „So geht's“ mit Anleitung und Video (Entscheidung 30.10.2026).
+// Wie bei den Übungen gibt es zu jedem Schritt „So geht's“ mit Anleitung und Video (Entscheidung 30.10.2026);
+// das Video läuft gleich stumm mit (Entscheidung 03.11.2026).
 import { aufwaermSchritt, aufwaermTechnik } from '../logik/aufwaermen';
 import type { AppZustand, Einheit } from '../logik/typen';
 import { Hinweis, Knopf } from './bausteine';
@@ -24,7 +25,7 @@ export function AufwaermSchritte({ z, zeilen, nr, onNr, onFertig, hinweisEnde }:
         {zeile.uebungId ? 'Aufwärmsatz' : 'Aufwärmen'} · {nr + 1} von {zeilen.length}
       </p>
       <h1 className="mt-1 text-titel leading-tight font-extrabold">{s.name}</h1>
-      <Technik key={nr} e={einstellungenAus(z)} u={aufwaermTechnik(z, zeile)} />
+      <Technik key={nr} e={einstellungenAus(z)} u={aufwaermTechnik(z, zeile)} autoVideo />
       <section className="mt-5 rounded-karte border-2 border-akzent bg-flaeche p-5">
         <div className="grid grid-cols-2 gap-4">
           <div>

@@ -498,3 +498,15 @@
     `schemas.ts`, `konfiguration.ts`, `technik.tsx`; neue Tests in `vorbelastung.test.ts`, angepasst `abnahme.test.ts`.
 - **Warum:** Rückmeldung des Nutzers: Pause Pushups kamen nach 4 Sätzen Pushups, und ein verfehltes Ziel aus Müdigkeit
   zählte wie „zu schwer“. Videos unterbrachen den Podcast.
+
+## 03.11.2026: Abwechslung im Aufwärmen, Rückenübungen, Video läuft automatisch
+- **Was:**
+  - Aufwärmen: Jeder Platz ist eine Auswahl aus 2 bis 5 Übungen, je Einheit zufällig gezogen (14 neue Aufwärmübungen
+    mit Kurzanleitung, dazu Katalogübungen wie High Knees, Glute Bridges, Dead Bugs).
+  - Neu im Katalog: Superman, Bird Dogs, Reverse Snow Angels, Prone Y-T-W Raises (Kondition, nur Aufwärmen und Zirkel);
+    Zirkel Fundament mit Superman als 5. Station.
+  - Video erscheint beim ersten Satz, bei jedem Aufwärmschritt und am Testtag gleich und läuft stumm in Schleife.
+  - Geändert: `katalog.json`, `planung.ts`, `anpassen.ts`, `testtag.ts`, `typen.ts`, `schemas.ts`, `technik.tsx`,
+    `aufwaermen.tsx`, `Training.tsx`, `Testtag.tsx`; neue Tests in `planung.test.ts` und `technik.test.tsx`.
+- **Warum:** Rückmeldung des Nutzers: Aufwärmen immer gleich, Superman fehlte, Video soll von selbst laufen.
+  Offen: kurze Videos für die 18 neuen Übungen, sobald YouTube erreichbar ist.

@@ -4,12 +4,13 @@ import {
   ABLEITUNG, BEWERTUNG, ERHOLUNGSWOCHE, EINHEIT, ERSATZ, FOKUS_GRUPPEN, KOERPERHAELFTE, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
   KOMBI, PROGRESSION, TESTTAG, TRAININGSPAUSE, WOCHENZIEL, WORKOUT, ZEITBUDGET, ZIRKEL,
 } from '../konfiguration';
+import { aufwaermSchritt } from './aufwaermen';
 import { isoWoche, plusTage, stundenZwischen, verbleibendeTage, wochenNummer, wochentag } from './datum';
 import {
   alleUebungen, bandStufen, hatAktiveSperre, hatUtensil, istGesperrt, lastraster, uebungErlaubt, uebungMoeglich,
 } from './equipment';
 import {
-  BAND_STUFEN, MUSKELN, MUSTER_IDS, PRIORITAETEN, type AppZustand, type BandStufe, type Block, type EigenesWorkout, type Einheit,
+  BAND_STUFEN, MUSKELN, MUSTER_IDS, PRIORITAETEN, type AppZustand, type AufwaermPlatz, type BandStufe, type Block, type EigenesWorkout, type Einheit,
   type Einstellungen, type Muskel, type MusterId, type Ort, type Position, type Uebung, type Woche, type Zirkel,
 } from './typen';
 import {
@@ -545,16 +546,44 @@ function kgText(kg: number): string {
   return `${String(kg).replace('.', ',')} kg`;
 }
 
-// Mobility-Zeilen der Muster ohne Doppelte; Zeilen „(nur mit BAND)“ nur, wenn das Utensil am Ort ist.
-export function mobilityZeilen(z: AppZustand, ort: Ort, muster: Iterable<MusterId>): string[] {
+// Zeile „… (nur mit BAND)“: nur, wenn das Utensil am Ort ist; ohne den Zusatz zurückgegeben.
+function amOrt(ort: Ort, zeile: string): string | undefined {
+  const nurMit = /\s*\(nur mit ([A-Z]+)\)$/.exec(zeile);
+  if (nurMit && !hatUtensil(ort, nurMit[1]!)) return undefined;
+  return zeile.replace(/\s*\(nur mit [A-Z]+\)$/, '');
+}
+
+// Zahl aus einem Text (FNV-1a), damit die Auswahl ohne Zufallsgenerator wiederholbar bleibt.
+function streuwert(text: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193);
+  return h >>> 0;
+}
+
+// Eine Zeile je Platz (Entscheidung 03.11.2026): Bei einer Auswahl zieht die App aus den am Ort möglichen
+// Zeilen eine, die sich aus Saat (Erstellzeit der Einheit) und Platz ergibt; dieselbe Einheit behält so
+// ihre Auswahl auch nach Tausch und Anpassen. Ohne Saat gilt die erste mögliche Zeile.
+function zeileFuer(ort: Ort, platz: AufwaermPlatz, schluessel: string, saat?: string): string | undefined {
+  const moeglich = (typeof platz === 'string' ? [platz] : platz)
+    .map((zeile) => amOrt(ort, zeile)).filter((zeile) => zeile !== undefined);
+  if (moeglich.length === 0) return undefined;
+  return saat === undefined ? moeglich[0] : moeglich[streuwert(`${saat}|${schluessel}`) % moeglich.length];
+}
+
+// Name einer Aufwärmzeile ohne Zahl und Zusatz („10 Arm Circles je Richtung“ → „Arm Circles“).
+const zeilenName = (zeile: string) => aufwaermSchritt(zeile).name;
+
+// Mobility-Zeilen der Muster: je Platz eine Zeile, ohne doppelte Übungen.
+export function mobilityZeilen(z: AppZustand, ort: Ort, muster: Iterable<MusterId>, saat?: string, schon: string[] = []): string[] {
   const mobility: string[] = [];
+  const namen = new Set(schon.map(zeilenName));
   for (const m of muster) {
-    for (const zeile of z.katalog.aufwaermen.mobility[m] ?? []) {
-      const nurMit = /\s*\(nur mit ([A-Z]+)\)$/.exec(zeile);
-      if (nurMit && !hatUtensil(ort, nurMit[1]!)) continue;
-      const text = zeile.replace(/\s*\(nur mit [A-Z]+\)$/, '');
-      if (!mobility.includes(text)) mobility.push(text);
-    }
+    (z.katalog.aufwaermen.mobility[m] ?? []).forEach((platz, i) => {
+      const text = zeileFuer(ort, platz, `${m}#${i}`, saat);
+      if (text === undefined || namen.has(zeilenName(text))) return;
+      namen.add(zeilenName(text));
+      mobility.push(text);
+    });
   }
   return mobility;
 }
@@ -582,19 +611,32 @@ export function musterNachSaetzen(z: AppZustand, positionen: Position[]): Muster
 }
 
 // Allgemeiner Teil (Entscheidung 29.10.2026): immer der Anfang; arbeiten Ober- und Unterkörper (oder
-// keiner von beiden), je die erste Zeile jeder Hälfte; arbeitet nur eine Hälfte, alle Zeilen dieser Hälfte.
-function allgemeinFuer(z: AppZustand, muster: MusterId[]): string[] {
+// keiner von beiden), je der erste Platz jeder Hälfte; arbeitet nur eine Hälfte, alle Plätze dieser Hälfte.
+// Jeder Platz ist eine Auswahl, aus der je Einheit eine Übung gezogen wird (Entscheidung 03.11.2026).
+function allgemeinFuer(z: AppZustand, ort: Ort, muster: MusterId[], saat?: string): string[] {
   const a = z.katalog.aufwaermen.allgemein;
   const haelften = new Set(muster.map((m) => KOERPERHAELFTE[m]).filter((h) => h !== undefined));
-  if (haelften.size === 1) return [...a.immer, ...a[[...haelften][0]!]];
-  return [...a.immer, ...a.oben.slice(0, 1), ...a.unten.slice(0, 1)];
+  const plaetze: [AufwaermPlatz, string][] = a.immer.map((p, i) => [p, `immer#${i}`]);
+  for (const h of ['oben', 'unten'] as const) {
+    if (haelften.size === 1 && !haelften.has(h)) continue;
+    const anzahl = haelften.size === 1 ? a[h].length : 1;
+    a[h].slice(0, anzahl).forEach((p, i) => plaetze.push([p, `${h}#${i}`]));
+  }
+  const zeilen: string[] = [];
+  for (const [platz, schluessel] of plaetze) {
+    const text = zeileFuer(ort, platz, schluessel, saat);
+    if (text !== undefined && !zeilen.some((x) => zeilenName(x) === zeilenName(text))) zeilen.push(text);
+  }
+  return zeilen;
 }
 
-export function aufwaermenFuer(z: AppZustand, ort: Ort, bloecke: Block[]): Einheit['aufwaermen'] {
+// Aufwärmen einer Einheit; die Saat (Erstellzeit der Einheit) bestimmt die gezogenen Übungen.
+export function aufwaermenFuer(z: AppZustand, ort: Ort, bloecke: Block[], saat?: string): Einheit['aufwaermen'] {
   const a = z.katalog.aufwaermen;
   const muster = musterNachSaetzen(z, bloecke.flatMap((b) => b.positionen));
-  const zeilen = allgemeinFuer(z, muster).map((t) => ({ uebungId: '', vorgabe: t }));
-  const mobility = mobilityZeilen(z, ort, muster);
+  const allgemein = allgemeinFuer(z, ort, muster, saat);
+  const zeilen = allgemein.map((t) => ({ uebungId: '', vorgabe: t }));
+  const mobility = mobilityZeilen(z, ort, muster, saat, allgemein);
   zeilen.push(...mobility.slice(0, a.maxMobilityZeilen).map((t) => ({ uebungId: '', vorgabe: t })));
   const erste = bloecke.flatMap((b) => b.positionen).find((p) => {
     const u = uebungVon(z, p.uebungId);
@@ -843,7 +885,7 @@ function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Pla
   const einheit: Einheit = setzeVorbelastung(z, {
     ...leereEinheit(eing, format),
     fokus,
-    aufwaermen: aufwaermenFuer(z, ort, bloecke),
+    aufwaermen: aufwaermenFuer(z, ort, bloecke, eing.jetzt),
     bloecke,
   });
   if (MUSKELN.some((m) => extra[m] > 0)) {
@@ -1002,7 +1044,7 @@ function zirkelEinheit(z: AppZustand, e: Einstellungen, ort: Ort, zirkel: Zirkel
     ? [{ typ: 'zirkel', positionen, pauseSek: 0, zirkelId: zirkel.id, runden: zirkel.runden }]
     : [];
   const minuten = Number.parseInt(/\d+/.exec(zirkel.dauerHinweis)?.[0] ?? '0', 10);
-  const aufwaermen = aufwaermenFuer(z, ort, bloecke).filter((a) => a.uebungId === '');
+  const aufwaermen = aufwaermenFuer(z, ort, bloecke, eing.jetzt).filter((a) => a.uebungId === '');
   return { ...leereEinheit(eing, 'zirkel'), aufwaermen, bloecke, geschaetzteDauerMin: ZEITBUDGET.aufwaermenMin + minuten };
 }
 
@@ -1024,7 +1066,7 @@ export function workoutEinheit(z: AppZustand, w: EigenesWorkout, eing: EinheitEi
       ? [{ typ: 'zirkel', positionen, pauseSek: 0, zirkelId: w.id, runden: w.runden }]
       : [];
     const minuten = Math.round((w.runden * positionen.length * WORKOUT.stationSek) / 60);
-    const aufwaermen = aufwaermenFuer(z, ort, bloecke).filter((a) => a.uebungId === '');
+    const aufwaermen = aufwaermenFuer(z, ort, bloecke, eing.jetzt).filter((a) => a.uebungId === '');
     return {
       ...leereEinheit(eing, 'zirkel'), name: w.name, aufwaermen, bloecke,
       geschaetzteDauerMin: positionen.length > 0 ? ZEITBUDGET.aufwaermenMin + minuten : 0,
@@ -1032,7 +1074,7 @@ export function workoutEinheit(z: AppZustand, w: EigenesWorkout, eing: EinheitEi
   }
   const liste: Auswahl[] = eintraege.map(({ eintrag, uebung }) => ({ k: { uebung, istErsatz: false }, saetze: eintrag.saetze }));
   const { bloecke, format } = bildeBloecke(c, liste, eing.klassisch === true);
-  const einheit: Einheit = setzeVorbelastung(z, { ...leereEinheit(eing, format), name: w.name, aufwaermen: aufwaermenFuer(z, ort, bloecke), bloecke });
+  const einheit: Einheit = setzeVorbelastung(z, { ...leereEinheit(eing, format), name: w.name, aufwaermen: aufwaermenFuer(z, ort, bloecke, eing.jetzt), bloecke });
   einheit.geschaetzteDauerMin = geschaetzteDauer(z, einheit);
   return einheit;
 }
@@ -1172,6 +1214,6 @@ export function tausche(z: AppZustand, einheit: Einheit, block: number, position
     ergebnisse: [],
   };
   neu.bloecke[block]!.positionen[position] = ersetzt;
-  if (neu.format !== 'zirkel' && neu.status === 'geplant') neu.aufwaermen = aufwaermenFuer(z, ort, neu.bloecke);
+  if (neu.format !== 'zirkel' && neu.status === 'geplant') neu.aufwaermen = aufwaermenFuer(z, ort, neu.bloecke, neu.erstelltAm);
   return setzeVorbelastung(z, neu);
 }

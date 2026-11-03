@@ -3500,6 +3500,103 @@
     "Aus der Kniebeuge hochdrücken und die Hanteln direkt über den Kopf drücken.",
     "Hanteln zurück auf die Schultern, nächste Kniebeuge."
    ]
+  },
+  {
+   "id": "superman",
+   "name": "Superman",
+   "muster": "Kondition",
+   "primaer": [],
+   "sekundaer": [],
+   "stufe": 1,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Superman+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Bauchlage, Arme nach vorn gestreckt, Stirn schaut zum Boden.",
+    "Arme, Brust und Beine gleichzeitig ein Stück anheben, Po fest.",
+    "Kurz oben halten und kontrolliert ablegen; nicht ins Hohlkreuz reißen."
+   ]
+  },
+  {
+   "id": "bird_dog",
+   "name": "Bird Dogs",
+   "muster": "Kondition",
+   "primaer": [],
+   "sekundaer": [],
+   "stufe": 1,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 6,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Bird+Dogs+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Vierfüßlerstand: Hände unter den Schultern, Knie unter der Hüfte.",
+    "Gegenarm und Gegenbein langsam strecken, bis sie eine Linie mit dem Rücken bilden.",
+    "Kurz halten, zurück und Seite wechseln; das Becken bleibt gerade."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "reverse_snow_angels",
+   "name": "Reverse Snow Angels",
+   "muster": "Kondition",
+   "primaer": [],
+   "sekundaer": [],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Reverse+Snow+Angels+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Bauchlage, Arme neben dem Körper, Handflächen zum Boden, Brust leicht angehoben.",
+    "Arme knapp über dem Boden in einem Bogen über den Kopf führen.",
+    "Auf demselben Weg zurück zur Hüfte; Schultern bleiben weg von den Ohren."
+   ]
+  },
+  {
+   "id": "prone_ytw",
+   "name": "Prone Y-T-W Raises",
+   "muster": "Kondition",
+   "primaer": [],
+   "sekundaer": [],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 6,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Prone+Y-T-W+Raises+richtige+Ausf%C3%BChrung",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Bauchlage, Stirn knapp über dem Boden, Daumen zeigen nach oben.",
+    "Arme nacheinander als Y (schräg nach vorn), T (zur Seite) und W (Ellbogen gebeugt) anheben.",
+    "Jede Position kurz halten, die Schulterblätter ziehen nach hinten unten; ein Durchgang zählt als eine Wiederholung."
+   ]
   }
  ],
  "zirkel": [
@@ -3535,7 +3632,7 @@
    "id": "fundament",
    "name": "Fundament",
    "runden": 5,
-   "dauerHinweis": "ca. 15 Min",
+   "dauerHinweis": "ca. 18 Min",
    "stationen": [
     {
      "muster": "Knie",
@@ -3556,6 +3653,11 @@
      "muster": "Rumpf",
      "vorgabe": "30 Sek.",
      "hinweis": "Plank bevorzugt"
+    },
+    {
+     "muster": "Kondition",
+     "vorgabe": 10,
+     "hinweis": "Superman bevorzugt"
     }
    ]
   },
@@ -3647,49 +3749,136 @@
  "aufwaermen": {
   "allgemein": {
    "immer": [
-    "50 Jumping Jacks"
+    [
+     "50 Jumping Jacks",
+     "30 High Knees",
+     "30 Butt Kicks",
+     "20 Climbers",
+     "50 Jump Rope (nur mit SEIL)"
+    ]
    ],
    "oben": [
-    "10 Arm Circles je Richtung",
-    "10 Backward Shoulder Circles"
+    [
+     "10 Arm Circles je Richtung",
+     "10 Arm Swings",
+     "10 Cross-Body Arm Swings",
+     "10 Reverse Snow Angels",
+     "8 Prone Y-T-W Raises"
+    ],
+    [
+     "10 Backward Shoulder Circles",
+     "10 Torso Twists",
+     "5 Inchworms",
+     "10 Scapula Pushups"
+    ]
    ],
    "unten": [
-    "10 Squats",
-    "10 Leg Swings je Bein"
+    [
+     "10 Squats",
+     "10 Glute Bridges",
+     "5 Reverse Lunges je Bein",
+     "10 Superman",
+     "8 Bird Dogs je Seite"
+    ],
+    [
+     "10 Leg Swings je Bein",
+     "10 Lateral Leg Swings je Bein",
+     "5 Hip Circles je Richtung",
+     "8 Fire Hydrants je Seite",
+     "5 World's Greatest Stretch je Seite"
+    ]
    ]
   },
   "mobility": {
    "hDruck": [
-    "10 Wall Slides",
-    "10 Band Pull-Aparts (nur mit BAND)"
+    [
+     "10 Wall Slides",
+     "10 Reverse Snow Angels",
+     "8 Thoracic Rotations je Seite"
+    ],
+    [
+     "10 Band Pull-Aparts (nur mit BAND)",
+     "10 Scapula Pushups",
+     "8 Prone Y-T-W Raises"
+    ]
    ],
    "vDruck": [
-    "10 Wall Slides",
-    "10 Band Pull-Aparts (nur mit BAND)"
+    [
+     "10 Wall Slides",
+     "10 Reverse Snow Angels",
+     "8 Thoracic Rotations je Seite"
+    ],
+    [
+     "10 Band Pull-Aparts (nur mit BAND)",
+     "10 Band Dislocates (nur mit BAND)",
+     "8 Prone Y-T-W Raises"
+    ]
    ],
    "hZug": [
-    "10 Scapula Squeezes",
-    "5 Scapula Pullups (nur mit STANGE)"
+    [
+     "10 Scapula Squeezes",
+     "8 Prone Y-T-W Raises",
+     "10 Reverse Snow Angels"
+    ],
+    [
+     "5 Scapula Pullups (nur mit STANGE)",
+     "10 Band Pull-Aparts (nur mit BAND)",
+     "10 Superman"
+    ]
    ],
    "vZug": [
-    "10 Scapula Squeezes",
-    "5 Scapula Pullups (nur mit STANGE)"
+    [
+     "10 Scapula Squeezes",
+     "8 Prone Y-T-W Raises",
+     "8 Thoracic Rotations je Seite"
+    ],
+    [
+     "5 Scapula Pullups (nur mit STANGE)",
+     "10 Superman"
+    ]
    ],
    "Knie": [
-    "5 Lunges with Twist je Seite"
+    [
+     "5 Lunges with Twist je Seite",
+     "5 Lateral Lunges je Seite",
+     "30 Sek. Deep Squat Hold",
+     "5 World's Greatest Stretch je Seite"
+    ]
    ],
    "Einbein": [
-    "5 Lunges with Twist je Seite"
+    [
+     "5 Lunges with Twist je Seite",
+     "5 Lateral Lunges je Seite",
+     "30 Sek. Deep Squat Hold",
+     "5 World's Greatest Stretch je Seite"
+    ]
    ],
    "Huefte": [
-    "10 Good Mornings",
-    "30 Sek. Kneeling Hip Flexor Stretch je Seite"
+    [
+     "10 Good Mornings",
+     "10 Glute Bridges",
+     "10 Superman"
+    ],
+    [
+     "30 Sek. Kneeling Hip Flexor Stretch je Seite",
+     "8 Fire Hydrants je Seite",
+     "5 World's Greatest Stretch je Seite"
+    ]
    ],
    "Beinbeuger": [
-    "10 Good Mornings"
+    [
+     "10 Good Mornings",
+     "5 Inchworms",
+     "10 Leg Swings je Bein"
+    ]
    ],
    "Rumpf": [
-    "8 Cat-Cow"
+    [
+     "8 Cat-Cow",
+     "8 Bird Dogs je Seite",
+     "10 Superman",
+     "8 Dead Bugs je Seite"
+    ]
    ]
   },
   "maxMobilityZeilen": 3,
@@ -3780,6 +3969,134 @@
      "Vierfüßlerstand: Hände unter den Schultern, Knie unter der Hüfte.",
      "Ausatmen und den Rücken rund machen, Kinn zur Brust.",
      "Einatmen, Bauch sinken lassen, Brust heben und nach vorn schauen; langsam im Wechsel."
+    ]
+   },
+   "High Knees": {
+    "uebungId": "high_knees"
+   },
+   "Climbers": {
+    "uebungId": "mountain_climbers"
+   },
+   "Jump Rope": {
+    "uebungId": "seilspringen"
+   },
+   "Glute Bridges": {
+    "uebungId": "glute_bridge"
+   },
+   "Reverse Lunges": {
+    "uebungId": "ausfallschritt_rueck"
+   },
+   "Dead Bugs": {
+    "uebungId": "dead_bug"
+   },
+   "Superman": {
+    "uebungId": "superman"
+   },
+   "Bird Dogs": {
+    "uebungId": "bird_dog"
+   },
+   "Reverse Snow Angels": {
+    "uebungId": "reverse_snow_angels"
+   },
+   "Prone Y-T-W Raises": {
+    "uebungId": "prone_ytw"
+   },
+   "Butt Kicks": {
+    "anleitung": [
+     "Locker auf der Stelle laufen.",
+     "Die Fersen abwechselnd zum Po ziehen.",
+     "Arme schwingen mit, zügiges Tempo."
+    ]
+   },
+   "Arm Swings": {
+    "anleitung": [
+     "Aufrecht stehen, Arme locker gestreckt.",
+     "Beide Arme gleichzeitig nach vorn oben über den Kopf und zurück nach unten hinten schwingen.",
+     "Schwung langsam größer werden lassen, Rumpf bleibt ruhig."
+    ]
+   },
+   "Cross-Body Arm Swings": {
+    "anleitung": [
+     "Aufrecht stehen, Arme seitlich auf Schulterhöhe.",
+     "Arme vor der Brust überkreuzen, abwechselnd einmal der rechte, einmal der linke oben.",
+     "Wieder weit nach hinten öffnen, bis die Brust leicht dehnt."
+    ]
+   },
+   "Torso Twists": {
+    "anleitung": [
+     "Hüftbreit stehen, Knie leicht gebeugt, Arme locker vor der Brust.",
+     "Oberkörper abwechselnd nach rechts und links drehen, die Hüfte bleibt nach vorn.",
+     "Locker und mit wachsendem Umfang drehen, eine Drehung je Seite zählt als eine Wiederholung."
+    ]
+   },
+   "Inchworms": {
+    "anleitung": [
+     "Aus dem Stand mit möglichst gestreckten Beinen die Hände zum Boden bringen.",
+     "Mit den Händen nach vorn gehen bis in die Liegestützposition.",
+     "Mit den Händen wieder zu den Füßen gehen und aufrichten."
+    ]
+   },
+   "Scapula Pushups": {
+    "anleitung": [
+     "Liegestützposition oder Knie am Boden, Arme bleiben gestreckt.",
+     "Brust zwischen die Schultern sinken lassen, die Schulterblätter gehen zusammen.",
+     "Vom Boden wegdrücken, bis der obere Rücken leicht rund ist."
+    ]
+   },
+   "Lateral Leg Swings": {
+    "anleitung": [
+     "Frontal zur Wand stellen und mit beiden Händen abstützen.",
+     "Ein Bein vor dem Standbein seitlich hin und her schwingen.",
+     "Klein anfangen und langsam größer werden, dann Seite wechseln."
+    ]
+   },
+   "Hip Circles": {
+    "anleitung": [
+     "Hüftbreit stehen, Hände an die Hüfte.",
+     "Mit der Hüfte große, langsame Kreise machen, Oberkörper bleibt ruhig.",
+     "Gleich viele Kreise in jede Richtung."
+    ]
+   },
+   "Fire Hydrants": {
+    "anleitung": [
+     "Vierfüßlerstand: Hände unter den Schultern, Knie unter der Hüfte.",
+     "Ein Bein mit gebeugtem Knie seitlich anheben, das Becken bleibt gerade.",
+     "Langsam absenken, Wiederholungen machen, dann Seite wechseln."
+    ]
+   },
+   "World's Greatest Stretch": {
+    "anleitung": [
+     "Großer Ausfallschritt nach vorn, Hände links und rechts vom vorderen Fuß auf den Boden.",
+     "Den inneren Ellbogen Richtung Fußgelenk senken.",
+     "Dann denselben Arm zur Decke drehen, Blick folgt der Hand; zurück und Seite wechseln."
+    ]
+   },
+   "Thoracic Rotations": {
+    "anleitung": [
+     "Vierfüßlerstand, eine Hand an den Hinterkopf.",
+     "Den Ellbogen unter dem Körper zur anderen Hand führen.",
+     "Dann nach oben aufdrehen, Blick folgt dem Ellbogen; Hüfte bleibt ruhig."
+    ]
+   },
+   "Band Dislocates": {
+    "anleitung": [
+     "Band weit greifen, Arme vor dem Körper gestreckt.",
+     "Arme gestreckt über den Kopf bis hinter den Körper führen.",
+     "Langsam zurück; wird es eng, die Hände weiter auseinander nehmen."
+    ]
+   },
+   "Lateral Lunges": {
+    "anleitung": [
+     "Weit grätschen, Fußspitzen zeigen nach vorn.",
+     "Gewicht auf ein Bein verlagern und in dieses Knie gehen, das andere Bein bleibt gestreckt.",
+     "Zurück zur Mitte drücken und zur anderen Seite wechseln."
+    ]
+   },
+   "Deep Squat Hold": {
+    "anleitung": [
+     "Schulterbreit stehen, Fußspitzen leicht nach außen.",
+     "So tief wie möglich in die Hocke gehen, Fersen bleiben am Boden.",
+     "Ellbogen drücken die Knie sanft nach außen, Brust aufrecht; halten und ruhig atmen."
     ]
    }
   }

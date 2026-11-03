@@ -3,12 +3,21 @@ import katalogDatei from '../../docs/katalog.json';
 import { aufwaermSchritt } from '../logik/aufwaermen';
 import { KATALOG, pruefeKatalog } from './katalog';
 
+// Neu am 03.11.2026: noch ohne festes Video, bis die Videolänge geprüft ist (YouTube war aus der
+// Entwicklungsumgebung nicht erreichbar); bis dahin führt „Auf YouTube öffnen“ zur Suche.
+const VIDEO_OFFEN = new Set([
+  'superman', 'bird_dog', 'reverse_snow_angels', 'prone_ytw',
+  'Butt Kicks', 'Arm Swings', 'Cross-Body Arm Swings', 'Torso Twists', 'Inchworms', 'Scapula Pushups', 'Lateral Leg Swings',
+  'Hip Circles', 'Fire Hydrants', "World's Greatest Stretch", 'Thoracic Rotations', 'Band Dislocates', 'Lateral Lunges',
+  'Deep Squat Hold',
+]);
+
 const kopie = () => structuredClone(katalogDatei) as unknown as typeof KATALOG;
 
 describe('Katalog', () => {
   it('lädt den mitgelieferten Katalog vollständig', () => {
     expect(KATALOG.schemaVersion).toBe(2);
-    expect(KATALOG.uebungen).toHaveLength(105);       // seit 01.11.2026 mit Band-Beincurls und 3 Zwischenstufen
+    expect(KATALOG.uebungen).toHaveLength(109);       // seit 03.11.2026 mit Superman, Bird Dogs, Reverse Snow Angels, Y-T-W
     expect(KATALOG.utensilien).toHaveLength(16);      // Rucksack
     expect(KATALOG.zirkel).toHaveLength(5);
     expect(new Set(KATALOG.uebungen.map((u) => u.muster)).size).toBe(14);   // Beinbeuger
@@ -19,14 +28,16 @@ describe('Katalog', () => {
     for (const u of KATALOG.uebungen) {
       expect(u.anleitung?.length, u.id).toBeGreaterThanOrEqual(3);
       for (const zeile of u.anleitung!) expect(zeile, u.id).not.toMatch(/[–—]/);
-      expect(u.videoId, u.id).toMatch(/^[\w-]{11}$/);
+      if (VIDEO_OFFEN.has(u.id)) expect(u.videoId, u.id).toBeUndefined();
+      else expect(u.videoId, u.id).toMatch(/^[\w-]{11}$/);
     }
-    expect(new Set(KATALOG.uebungen.map((u) => u.videoId)).size).toBe(KATALOG.uebungen.length);
+    const mitVideo = KATALOG.uebungen.filter((u) => u.videoId !== undefined);
+    expect(new Set(mitVideo.map((u) => u.videoId)).size).toBe(mitVideo.length);
   });
 
   it("hat für jede Aufwärmübung „So geht's“: Katalogübung oder Anleitung mit eigenem Video (Entscheidung 30.10.2026)", () => {
     const a = KATALOG.aufwaermen;
-    const zeilen = [...a.allgemein.immer, ...a.allgemein.oben, ...a.allgemein.unten, ...Object.values(a.mobility).flat()]
+    const zeilen = [...a.allgemein.immer, ...a.allgemein.oben, ...a.allgemein.unten, ...Object.values(a.mobility).flat()].flat()
       .map((z) => z.replace(/\s*\(nur mit [A-Z]+\)$/, ''));
     const ids = new Set(KATALOG.uebungen.map((u) => u.id));
     const videos = new Set(KATALOG.uebungen.map((u) => u.videoId));
@@ -37,6 +48,7 @@ describe('Katalog', () => {
       else {
         expect(eintrag!.anleitung?.length, name).toBeGreaterThanOrEqual(3);
         for (const z of eintrag!.anleitung!) expect(z, name).not.toMatch(/[–—]/);
+        if (VIDEO_OFFEN.has(name)) { expect(eintrag!.videoId, name).toBeUndefined(); continue; }
         expect(eintrag!.videoId, name).toMatch(/^[\w-]{11}$/);
         expect(videos.has(eintrag!.videoId), name).toBe(false);
         videos.add(eintrag!.videoId);

@@ -45,12 +45,15 @@ export interface Zirkel {
   id: string; name: string; runden: number; dauerHinweis: string;
   stationen: { muster: MusterId; vorgabe: number | string; hinweis: string }[];
 }
+// Ein Platz im Aufwärmen: eine feste Zeile oder eine Auswahl, aus der je Einheit zufällig eine
+// gezogen wird (Entscheidung 03.11.2026).
+export type AufwaermPlatz = string | string[];
 // „So geht's“ einer Aufwärmübung: Verweis auf eine Katalogübung oder eigene Anleitung mit Video.
 export interface AufwaermAnleitung { uebungId?: string; videoId?: string; anleitung?: string[] }
 export interface KatalogDatei {
   schemaVersion: number; utensilien: Utensil[]; uebungen: Uebung[]; zirkel: Zirkel[];
   aufwaermen: {
-    allgemein: { immer: string[]; oben: string[]; unten: string[] }; mobility: Partial<Record<MusterId, string[]>>;
+    allgemein: { immer: AufwaermPlatz[]; oben: AufwaermPlatz[]; unten: AufwaermPlatz[] }; mobility: Partial<Record<MusterId, AufwaermPlatz[]>>;
     maxMobilityZeilen: number; aufwaermsatz: { anteilLast: number; wdh: number };
     anleitungen?: Record<string, AufwaermAnleitung>;
   };

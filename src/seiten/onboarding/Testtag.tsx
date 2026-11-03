@@ -117,7 +117,7 @@ function Test({ u, e, inSek, mitHaengen, onErledigt }: {
     <div className="mt-8 flex flex-1 flex-col">
       <p className="text-hinweis font-bold tracking-wide text-akzent uppercase">Max-Test</p>
       <h1 className="mt-1 text-titel font-extrabold">{haengen !== undefined ? 'Hängen an der Stange' : u.name}</h1>
-      {haengen === undefined && <Technik e={e} u={u} />}
+      {haengen === undefined && <Technik key={u.id} e={e} u={u} autoVideo />}
       <div className="mt-4 rounded-karte border border-rand bg-flaeche p-5 text-basis">
         {haengen !== undefined
           ? 'Keinen Pullup geschafft. Häng dich mit gestreckten Armen an die Stange und halte so lange wie möglich.'
@@ -151,7 +151,7 @@ function Lasttest({ z, ortId, p, u, onErledigt }: {
     <div className="mt-8 flex flex-1 flex-col">
       <p className="text-hinweis font-bold tracking-wide text-akzent uppercase">Gewichtstest</p>
       <h1 className="mt-1 text-titel font-extrabold">{u.name}</h1>
-      <Technik e={einstellungenAus(z)} u={u} />
+      <Technik key={u.id} e={einstellungenAus(z)} u={u} autoVideo />
       <div className="mt-4 rounded-karte border border-rand bg-flaeche p-5">
         <p className="text-basis text-gedaempft">Mit welchem Gewicht?</p>
         <div className="mt-1 flex items-center justify-between gap-3">
