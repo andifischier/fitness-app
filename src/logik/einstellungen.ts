@@ -311,8 +311,10 @@ export type TechnikInhalt = Pick<Uebung, 'id' | 'name' | 'anleitung' | 'videoId'
 
 // Eigener Link hat Vorrang vor der YouTube-Suche.
 // Link zum Video: eigener Link, sonst das feste Katalogvideo, sonst die YouTube-Suche.
+// Eigene Links ohne http(s) (z. B. aus einer veränderten Backup-Datei) werden übergangen.
 export function videoLinkVon(e: Einstellungen, u: TechnikInhalt): string {
-  return u.eigenerVideoLink ?? e.videoLinks?.[u.id] ?? (u.videoId ? `https://www.youtube.com/watch?v=${u.videoId}` : u.youtubeUrl);
+  const eigener = [u.eigenerVideoLink, e.videoLinks?.[u.id]].find((l) => l !== undefined && istVideoLink(l));
+  return eigener ?? (u.videoId ? `https://www.youtube.com/watch?v=${u.videoId}` : u.youtubeUrl);
 }
 
 // YouTube-Video-ID aus einem Link (watch?v=, youtu.be/, shorts/, embed/); sonst undefined.
