@@ -274,6 +274,14 @@ describe('Favoriten, Ausschlüsse und Video-Links', () => {
     expect(videoLinkVon(e, eigene)).toBe('https://example.org/x');
   });
 
+  it('übergeht eigene Video-Links ohne http(s), z. B. aus einer veränderten Backup-Datei', () => {
+    const u = katalogUebung('klimmzug');
+    const boese = mitVideoLink(e, u.id, 'javascript:alert(1)');
+    expect(videoLinkVon(boese, u)).toBe(`https://www.youtube.com/watch?v=${u.videoId}`);
+    const eigene = { ...entwurfAusVorlage(u), eigenerVideoLink: 'javascript:alert(1)' };
+    expect(videoLinkVon(e, eigene)).toBe(eigene.youtubeUrl);
+  });
+
   it('liest die Video-ID aus YouTube-Links', () => {
     expect(youtubeId('https://www.youtube.com/watch?v=X1qbPKGDuKM&t=10')).toBe('X1qbPKGDuKM');
     expect(youtubeId('https://youtu.be/X1qbPKGDuKM')).toBe('X1qbPKGDuKM');

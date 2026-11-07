@@ -498,3 +498,12 @@
     `schemas.ts`, `konfiguration.ts`, `technik.tsx`; neue Tests in `vorbelastung.test.ts`, angepasst `abnahme.test.ts`.
 - **Warum:** Rückmeldung des Nutzers: Pause Pushups kamen nach 4 Sätzen Pushups, und ein verfehltes Ziel aus Müdigkeit
   zählte wie „zu schwer“. Videos unterbrachen den Podcast.
+
+## 04.11.2026: Sicherheit: Video-Links und Bauwerkzeuge
+- **Was:**
+  - Eigene Video-Links, die nicht mit http:// oder https:// beginnen, werden beim Anzeigen übergangen; dann gilt
+    das Katalogvideo oder die YouTube-Suche. Geändert: `einstellungen.ts`, neuer Test in `einstellungen.test.ts`.
+  - `npm audit fix`: `serialize-javascript` (Bauwerkzeug) auf die behobene Version gehoben (`package-lock.json`).
+- **Warum:** Sicherheitsprüfung. Beim Eintippen wurde der Link schon geprüft, aus einer veränderten Backup-Datei
+  hätte aber ein Schadcode-Link kommen können. Die übrigen 6 gemeldeten Lücken liegen nur in Bauwerkzeugen von
+  `vite-plugin-pwa` und ließen sich nur durch eine ältere Version davon beheben; sie erreichen die App nicht.
