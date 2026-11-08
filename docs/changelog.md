@@ -507,3 +507,11 @@
 - **Warum:** Sicherheitsprüfung. Beim Eintippen wurde der Link schon geprüft, aus einer veränderten Backup-Datei
   hätte aber ein Schadcode-Link kommen können. Die übrigen 6 gemeldeten Lücken liegen nur in Bauwerkzeugen von
   `vite-plugin-pwa` und ließen sich nur durch eine ältere Version davon beheben; sie erreichen die App nicht.
+
+## 08.11.2026: Isolation nicht vor der passenden Grundübung
+- **Was:** Kombi-Runden (`bildeBloecke` in `src/logik/planung.ts`) nehmen eine Isolationsübung erst
+  auf, wenn keine noch offene Grundübung ihren Hauptmuskel mitbenutzt. Neuer Test in
+  `planung.test.ts`; Spezifikation Schritt 8 und `docs/entscheidungen.md` ergänzt.
+- **Warum:** Die Liste war richtig sortiert, aber die Runden wurden nach gleicher Satzzahl gefüllt.
+  So landeten z. B. Konzentrationscurls in Runde 1 und die Klimmzüge erst in Runde 2 (Rückmeldung
+  des Nutzers).

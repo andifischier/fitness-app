@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { isoWoche, plusTage, wochentag } from './datum';
 import { STANDARD_PRIORITAETEN } from '../konfiguration';
 import {
-  alternativen, aufwaermenFuer, dosisProMuskel, erholungsfenster, erstelleEinheit, hauptvarianten, istErholt, kannTauschen, startfragen,
+  alternativen, aufwaermenFuer, bildeBloecke, dosisProMuskel, erholungsfenster, erstelleEinheit, hauptvarianten, istErholt, kannTauschen, startfragen,
   startwerte, tausche, wochenziele, zirkelVorschlagen,
 } from './planung';
 import { absolviere, eingespielt, ort, setzePrognose, simuliereWoche, zeitpunkt, zustand } from './testhilfe';
@@ -166,6 +166,23 @@ describe('Aufbau der Einheit', () => {
     expect(einheiten.some((e) => ids(e).some((id) => uebung(voll, id).muster === 'Rumpf'))).toBe(true);
     // Grundübungen vor Isolation: die erste Runde beginnt mit einer Grundübung
     expect(['hDruck', 'vDruck', 'hZug', 'vZug', 'Knie', 'Einbein', 'Huefte']).toContain(uebung(voll, ids(einheiten[0]!)[0]!).muster);
+  });
+
+  it('Kombi: Isolation rückt nicht vor eine Grundübung mit demselben Muskel (Entscheidung 08.11.2026)', () => {
+    const z = zustand({ katalog: 'voll' });
+    const c = { z, e: z.einstellungen[0]!, ort: ort(), jetzt: MO };
+    const wahl = (id: string, saetze: number) => ({ k: { uebung: uebung(z, id), istErsatz: false }, saetze });
+    const runden = (liste: ReturnType<typeof wahl>[]) =>
+      bildeBloecke(c, liste, false).bloecke.map((b) => b.positionen.map((p) => p.uebungId));
+    // Curls hätten dieselbe Satzzahl wie die Liegestütze, die Klimmzüge brauchen aber den Bizeps mit.
+    expect(runden([wahl('liegestuetz', 3), wahl('chinup', 2), wahl('konzentrationscurl', 3)]))
+      .toEqual([['liegestuetz', 'chinup'], ['konzentrationscurl']]);
+    // Trizeps nicht vor Liegestütze
+    expect(runden([wahl('chinup', 3), wahl('liegestuetz', 2), wahl('kh_trizeps_ueberkopf', 3)]))
+      .toEqual([['chinup', 'liegestuetz'], ['kh_trizeps_ueberkopf']]);
+    // Ohne gemeinsamen Muskel darf die Isolation weiter nach Satzzahl dazukommen.
+    expect(runden([wahl('liegestuetz', 3), wahl('goblet_squat', 2), wahl('konzentrationscurl', 3)])[0])
+      .toEqual(['liegestuetz', 'konzentrationscurl', 'goblet_squat']);
   });
 
   it('Bauch darf mit Oberkörper in eine Runde (Entscheidung 21.10.2026)', () => {

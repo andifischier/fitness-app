@@ -449,7 +449,7 @@ function nachPause(z: AppZustand, e: Einstellungen, ort: Ort, u: Uebung, pause: 
 
 // ---------- Erzeugung einer Einheit ----------
 
-interface Auswahl { k: Kandidat; saetze: number }
+export interface Auswahl { k: Kandidat; saetze: number }
 interface Plan { einheit: Einheit; budgetSaetze: number; freieSaetze: number; bedarfOffen: boolean }
 
 // Für die Planung erledigtes Volumen der Woche: Sätze obendrauf (längere Wunschdauer) zählen nicht,
@@ -521,7 +521,7 @@ function leereEinheit(eing: EinheitEingabe, format: Format = 'klassisch'): Einhe
   };
 }
 
-interface Kontext { z: AppZustand; e: Einstellungen; ort: Ort; jetzt: string; pause?: Pause; erholungswoche?: boolean }
+export interface Kontext { z: AppZustand; e: Einstellungen; ort: Ort; jetzt: string; pause?: Pause; erholungswoche?: boolean }
 
 function neuePosition(c: Kontext, k: Kandidat, saetze: number): Position {
   const { z, e, ort, jetzt, pause } = c;
@@ -901,7 +901,7 @@ export function setzeVorbelastung(z: AppZustand, einheit: Einheit): Einheit {
 // vorkommen (Entscheidung 21.10.2026). Die Rundengröße richtet sich nach den übrigen Übungen, damit
 // möglichst keine allein bleibt; bevorzugt kommen Übungen mit gleicher Satzzahl zusammen.
 // Klassisch: jede Übung einzeln.
-function bildeBloecke(c: Kontext, liste: Auswahl[], klassisch: boolean): { bloecke: Block[]; format: Format } {
+export function bildeBloecke(c: Kontext, liste: Auswahl[], klassisch: boolean): { bloecke: Block[]; format: Format } {
   const { e } = c;
   const position = (x: Auswahl) => neuePosition(c, x.k, x.saetze);
   const einzeln = (a: Auswahl): Block =>
@@ -917,8 +917,11 @@ function bildeBloecke(c: Kontext, liste: Auswahl[], klassisch: boolean): { bloec
     const runde = [frei.shift()!];
     while (runde.length < groesse) {
       // Eine spätere Variante eines Musters rückt nicht vor die frühere (schwerere zuerst, Entscheidung 02.11.2026).
+      // Eine Isolationsübung rückt nicht vor eine Grundübung, die ihren Hauptmuskel mitbenutzt
+      // (z. B. Curls nicht vor Klimmzüge; Entscheidung 08.11.2026).
       const passend = frei.filter((x) => runde.every((r) => vertragenSich(r.k.uebung, x.k.uebung))
-        && frei.find((y) => y.k.uebung.muster === x.k.uebung.muster) === x);
+        && frei.find((y) => y.k.uebung.muster === x.k.uebung.muster) === x
+        && !vorgezogeneIsolation(x.k.uebung, frei));
       if (passend.length === 0) break;
       const ziel = runde[0]!.saetze;
       const naechste = passend.reduce((b, x) => (Math.abs(x.saetze - ziel) < Math.abs(b.saetze - ziel) ? x : b));
@@ -933,6 +936,12 @@ function bildeBloecke(c: Kontext, liste: Auswahl[], klassisch: boolean): { bloec
   }
   const format: Format = gruppiert === 0 ? 'klassisch' : gruppiert === liste.length ? 'supersatz' : 'mix';
   return { bloecke, format };
+}
+
+// Isolationsübung, deren Hauptmuskel in einer noch offenen Grundübung arbeitet (Entscheidung 08.11.2026).
+function vorgezogeneIsolation(u: Uebung, frei: Auswahl[]): boolean {
+  if (MUSTER_ART[u.muster] !== 'isolation') return false;
+  return frei.some((y) => istGrund(y.k.uebung) && u.primaer.some((m) => [...y.k.uebung.primaer, ...y.k.uebung.sekundaer].includes(m)));
 }
 
 // Zwei Übungen passen in eine Kombi-Runde, wenn kein Hauptmuskel der einen in der anderen arbeitet.
