@@ -112,7 +112,13 @@ function musterZustand(z: AppZustand, e: Einstellungen, muster: MusterId): Muste
 }
 
 // Ersetzt eine Hauptvariante durch die nächste Variante; die Musterstufe ändert sich dabei nicht.
-function wechsle(muster: MusterZustand, von: string, zu: string) {
+// Gilt auch für die Körpergewichts-Abwechslung (Entscheidung 09.11.2026): Sie folgt ihrer Variante, solange
+// die neue ohne Gewicht ist; sonst sucht die Planung beim nächsten Mal eine neue aus.
+function wechsle(muster: MusterZustand, von: string, zu: string, z?: AppZustand) {
+  if (muster.kgVariante === von) {
+    if (z && uebungVon(z, zu)?.lasttyp === 'KG') muster.kgVariante = zu;
+    else delete muster.kgVariante;
+  }
   const i = muster.hauptvarianten.indexOf(von);
   if (i < 0) return;
   muster.hauptvarianten[i] = zu;
@@ -166,7 +172,7 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
       const naechste = naechsteVariante(z, ort, u, jetzt, muster.hauptvarianten);
       if (naechste) {
         muster.stufe = Math.max(muster.stufe, naechste.stufe);
-        wechsle(muster, u.id, naechste.id);
+        wechsle(muster, u.id, naechste.id, z);
       }
     }
     return { variante: alt ?? v, muster };
@@ -211,7 +217,7 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
     }
     delete v.langsam;
     v.zielWdh = U;
-    wechsle(muster, u.id, naechste.id);
+    wechsle(muster, u.id, naechste.id, z);
   };
 
   if (u.lasttyp === 'Last' && last !== undefined) {
@@ -242,7 +248,7 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
           v.last = leichtereLast;
           v.zielWdh = U;
         } else if (leichter) {
-          wechsle(muster, u.id, leichter.id);
+          wechsle(muster, u.id, leichter.id, z);
           v.zielWdh = U;
         } else v.zielWdh = Math.max(minZiel, Math.min(U, letzter));
       } else if (hoeher !== null && ziel > O && letzter >= O) {
@@ -286,7 +292,7 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
         v.zielWdh = U;
       } else if (leichter) {
         delete v.langsam;
-        wechsle(muster, u.id, leichter.id);
+        wechsle(muster, u.id, leichter.id, z);
         v.zielWdh = U;
       } else v.zielWdh = Math.max(minZiel, Math.min(U, letzter));
     } else if (senken) v.zielWdh = gesenkt(!leichteresBand && !leichter);
@@ -375,15 +381,6 @@ export function vorschauNaechstesMal(z: AppZustand, einheit: Einheit, position: 
   const ort = ortVon(z, einheit.ortId);
   const u = uebungVon(z, position.uebungId);
   if (!ort || !u || position.istMaxTest || position.ergebnisse.length === 0) return undefined;
-  if (position.leicht) {
-    // Leichter Tag: Ziel und Last bleiben, wie sie sind.
-    const v = z.varianten.find((x) => x.uebungId === u.id);
-    if (!v) return undefined;
-    return {
-      uebungId: u.id, zielWdh: v.zielWdh, ...(v.last !== undefined ? { last: v.last } : {}),
-      ...(v.bandStufe ? { bandStufe: v.bandStufe } : {}), ...(v.langsam ? { langsam: true } : {}), neueVariante: false, kalibrierung: false,
-    };
-  }
   const nurDiese: Einheit = { ...einheit, bloecke: [{ typ: 'einzeln', positionen: [position], pauseSek: 0 }] };
   const z1 = legeHauptvariantenFest(z, nurDiese, ort, einheit.gestartetAm ?? jetzt);
   const vorher = z1.muster.find((x) => x.muster === u.muster)?.hauptvarianten ?? [];
@@ -436,12 +433,6 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
   for (const p of positionen) {
     const u = uebungVon(neu, p.uebungId);
     if (!u || !ort || p.istLasttest) continue;     // Gewichtstests wertet `schliesseTesttagAb` aus
-    if (p.leicht) {
-      // Leichter Tag (Entscheidung 09.11.2026): keine Steigerung, Ziel und Last der Variante bleiben.
-      const alt = neu.varianten.find((x) => x.uebungId === p.uebungId);
-      if (alt) neu = { ...neu, varianten: ersetze(neu.varianten, { ...alt, zuletzt: jetzt }, (x) => x.uebungId === alt.uebungId) };
-      continue;
-    }
     if (p.istMaxTest) {
       // Gespeichert wird in der Einheit der Übung; am Testtag hat der Klimmzug-Test bei 0 Wdh.
       // zusätzlich die Sekunden im Hängen (nur für die Startvariante).
@@ -453,6 +444,12 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
       };
       neu = { ...neu, maxTests: ersetze(neu.maxTests, test, (x) => x.id === test.id) };
       if (fertig.format === 'test') continue;
+    }
+    // Abwechslung mit Körpergewicht (Entscheidung 09.11.2026): Diese Variante merkt sich das Muster, damit das
+    // nächste Mal dieselbe kommt bzw. die, zu der die Progression wechselt.
+    if (p.abwechslungFuer && u.lasttyp === 'KG') {
+      const mz = neu.muster.find((x) => x.muster === u.muster);
+      if (mz && mz.kgVariante !== u.id) neu = { ...neu, muster: ersetze(neu.muster, { ...mz, kgVariante: u.id }, (x) => x.muster === u.muster) };
     }
     const ausgewertet = werteUebungAus(neu, p, jetzt, ort.id);
     let { variante } = ausgewertet;
@@ -521,7 +518,7 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
 export function leistungZurueck(z: AppZustand, u: Uebung, p: Position, pause: Pause, jetzt: string): boolean {
   if (seitRueckkehrTrainiert(z, u.muster, pause.rueckkehr, jetzt)) return false;
   const e = einstellungenVon(z);
-  const vorher = sitzungen(z, u.id, pause.rueckkehr).filter((s) => s.einheit.format !== 'test' && !s.position.leicht).at(-1);
+  const vorher = sitzungen(z, u.id, pause.rueckkehr).filter((s) => s.einheit.format !== 'test').at(-1);
   const davor = vorher && kapazitaetswert(e, u, vorher.position);
   const jetztWert = kapazitaetswert(e, u, p);
   return davor !== undefined && jetztWert !== undefined && davor > 0 && jetztWert >= TRAININGSPAUSE.leistungZurueckAb * davor;
@@ -567,9 +564,7 @@ export function variantenTrend(z: AppZustand, u: Uebung, wocheId: string): Trend
   const e = einstellungenVon(z);
   const ab = wocheStart(wocheVerschoben(wocheId, -(LEISTUNG.wochen - 1)));
   const bis = wocheStart(wocheVerschoben(wocheId, 1));
-  // Leichte Tage (Entscheidung 09.11.2026) zählen nicht: andere Wiederholungszahlen, keine vergleichbare Leistung.
-  const liste = sitzungen(z, u.id, bis).filter((s) => s.einheit.format !== 'test').slice(1)
-    .filter((s) => s.zeit >= ab && !s.position.leicht);
+  const liste = sitzungen(z, u.id, bis).filter((s) => s.einheit.format !== 'test').slice(1).filter((s) => s.zeit >= ab);
   const letzte = liste.at(-1);
   if (!letzte) return undefined;
   const punkte = liste.filter((s) => bedingung(s) === bedingung(letzte)).flatMap((s) => {
@@ -626,7 +621,7 @@ function schwerAusserhalbEingewoehnung(z: AppZustand, m: Muskel, wocheId: string
     const gesteigert = (j: number) => j >= 1 && stufe(liste[j]!) !== stufe(liste[j - 1]!);
     for (let j = 0; j < liste.length; j++) {
       const s = liste[j]!;
-      if (s.einheit.woche !== wocheId || s.position.leicht || feedbackVon(s.position) !== 'schwer') continue;
+      if (s.einheit.woche !== wocheId || feedbackVon(s.position) !== 'schwer') continue;
       if (j < PROGRESSION.eingewoehnungEinheiten || gesteigert(j) || gesteigert(j - 1)) continue;
       return true;
     }
@@ -842,15 +837,14 @@ export function neueRekorde(z: AppZustand, einheit: Einheit): Rekord[] {
     for (const p of b.positionen) {
       const u = uebungVon(z, p.uebungId);
       const erster = ersterSatz(p);
-      // Leichte Tage zählen nicht für Rekorde (Kraftschätzung aus vielen Wiederholungen ist ungenauer).
-      if (!u || erster === undefined || p.leicht) continue;
+      if (!u || erster === undefined) continue;
       if (p.istMaxTest) {
         const bisher = z.maxTests.filter((t) => t.muster === u.muster && t.uebungId === u.id).map((t) => t.ergebnis);
         if (bisher.length > 0 && erster > Math.max(...bisher)) rekorde.push({ art: 'maxTest', uebungId: u.id, wert: erster, bisher: Math.max(...bisher) });
         continue;
       }
       const wert = leistungswert(e, u, p);
-      const frueher = sitzungen(z, u.id).filter((s) => s.einheit.id !== einheit.id && !s.position.leicht
+      const frueher = sitzungen(z, u.id).filter((s) => s.einheit.id !== einheit.id
         && (u.lasttyp !== 'Band' || s.position.bandStufe === p.bandStufe));
       const bisher = frueher.map((s) => leistungswert(e, u, s.position)).filter((w): w is number => w !== undefined);
       if (wert === undefined || bisher.length === 0 || wert <= Math.max(...bisher) + 1e-9) continue;

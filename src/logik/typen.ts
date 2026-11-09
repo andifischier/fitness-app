@@ -105,7 +105,10 @@ export interface VarianteZustand {
   seitSteigerung: number; schwerSerie: number; zuletzt?: string;
   langsam?: boolean;                // 3 Sek. absenken (Zwischenstufe oder schwerste Last erreicht)
 }
-export interface MusterZustand { muster: MusterId; stufe: number; hauptvarianten: string[] } // letzter Test steht in maxTests
+export interface MusterZustand {
+  muster: MusterId; stufe: number; hauptvarianten: string[];   // letzter Test steht in maxTests
+  kgVariante?: string;              // Körpergewichtsvariante für die Abwechslung (Entscheidung 09.11.2026)
+}
 export interface MuskelZustand {
   muskel: Muskel; letzteBelastung?: string; letzteDosis: number; letzteSchwer: boolean;
   // `gleichWochen`: bewertete Wochen seit der letzten Änderung der Grenze (seit 01.11.2026).
@@ -133,7 +136,7 @@ export interface Position {
   langsam?: boolean;                // 3 Sek. absenken
   zielFolgesaetze?: number;         // im Training gesenktes Ziel der restlichen Sätze (Entscheidung 30.10.2026)
   vorbelastet?: number;             // um so viel gesenktes Ziel, weil der Hauptmuskel schon gearbeitet hat (Entscheidung 02.11.2026)
-  leicht?: boolean;                 // leichter Tag: weniger Gewicht, mehr Wdh., ohne Steigerung (Entscheidung 09.11.2026)
+  abwechslungFuer?: string;         // Körpergewicht statt dieser Hantelübung, jedes 3. Mal (Entscheidung 09.11.2026)
   ergebnisse: SatzErgebnis[]; feedback?: Feedback;
   // Messsatz (Entscheidungen 01.11.2026): Wiederholungen, die im letzten Satz noch sauber gegangen wären
   // (seit 09.11.2026 grobe Stufen 0, 1,5 und 4; ältere Daten 0 bis 5), und ob die Technik unsauber wurde.

@@ -13,7 +13,7 @@ import {
   type Einstellungen, type Muskel, type MusterId, type Ort, type Position, type Uebung, type Woche, type Zirkel,
 } from './typen';
 import {
-  einstellungenVon, faelligerMaxTest, fertigeEinheiten, istErholt, kapazitaetswert, letzteEinheitZeit, seitRueckkehrTrainiert,
+  einheitZeit, einstellungenVon, faelligerMaxTest, fertigeEinheiten, istErholt, kapazitaetswert, letzteEinheitZeit, seitRueckkehrTrainiert,
   sitzungen, sterneVon, trainingspause, uebungVon, wdhBei, wdhStufe, zielReserve, type Pause,
 } from './verlauf';
 import { workoutAmOrt } from './workouts';
@@ -442,7 +442,7 @@ function nachPause(z: AppZustand, e: Einstellungen, ort: Ort, u: Uebung, pause: 
 
 // ---------- Erzeugung einer Einheit ----------
 
-export interface Auswahl { k: Kandidat; saetze: number }
+export interface Auswahl { k: Kandidat; saetze: number; abwechslungFuer?: string }
 interface Plan { einheit: Einheit; budgetSaetze: number; freieSaetze: number; bedarfOffen: boolean }
 
 // Für die Planung erledigtes Volumen der Woche. Seit 09.11.2026 (Entscheidung) zählen auch die Sätze einer
@@ -512,39 +512,37 @@ function leereEinheit(eing: EinheitEingabe, format: Format = 'klassisch'): Einhe
   };
 }
 
-export interface Kontext {
-  z: AppZustand; e: Einstellungen; ort: Ort; jetzt: string; pause?: Pause; erholungswoche?: boolean;
-  leichteTage?: boolean;            // nur in der Planung einer Einheit, nicht in Zirkeln und eigenen Workouts
+export interface Kontext { z: AppZustand; e: Einstellungen; ort: Ort; jetzt: string; pause?: Pause; erholungswoche?: boolean }
+
+// Abwechslung mit Körpergewicht (Entscheidung 09.11.2026): Ist die Hantelübung (Grundübung mit Gewicht) seit der
+// letzten Abwechslung für sie (bzw. seit Beginn) mindestens 2-mal trainiert worden, kommt beim 3. Mal statt ihrer
+// eine Körpergewichtsvariante desselben Musters. Welche: die gespeicherte des Musters (`MusterZustand.kgVariante`,
+// sie folgt der Progression), sonst die schwerste am Ort mögliche bis zur Musterstufe, ohne eine passende die
+// leichteste; Varianten mit 1 Stern zuletzt. Ohne Körpergewichtsvariante am Ort bleibt die Hantelübung.
+export function kgAbwechslung(z: AppZustand, e: Einstellungen, ort: Ort, u: Uebung, jetzt: string): Uebung | undefined {
+  if (u.lasttyp !== 'Last' || !istGrund(u)) return undefined;
+  const letzte = fertigeEinheiten(z).filter((x) => einheitZeit(x) < jetzt && x.bloecke.some((b) =>
+    b.positionen.some((p) => p.abwechslungFuer === u.id && p.ergebnisse.length > 0))).map(einheitZeit).at(-1) ?? '';
+  const seither = sitzungen(z, u.id, jetzt).filter((x) => x.einheit.format !== 'test' && x.zeit > letzte).length;
+  if (seither < EINHEIT.kgAbwechslungJedesMal - 1) return undefined;
+  return kgVariante(z, e, ort, u.muster, jetzt);
 }
 
-// Leichter Tag (Entscheidung 09.11.2026): Jedes 3. Training einer Grundübung mit Gewicht, wenn seit dem letzten
-// leichten Tag (bzw. seit Beginn) mindestens 2 normale Trainings der Variante liegen. Gewicht: das schwerste am
-// Ort, mit dem laut Kraftschätzung noch 16 Wdh. mit Ziel-Reserve gehen; Ziel 16 bis 20 (gerade Zahl). Ohne
-// Kraftschätzung oder passendes leichteres Gewicht kein leichter Tag.
-export function leichterTag(z: AppZustand, e: Einstellungen, ort: Ort, u: Uebung, jetzt: string): { last: number; zielWdh: number } | undefined {
-  const t = PROGRESSION.leichterTag;
-  if (u.lasttyp !== 'Last' || !istGrund(u)) return undefined;
-  const v = z.varianten.find((x) => x.uebungId === u.id);
-  if (v?.last === undefined || v.e1rm === undefined) return undefined;
-  const bisher = sitzungen(z, u.id, jetzt).filter((s) => s.einheit.format !== 'test');
-  const seitLeicht = bisher.length - 1 - bisher.map((s) => s.position.leicht === true).lastIndexOf(true);
-  if (seitLeicht < t.jedesMal - 1) return undefined;
-  const r = zielReserve(e);
-  const last = [...lastraster(ort, u)].reverse().find((kg) => kg < v.last! - 1e-9 && wdhBei(v.e1rm!, kg, r) >= t.zielVon);
-  if (last === undefined) return undefined;
-  return { last, zielWdh: wdhStufe(Math.min(t.zielBis, wdhBei(v.e1rm, last, r))) };
+export function kgVariante(z: AppZustand, e: Einstellungen, ort: Ort, muster: MusterId, jetzt: string): Uebung | undefined {
+  const erlaubt = alleUebungen(z).filter((v) => v.muster === muster && v.lasttyp === 'KG' && uebungErlaubt(e, ort, v, jetzt));
+  const gespeichert = z.muster.find((x) => x.muster === muster)?.kgVariante;
+  const bekannt = erlaubt.find((v) => v.id === gespeichert);
+  if (bekannt) return bekannt;
+  const stufe = musterstufe(z, e, muster);
+  const einStern = (v: Uebung) => Number(sterneVon(e, v.id) === 1);
+  const passend = erlaubt.filter((v) => v.stufe <= stufe)
+    .sort((a, b) => einStern(a) - einStern(b) || b.stufe - a.stufe)[0];
+  return passend ?? [...erlaubt].sort((a, b) => einStern(a) - einStern(b) || a.stufe - b.stufe)[0];
 }
 
 function neuePosition(c: Kontext, k: Kandidat, saetze: number): Position {
   const { z, e, ort, jetzt, pause } = c;
   const nachDerPause = pause !== undefined && !seitRueckkehrTrainiert(z, k.uebung.muster, pause.rueckkehr, jetzt);
-  const leicht = c.leichteTage && !nachDerPause && !c.erholungswoche ? leichterTag(z, e, ort, k.uebung, jetzt) : undefined;
-  if (leicht) {
-    return {
-      uebungId: k.uebung.id, saetze, ...leicht, leicht: true,
-      ...(k.istErsatz ? { istErsatz: true } : {}), ergebnisse: [],
-    };
-  }
   const angepasst = nachDerPause
     ? nachPause(z, e, ort, k.uebung, pause, jetzt)
     : { uebung: k.uebung, werte: startwerte(z, e, ort, k.uebung) };
@@ -855,13 +853,32 @@ function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Pla
     }
   }
 
+  // Abwechslung mit Körpergewicht (Entscheidung 09.11.2026): jedes 3. Mal statt der Hantelübung, höchstens
+  // einmal je Muster und Einheit. Nicht in der Erholungswoche, nicht beim getesteten Muster und nicht in der
+  // ersten Einheit des Musters nach einer Pause.
+  const pause = trainingspause(z, jetzt);
+  if (!erholungswoche) {
+    const ersetzt = new Set<MusterId>();
+    for (const a of gewaehlt) {
+      const u = a.k.uebung;
+      if (ersetzt.has(u.muster) || testUebung?.muster === u.muster || a.k.istErsatz) continue;
+      if (pause && !seitRueckkehrTrainiert(z, u.muster, pause.rueckkehr, jetzt)) continue;
+      const kg = kgAbwechslung(z, e, ort, u, jetzt);
+      if (!kg || gewaehlt.some((x) => x.k.uebung.id === kg.id)) continue;
+      ersetzt.add(u.muster);
+      a.abwechslungFuer = u.id;
+      a.k = { uebung: kg, istErsatz: false };
+      a.saetze = Math.min(a.saetze, Math.max(min, maxSaetze(kg)));
+    }
+  }
+
   // Schritt 8: Reihenfolge und Supersatz-Paare
   const liste = schwerereZuerst([
     ...gewaehlt.filter((a) => istGrund(a.k.uebung)),
     ...gewaehlt.filter((a) => !istGrund(a.k.uebung)),
     ...zusatz,
   ]);
-  const c: Kontext = { z, e, ort, jetzt, pause: trainingspause(z, jetzt), erholungswoche, leichteTage: true };
+  const c: Kontext = { z, e, ort, jetzt, pause, erholungswoche };
   const gebildet = bildeBloecke(c, liste, eing.klassisch === true);
   const format = gebildet.format;
   const bloecke: Block[] = testUebung
@@ -929,7 +946,8 @@ export function setzeVorbelastung(z: AppZustand, einheit: Einheit): Einheit {
 // Klassisch: jede Übung einzeln.
 export function bildeBloecke(c: Kontext, liste: Auswahl[], klassisch: boolean): { bloecke: Block[]; format: Format } {
   const { e } = c;
-  const position = (x: Auswahl) => neuePosition(c, x.k, x.saetze);
+  const position = (x: Auswahl): Position =>
+    ({ ...neuePosition(c, x.k, x.saetze), ...(x.abwechslungFuer ? { abwechslungFuer: x.abwechslungFuer } : {}) });
   const einzeln = (a: Auswahl): Block =>
     ({ typ: 'einzeln', positionen: [position(a)], pauseSek: istGrund(a.k.uebung) ? e.pausenSek.grund : e.pausenSek.isolation });
   if (klassisch) return { bloecke: liste.map(einzeln), format: 'klassisch' };

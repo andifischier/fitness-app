@@ -165,6 +165,9 @@ export const EINHEIT = {
   armeZusatzMuster: ['Bizeps', 'Trizeps'] as readonly MusterId[],
   // Neue Übung (noch nie trainiert): beim ersten Mal höchstens so viele Sätze (Entscheidung 30.10.2026)
   maxSaetzeErstesMal: 3,
+  // Abwechslung (Entscheidung 09.11.2026): Jedes 3. Training einer Grundübung mit Gewicht ersetzt eine
+  // Körpergewichtsvariante desselben Musters die Hantelübung (z. B. Liegestütze statt Bankdrücken)
+  kgAbwechslungJedesMal: 3,
   ruhetagUnterSaetzen: 6,
   freiFuerZirkelAbSaetzen: 3,
   finisherMin: { von: 10, bis: 15 },
@@ -273,10 +276,6 @@ export const PROGRESSION = {
   zielPlusPassend: 2,
   zielPlusLeicht: 4,
   wdhSchritt: 2,
-  // Leichte Tage (Entscheidung 09.11.2026): Jedes 3. Training einer Grundübung mit Gewicht ist leicht: das
-  // schwerste Gewicht, mit dem laut Kraftschätzung noch 16 Wdh. gehen, Ziel 16 bis 20 (gerade Zahl). Leichte
-  // Tage steigern nichts; Ziel und Gewicht der Übung bleiben stehen.
-  leichterTag: { jedesMal: 3, zielVon: 16, zielBis: 20 },
   // „Zu leicht“ bei Last: sofort schwerer, wenn die Schätzung dort mindestens U − so viele zulässt
   // (Entscheidung 30.10.2026)
   leichtSchwererAbUnterU: 1,

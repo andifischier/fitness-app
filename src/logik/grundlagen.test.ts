@@ -1,13 +1,13 @@
 // Entscheidungen 09.11.2026: Steigerung in 2er-Schritten, grobe Reserve im Messsatz, leichte Tage jedes
-// 3. Mal bei Grundübungen mit Gewicht.
+// 3. Mal Körpergewicht statt einer Grundübung mit Gewicht.
 import { describe, expect, it } from 'vitest';
 import { MESSSATZ, PROGRESSION } from '../konfiguration';
-import { leichterTag } from './planung';
-import { offeneFeedbacks, satzVorgabe, schritte } from './player';
+import { erstelleEinheit, kgAbwechslung } from './planung';
+import { satzVorgabe, schritte } from './player';
 import { schliesseEinheitAb, werteUebungAus } from './progression';
 import { ort, zeitpunkt, zustand } from './testhilfe';
 import type { AppZustand, Einheit, Position, VarianteZustand } from './typen';
-import { einstellungenVon, uebungVon, wdhBei, wdhStufe } from './verlauf';
+import { einstellungenVon, uebungVon, wdhStufe } from './verlauf';
 
 const MO = zeitpunkt(0, 18);
 const KH = 'kh_bankdruecken';   // Grundübung, Bereich 8 bis 12
@@ -52,51 +52,56 @@ describe('Messsatz mit groben Stufen', () => {
   });
 });
 
-describe('Leichte Tage', () => {
-  const basis = (): AppZustand => ({ ...zustand({ orte: [ort()] }), varianten: [variante(KH, { last: 16, zielWdh: 10, e1rm: 24 })] });
-  const mitEinheiten = (z: AppZustand, leicht: boolean[]): AppZustand => ({
+describe('Abwechslung mit Körpergewicht', () => {
+  const basis = (): AppZustand => ({
+    ...zustand({ katalog: 'voll', orte: [ort()] }), varianten: [variante(KH, { last: 16, zielWdh: 10, e1rm: 24 })],
+    muster: [{ muster: 'hDruck', stufe: 5, hauptvarianten: [KH] }],
+  });
+  // `art`: n = normales Hanteltraining, k = Abwechslung mit Liegestützen
+  const mitEinheiten = (z: AppZustand, art: string): AppZustand => ({
     ...z,
-    einheiten: leicht.map((l, i) => einheit(`e${i}`, zeitpunkt(i, 18),
-      [position(KH, l ? 16 : 10, l ? [16, 16, 16] : [10, 10, 10], { last: l ? 10 : 16, ...(l ? { leicht: true } : {}) })])),
+    einheiten: [...art].map((a, i) => einheit(`e${i}`, zeitpunkt(i, 18), [a === 'k'
+      ? position('liegestuetz_fuesse_erhoeht', 10, [10, 10, 10], { abwechslungFuer: KH })
+      : position(KH, 10, [10, 10, 10], { last: 16 })])),
   });
   const o = ort();
-  const u = (z: AppZustand) => uebungVon(z, KH)!;
+  const jetzt = zeitpunkt(6, 18);
+  const kg = (z: AppZustand, id = KH) => kgAbwechslung(z, einstellungenVon(z), o, uebungVon(z, id)!, jetzt);
 
-  it('jedes 3. Mal: nach 2 normalen Trainings leicht, danach wieder 2 normale', () => {
-    const jetzt = zeitpunkt(6, 18);
-    expect(leichterTag(mitEinheiten(basis(), []), einstellungenVon(basis()), o, u(basis()), jetzt)).toBeUndefined();
-    expect(leichterTag(mitEinheiten(basis(), [false]), einstellungenVon(basis()), o, u(basis()), jetzt)).toBeUndefined();
-    const z = mitEinheiten(basis(), [false, false]);
-    const l = leichterTag(z, einstellungenVon(z), o, u(z), jetzt)!;
-    // Schwerstes Gewicht mit mindestens 16 Wdh. laut Schätzung; Ziel 16 bis 20, gerade Zahl
-    expect(l.last).toBeLessThan(16);
-    expect(wdhBei(24, l.last, 1)).toBeGreaterThanOrEqual(16);
-    expect(l.zielWdh).toBeGreaterThanOrEqual(16);
-    expect(l.zielWdh).toBeLessThanOrEqual(20);
-    expect(l.zielWdh % 2).toBe(0);
-    expect(leichterTag(mitEinheiten(basis(), [false, false, true]), einstellungenVon(z), o, u(z), jetzt)).toBeUndefined();
-    expect(leichterTag(mitEinheiten(basis(), [false, false, true, false]), einstellungenVon(z), o, u(z), jetzt)).toBeUndefined();
-    expect(leichterTag(mitEinheiten(basis(), [false, false, true, false, false]), einstellungenVon(z), o, u(z), jetzt)).toBeDefined();
+  it('jedes 3. Mal: nach 2 Hanteltrainings eine Körpergewichtsvariante desselben Musters', () => {
+    expect(kg(mitEinheiten(basis(), ''))).toBeUndefined();
+    expect(kg(mitEinheiten(basis(), 'n'))).toBeUndefined();
+    const u = kg(mitEinheiten(basis(), 'nn'))!;
+    expect(u).toMatchObject({ muster: 'hDruck', lasttyp: 'KG' });
+    // Passend schwer: die schwerste am Ort bis zur Musterstufe 5
+    expect(u.stufe).toBe(5);
+    expect(kg(mitEinheiten(basis(), 'nnk'))).toBeUndefined();
+    expect(kg(mitEinheiten(basis(), 'nnkn'))).toBeUndefined();
+    expect(kg(mitEinheiten(basis(), 'nnknn'))).toBeDefined();
   });
 
-  it('nur Grundübungen mit Gewicht und bekannter Kraftschätzung', () => {
-    const z = mitEinheiten(basis(), [false, false]);
-    const e = einstellungenVon(z);
-    const curls = { ...z, varianten: [...z.varianten, variante('kh_curls', { last: 10, zielWdh: 10, e1rm: 14 })] };
-    expect(leichterTag(curls, e, o, uebungVon(z, 'kh_curls')!, zeitpunkt(6, 18))).toBeUndefined();
-    const ohneSchaetzung = { ...z, varianten: [variante(KH, { last: 16, zielWdh: 10 })] };
-    expect(leichterTag(ohneSchaetzung, e, o, u(z), zeitpunkt(6, 18))).toBeUndefined();
+  it('nur für Grundübungen mit Gewicht; die gespeicherte Variante des Musters geht vor', () => {
+    const z = mitEinheiten(basis(), 'nn');
+    const curls = { ...z, varianten: [...z.varianten, variante('kh_curls', { last: 10 })] };
+    expect(kg(curls, 'kh_curls')).toBeUndefined();
+    const gespeichert = { ...z, muster: [{ muster: 'hDruck' as const, stufe: 5, hauptvarianten: [KH], kgVariante: 'liegestuetz' }] };
+    expect(kg(gespeichert)!.id).toBe('liegestuetz');
   });
 
-  it('ein leichter Tag steigert nichts, hat keinen Messsatz und kein Feedback am Ende', () => {
-    const z = mitEinheiten(basis(), [false, false]);
-    const leicht = einheit('leicht', zeitpunkt(6, 18), [position(KH, 16, [18, 18, 18], { last: 10, leicht: true })]);
-    const nach = schliesseEinheitAb(z, leicht, zeitpunkt(6, 19));
-    expect(nach.varianten.find((v) => v.uebungId === KH)).toMatchObject({ last: 16, zielWdh: 10, e1rm: 24 });
-    const geplant: Einheit = { ...leicht, status: 'geplant', bloecke: [{ typ: 'einzeln', pauseSek: 90, positionen: [{ ...position(KH, 16, [], { last: 10, leicht: true }), saetze: 3 }] }] };
-    const letzter = schritte(geplant).at(-1)!;
-    expect(satzVorgabe(z, geplant, letzter).messReserve).toBeUndefined();
-    expect(satzVorgabe(z, geplant, letzter).reserve).toContain('Leichter Tag');
-    expect(offeneFeedbacks(leicht)).toEqual([]);
+  it('die Planung ersetzt die Hantelübung; die Körpergewichtsvariante wird normal gesteigert', () => {
+    const z = mitEinheiten(basis(), 'nn');
+    const e = erstelleEinheit(z, { jetzt, ortId: 'zuhause', prognose: 3, morgenWieder: false, laenger: false, muskeln: ['Brust'] });
+    const p = e.bloecke.flatMap((b) => b.positionen).find((x) => x.abwechslungFuer === KH)!;
+    expect(uebungVon(z, p.uebungId)).toMatchObject({ muster: 'hDruck', lasttyp: 'KG' });
+    expect(e.bloecke.flatMap((b) => b.positionen).some((x) => x.uebungId === KH)).toBe(false);
+    const fertig = { ...e, status: 'abgeschlossen' as const, gestartetAm: jetzt, bloecke: e.bloecke.map((b) => ({ ...b, positionen: b.positionen.map((x) => ({
+      ...x, feedback: 'passend' as const, ergebnisse: Array.from({ length: x.saetze }, (_, i) => ({ nr: i + 1, wdh: x.zielWdh, zeit: jetzt })),
+    })) })) };
+    const nach = schliesseEinheitAb(z, fertig, zeitpunkt(6, 19));
+    // Hantelübung unverändert, die Körpergewichtsvariante hat einen eigenen Verlauf und ist gemerkt
+    expect(nach.varianten.find((v) => v.uebungId === KH)).toMatchObject({ last: 16, zielWdh: 10 });
+    expect(nach.varianten.some((v) => v.uebungId === p.uebungId)).toBe(true);
+    expect(nach.muster.find((m) => m.muster === 'hDruck')!.kgVariante).toBe(p.uebungId);
+    expect(satzVorgabe(z, e, schritte(e).find((s) => e.bloecke[s.block]!.positionen[s.position] === p)!).reserve).toContain('Abwechslung');
   });
 });

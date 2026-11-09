@@ -162,16 +162,15 @@ export function satzVorgabe(z: AppZustand, einheit: Einheit, s: Schritt): SatzVo
     ? `${u && lastAnzeige(z, u) === 'vorschlag'
       ? `Vorschlag aus deinem Testtag für etwa ${bereich!.von} Wiederholungen; passt es nicht, ändere es.`
       : `Wähle ein Gewicht für etwa ${bereich!.von} Wiederholungen.`} Aufhören, wenn noch ${PROGRESSION.neueVarianteReserve} gingen.`
-    : `${mess !== undefined ? messText(mess) : reserveText(e.zielReserve, inSek)}${p.leicht ? ' Leichter Tag: weniger Gewicht, mehr Wiederholungen. Zur Abwechslung, ohne Steigerung.' : ''}${erholung ? ' Erholungswoche: Ziel und Messsatz mit 1 Wiederholung mehr Reserve.' : ''}${p.vorbelastet ? ` Der Muskel hat heute schon gearbeitet, darum ist das Ziel ${p.vorbelastet}${inSek ? ' Sek.' : ''} niedriger.` : ''}`;
+    : `${mess !== undefined ? messText(mess) : reserveText(e.zielReserve, inSek)}${p.abwechslungFuer ? ` Abwechslung: Körpergewicht statt ${uebungVon(z, p.abwechslungFuer)?.name ?? 'Hanteln'}.` : ''}${erholung ? ' Erholungswoche: Ziel und Messsatz mit 1 Wiederholung mehr Reserve.' : ''}${p.vorbelastet ? ` Der Muskel hat heute schon gearbeitet, darum ist das Ziel ${p.vorbelastet}${inSek ? ' Sek.' : ''} niedriger.` : ''}`;
   const gesenkt = !kalibrierung && s.satz > 1 && p.zielFolgesaetze !== undefined && p.zielFolgesaetze < p.zielWdh;
   const wert = kalibrierung ? bereich!.von : gesenkt ? p.zielFolgesaetze! : p.zielWdh;
   return { ...basis, art: 'ziel', wert, bereich, reserve, kalibrierung, zaehlen: true, gesenkt, ...(mess !== undefined ? { messReserve: mess } : {}) };
 }
 
 // Messsatz: letzter Satz einer Übung mit Wiederholungen (nicht Halteübung, Max-Test oder Zirkel).
-// Leichte Tage (Entscheidung 09.11.2026) haben keinen Messsatz: Sie messen nichts für die Steigerung.
 const istMesssatz = (u: Uebung, p: Position, s: Schritt) =>
-  u.bereich.einheit === 'Wdh.' && !p.istMaxTest && !p.leicht && s.satz === p.saetze;
+  u.bereich.einheit === 'Wdh.' && !p.istMaxTest && s.satz === p.saetze;
 
 function messText(reserve: number): string {
   return reserve === 0
@@ -290,8 +289,7 @@ export function offeneFeedbacks(einheit: Einheit): Stelle[] {
   einheit.bloecke.forEach((b, block) => {
     if (b.typ === 'zirkel') return;
     b.positionen.forEach((p, position) => {
-      // Leichte Tage brauchen kein Feedback: Sie steigern nichts (Entscheidung 09.11.2026).
-      if (fertig(p) && !p.istMaxTest && !p.leicht && p.feedback === undefined && p.ergebnisse.length > 0) liste.push({ block, position });
+      if (fertig(p) && !p.istMaxTest && p.feedback === undefined && p.ergebnisse.length > 0) liste.push({ block, position });
     });
   });
   return liste;
@@ -376,11 +374,11 @@ export function fortschrittshinweis(z: AppZustand, einheit: Einheit, s: Schritt,
   const b = einheit.bloecke[s.block]!;
   const p = positionVon(einheit, s);
   const u = uebungVon(z, p.uebungId);
-  if (!u || b.typ === 'zirkel' || p.istMaxTest || p.leicht || istKalibrierung(z, einheit, s)) return undefined;
+  if (!u || b.typ === 'zirkel' || p.istMaxTest || istKalibrierung(z, einheit, s)) return undefined;
   if (s.satz !== 1 && !nachKalibrierung(z, einheit, s)) return undefined;
   const e = einstellungenVon(z);
   const ort = z.orte.find((o) => o.id === einheit.ortId);
-  const bisher = sitzungen(z, u.id).filter((x) => x.einheit.id !== einheit.id && !x.position.leicht);
+  const bisher = sitzungen(z, u.id).filter((x) => x.einheit.id !== einheit.id);
   const letzte = bisher.at(-1);
   const letztesMal = letzte ? letzterSatz(letzte.position) : undefined;
   const verlauf = bisher.map((x) => leistungswert(e, u, ausgeruht(x.position))).filter((w): w is number => w !== undefined)

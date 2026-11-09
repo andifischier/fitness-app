@@ -198,7 +198,7 @@ describe('Endabnahme: 12 Wochen im Ablauf der App', () => {
     for (const pos of studio.einheit.bloecke.flatMap((b) => b.positionen)) {
       expect(uebungErlaubt(e, STUDIO, uebungVon(z, pos.uebungId)!, studio.jetzt)).toBe(true);
       const v = studio.zustandVorher.varianten.find((x) => x.uebungId === pos.uebungId);
-      if (v && !pos.istMaxTest && !pos.leicht) expect(pos.zielWdh, pos.uebungId).toBe(v.zielWdh);
+      if (v && !pos.istMaxTest) expect(pos.zielWdh, pos.uebungId).toBe(v.zielWdh);
     }
     const danach = protokoll[protokoll.indexOf(studio) + 1]!.zustandVorher;
     for (const m of studio.zustandVorher.muster) {
@@ -226,23 +226,21 @@ describe('Endabnahme: 12 Wochen im Ablauf der App', () => {
       for (const pos of p.einheit.bloecke.flatMap((b) => b.positionen)) {
         const v = p.zustandVorher.varianten.find((x) => x.uebungId === pos.uebungId);
         if (!v || pos.istMaxTest || p.einheit.format === 'zirkel' || v.last === undefined) continue;
-        if (pos.leicht) {
-          // Leichter Tag (Entscheidung 09.11.2026): weniger Gewicht, Ziel 16 bis 20
-          expect(pos.last!, `${pos.uebungId} am ${p.jetzt}`).toBeLessThan(v.last);
-          expect(pos.zielWdh + (pos.vorbelastet ?? 0)).toBeGreaterThanOrEqual(16);
-          continue;
-        }
         expect({ last: pos.last, ziel: pos.zielWdh + (pos.vorbelastet ?? 0) }, `${pos.uebungId} am ${p.jetzt}`).toEqual({ last: v.last, ziel: v.zielWdh });
       }
     }
-    // Leichte Tage kommen vor und lassen Ziel und Last der Variante stehen.
-    const leichte = protokoll.flatMap((p, i) => p.einheit.bloecke.flatMap((b) => b.positionen)
-      .filter((pos) => pos.leicht).map((pos) => ({ pos, vorher: p.zustandVorher, nachher: protokoll[i + 1]?.zustandVorher })));
-    expect(leichte.length).toBeGreaterThan(0);
-    for (const { pos, vorher, nachher } of leichte) {
+    // Abwechslung mit Körpergewicht (Entscheidung 09.11.2026) kommt vor: dasselbe Muster ohne Gewicht, und die
+    // ersetzte Hantelübung behält Ziel und Last.
+    const abwechslung = protokoll.flatMap((p, i) => p.einheit.bloecke.flatMap((b) => b.positionen)
+      .filter((pos) => pos.abwechslungFuer).map((pos) => ({ pos, vorher: p.zustandVorher, nachher: protokoll[i + 1]?.zustandVorher })));
+    expect(abwechslung.length).toBeGreaterThan(0);
+    for (const { pos, vorher, nachher } of abwechslung) {
+      const kg = uebungVon(z, pos.uebungId)!;
+      expect(kg.lasttyp).toBe('KG');
+      expect(kg.muster).toBe(uebungVon(z, pos.abwechslungFuer!)!.muster);
       if (!nachher) continue;
-      const alt = vorher.varianten.find((x) => x.uebungId === pos.uebungId)!;
-      const neu = nachher.varianten.find((x) => x.uebungId === pos.uebungId)!;
+      const alt = vorher.varianten.find((x) => x.uebungId === pos.abwechslungFuer)!;
+      const neu = nachher.varianten.find((x) => x.uebungId === pos.abwechslungFuer)!;
       expect({ last: neu.last, ziel: neu.zielWdh }).toEqual({ last: alt.last, ziel: alt.zielWdh });
     }
     // … und die Ziele steigen über die Wochen.
