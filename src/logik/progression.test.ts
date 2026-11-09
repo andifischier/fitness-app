@@ -68,11 +68,11 @@ describe('Progression mit Last (Kraftschätzung)', () => {
   const mit = (v: VarianteZustand) => ({ ...zustand(), varianten: [v] });
   const kh = 'kh_bankdruecken'; // Bereich 8 bis 12, Raster 2, 4, … 24
 
-  it('„passend“: Ziel +1, begrenzt durch die Schätzung bei Reserve 1; e1RM geglättet', () => {
+  it('„passend“: Ziel +2 (Entscheidung 09.11.2026), begrenzt durch die Schätzung bei Reserve 1; e1RM geglättet', () => {
     const z = mit(variante(kh, { last: 16, zielWdh: 9, e1rm: 22 }));
     const { variante: v } = werteUebungAus(z, position(kh, 9, [9, 9, 9], { last: 16, feedback: 'passend' }), MO, 'zuhause');
     expect(v.e1rm).toBeCloseTo(0.5 * 22 + 0.5 * e1rm(16, 9, 2));
-    expect(v).toMatchObject({ last: 16, zielWdh: 10 });
+    expect(v).toMatchObject({ last: 16, zielWdh: 10 });   // 9 + 2 = 11, Schätzung erlaubt 11, gerade Zahl: 10
     const knapp = mit(variante(kh, { last: 16, zielWdh: 9, e1rm: 16 * (1 + 9 / 30) }));
     expect(werteUebungAus(knapp, position(kh, 9, [9], { last: 16, feedback: 'passend' }), MO, 'zuhause').variante.zielWdh).toBe(9);
   });
@@ -80,13 +80,14 @@ describe('Progression mit Last (Kraftschätzung)', () => {
   it('„zu leicht“: sofort eine Gewichtsstufe mehr, wenn die Schätzung dort U − 1 zulässt (Entscheidung 30.10.2026)', () => {
     const z = mit(variante(kh, { last: 16, zielWdh: 8, e1rm: 25 }));
     const { variante: v } = werteUebungAus(z, position(kh, 8, [8, 8], { last: 16, feedback: 'leicht' }), MO, 'zuhause');
-    expect(v).toMatchObject({ last: 18, zielWdh: 7, seitSteigerung: 0 });
+    // Schätzung bei 18 kg: 7 Wdh. im letzten Satz; 2er-Schritte (Entscheidung 09.11.2026): gerade Zahl darunter
+    expect(v).toMatchObject({ last: 18, zielWdh: 6, seitSteigerung: 0 });
   });
 
-  it('„zu leicht“ mit zu großem Gewichtssprung: Ziel +2 beim selben Gewicht', () => {
+  it('„zu leicht“ mit zu großem Gewichtssprung: Ziel +4 beim selben Gewicht', () => {
     const paare: Ort = { id: 'paare', name: 'paare', standard: true, equipment: [{ utensilId: 'KH', kurzhanteln: { modus: 'paare', gewichteKg: [16, 24] } }, { utensilId: 'BANK' }] };
     const z = { ...mit(variante(kh, { last: 16, zielWdh: 8, e1rm: 25 })), orte: [paare] };
-    expect(werteUebungAus(z, position(kh, 8, [8, 8], { last: 16, feedback: 'leicht' }), MO, 'paare').variante).toMatchObject({ last: 16, zielWdh: 10 });
+    expect(werteUebungAus(z, position(kh, 8, [8, 8], { last: 16, feedback: 'leicht' }), MO, 'paare').variante).toMatchObject({ last: 16, zielWdh: 12 });
   });
 
   it('Ziel über O: Last + 1 Schritt, wenn die Schätzung dort U schafft; sonst Bereich bis O + 3', () => {
@@ -100,22 +101,24 @@ describe('Progression mit Last (Kraftschätzung)', () => {
     const paare: Ort = { id: 'paare', name: 'paare', standard: true, equipment: [{ utensilId: 'KH', kurzhanteln: { modus: 'paare', gewichteKg: [16, 20] } }, { utensilId: 'BANK' }] };
     const knapp = { ...mit(variante(kh, { last: 16, zielWdh: 12, e1rm: 25.5 })), orte: [paare] };
     const gedehnt = werteUebungAus(knapp, position(kh, 12, [12], { last: 16, feedback: 'passend' }), MO, 'paare').variante;
-    expect(gedehnt).toMatchObject({ last: 16, zielWdh: 13 });
+    expect(gedehnt).toMatchObject({ last: 16, zielWdh: 14 });
     // Mehrere Sätze: Beim schwereren Gewicht muss es auch der letzte schaffen (1 Wdh. Ermüdung je Satz).
     const dreiSaetze = werteUebungAus(stark, position(kh, 12, [12, 12, 12], { last: 16, feedback: 'passend' }), MO, 'zuhause').variante;
-    expect(dreiSaetze).toMatchObject({ last: 16, zielWdh: 13 });
+    // Die Schätzung lässt nur 13 zu; mit 2er-Schritten bleibt das geschaffte Ziel 12.
+    expect(dreiSaetze).toMatchObject({ last: 16, zielWdh: 12 });
   });
 
   it('letzter Satz zählt (Entscheidung 30.10.2026): gesteigert wird erst, wenn er das Ziel schafft', () => {
     const z = mit(variante(kh, { last: 16, zielWdh: 10, e1rm: 24, seitSteigerung: 4 }));
     const aus = (wdh: number[], feedback?: 'passend' | 'schwer') =>
       werteUebungAus(z, position(kh, 10, wdh, { last: 16, ...(feedback ? { feedback } : {}) }), MO, 'zuhause').variante;
-    expect(aus([10, 10, 10], 'passend')).toMatchObject({ last: 16, zielWdh: 11 });
-    // Bis 2 darunter: Ziel bleibt; mehr: Ziel = Geschafftes im letzten Satz, nie unter U − 1.
+    expect(aus([10, 10, 10], 'passend')).toMatchObject({ last: 16, zielWdh: 12 });
+    // Bis 2 darunter: Ziel bleibt; mehr: Ziel = Geschafftes im letzten Satz, nie unter U − 1, dann die
+    // gerade Zahl darunter (2er-Schritte, Entscheidung 09.11.2026).
     expect(aus([10, 10, 9])).toMatchObject({ last: 16, zielWdh: 10 });
     expect(aus([10, 10, 8])).toMatchObject({ last: 16, zielWdh: 10 });
-    expect(aus([10, 8, 7])).toMatchObject({ last: 16, zielWdh: 7 });
-    expect(aus([10, 7, 5])).toMatchObject({ last: 16, zielWdh: 7 });
+    expect(aus([10, 8, 7])).toMatchObject({ last: 16, zielWdh: 6 });
+    expect(aus([10, 7, 5])).toMatchObject({ last: 16, zielWdh: 6 });
     // Leichter wird es erst, wenn schon der erste Satz deutlich unter dem Bereich liegt.
     expect(aus([5, 4, 4])).toMatchObject({ last: 14, zielWdh: 8 });
     // Ohne Feedback zählt der letzte Satz: fehlen dort mehr als 2, gilt „zu schwer“, bis 2 „passend“
@@ -134,12 +137,12 @@ describe('Progression mit Last (Kraftschätzung)', () => {
   it('„zu schwer“: Eingewöhnung nach Steigerung, deutlich verfehlt Last − 1, sonst Ziel unverändert', () => {
     const neu = mit(variante(kh, { last: 18, zielWdh: 9, e1rm: 24, seitSteigerung: 0 }));
     expect(werteUebungAus(neu, position(kh, 9, [7], { last: 18, feedback: 'schwer' }), MO, 'zuhause').variante)
-      .toMatchObject({ last: 18, zielWdh: 7 });
+      .toMatchObject({ last: 18, zielWdh: 6 });
     const alt = mit(variante(kh, { last: 18, zielWdh: 9, e1rm: 24, seitSteigerung: 4 }));
     expect(werteUebungAus(alt, position(kh, 9, [5], { last: 18, feedback: 'schwer' }), MO, 'zuhause').variante)
       .toMatchObject({ last: 16, zielWdh: 8 });
     expect(werteUebungAus(alt, position(kh, 9, [8], { last: 18, feedback: 'schwer' }), MO, 'zuhause').variante)
-      .toMatchObject({ last: 18, zielWdh: 9, schwerSerie: 1 });
+      .toMatchObject({ last: 18, zielWdh: 8, schwerSerie: 1 });   // ungerades Ziel von früher: gerade Zahl darunter
   });
 
   it('erster Satz verfehlt das Ziel ohne Feedback: zählt als „zu schwer“', () => {
@@ -154,7 +157,7 @@ describe('Progression mit Last (Kraftschätzung)', () => {
     const p = (ziel: number) => position('kh_rdl', ziel, [ziel], { last: 12, feedback: 'passend' });
     const tempo = werteUebungAus(z({ zielWdh: 12 }), p(12), MO, 'klein');
     expect(tempo.variante).toMatchObject({ last: 12, zielWdh: 8, langsam: true });
-    expect(werteUebungAus(z({ zielWdh: 12, langsam: true }), p(12), MO, 'klein').variante.zielWdh).toBe(13);
+    expect(werteUebungAus(z({ zielWdh: 12, langsam: true }), p(12), MO, 'klein').variante.zielWdh).toBe(14);
     const ende = werteUebungAus(z({ zielWdh: 17, langsam: true }), p(17), MO, 'klein');
     expect(ende.muster.hauptvarianten).toEqual(['kh_rdl_einbeinig']);
     expect(ende.variante.langsam).toBeUndefined();
@@ -169,7 +172,7 @@ describe('Messsatz (Entscheidungen 01.11.2026)', () => {
     const z = mit(variante(kh, { last: 16, zielWdh: 10 }));
     const { variante: v } = werteUebungAus(z, position(kh, 10, [10, 10, 11], { last: 16, reserve: 2, feedback: 'passend' }), MO, 'zuhause');
     expect(v.e1rm).toBeCloseTo(e1rm(16, 11, 2 + 2));   // plus 1 Wdh. Ermüdung je Satz davor
-    expect(v).toMatchObject({ last: 16, zielWdh: 11 });
+    expect(v).toMatchObject({ last: 16, zielWdh: 12 });   // wirksam 11 + 2 − 1 = 12
   });
 
   it('gemessen wird mit Ziel-Reserve: 10 Wdh. bis zum Limit sind 9 mit Reserve 1, das Ziel 10 bleibt', () => {
@@ -185,29 +188,29 @@ describe('Messsatz (Entscheidungen 01.11.2026)', () => {
     expect(v.zielWdh).toBeGreaterThanOrEqual(7);
   });
 
-  it('Körpergewicht: Ziel aus der Kapazität des Messsatzes minus Ziel-Reserve, höchstens 2 über dem besten ersten Satz', () => {
+  it('Körpergewicht: Ziel aus der Kapazität des Messsatzes minus Ziel-Reserve, höchstens 4 über dem besten ersten Satz', () => {
     const z = mit(variante('klimmzug', { zielWdh: 6, bestErsterSatz: 6 }));
     const { variante: v } = werteUebungAus(z, position('klimmzug', 6, [6, 6, 7], { reserve: 2, feedback: 'passend' }), MO, 'zuhause');
     expect(v.zielWdh).toBe(8);                     // 7 + 2 − 1 = 8
     const viel = werteUebungAus(z, position('klimmzug', 6, [6, 6, 9], { reserve: 3, feedback: 'passend' }), MO, 'zuhause').variante;
-    expect(viel.zielWdh).toBe(8);                  // Deckel: bester erster Satz 6 + 2
+    expect(viel.zielWdh).toBe(10);                 // 9 + 3 − 1 = 11, Deckel: bester erster Satz 6 + 4
   });
 
   it('Körpergewicht: erreicht der Messsatz mit Ziel-Reserve O, folgt die nächste Stufe (hier erst langsames Absenken)', () => {
     const z = { ...voll(), varianten: [variante('klimmzug', { zielWdh: 11, bestErsterSatz: 11 })], muster: [{ muster: 'vZug' as const, stufe: 6, hauptvarianten: ['klimmzug'] }] };
     // 11 + 2 − 1 = 12 = O; Weighted Pullups liegen 2 Stufen höher, also zuerst 3 Sek. absenken mit Ziel U.
     const { variante: v } = werteUebungAus(z, position('klimmzug', 11, [11, 11, 11], { reserve: 2, feedback: 'passend' }), MO, 'zuhause');
-    expect(v).toMatchObject({ langsam: true, zielWdh: 5 });
+    expect(v).toMatchObject({ langsam: true, zielWdh: 4 });   // U = 5, gerade Zahl darunter
     const knapp = werteUebungAus(z, position('klimmzug', 11, [11, 11, 11], { reserve: 1, feedback: 'passend' }), MO, 'zuhause');
     expect(knapp.variante.langsam).toBeUndefined();
   });
 });
 
 describe('Progression ohne Last', () => {
-  it('Körpergewicht: Ziel höchstens 2 über dem besten ersten Satz; ab O die nächste Variante', () => {
+  it('Körpergewicht: Ziel höchstens 4 über dem besten ersten Satz; ab O die nächste Variante', () => {
     const z = { ...voll(), varianten: [variante('liegestuetz', { zielWdh: 10, bestErsterSatz: 10 })],
       muster: [{ muster: 'hDruck' as const, stufe: 4, hauptvarianten: ['liegestuetz', 'kh_bankdruecken'] }] };
-    expect(werteUebungAus(z, position('liegestuetz', 10, [10, 10], { feedback: 'leicht' }), MO, 'zuhause').variante.zielWdh).toBe(12);
+    expect(werteUebungAus(z, position('liegestuetz', 10, [10, 10], { feedback: 'leicht' }), MO, 'zuhause').variante.zielWdh).toBe(14);
     const gedeckelt = { ...z, varianten: [variante('liegestuetz', { zielWdh: 12, bestErsterSatz: 9 })] };
     expect(werteUebungAus(gedeckelt, position('liegestuetz', 12, [10], { feedback: 'leicht' }), MO, 'zuhause').variante.zielWdh).toBe(12);
     const oben = werteUebungAus(z, position('liegestuetz', 15, [15], { feedback: 'passend' }), MO, 'zuhause');
@@ -223,13 +226,13 @@ describe('Progression ohne Last', () => {
     expect(leichter.muster.hauptvarianten).toEqual(['band_brustpresse', 'kh_bankdruecken']);
     expect(leichter.variante.zielWdh).toBe(8);
     // Bricht nur der letzte Satz ein, sinkt das Ziel.
-    expect(werteUebungAus(z, position('liegestuetz', 10, [10, 8, 6]), MO, 'zuhause').variante.zielWdh).toBe(7);
+    expect(werteUebungAus(z, position('liegestuetz', 10, [10, 8, 6]), MO, 'zuhause').variante.zielWdh).toBe(6);
   });
 
   it('Zwischenstufe: liegt die nächste Variante 2 Stufen höher, erst langsames Absenken mit Ziel U', () => {
     const z = { ...voll(), muster: [{ muster: 'vZug' as const, stufe: 6, hauptvarianten: ['klimmzug', 'chinup'] }] };
     const erst = werteUebungAus(z, position('klimmzug', 12, [12], { feedback: 'passend' }), MO, 'zuhause');
-    expect(erst.variante).toMatchObject({ zielWdh: 5, langsam: true });
+    expect(erst.variante).toMatchObject({ zielWdh: 4, langsam: true });
     expect(erst.muster.hauptvarianten).toEqual(['klimmzug', 'chinup']);
     const danach = werteUebungAus({ ...z, varianten: [erst.variante] }, position('klimmzug', 12, [12], { feedback: 'passend', langsam: true }), MO, 'zuhause');
     expect(danach.muster.hauptvarianten).toEqual(['klimmzug_gewicht', 'chinup']);
@@ -532,9 +535,10 @@ describe('Erholungswoche', () => {
     const e = plane(erholung, MO);
     expect(e.bloecke.flatMap((b) => b.positionen).some((p) => p.istMaxTest)).toBe(false);
     const bank = e.bloecke.flatMap((b) => b.positionen).find((p) => p.uebungId === 'kh_bankdruecken');
-    // Last gleich, 1 Wdh. mehr Reserve (Entscheidung 01.11.2026); nach der Einheit bleiben Ziel und Last.
+    // Last gleich, 1 Wdh. mehr Reserve (Entscheidung 01.11.2026), mit 2er-Schritten 2 weniger
+    // (Entscheidung 09.11.2026); nach der Einheit bleiben Ziel und Last.
     if (bank) {
-      expect(bank).toMatchObject({ last: 16, zielWdh: 9 });
+      expect(bank).toMatchObject({ last: 16, zielWdh: 8 });
       const danach = fuehreDurch(erholung, e, MO);
       expect(danach.varianten.find((v) => v.uebungId === 'kh_bankdruecken')).toMatchObject({ last: 16, zielWdh: 10 });
     }

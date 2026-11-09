@@ -30,7 +30,7 @@ export function UebungsListe({ z, einheit, onTauschen }: {
                   <li key={pi} className="flex items-center gap-3 py-1">
                     <span className="flex-1">
                       <span className="block text-basis font-semibold">{u.name}</span>
-                      <span className="block text-hinweis text-gedaempft">{detail}{p.langsam ? ' · 3 Sek. absenken' : ''}</span>
+                      <span className="block text-hinweis text-gedaempft">{detail}{p.langsam ? ' · 3 Sek. absenken' : ''}{p.leicht ? ' · leichter Tag' : ''}</span>
                     </span>
                     {onTauschen && !p.istMaxTest && kannTauschen(einheit, bi, pi) && (
                       <button type="button" aria-label={`${u.name} tauschen`} onClick={() => onTauschen(bi, pi)}

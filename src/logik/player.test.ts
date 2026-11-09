@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { MESSSATZ } from '../konfiguration';
 import {
   aktuellerBlock, aktuellerSchritt, balkenAbschnitte, beende, bewerteAlle, letzterSatzAm, blockwechselNach, erledigteSaetze, feedbackVorschlag, fortschrittshinweis, istKalibrierung, kalibriere, letztesMal, offeneFeedbacks, pauseNach,
   lastWaehlbar, satzVorgabe, schritte, setzeFeedback, starte, trageSatzEin,
@@ -245,6 +246,11 @@ describe('Ziel und Vorgabe', () => {
     // Mit Ziel-Reserve 1 wären nur 8 gegangen (9 + 0 − 1), mehr als 2 unter dem Ziel 12: zu schwer.
     expect(curls(9, 0)).toMatchObject({ feedback: 'schwer' });
     expect(curls(12, 9).reserve).toBe(5);
+    // Grobe Stufen (Entscheidung 09.11.2026): „Noch 1 bis 2“ = 1,5 bleibt ungerundet und ist passend,
+    // „Noch 3 oder mehr“ = 4 ist zu leicht.
+    expect(curls(12, MESSSATZ.stufen.einsBisZwei)).toMatchObject({ reserve: 1.5, feedback: 'passend' });
+    expect(curls(12, MESSSATZ.stufen.dreiOderMehr)).toMatchObject({ reserve: 4, feedback: 'leicht' });
+    expect(curls(12, 3)).toMatchObject({ feedback: 'leicht' });
     // Ohne Messung (z. B. ältere Daten) bleibt das Feedback offen.
     expect(trageSatzEin(z, MIX, liste[1]!, 10, '2026-10-20T18:10:00', undefined, { reserve: 2, technikUnsauber: false })
       .bloecke[1]!.positionen[0]!.reserve).toBeUndefined();
@@ -275,26 +281,26 @@ describe('Kalibrierungssatz', () => {
     // 12 kg × 10 mit Reserve 3: Schätzung 17,2 kg; bei 14 kg gehen mit Reserve 1 noch 5, bei 12 kg 12
     const u = uebungVon(z, 'kh_bankdruecken')!;
     expect(kalibriere(z, 'zuhause', u, 12, 10)).toEqual({ last: 12, zielWdh: 12 });
-    // 10 kg × 15: Schätzung 16 kg; 12 kg erlaubt 9 Wdh.
-    expect(kalibriere(z, 'zuhause', u, 10, 15)).toEqual({ last: 12, zielWdh: 9 });
+    // 10 kg × 15: Schätzung 16 kg; 12 kg erlaubt 9 Wdh., als gerade Zahl 8 (Entscheidung 09.11.2026)
+    expect(kalibriere(z, 'zuhause', u, 10, 15)).toEqual({ last: 12, zielWdh: 8 });
     const nach = trageSatzEin(z, e, s1!, 15, '2026-10-20T18:10:00', 10);
     const p = nach.bloecke[0]!.positionen[0]!;
-    expect(p).toMatchObject({ last: 12, zielWdh: 9 });
+    expect(p).toMatchObject({ last: 12, zielWdh: 8 });
     expect(p.ergebnisse[0]).toMatchObject({ wdh: 15, last: 10 });
-    expect(satzVorgabe(z, nach, s2!)).toMatchObject({ art: 'ziel', wert: 9, last: 12, kalibrierung: false, zaehlen: true });
-    const weiter = trageSatzEin(z, nach, s2!, 9, '2026-10-20T18:12:00');
-    expect(satzVorgabe(z, weiter, schritte(weiter)[2]!)).toMatchObject({ art: 'ziel', wert: 9, zaehlen: true });
+    expect(satzVorgabe(z, nach, s2!)).toMatchObject({ art: 'ziel', wert: 8, last: 12, kalibrierung: false, zaehlen: true });
+    const weiter = trageSatzEin(z, nach, s2!, 8, '2026-10-20T18:12:00');
+    expect(satzVorgabe(z, weiter, schritte(weiter)[2]!)).toMatchObject({ art: 'ziel', wert: 8, zaehlen: true });
   });
 
   it('wertet die Progression ab dem ersten Satz nach der Kalibrierung aus', () => {
     let nach = trageSatzEin(z, e, s1!, 15, '2026-10-20T18:10:00', 10);
     const jetzt = '2026-10-20T18:20:00';
     const nurKalibrierung = werteUebungAus(z, nach.bloecke[0]!.positionen[0]!, jetzt, 'zuhause').variante;
-    expect(nurKalibrierung).toMatchObject({ last: 12, zielWdh: 9 });
+    expect(nurKalibrierung).toMatchObject({ last: 12, zielWdh: 8 });
     nach = trageSatzEin(z, nach, s2!, 10, jetzt);
     nach = trageSatzEin(z, nach, schritte(nach)[2]!, 9, jetzt);
     const { variante } = werteUebungAus(z, nach.bloecke[0]!.positionen[0]!, jetzt, 'zuhause');
-    // erster Satz nach der Kalibrierung: 12 kg × 10 bei Ziel 9 → passend, Ziel +1
+    // erster Satz nach der Kalibrierung: 12 kg × 10 bei Ziel 8 → passend, Ziel +2
     expect(variante).toMatchObject({ last: 12, zielWdh: 10, bestErsterSatz: 10 });
   });
 });

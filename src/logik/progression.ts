@@ -8,7 +8,7 @@ import { isoWoche, plusTage, stundenZwischen, wocheStart, wocheVerschoben } from
 import { alleUebungen, bandStufen, lastraster, uebungErlaubt } from './equipment';
 import {
   bereichFuer, dosisProMuskel, hauptvarianten, istErholungswoche, musterstufe, persoenlicheGrenze, startwerte,
-  obendraufVon, wochenziele,
+  wochenziele,
 } from './planung';
 import {
   BAND_STUFEN, MUSKELN, type AppZustand, type BandStufe, type Einheit, type Einstellungen, type Feedback, type MaxTest,
@@ -18,7 +18,7 @@ import {
 import {
   ausgeruht, e1rm, einheitZeit, einstellungenVon, ersterSatz, faelligerMaxTest, feedbackVon, fertigeEinheiten, kapazitaetswert,
   leistungswert, letzterWirksam, reserveFuer, seitRueckkehrTrainiert, sitzungen, sterneVon, trainingspause, uebungVon, wdhBei,
-  zielReserve, type Pause, type Sitzung,
+  wdhStufe, zielReserve, type Pause, type Sitzung,
 } from './verlauf';
 
 const begrenze = (x: number, min: number, max: number) => Math.min(max, Math.max(min, x));
@@ -308,6 +308,12 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
     v.zielWdh = Math.min(O, Math.max(ziel, Math.min(Math.max(ziel + plus, geschaetzt), deckel)));
   }
 
+  if (!inSek) {
+    // 2er-Schritte (Entscheidung 09.11.2026): Ziele sind gerade Zahlen. Ein geschafftes, noch ungerades Ziel
+    // aus der Zeit davor sinkt durch das Abrunden nicht.
+    const gerundet = wdhStufe(v.zielWdh);
+    v.zielWdh = !nichtGeschafft && !gesteigert && v.zielWdh >= ziel ? Math.max(gerundet, ziel) : gerundet;
+  }
   if (gesteigert) delete v.langsam;
   v.seitSteigerung = gesteigert ? 0 : Math.min(seit + 1, 99);
   // Musterstufe: schwerste Variante, die im Zielbereich mit „passend“ oder „zu leicht“ bewältigt wurde.
@@ -369,6 +375,15 @@ export function vorschauNaechstesMal(z: AppZustand, einheit: Einheit, position: 
   const ort = ortVon(z, einheit.ortId);
   const u = uebungVon(z, position.uebungId);
   if (!ort || !u || position.istMaxTest || position.ergebnisse.length === 0) return undefined;
+  if (position.leicht) {
+    // Leichter Tag: Ziel und Last bleiben, wie sie sind.
+    const v = z.varianten.find((x) => x.uebungId === u.id);
+    if (!v) return undefined;
+    return {
+      uebungId: u.id, zielWdh: v.zielWdh, ...(v.last !== undefined ? { last: v.last } : {}),
+      ...(v.bandStufe ? { bandStufe: v.bandStufe } : {}), ...(v.langsam ? { langsam: true } : {}), neueVariante: false, kalibrierung: false,
+    };
+  }
   const nurDiese: Einheit = { ...einheit, bloecke: [{ typ: 'einzeln', positionen: [position], pauseSek: 0 }] };
   const z1 = legeHauptvariantenFest(z, nurDiese, ort, einheit.gestartetAm ?? jetzt);
   const vorher = z1.muster.find((x) => x.muster === u.muster)?.hauptvarianten ?? [];
@@ -421,6 +436,12 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
   for (const p of positionen) {
     const u = uebungVon(neu, p.uebungId);
     if (!u || !ort || p.istLasttest) continue;     // Gewichtstests wertet `schliesseTesttagAb` aus
+    if (p.leicht) {
+      // Leichter Tag (Entscheidung 09.11.2026): keine Steigerung, Ziel und Last der Variante bleiben.
+      const alt = neu.varianten.find((x) => x.uebungId === p.uebungId);
+      if (alt) neu = { ...neu, varianten: ersetze(neu.varianten, { ...alt, zuletzt: jetzt }, (x) => x.uebungId === alt.uebungId) };
+      continue;
+    }
     if (p.istMaxTest) {
       // Gespeichert wird in der Einheit der Übung; am Testtag hat der Klimmzug-Test bei 0 Wdh.
       // zusätzlich die Sekunden im Hängen (nur für die Startvariante).
@@ -465,16 +486,12 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
   const leer = () => Object.fromEntries(MUSKELN.map((m) => [m, 0])) as Record<Muskel, number>;
   const erledigt = { ...(altWoche?.erledigt ?? leer()) };
   for (const m of MUSKELN) erledigt[m] += dosis[m];
-  // Sätze obendrauf (Entscheidung 31.10.2026): was über die geplante Basis hinaus erledigt wurde
-  const extra = obendraufVon(fertig, dosis);
-  const obendrauf = altWoche?.obendrauf || extra ? { ...(altWoche?.obendrauf ?? leer()) } : undefined;
-  if (obendrauf && extra) for (const m of MUSKELN) obendrauf[m] += extra[m];
   const woche: Woche = {
     id: wocheId, prognose, einheiten, erledigt,
     ziele: ort ? wochenziele(z, prognose, ort.id, start, altWoche?.erholungswoche) : (altWoche?.ziele ?? leer()),
     erholungswoche: altWoche?.erholungswoche ?? false, laengerAngenommen: altWoche?.laengerAngenommen ?? false,
     ...(altWoche?.tage ? { tage: altWoche.tage } : {}),
-    ...(obendrauf ? { obendrauf } : {}),
+    ...(altWoche?.obendrauf ? { obendrauf: altWoche.obendrauf } : {}),
   };
 
   // Zirkel-Bestzeit je Zirkel, Ort und Variantensatz
@@ -504,7 +521,7 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
 export function leistungZurueck(z: AppZustand, u: Uebung, p: Position, pause: Pause, jetzt: string): boolean {
   if (seitRueckkehrTrainiert(z, u.muster, pause.rueckkehr, jetzt)) return false;
   const e = einstellungenVon(z);
-  const vorher = sitzungen(z, u.id, pause.rueckkehr).filter((s) => s.einheit.format !== 'test').at(-1);
+  const vorher = sitzungen(z, u.id, pause.rueckkehr).filter((s) => s.einheit.format !== 'test' && !s.position.leicht).at(-1);
   const davor = vorher && kapazitaetswert(e, u, vorher.position);
   const jetztWert = kapazitaetswert(e, u, p);
   return davor !== undefined && jetztWert !== undefined && davor > 0 && jetztWert >= TRAININGSPAUSE.leistungZurueckAb * davor;
@@ -550,7 +567,9 @@ export function variantenTrend(z: AppZustand, u: Uebung, wocheId: string): Trend
   const e = einstellungenVon(z);
   const ab = wocheStart(wocheVerschoben(wocheId, -(LEISTUNG.wochen - 1)));
   const bis = wocheStart(wocheVerschoben(wocheId, 1));
-  const liste = sitzungen(z, u.id, bis).filter((s) => s.einheit.format !== 'test').slice(1).filter((s) => s.zeit >= ab);
+  // Leichte Tage (Entscheidung 09.11.2026) zählen nicht: andere Wiederholungszahlen, keine vergleichbare Leistung.
+  const liste = sitzungen(z, u.id, bis).filter((s) => s.einheit.format !== 'test').slice(1)
+    .filter((s) => s.zeit >= ab && !s.position.leicht);
   const letzte = liste.at(-1);
   if (!letzte) return undefined;
   const punkte = liste.filter((s) => bedingung(s) === bedingung(letzte)).flatMap((s) => {
@@ -607,7 +626,7 @@ function schwerAusserhalbEingewoehnung(z: AppZustand, m: Muskel, wocheId: string
     const gesteigert = (j: number) => j >= 1 && stufe(liste[j]!) !== stufe(liste[j - 1]!);
     for (let j = 0; j < liste.length; j++) {
       const s = liste[j]!;
-      if (s.einheit.woche !== wocheId || feedbackVon(s.position) !== 'schwer') continue;
+      if (s.einheit.woche !== wocheId || s.position.leicht || feedbackVon(s.position) !== 'schwer') continue;
       if (j < PROGRESSION.eingewoehnungEinheiten || gesteigert(j) || gesteigert(j - 1)) continue;
       return true;
     }
@@ -823,14 +842,15 @@ export function neueRekorde(z: AppZustand, einheit: Einheit): Rekord[] {
     for (const p of b.positionen) {
       const u = uebungVon(z, p.uebungId);
       const erster = ersterSatz(p);
-      if (!u || erster === undefined) continue;
+      // Leichte Tage zählen nicht für Rekorde (Kraftschätzung aus vielen Wiederholungen ist ungenauer).
+      if (!u || erster === undefined || p.leicht) continue;
       if (p.istMaxTest) {
         const bisher = z.maxTests.filter((t) => t.muster === u.muster && t.uebungId === u.id).map((t) => t.ergebnis);
         if (bisher.length > 0 && erster > Math.max(...bisher)) rekorde.push({ art: 'maxTest', uebungId: u.id, wert: erster, bisher: Math.max(...bisher) });
         continue;
       }
       const wert = leistungswert(e, u, p);
-      const frueher = sitzungen(z, u.id).filter((s) => s.einheit.id !== einheit.id
+      const frueher = sitzungen(z, u.id).filter((s) => s.einheit.id !== einheit.id && !s.position.leicht
         && (u.lasttyp !== 'Band' || s.position.bandStufe === p.bandStufe));
       const bisher = frueher.map((s) => leistungswert(e, u, s.position)).filter((w): w is number => w !== undefined);
       if (wert === undefined || bisher.length === 0 || wert <= Math.max(...bisher) + 1e-9) continue;

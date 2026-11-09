@@ -60,6 +60,13 @@ export function wdhBei(e1rmWert: number, last: number, reserve: number): number 
   return Math.floor(PROGRESSION.e1rmTeiler * (e1rmWert / last - 1) + 1e-6) - reserve;
 }
 
+// Ziel mit Wiederholungen auf die 2er-Stufen bringen (Entscheidung 09.11.2026): ungerade Werte werden
+// abgerundet (11 auf 10), damit ein Ziel nie über dem liegt, was die Schätzung zulässt; mindestens 1.
+export function wdhStufe(x: number): number {
+  const s = PROGRESSION.wdhSchritt;
+  return x >= s ? Math.floor(x / s + 1e-9) * s : Math.max(1, Math.floor(x + 1e-9));
+}
+
 export function reserveFuer(fb: Feedback, e: Einstellungen): number {
   const r = PROGRESSION.reserve;
   if (fb === 'passend') return e.zielReserve === '2-3' ? r.passendSchonend : r.passend;
@@ -98,7 +105,7 @@ export function letzterWirksam(e: Einstellungen, p: Position): number | undefine
   return letzter + p.reserve - zielReserve(e);
 }
 
-// Feedback aus dem Messsatz: Technik unsauber = „zu schwer“; ab 4 Reserve „zu leicht“; sonst „zu schwer“,
+// Feedback aus dem Messsatz: Technik unsauber = „zu schwer“; „Noch 3 oder mehr“ (ab 3 Reserve) „zu leicht“; sonst „zu schwer“,
 // wenn der letzte Satz mit Ziel-Reserve mehr als die Toleranz unter dem Ziel geblieben wäre, sonst „passend“.
 export function feedbackAusMesssatz(e: Einstellungen, p: Position): Feedback {
   if (p.technikUnsauber) return 'schwer';

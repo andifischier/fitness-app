@@ -515,3 +515,16 @@
 - **Warum:** Die Liste war richtig sortiert, aber die Runden wurden nach gleicher Satzzahl gefüllt.
   So landeten z. B. Konzentrationscurls in Runde 1 und die Klimmzüge erst in Runde 2 (Rückmeldung
   des Nutzers).
+
+## 09.11.2026: 2er-Schritte, grobe Reserve, mehr Zeit fokussiert, leichte Tage
+- **Was:** Steigerung in 2er-Schritten („passend“ +2, „zu leicht“ +4 oder mehr Gewicht), Ziele mit
+  Wiederholungen sind gerade Zahlen. Nach dem letzten Satz drei grobe Knöpfe („Ging nichts mehr“,
+  „Noch 1 bis 2“, „Noch 3 oder mehr“) statt 0 bis 5+. Längere Wunschdauer gibt nur den ohnehin
+  geplanten Muskeln mehr Sätze und weitere Übungen (bis 16 Sätze je Muskel, bis 3 Übungen je Muskel),
+  und diese Sätze zählen jetzt für die Woche. Leichte Tage: jedes 3. Training einer Grundübung mit
+  Gewicht mit weniger Gewicht und 16 bis 20 Wdh., ohne Steigerung, Messsatz und Feedback; markiert in
+  Vorschau und Übungsliste, Hinweis im Training. Neues optionales Feld `Position.leicht`. Neue Tests in
+  `grundlagen.test.ts`; Tests und Simulationen auf die neuen Schritte angepasst.
+- **Warum:** Rückmeldung des Nutzers: Schritte von 1 und die genaue Reserve-Zahl sind zu fein; die
+  starre Satzgrenze verhindert, an Tagen mit mehr Zeit einen Muskel richtig auszupowern; Wunsch nach
+  Abwechslung mit leichterem Gewicht. Entscheidungen in `docs/entscheidungen.md`.
