@@ -70,13 +70,15 @@ describe('1 Stern ersetzt die Hauptvariante', () => {
   it('bleibt, wenn es keine Alternative mit mindestens 2 Sternen in der Nähe gibt', () => {
     const nurKh = ort(['KH']);
     const basis = { orte: [nurKh], ...gespeichert(['kh_bodendruecken', 'liegestuetz']) };
-    // Am Ort mit nur Kurzhanteln liegen Knieliegestütz (Stufe 1) und Archer (Stufe 8) zu weit weg; die
-    // Pause Pushups (Stufe 4,5) haben hier ebenfalls 1 Stern.
-    expect(ids(voll({ kh_bodendruecken: 1, liegestuetz_pause: 1 }, basis), 'hDruck', nurKh)).toEqual(['kh_bodendruecken', 'liegestuetz']);
-    expect(ids(voll({ kh_bodendruecken: 1 }, basis), 'hDruck', nurKh)).toEqual(['liegestuetz_pause', 'liegestuetz']);
+    // Am Ort mit nur Kurzhanteln liegen Knieliegestütz (Stufe 1,5) und Archer (Stufe 8) zu weit weg; die
+    // Pause Pushups (Stufe 4,5) und Wide Pushups (Stufe 4) haben hier ebenfalls 1 Stern.
+    expect(ids(voll({ kh_bodendruecken: 1, liegestuetz_pause: 1, weite_liegestuetz: 1 }, basis), 'hDruck', nurKh))
+      .toEqual(['kh_bodendruecken', 'liegestuetz']);
+    expect(ids(voll({ kh_bodendruecken: 1, weite_liegestuetz: 1 }, basis), 'hDruck', nurKh)).toEqual(['liegestuetz_pause', 'liegestuetz']);
     const z = voll({ kh_bankdruecken: 1 }, gespeichert(['kh_bankdruecken', 'kh_schraegbank']));
     const alleSchlecht = mitBewertungen(z.einstellungen[0]!, {
       liegestuetz_fuesse_erhoeht: 1, liegestuetz: 1, band_brustpresse: 1, liegestuetz_band: 1, liegestuetz_pause: 1,
+      weite_liegestuetz: 1, kh_bankdruecken_einarmig: 1, tischrudern_fuesse_erhoeht: 1,
     });
     expect(ids({ ...z, einstellungen: [alleSchlecht] })).toEqual(['kh_bankdruecken', 'kh_schraegbank']);
     expect(uebernimmBewertungen({ ...z, einstellungen: [alleSchlecht] }, 'zuhause', JETZT).muster)

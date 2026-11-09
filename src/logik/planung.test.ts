@@ -271,8 +271,10 @@ describe('Hauptvarianten, Ersatz und Sperren', () => {
   it('gespeicherte Hauptvarianten bleiben, solange sie am Ort möglich sind', () => {
     const z = { ...voll(), muster: [{ muster: 'hZug' as const, stufe: 5, hauptvarianten: ['tischrudern', 'band_rudern'] }] };
     expect(hauptvarianten(z, 'hZug', z.orte[0]!, MO).map((k) => k.uebung.id)).toEqual(['tischrudern', 'band_rudern']);
+    // Unterwegs geht das Band-Rudern nicht: neu gewählt werden Tischrudern und (seit 09.11.2026) Tischrudern
+    // mit erhöhten Füßen.
     const unterwegs = ort(['TISCH', 'ERH'], 'unterwegs');
-    expect(hauptvarianten(z, 'hZug', unterwegs, MO).map((k) => k.uebung.id)).toEqual(['tischrudern']);
+    expect(hauptvarianten(z, 'hZug', unterwegs, MO).map((k) => k.uebung.id)).toEqual(['tischrudern', 'tischrudern_fuesse_erhoeht']);
   });
 
   it('vZug ohne Stange: Band-Latzug (selbst eine vZug-Variante), sonst Ersatz Tischrudern', () => {

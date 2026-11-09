@@ -2,7 +2,7 @@
 
 export const MUSTER_IDS = [
   'hDruck', 'vDruck', 'hZug', 'vZug', 'Knie', 'Einbein', 'Huefte', 'Beinbeuger',
-  'Rumpf', 'Bizeps', 'Trizeps', 'Schulter', 'Waden', 'Kondition',
+  'Rumpf', 'Bizeps', 'Trizeps', 'Schulter', 'BrustIso', 'Waden', 'Kondition',
 ] as const;
 export const MUSKELN = [
   'Brust', 'Ruecken', 'Schultern', 'Bizeps', 'Trizeps',

@@ -29,10 +29,12 @@ describe('Frage 1: zweite Übung höchstens 1 Stufe schwerer', () => {
   it('Einsteiger ohne Geräte: keine Diamond Pushups und keine Elevated Pike Pushups als Variante B', () => {
     const z = voll({ level: 'einsteiger' }, OHNE_GERAETE);   // Musterstufe 3
     const o = z.orte[0]!;
+    // Close-Grip Pushups (Stufe 4, seit 09.11.2026) liegen nur 1 Stufe über der Musterstufe.
     const trizeps = hauptvarianten(z, 'Trizeps', o, MO).map((k) => k.uebung.id);
-    expect(trizeps).toEqual(['bank_dips']);
+    expect(trizeps).toEqual(['bank_dips', 'enge_liegestuetz']);
     const vDruck = hauptvarianten(z, 'vDruck', o, MO).map((k) => k.uebung.id);
-    expect(vDruck).toEqual(['pike_liegestuetz']);
+    // Incline Pike Pushups (Stufe 1, seit 09.11.2026) sind als leichtere Variante B erlaubt.
+    expect(vDruck).toEqual(['pike_liegestuetz', 'pike_erhoeht_haende']);
     for (const m of ['hDruck', 'Knie', 'Huefte'] as const) {
       for (const k of hauptvarianten(z, m, o, MO)) expect(k.uebung.stufe, k.uebung.id).toBeLessThanOrEqual(4);
     }
@@ -44,7 +46,8 @@ describe('Frage 1: zweite Übung höchstens 1 Stufe schwerer', () => {
   });
 
   it('bei Gleichstand von A und B ohne Gewicht kommt die leichtere zuerst', () => {
-    const z = eingespielt(voll({ level: 'einsteiger' }, OHNE_GERAETE));
+    // Ohne Negative Pushups (Stufe 2,5, seit 09.11.2026): Sie lägen der Musterstufe 3 am nächsten.
+    const z = eingespielt(voll({ level: 'einsteiger', ausgeschlossen: ['negative_liegestuetz'] }, OHNE_GERAETE));
     expect(hauptvarianten(z, 'hDruck', z.orte[0]!, MO).map((k) => k.uebung.id))
       .toEqual(expect.arrayContaining(['liegestuetz_erhoeht_haende', 'liegestuetz']));
     const druck = ids(plane(z)).filter((id) => ['liegestuetz_erhoeht_haende', 'liegestuetz'].includes(id));
@@ -58,8 +61,13 @@ describe('Frage 2: Übung geht gar nicht', () => {
     ({ ...z, muster: [...z.muster, { muster, stufe: 3, hauptvarianten: haupt }] });
 
   it('nimmt die leichtere Variante, auch wenn sie schon die andere Hauptvariante ist', () => {
+    // Seit 09.11.2026 ist Close-Grip Pushups die nächstleichtere Variante.
     const z = mitMuster('Trizeps', ['bank_dips', 'diamond_liegestuetz']);
-    const { muster, variante } = werteUebungAus(z, position('diamond_liegestuetz', 8, [1, 0]), MO, 'zuhause');
+    expect(werteUebungAus(z, position('diamond_liegestuetz', 8, [1, 0]), MO, 'zuhause').muster.hauptvarianten)
+      .toEqual(['bank_dips', 'enge_liegestuetz']);
+    const ohne = mitMuster('Trizeps', ['bank_dips', 'diamond_liegestuetz'],
+      voll({ level: 'einsteiger', ausgeschlossen: ['enge_liegestuetz', 'tisch_trizepsstrecken'] }, OHNE_GERAETE));
+    const { muster, variante } = werteUebungAus(ohne, position('diamond_liegestuetz', 8, [1, 0]), MO, 'zuhause');
     expect(muster.hauptvarianten).toEqual(['bank_dips']);
     expect(variante.zielWdh).toBe(8);
   });

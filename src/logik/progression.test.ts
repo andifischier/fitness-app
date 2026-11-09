@@ -197,7 +197,8 @@ describe('Messsatz (Entscheidungen 01.11.2026)', () => {
   });
 
   it('Körpergewicht: erreicht der Messsatz mit Ziel-Reserve O, folgt die nächste Stufe (hier erst langsames Absenken)', () => {
-    const z = { ...voll(), varianten: [variante('klimmzug', { zielWdh: 11, bestErsterSatz: 11 })], muster: [{ muster: 'vZug' as const, stufe: 6, hauptvarianten: ['klimmzug'] }] };
+    // Ohne Archer Pullups (Stufe 7, seit 09.11.2026), sonst wären sie die nächste Variante.
+    const z = { ...voll({ einstellungen: { ausgeschlossen: ['archer_klimmzug'] } }), varianten: [variante('klimmzug', { zielWdh: 11, bestErsterSatz: 11 })], muster: [{ muster: 'vZug' as const, stufe: 6, hauptvarianten: ['klimmzug'] }] };
     // 11 + 2 − 1 = 12 = O; Weighted Pullups liegen 2 Stufen höher, also zuerst 3 Sek. absenken mit Ziel U.
     const { variante: v } = werteUebungAus(z, position('klimmzug', 11, [11, 11, 11], { reserve: 2, feedback: 'passend' }), MO, 'zuhause');
     expect(v).toMatchObject({ langsam: true, zielWdh: 4 });   // U = 5, gerade Zahl darunter
@@ -230,7 +231,11 @@ describe('Progression ohne Last', () => {
   });
 
   it('Zwischenstufe: liegt die nächste Variante 2 Stufen höher, erst langsames Absenken mit Ziel U', () => {
-    const z = { ...voll(), muster: [{ muster: 'vZug' as const, stufe: 6, hauptvarianten: ['klimmzug', 'chinup'] }] };
+    // Mit Archer Pullups (Stufe 7, seit 09.11.2026) folgt direkt die nächste Variante.
+    const mitArcher = { ...voll(), muster: [{ muster: 'vZug' as const, stufe: 6, hauptvarianten: ['klimmzug', 'chinup'] }] };
+    const archer = werteUebungAus(mitArcher, position('klimmzug', 12, [12], { feedback: 'passend' }), MO, 'zuhause');
+    expect(archer.muster.hauptvarianten).toEqual(['archer_klimmzug', 'chinup']);
+    const z = { ...voll({ einstellungen: { ausgeschlossen: ['archer_klimmzug'] } }), muster: [{ muster: 'vZug' as const, stufe: 6, hauptvarianten: ['klimmzug', 'chinup'] }] };
     const erst = werteUebungAus(z, position('klimmzug', 12, [12], { feedback: 'passend' }), MO, 'zuhause');
     expect(erst.variante).toMatchObject({ zielWdh: 4, langsam: true });
     expect(erst.muster.hauptvarianten).toEqual(['klimmzug', 'chinup']);
@@ -253,8 +258,11 @@ describe('Progression ohne Last', () => {
     const z = { ...voll(), muster: [{ muster: 'Rumpf' as const, stufe: 2, hauptvarianten: ['plank'] }] };
     expect(werteUebungAus(z, zeitPosition('plank', 30, [30], 'passend'), MO, 'zuhause').variante.zielWdh).toBe(35);
     expect(werteUebungAus(z, zeitPosition('plank', 30, [30], 'leicht'), MO, 'zuhause').variante.zielWdh).toBe(40);
-    // Nächste Stufe (3): bei anderem Lasttyp gilt die Rangfolge Last vor Band
-    expect(werteUebungAus(z, zeitPosition('plank', 60, [60], 'passend'), MO, 'zuhause').muster.hauptvarianten).toEqual(['kh_russian_twist']);
+    // Nächste Stufe (3): derselbe Lasttyp zuerst (Flutter Kicks, seit 09.11.2026)
+    expect(werteUebungAus(z, zeitPosition('plank', 60, [60], 'passend'), MO, 'zuhause').muster.hauptvarianten).toEqual(['flutter_kicks']);
+    // Bei anderem Lasttyp gilt die Rangfolge Last vor Band
+    const ohne = { ...z, einstellungen: [{ ...z.einstellungen[0]!, ausgeschlossen: ['flutter_kicks'] }] };
+    expect(werteUebungAus(ohne, zeitPosition('plank', 60, [60], 'passend'), MO, 'zuhause').muster.hauptvarianten).toEqual(['kh_russian_twist']);
   });
 
   it('Musterstufe steigt mit der schwersten im Zielbereich bewältigten Variante', () => {
@@ -659,8 +667,11 @@ describe('Wochenabschluss und persönliche Volumengrenze', () => {
     ]);
     // Getauscht wird gegen eine Variante gleicher Stufe, Varianten mit Vorrang zuerst (Seitheben).
     expect(z.muster.find((m) => m.muster === 'Schulter')!.hauptvarianten).toEqual(['kh_seitheben']);
-    // Eine Variante mit Vorrang (Überkopf-Trizeps) bleibt, wenn es keine andere mit Vorrang gibt (Entscheidung 01.11.2026).
-    expect(z.muster.find((m) => m.muster === 'Trizeps')!.hauptvarianten).toEqual(['kh_trizeps_ueberkopf']);
+    // Eine Variante mit Vorrang (Überkopf-Trizeps) wird nur gegen eine andere mit Vorrang getauscht (Entscheidung
+    // 01.11.2026): seit 09.11.2026 gegen Überkopf-Trizeps mit Band; ohne sie bleibt sie.
+    expect(z.muster.find((m) => m.muster === 'Trizeps')!.hauptvarianten).toEqual(['band_trizeps_ueberkopf']);
+    const ohneBand = wochenabschluss({ ...basis, einstellungen: [{ ...basis.einstellungen[0]!, ausgeschlossen: ['band_trizeps_ueberkopf'] }] }, '2026-W43');
+    expect(ohneBand.muster.find((m) => m.muster === 'Trizeps')!.hauptvarianten).toEqual(['kh_trizeps_ueberkopf']);
     expect(z.muster.find((m) => m.muster === 'hDruck')!.hauptvarianten).toEqual(['kh_bankdruecken', 'kh_schraegbank']);
     const favorit = wochenabschluss({ ...basis, einstellungen: [{ ...basis.einstellungen[0]!, favoriten: ['kh_reverse_flys'] }] }, '2026-W43');
     expect(favorit.muster.find((m) => m.muster === 'Schulter')!.hauptvarianten).toEqual(['kh_reverse_flys']);

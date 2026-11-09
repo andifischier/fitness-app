@@ -17,10 +17,10 @@ const finde = (e: Einheit, id: string) => positionen(e).find((p) => p.uebungId =
 const W = EINHEIT.vorbelastungWeniger;
 
 // Zuhause mit Kurzhanteln, ohne Bank: Brust nur über Liegestütz; A = Pushups, B = Pause Pushups (wie im
-// Bericht des Nutzers).
+// Bericht des Nutzers). Ohne Boden-Flys (seit 09.11.2026), sonst kämen sie statt der zweiten Liegestütz-Variante.
 function liegestuetzZustand(): AppZustand {
   const z = eingespielt({
-    ...zustand({ katalog: 'voll', orte: [ort(['KH'])] }),
+    ...zustand({ katalog: 'voll', orte: [ort(['KH'])], einstellungen: { ausgeschlossen: ['kh_boden_flys'] } }),
     muster: [{ muster: 'hDruck', stufe: 4, hauptvarianten: ['liegestuetz', 'liegestuetz_pause'] }],
   });
   z.varianten = [

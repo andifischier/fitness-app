@@ -105,6 +105,26 @@ export const ABLEITUNG = {
     kh_rdl: { basis: 'Huefte', faktor: 1 },
     kh_hip_thrust: { basis: 'Huefte', faktor: 1.6 },   // eine Hantel auf der Hüfte (Entscheidung 30.10.2026)
     kh_rdl_einbeinig: { basis: 'Huefte', faktor: 0.6 },
+    // Ergänzung 09.11.2026 (neue Katalogübungen)
+    kh_bankdruecken_einarmig: { basis: 'hDruck', faktor: 0.9 },
+    kh_flys: { basis: 'hDruck', faktor: 0.3 },
+    kh_boden_flys: { basis: 'hDruck', faktor: 0.3 },
+    kh_schulterdruecken_einarmig: { basis: 'vDruck', faktor: 0.85 },
+    kh_frontheben: { basis: 'vDruck', faktor: 0.3 },
+    kh_upright_rows: { basis: 'vDruck', faktor: 0.35 },
+    renegade_rows: { basis: 'hZug', faktor: 0.6 },
+    kh_pullover: { basis: 'hZug', faktor: 0.6 },
+    kh_shrugs: { basis: 'hZug', faktor: 1 },
+    kh_frontkniebeuge: { basis: 'Knie', faktor: 0.5 },
+    kh_sumo_squat: { basis: 'Knie', faktor: 1 },
+    kh_split_squat: { basis: 'Knie', faktor: 0.45 },
+    kh_ausfallschritt_rueck: { basis: 'Knie', faktor: 0.45 },
+    kh_seit_ausfallschritt: { basis: 'Knie', faktor: 0.6 },
+    kh_wadenheben_sitzend: { basis: 'Knie', faktor: 0.5 },
+    kh_glute_bridge: { basis: 'Huefte', faktor: 1.3 },
+    kh_kreuzheben: { basis: 'Huefte', faktor: 1 },
+    kh_swing: { basis: 'Huefte', faktor: 0.6 },
+    kb_kreuzheben: { basis: 'Huefte', faktor: 1.6 },
   } satisfies Record<string, { basis: MusterId; faktor: number }>,
 } as const;
 
@@ -187,14 +207,21 @@ export const KOMBI = {
 // Zeitbudgets) oder Kondition (nur Zirkel und Aufwärmen)
 export const MUSTER_ART: Record<MusterId, 'grund' | 'isolation' | 'zusatz' | 'kondition'> = {
   hDruck: 'grund', vDruck: 'grund', hZug: 'grund', vZug: 'grund', Knie: 'grund', Einbein: 'grund', Huefte: 'grund',
-  Beinbeuger: 'isolation', Bizeps: 'isolation', Trizeps: 'isolation', Schulter: 'isolation',
+  Beinbeuger: 'isolation', Bizeps: 'isolation', Trizeps: 'isolation', Schulter: 'isolation', BrustIso: 'isolation',
   Rumpf: 'zusatz', Waden: 'zusatz', Kondition: 'kondition',
+};
+
+// Ergänzungsmuster (Entscheidung 09.11.2026): Flys ergänzen das Drücken und ersetzen es nicht. Eine Übung
+// des Musters kommt in eine Einheit nur, wenn dort schon eine Übung des genannten Musters gewählt ist (oder
+// das Muster am Ort keine Übung hat). Sie zählt auch nicht als anderes Muster für den Abschlag.
+export const ERGAENZUNG: Partial<Record<MusterId, MusterId>> = {
+  BrustIso: 'hDruck',
 };
 
 // Körperhälfte je Muster für den allgemeinen Teil des Aufwärmens (Entscheidung 29.10.2026);
 // Rumpf und Kondition zählen zu keiner Hälfte
 export const KOERPERHAELFTE: Partial<Record<MusterId, 'oben' | 'unten'>> = {
-  hDruck: 'oben', vDruck: 'oben', hZug: 'oben', vZug: 'oben', Bizeps: 'oben', Trizeps: 'oben', Schulter: 'oben',
+  hDruck: 'oben', vDruck: 'oben', hZug: 'oben', vZug: 'oben', Bizeps: 'oben', Trizeps: 'oben', Schulter: 'oben', BrustIso: 'oben',
   Knie: 'unten', Einbein: 'unten', Huefte: 'unten', Beinbeuger: 'unten', Waden: 'unten',
 };
 
@@ -208,9 +235,15 @@ export const FOKUS_GRUPPEN: Record<'oben' | 'unten', readonly Muskel[]> = {
 export const LASTTYP_RANG = { Last: 0, Band: 1, KG: 2, Zeit: 3 } as const;
 
 // Übungen, die nur als Ersatz dienen (Entscheidung 30.10.2026): Sie sind am Ort nur möglich, wenn keines
-// der genannten Utensilien dort ist (Floor Press nur ohne Bank, sonst Bankdrücken mit vollem Bewegungsumfang)
+// der genannten Utensilien dort ist (Floor Press nur ohne Bank, sonst Bankdrücken mit vollem Bewegungsumfang).
+// Seit 09.11.2026 auch Boden-Flys und Glute Bridges mit Hantel (nur ohne Bank), Pullovers (nur ohne
+// Klimmzugstange, Entscheidung 09.11.2026) und Swings mit Kurzhantel (nur ohne Kettlebell).
 export const NUR_OHNE: Record<string, readonly string[]> = {
   kh_bodendruecken: ['BANK', 'SCHRAEG'],
+  kh_boden_flys: ['BANK', 'SCHRAEG'],
+  kh_glute_bridge: ['BANK', 'SCHRAEG'],
+  kh_pullover: ['STANGE'],
+  kh_swing: ['KB'],
 };
 
 // Ersatz, wenn ein Muster am Ort keine Variante hat (der Reihe nach)
@@ -222,23 +255,36 @@ export const ERSATZ: Partial<Record<MusterId, readonly ({ uebung: string } | { m
 
 // Sperren nach Körperregion: gesperrte Muster und Übungen; Ausnahmen bleiben erlaubt
 export const SPERREN_NACH_REGION: Record<string, { muster: readonly MusterId[]; uebungen: readonly string[]; ausnahmen: readonly string[] }> = {
-  schulter: { muster: ['vDruck', 'Schulter'], uebungen: ['dips', 'bank_dips', 'archer_liegestuetz', 'wand_hs_liegestuetz'], ausnahmen: [] },
-  ellbogen: { muster: ['Bizeps', 'Trizeps'], uebungen: ['dips', 'bank_dips'], ausnahmen: [] },
+  schulter: {
+    muster: ['vDruck', 'Schulter', 'BrustIso'],
+    uebungen: ['dips', 'bank_dips', 'archer_liegestuetz', 'wand_hs_liegestuetz', 'ringe_dips', 'kh_pullover', 'turkish_get_up',
+      'kh_snatch', 'kh_clean_press', 'devil_press'],
+    ausnahmen: [],
+  },
+  ellbogen: { muster: ['Bizeps', 'Trizeps'], uebungen: ['dips', 'bank_dips', 'ringe_dips'], ausnahmen: [] },
   handgelenk: {
     muster: [],
     uebungen: [
       'knieliegestuetz', 'liegestuetz_erhoeht_haende', 'liegestuetz', 'liegestuetz_fuesse_erhoeht', 'liegestuetz_band',
       'ringe_liegestuetz', 'archer_liegestuetz', 'diamond_liegestuetz', 'wand_hs_liegestuetz',
       'pike_liegestuetz', 'pike_erhoeht', 'burpees', 'mountain_climbers',
+      'wand_liegestuetz', 'negative_liegestuetz', 'weite_liegestuetz', 'enge_liegestuetz', 'pike_erhoeht_haende',
+      'wand_handstand', 'renegade_rows', 'plank_shoulder_taps', 'plank_jacks', 'squat_thrusts', 'inchworms', 'devil_press',
+      'tisch_trizepsstrecken',
     ],
     ausnahmen: [],
   },
   untererRuecken: {
-    muster: ['Huefte'], uebungen: ['kh_rudern_vorgebeugt', 'lh_rudern'],
-    ausnahmen: ['glute_bridge', 'mini_glute_bridge', 'hip_thrust_einbeinig'],
+    muster: ['Huefte'], uebungen: ['kh_rudern_vorgebeugt', 'lh_rudern', 'kh_snatch', 'kb_clean', 'devil_press'],
+    ausnahmen: ['glute_bridge', 'mini_glute_bridge', 'hip_thrust_einbeinig', 'glute_bridge_einbeinig', 'hip_thrust',
+      'donkey_kicks', 'clamshells', 'band_walks'],
   },
-  knie: { muster: ['Knie', 'Einbein', 'Beinbeuger'], uebungen: ['sprung_kniebeuge', 'skater', 'burpees', 'kh_thruster'], ausnahmen: [] },
-  huefte: { muster: ['Einbein', 'Huefte'], uebungen: ['skater'], ausnahmen: [] },
+  knie: {
+    muster: ['Knie', 'Einbein', 'Beinbeuger'],
+    uebungen: ['sprung_kniebeuge', 'skater', 'burpees', 'kh_thruster', 'jumping_lunges', 'tuck_jumps', 'squat_thrusts', 'kh_clean_press'],
+    ausnahmen: [],
+  },
+  huefte: { muster: ['Einbein', 'Huefte'], uebungen: ['skater', 'cossack_squat', 'jumping_lunges'], ausnahmen: [] },
 };
 
 // Erholungsfenster: Fenster der höchsten Stufe, deren Grenze die fraktionellen Sätze der letzten

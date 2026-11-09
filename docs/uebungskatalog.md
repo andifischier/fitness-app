@@ -1,6 +1,6 @@
 # Übungskatalog
 
-Der Startkatalog umfasst 101 Übungen in 13 Mustern, 15 Utensilien und 5 feste Zirkel. Er wird als Datei `katalog.json` mitgeliefert (gleicher Inhalt wie hier) und beim ersten Start geladen; eigene Übungen speichert die App getrennt.
+Der Startkatalog umfasst 184 Übungen in 15 Mustern, 16 Utensilien und 5 feste Zirkel. Am 09.11.2026 kamen 79 bekannte Übungen dazu (Entscheidungen 09.11.2026), vor allem mit Körpergewicht und Kurzhanteln. Er wird als Datei `katalog.json` mitgeliefert (gleicher Inhalt wie hier) und beim ersten Start geladen; eigene Übungen speichert die App getrennt.
 
 ## Regeln für den Katalog
 
@@ -9,14 +9,14 @@ Der Startkatalog umfasst 101 Übungen in 13 Mustern, 15 Utensilien und 5 feste Z
 - **Lasttyp:** KG = Körpergewicht, Band = Bandstufe, Last = Gewicht in kg, Zeit = Sekunden. Nur „Last“ nutzt die Kraftschätzung.
 - **Namen** (Entscheidung 29.10.2026): englisch wie bei Freeletics („Pushups“, „Pullups“, „Squats“), Hantelübungen mit der üblichen englischen Gym-Bezeichnung. Anleitungen bleiben deutsch.
 - **YouTube-Link:** Standard ist eine YouTube-Suche nach „<Übungsname> richtige Ausführung“ (in `katalog.json` vorbefüllt). Der Nutzer kann pro Übung einen festen Video-Link eintragen, der dann Vorrang hat.
-- **Festes Video** (`videoId` in `katalog.json`, YouTube-ID, Entscheidungen 21.10.2026): für jede Katalogübung ein eigenes Video, wird in der App eingebettet und ersetzt die Suche als Link. Die ersten 10 (z. B. liegestuetz X1qbPKGDuKM, kniebeuge u-G8nn6crRA, klimmzug 5eScXtldIaI) sind deutschsprachig; die übrigen 88 sind nach „beste Qualität, egal welche Sprache“ gewählt und daher meist englisch. Ein eigener Video-Link des Nutzers hat Vorrang.
+- **Festes Video** (`videoId` in `katalog.json`, YouTube-ID, Entscheidungen 21.10.2026): für jede Katalogübung ein eigenes Video, wird in der App eingebettet und ersetzt die Suche als Link. Die ersten 10 (z. B. liegestuetz X1qbPKGDuKM, kniebeuge u-G8nn6crRA, klimmzug 5eScXtldIaI) sind deutschsprachig; die übrigen 174 sind nach „beste Qualität, egal welche Sprache“ gewählt und daher meist englisch. Alle Videos sind auf Einbettbarkeit geprüft. Ein eigener Video-Link des Nutzers hat Vorrang.
 - **Kurzanleitung** (`anleitung` in `katalog.json`): 3 Stichpunkte zur Ausführung für jede Übung; angezeigt unter „So geht's“.
 - **Stufe:** 1 bis 10 innerhalb des Musters; bestimmt die Reihenfolge beim Variantenwechsel. Halbe Stufen (z. B. 4,5) sind Zwischenstufen zwischen zwei Varianten (Entscheidung 01.11.2026).
-- **Anzahl Gewichte** (`anzahlGewichte` in `katalog.json`, nur Last-Übungen mit KH/KB): bestimmt die Lastanzeige („16 kg je Hand“ bzw. „16 kg“). Eine Hantel (1): kh\_rudern\_einarmig, kb\_schulterdruecken, kb\_rudern, klimmzug\_gewicht, goblet\_squat, kh\_rdl\_einbeinig, kb\_swing, kh\_russian\_twist, konzentrationscurl, kh\_trizeps\_ueberkopf, kh\_wadenheben, kh\_hip\_thrust (eine Hantel auf der Hüfte, Entscheidung 30.10.2026). Alle übrigen KH-Übungen: zwei Hanteln (2).
+- **Anzahl Gewichte** (`anzahlGewichte` in `katalog.json`, nur Last-Übungen mit KH/KB): bestimmt die Lastanzeige („16 kg je Hand“ bzw. „16 kg“). Eine Hantel (1): kh\_rudern\_einarmig, kb\_schulterdruecken, kb\_rudern, klimmzug\_gewicht, goblet\_squat, kh\_rdl\_einbeinig, kb\_swing, kh\_russian\_twist, konzentrationscurl, kh\_trizeps\_ueberkopf, kh\_wadenheben, kh\_hip\_thrust (eine Hantel auf der Hüfte, Entscheidung 30.10.2026); seit 09.11.2026 außerdem kh\_bankdruecken\_einarmig, kh\_schulterdruecken\_einarmig, kh\_pullover, kh\_sumo\_squat, kh\_seit\_ausfallschritt, kh\_glute\_bridge, kh\_swing, kb\_kreuzheben, kh\_crunches, kh\_woodchops, turkish\_get\_up, kb\_clean, kh\_snatch. Alle übrigen KH-Übungen: zwei Hanteln (2).
 - **Sekundär „keine“:** Die Übung zählt nur für den Primärmuskel. Muster „Kondition“ mit Primär „Ganzkörper“ zählt nicht zum Muskelvolumen.
-- **Anteile** (`anteile` in `katalog.json`, Entscheidung 01.11.2026): eigener Anteil eines Sekundärmuskels statt 0,5. Hip Thrusts und Glute Bridges (alle vier Varianten) zählen für die hinteren Oberschenkel 0,25, weil sie dort in Studien kaum wirkten.
-- **Vorrang** (`vorrang`, Entscheidung 01.11.2026): bevorzugt in der Variantenwahl und beim Tausch zu Zyklusbeginn: kh\_trizeps\_ueberkopf und schraegbank\_curls (Last in der Dehnung), kh\_seitheben und band\_seitheben (seitliche Schulter).
-- **Einseitig** (`einseitig`, Entscheidung 01.11.2026): beide Seiten nacheinander, je Satz 45 Sek. Arbeitszeit zusätzlich in Zeitbudget und geschätzter Dauer: kh\_rudern\_einarmig, pistol\_assistiert, pistol, archer\_liegestuetz, alle Einbein-Übungen, hip\_thrust\_einbeinig, kh\_rdl\_einbeinig, wadenheben\_einbeinig, konzentrationscurl, seitstuetz.
+- **Anteile** (`anteile` in `katalog.json`, Entscheidung 01.11.2026): eigener Anteil eines Sekundärmuskels statt 0,5. Hip Thrusts und Glute Bridges (alle Varianten, seit 09.11.2026 sieben) zählen für die hinteren Oberschenkel 0,25, weil sie dort in Studien kaum wirkten.
+- **Vorrang** (`vorrang`, Entscheidung 01.11.2026): bevorzugt in der Variantenwahl und beim Tausch zu Zyklusbeginn: kh\_trizeps\_ueberkopf, band\_trizeps\_ueberkopf (seit 09.11.2026) und schraegbank\_curls (Last in der Dehnung), kh\_seitheben und band\_seitheben (seitliche Schulter).
+- **Einseitig** (`einseitig`, Entscheidung 01.11.2026): beide Seiten nacheinander, je Satz 45 Sek. Arbeitszeit zusätzlich in Zeitbudget und geschätzter Dauer: kh\_rudern\_einarmig, pistol\_assistiert, pistol, archer\_liegestuetz, alle Einbein-Übungen, hip\_thrust\_einbeinig, kh\_rdl\_einbeinig, wadenheben\_einbeinig, konzentrationscurl, seitstuetz; seit 09.11.2026 außerdem kh\_bankdruecken\_einarmig, kh\_schulterdruecken\_einarmig, cossack\_squat, donkey\_kicks, rdl\_einbeinig, glute\_bridge\_einbeinig, clamshells, sliding\_leg\_curl\_einbeinig, kh\_woodchops, turkish\_get\_up, kb\_clean, kh\_snatch.
 
 **Ersatz, wenn ein Muster am Ort keine Variante hat** (Variante wird im Plan als Ersatz markiert):
 
@@ -24,10 +24,16 @@ Der Startkatalog umfasst 101 Übungen in 13 Mustern, 15 Utensilien und 5 feste Z
 | --- | --- |
 | vZug (keine Stange) | band_latzug, falls BAND und ANKER vorhanden; sonst hZug, bevorzugt tischrudern |
 | Bizeps | chinup, falls Stange vorhanden; sonst tischrudern (Bizeps nur sekundär) |
-| Schulter (seitlich/hinten) | vDruck-Variante |
+| Schulter (seitlich/hinten) | vDruck-Variante (seit 09.11.2026 selten nötig: Prone Y-T-W Raises gehen ohne Geräte) |
 | alle anderen | haben meist eine Variante, die nur immer vorhandene Utensilien (TISCH, ERH) oder gar keins braucht |
 
 Gibt es auch keinen Ersatz, entfällt das Muster an diesem Ort (Hinweis im Equipment-Bildschirm). Bei Sperren greift kein Ersatz.
+
+**Brust isoliert** (Muster `BrustIso`, Entscheidungen 09.11.2026): Flys ergänzen das Drücken und ersetzen es nicht. Sie kommen nur in eine Einheit, in der schon eine Drückübung (hDruck) ist. Varianten: Dumbbell Flys (mit Bank), Dumbbell Floor Flys (nur ohne Bank), Band Chest Flys. Fehlt am Ort jede Variante, gibt es keinen Hinweis im Equipment-Bildschirm.
+
+**Nur ohne bestimmtes Utensil** (`NUR_OHNE` in der Konfiguration): Floor Press und Floor Flys sowie Glute Bridges mit Hantel nur ohne Bank und Schrägbank; Dumbbell Pullovers nur ohne Klimmzugstange (Entscheidung 09.11.2026), damit sie Klimmzüge nicht verdrängen; Swings mit Kurzhantel nur ohne Kettlebell.
+
+**Shrugs** (Entscheidung 09.11.2026): stehen bei „Schulter“, zählen aber für den Rücken. Sie kommen nicht automatisch als Hauptübung, sondern als Lieblingsübung oder beim Ausprobieren einer neuen Übung zu Zyklusbeginn.
 
 ## Utensilien
 
@@ -73,6 +79,11 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | dips | Dips | hDruck | Brust | Trizeps, Schultern | 7 | DIP | KG | 6 bis 12 Wdh. | nein |
 | ringe\_liegestuetz | Ring Pushups | hDruck | Brust | Trizeps, Schultern | 7 | RINGE | KG | 8 bis 15 Wdh. | nein |
 | archer\_liegestuetz | Archer Pushups | hDruck | Brust | Trizeps, Schultern | 8 | keins | KG | 6 bis 12 Wdh. | nein |
+| wand\_liegestuetz | Wall Pushups | hDruck | Brust | Trizeps, Schultern | 1 | keins | KG | 10 bis 20 Wdh. | ja |
+| negative\_liegestuetz | Negative Pushups | hDruck | Brust | Trizeps, Schultern | 2 | keins | KG | 5 bis 10 Wdh. | nein |
+| weite\_liegestuetz | Wide Pushups | hDruck | Brust | Trizeps, Schultern | 4 | keins | KG | 8 bis 15 Wdh. | ja |
+| kh\_bankdruecken\_einarmig | One-Arm Dumbbell Bench Press | hDruck | Brust | Trizeps, Schultern | 8 | KH + BANK/SCHRAEG | Last | 8 bis 12 Wdh. | nein |
+| ringe\_dips | Ring Dips | hDruck | Brust | Trizeps, Schultern | 9 | RINGE | KG | 4 bis 10 Wdh. | nein |
 | band\_schulterdruecken | Band Shoulder Press | vDruck | Schultern | Trizeps | 3 | BAND | Band | 10 bis 15 Wdh. | nein |
 | pike\_liegestuetz | Pike Pushups | vDruck | Schultern | Trizeps | 4 | keins | KG | 8 bis 15 Wdh. | ja |
 | kh\_schulterdruecken\_stehend | Standing Dumbbell Shoulder Press | vDruck | Schultern | Trizeps | 5 | KH | Last | 8 bis 12 Wdh. | nein |
@@ -82,6 +93,9 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | pike\_erhoeht | Elevated Pike Pushups | vDruck | Schultern | Trizeps | 6 | ERH | KG | 6 bis 12 Wdh. | nein |
 | lh\_ueberkopf | Barbell Overhead Press | vDruck | Schultern | Trizeps | 6 | LH | Last | 6 bis 10 Wdh. | nein |
 | wand\_hs\_liegestuetz | Wall Handstand Pushups | vDruck | Schultern | Trizeps | 9 | keins | KG | 3 bis 8 Wdh. | nein |
+| pike\_erhoeht\_haende | Incline Pike Pushups | vDruck | Schultern | Trizeps | 1 | ERH | KG | 8 bis 15 Wdh. | nein |
+| wand\_handstand | Wall Handstand Hold | vDruck | Schultern | Trizeps | 7 | keins | Zeit | 15 bis 45 Sek. | nein |
+| kh\_schulterdruecken\_einarmig | Single-Arm Dumbbell Shoulder Press | vDruck | Schultern | Trizeps | 6 | KH | Last | 8 bis 12 Wdh. | nein |
 | band\_rudern | Seated Band Rows | hZug | Rücken | Bizeps, Schultern | 3 | BAND | Band | 10 bis 15 Wdh. | nein |
 | band\_face\_pull | Band Face Pulls | hZug | Schultern | Rücken | 3 | BAND + ANKER/STANGE | Band | 12 bis 20 Wdh. | nein |
 | tischrudern | Table Rows | hZug | Rücken | Bizeps, Schultern | 4 | TISCH | KG | 8 bis 15 Wdh. | ja |
@@ -91,6 +105,8 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | kb\_rudern | Kettlebell Rows | hZug | Rücken | Bizeps, Schultern | 5 | KB | Last | 8 bis 12 Wdh. | nein |
 | ringe\_rudern | Ring Rows | hZug | Rücken | Bizeps, Schultern | 5 | RINGE | KG | 8 bis 15 Wdh. | ja |
 | lh\_rudern | Barbell Rows | hZug | Rücken | Bizeps, Schultern | 6 | LH | Last | 6 bis 10 Wdh. | nein |
+| renegade\_rows | Renegade Rows | hZug | Rücken | Bizeps, Bauch | 6 | KH | Last | 8 bis 12 Wdh. | nein |
+| tischrudern\_fuesse\_erhoeht | Feet-Elevated Table Rows | hZug | Rücken | Bizeps, Schultern | 6 | TISCH + ERH | KG | 8 bis 15 Wdh. | nein |
 | scapula\_pullups | Scapula Pullups | vZug | Rücken | keine | 1 | STANGE | KG | 8 bis 15 Wdh. | nein |
 | band\_latzug | Kneeling Band Lat Pulldowns | vZug | Rücken | Bizeps | 2 | BAND + ANKER/STANGE | Band | 10 bis 15 Wdh. | nein |
 | negative\_klimmzuege | Negative Pullups | vZug | Rücken | Bizeps | 3 | STANGE | KG | 3 bis 6 Wdh. | nein |
@@ -98,6 +114,10 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | chinup | Chinups | vZug | Rücken | Bizeps | 5 | STANGE | KG | 5 bis 12 Wdh. | nein |
 | klimmzug | Pullups | vZug | Rücken | Bizeps | 6 | STANGE | KG | 5 bis 12 Wdh. | nein |
 | klimmzug\_gewicht | Weighted Pullups | vZug | Rücken | Bizeps | 8 | STANGE + KH/KB | Last | 5 bis 10 Wdh. | nein |
+| dead\_hang | Dead Hang | vZug | Rücken | keine | 1 | STANGE | Zeit | 20 bis 60 Sek. | nein |
+| flexed\_arm\_hang | Flexed-Arm Hang | vZug | Rücken | Bizeps | 2 | STANGE | Zeit | 10 bis 30 Sek. | nein |
+| archer\_klimmzug | Archer Pullups | vZug | Rücken | Bizeps | 7 | STANGE | KG | 3 bis 8 Wdh. | nein |
+| kh\_pullover | Dumbbell Pullovers (nur ohne Klimmzugstange, Entscheidung 09.11.2026) | vZug | Rücken | Brust | 4 | KH + BANK/SCHRAEG | Last | 10 bis 15 Wdh. | nein |
 | box\_squat | Box Squats | Knie | Quadrizeps | Gesäß | 1 | ERH | KG | 8 bis 15 Wdh. | ja |
 | kniebeuge | Squats | Knie | Quadrizeps | Gesäß | 2 | keins | KG | 12 bis 20 Wdh. | ja |
 | band\_kniebeuge | Band Squats | Knie | Quadrizeps | Gesäß | 3 | BAND | Band | 10 bis 15 Wdh. | nein |
@@ -107,6 +127,12 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | kh\_kniebeuge | Dumbbell Squats | Knie | Quadrizeps | Gesäß | 5 | KH | Last | 8 bis 12 Wdh. | nein |
 | pistol\_assistiert | Assisted Pistols | Knie | Quadrizeps | Gesäß | 7 | ERH | KG | 5 bis 10 Wdh. | nein |
 | pistol | Pistols | Knie | Quadrizeps | Gesäß | 9 | keins | KG | 3 bis 8 Wdh. | nein |
+| wall\_sit | Wall Sit | Knie | Quadrizeps | Gesäß | 2 | keins | Zeit | 30 bis 60 Sek. | ja |
+| sumo\_kniebeuge | Sumo Squats | Knie | Quadrizeps | Gesäß | 2 | keins | KG | 12 bis 20 Wdh. | ja |
+| cossack\_squat | Cossack Squats | Knie | Quadrizeps | Gesäß | 5 | keins | KG | 6 bis 12 Wdh. | nein |
+| sissy\_squat | Sissy Squats | Knie | Quadrizeps | keine | 7 | keins | KG | 6 bis 12 Wdh. | nein |
+| kh\_frontkniebeuge | Dumbbell Front Squats | Knie | Quadrizeps | Gesäß | 5 | KH | Last | 8 bis 12 Wdh. | nein |
+| kh\_sumo\_squat | Dumbbell Sumo Squats | Knie | Quadrizeps | Gesäß | 4 | KH/KB | Last | 8 bis 15 Wdh. | nein |
 | ausfallschritt\_rueck | Reverse Lunges | Einbein | Quadrizeps | Gesäß | 3 | keins | KG | 10 bis 15 Wdh. | ja |
 | step\_up | Step-ups | Einbein | Quadrizeps | Gesäß | 3 | ERH | KG | 10 bis 15 Wdh. | ja |
 | bss\_kg | Bulgarian Split Squats | Einbein | Quadrizeps | Gesäß | 4 | ERH/BANK/SCHRAEG | KG | 8 bis 15 Wdh. | nein |
@@ -114,6 +140,13 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | kh\_ausfallschritt | Dumbbell Walking Lunges | Einbein | Quadrizeps | Gesäß | 5 | KH | Last | 8 bis 12 Wdh. | nein |
 | bss\_kh | Dumbbell Bulgarian Split Squats | Einbein | Quadrizeps | Gesäß | 6 | KH + ERH/BANK/SCHRAEG | Last | 8 bis 12 Wdh. | nein |
 | shrimp\_squat | Shrimp Squats | Einbein | Quadrizeps | Gesäß | 8 | keins | KG | 5 bis 10 Wdh. | nein |
+| split\_squat | Split Squats | Einbein | Quadrizeps | Gesäß | 2 | keins | KG | 8 bis 15 Wdh. | ja |
+| ausfallschritt\_vor | Forward Lunges | Einbein | Quadrizeps | Gesäß | 3 | keins | KG | 10 bis 15 Wdh. | ja |
+| seit\_ausfallschritt | Lateral Lunges | Einbein | Quadrizeps | Gesäß | 3 | keins | KG | 8 bis 15 Wdh. | ja |
+| curtsy\_lunge | Curtsy Lunges | Einbein | Quadrizeps | Gesäß | 3 | keins | KG | 8 bis 15 Wdh. | ja |
+| kh\_split\_squat | Dumbbell Split Squats | Einbein | Quadrizeps | Gesäß | 4 | KH | Last | 8 bis 12 Wdh. | nein |
+| kh\_ausfallschritt\_rueck | Dumbbell Reverse Lunges | Einbein | Quadrizeps | Gesäß | 5 | KH | Last | 8 bis 12 Wdh. | nein |
+| kh\_seit\_ausfallschritt | Dumbbell Lateral Lunges | Einbein | Quadrizeps | Gesäß | 5 | KH/KB | Last | 8 bis 12 Wdh. | nein |
 | glute\_bridge | Glute Bridges | Huefte | Gesäß | Hintere Oberschenkel (0,25) | 1 | keins | KG | 12 bis 20 Wdh. | ja |
 | mini\_glute\_bridge | Mini-Band Glute Bridges | Huefte | Gesäß | Hintere Oberschenkel (0,25) | 2 | MINI | Band | 12 bis 20 Wdh. | ja |
 | band\_pull\_through | Band Pull-Throughs | Huefte | Gesäß | Hintere Oberschenkel | 3 | BAND + ANKER/STANGE | Band | 12 bis 15 Wdh. | nein |
@@ -125,7 +158,20 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | kh\_rdl\_einbeinig | Single-Leg Romanian Deadlifts | Huefte | Hintere Oberschenkel | Gesäß | 5 | KH/KB | Last | 8 bis 12 Wdh. | nein |
 | kb\_swing | Kettlebell Swings | Huefte | Gesäß | Hintere Oberschenkel | 5 | KB | Last | 12 bis 20 Wdh. | ja |
 | lh\_kreuzheben | Barbell Deadlifts | Huefte | Hintere Oberschenkel | Gesäß, Rücken | 6 | LH | Last | 5 bis 8 Wdh. | nein |
+| superman | Superman | Huefte | Gesäß | Hintere Oberschenkel | 1 | keins | KG | 10 bis 15 Wdh. | ja |
+| donkey\_kicks | Donkey Kicks | Huefte | Gesäß | keine | 1 | keins | KG | 12 bis 20 Wdh. | ja |
+| hip\_thrust | Hip Thrusts | Huefte | Gesäß | Hintere Oberschenkel (0,25) | 2 | ERH/BANK/SCHRAEG | KG | 12 bis 20 Wdh. | nein |
+| rdl\_einbeinig | Single-Leg Romanian Deadlifts | Huefte | Hintere Oberschenkel | Gesäß | 2 | keins | KG | 8 bis 12 Wdh. | nein |
+| glute\_bridge\_einbeinig | Single-Leg Glute Bridges | Huefte | Gesäß | Hintere Oberschenkel (0,25) | 2 | keins | KG | 8 bis 15 Wdh. | nein |
+| kh\_glute\_bridge | Dumbbell Glute Bridges (nur ohne Bank und Schrägbank) | Huefte | Gesäß | Hintere Oberschenkel (0,25) | 4 | KH | Last | 10 bis 15 Wdh. | nein |
+| kh\_kreuzheben | Dumbbell Deadlifts | Huefte | Gesäß | Hintere Oberschenkel, Rücken | 5 | KH | Last | 8 bis 12 Wdh. | nein |
+| kh\_swing | Dumbbell Swings (nur ohne Kettlebell) | Huefte | Gesäß | Hintere Oberschenkel | 5 | KH | Last | 12 bis 20 Wdh. | ja |
+| lh\_rdl | Barbell Romanian Deadlifts | Huefte | Hintere Oberschenkel | Gesäß | 6 | LH | Last | 6 bis 10 Wdh. | nein |
+| kb\_kreuzheben | Kettlebell Deadlifts | Huefte | Gesäß | Hintere Oberschenkel | 3 | KB | Last | 8 bis 15 Wdh. | nein |
+| clamshells | Clamshells | Huefte | Gesäß | keine | 1 | MINI | Band | 12 bis 20 Wdh. | nein |
+| band\_walks | Lateral Band Walks | Huefte | Gesäß | keine | 2 | MINI | Band | 10 bis 20 Wdh. | nein |
 | nordic\_curl | Nordic Curls | Beinbeuger | Hintere Oberschenkel | keine | 8 | keins | KG | 3 bis 8 Wdh. | nein |
+| sliding\_leg\_curl\_einbeinig | Single-Leg Sliding Leg Curls | Beinbeuger | Hintere Oberschenkel | Gesäß | 6 | keins | KG | 6 bis 12 Wdh. | nein |
 | dead\_bug | Dead Bugs | Rumpf | Bauch | keine | 1 | keins | KG | 8 bis 12 Wdh. | ja |
 | plank | Plank | Rumpf | Bauch | keine | 2 | keins | Zeit | 20 bis 60 Sek. | ja |
 | seitstuetz | Side Plank | Rumpf | Bauch | keine | 2 | keins | Zeit | 20 bis 45 Sek. | ja |
@@ -134,25 +180,54 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | hollow\_hold | Hollow Hold | Rumpf | Bauch | keine | 4 | keins | Zeit | 20 bis 45 Sek. | ja |
 | haengendes\_knieheben | Hanging Knee Raises | Rumpf | Bauch | keine | 5 | STANGE | KG | 8 bis 15 Wdh. | nein |
 | haengendes\_beinheben | Hanging Leg Raises | Rumpf | Bauch | keine | 7 | STANGE | KG | 6 bis 12 Wdh. | nein |
+| crunches | Crunches | Rumpf | Bauch | keine | 1 | keins | KG | 15 bis 25 Wdh. | ja |
+| bird\_dog | Bird Dog | Rumpf | Bauch | keine | 1 | keins | KG | 8 bis 12 Wdh. | ja |
+| heel\_touches | Heel Touches | Rumpf | Bauch | keine | 1 | keins | KG | 20 bis 40 Wdh. | ja |
+| situps | Sit-ups | Rumpf | Bauch | keine | 2 | keins | KG | 10 bis 20 Wdh. | ja |
+| reverse\_crunches | Reverse Crunches | Rumpf | Bauch | keine | 2 | keins | KG | 10 bis 20 Wdh. | ja |
+| bicycle\_crunches | Bicycle Crunches | Rumpf | Bauch | keine | 2 | keins | KG | 16 bis 30 Wdh. | ja |
+| russian\_twist | Russian Twists | Rumpf | Bauch | keine | 2 | keins | KG | 16 bis 30 Wdh. | ja |
+| beinheben\_liegend | Lying Leg Raises | Rumpf | Bauch | keine | 3 | keins | KG | 8 bis 15 Wdh. | ja |
+| flutter\_kicks | Flutter Kicks | Rumpf | Bauch | keine | 3 | keins | Zeit | 20 bis 45 Sek. | ja |
+| plank\_shoulder\_taps | Plank Shoulder Taps | Rumpf | Bauch | Schultern | 3 | keins | KG | 16 bis 30 Wdh. | ja |
+| kh\_crunches | Weighted Crunches | Rumpf | Bauch | keine | 3 | KH/KB | Last | 10 bis 20 Wdh. | nein |
+| kh\_woodchops | Dumbbell Woodchops | Rumpf | Bauch | keine | 3 | KH/KB | Last | 10 bis 15 Wdh. | nein |
+| v\_ups | V-Ups | Rumpf | Bauch | keine | 5 | keins | KG | 8 bis 15 Wdh. | ja |
+| hollow\_rocks | Hollow Rocks | Rumpf | Bauch | keine | 5 | keins | KG | 10 bis 20 Wdh. | ja |
+| turkish\_get\_up | Turkish Get-ups | Rumpf | Bauch | Schultern | 6 | KB | Last | 3 bis 6 Wdh. | nein |
+| toes\_to\_bar | Toes to Bar | Rumpf | Bauch | keine | 8 | STANGE | KG | 5 bis 10 Wdh. | nein |
 | band\_curls | Band Curls | Bizeps | Bizeps | keine | 2 | BAND | Band | 12 bis 20 Wdh. | nein |
 | kh\_curls | Dumbbell Curls | Bizeps | Bizeps | keine | 3 | KH | Last | 10 bis 15 Wdh. | nein |
 | hammer\_curls | Hammer Curls | Bizeps | Bizeps | keine | 3 | KH | Last | 10 bis 15 Wdh. | nein |
 | konzentrationscurl | Concentration Curls | Bizeps | Bizeps | keine | 3 | KH + ERH/BANK/SCHRAEG | Last | 10 bis 15 Wdh. | nein |
 | schraegbank\_curls | Incline Dumbbell Curls | Bizeps | Bizeps | keine | 4 | KH + SCHRAEG | Last | 10 bis 15 Wdh. | nein |
 | lh\_curls | Barbell Curls | Bizeps | Bizeps | keine | 4 | LH | Last | 8 bis 12 Wdh. | nein |
+| ringe\_curls | Ring Curls | Bizeps | Bizeps | keine | 4 | RINGE | KG | 8 bis 15 Wdh. | nein |
 | band\_trizeps | Band Triceps Pushdowns | Trizeps | Trizeps | keine | 2 | BAND + ANKER/STANGE | Band | 12 bis 20 Wdh. | nein |
 | kh\_kickback | Dumbbell Kickbacks | Trizeps | Trizeps | keine | 2 | KH | Last | 12 bis 15 Wdh. | nein |
 | bank\_dips | Bench Dips | Trizeps | Trizeps | Brust | 3 | ERH/BANK/SCHRAEG | KG | 10 bis 20 Wdh. | ja |
 | kh\_trizeps\_ueberkopf | Overhead Dumbbell Triceps Extensions | Trizeps | Trizeps | keine | 3 | KH | Last | 10 bis 15 Wdh. | nein |
 | kh\_trizeps\_liegend | Dumbbell Skull Crushers | Trizeps | Trizeps | keine | 4 | KH + BANK/SCHRAEG | Last | 10 bis 15 Wdh. | nein |
 | diamond\_liegestuetz | Diamond Pushups | Trizeps | Trizeps | Brust | 5 | keins | KG | 8 bis 15 Wdh. | ja |
+| band\_trizeps\_ueberkopf | Band Overhead Triceps Extensions | Trizeps | Trizeps | keine | 3 | BAND | Band | 12 bis 20 Wdh. | nein |
+| enge\_liegestuetz | Close-Grip Pushups | Trizeps | Trizeps | Brust | 4 | keins | KG | 8 bis 15 Wdh. | ja |
+| tisch\_trizepsstrecken | Bodyweight Triceps Extensions | Trizeps | Trizeps | keine | 4 | TISCH | KG | 8 bis 15 Wdh. | nein |
+| ringe\_trizeps | Ring Triceps Extensions | Trizeps | Trizeps | keine | 5 | RINGE | KG | 8 bis 15 Wdh. | nein |
 | band\_pull\_apart | Band Pull-Aparts | Schulter | Schultern | Rücken | 2 | BAND | Band | 15 bis 20 Wdh. | nein |
 | band\_seitheben | Band Lateral Raises | Schulter | Schultern | keine | 2 | BAND | Band | 12 bis 20 Wdh. | nein |
 | kh\_seitheben | Dumbbell Lateral Raises | Schulter | Schultern | keine | 3 | KH | Last | 12 bis 20 Wdh. | nein |
 | kh\_reverse\_flys | Reverse Dumbbell Flys | Schulter | Schultern | Rücken | 3 | KH | Last | 12 bis 20 Wdh. | nein |
+| prone\_ytw | Prone Y-T-W Raises | Schulter | Schultern | Rücken | 1 | keins | KG | 8 bis 12 Wdh. | ja |
+| kh\_shrugs | Dumbbell Shrugs (nur auf Wunsch, Entscheidung 09.11.2026) | Schulter | Rücken | keine | 3 | KH | Last | 10 bis 15 Wdh. | nein |
+| kh\_frontheben | Dumbbell Front Raises | Schulter | Schultern | keine | 4 | KH | Last | 10 bis 15 Wdh. | nein |
+| kh\_upright\_rows | Dumbbell Upright Rows | Schulter | Schultern | Rücken | 4 | KH | Last | 10 bis 15 Wdh. | nein |
+| kh\_flys | Dumbbell Flys | BrustIso | Brust | keine | 4 | KH + BANK/SCHRAEG | Last | 10 bis 15 Wdh. | nein |
+| kh\_boden\_flys | Dumbbell Floor Flys (nur ohne Bank und Schrägbank, Entscheidung 09.11.2026) | BrustIso | Brust | keine | 3 | KH | Last | 10 bis 15 Wdh. | nein |
+| band\_flys | Band Chest Flys | BrustIso | Brust | keine | 2 | BAND + ANKER/STANGE | Band | 12 bis 20 Wdh. | nein |
 | wadenheben | Calf Raises | Waden | Waden | keine | 1 | ERH | KG | 15 bis 25 Wdh. | ja |
 | wadenheben\_einbeinig | Single-Leg Calf Raises | Waden | Waden | keine | 3 | ERH | KG | 10 bis 20 Wdh. | nein |
 | kh\_wadenheben | Dumbbell Calf Raises | Waden | Waden | keine | 4 | KH + ERH | Last | 10 bis 20 Wdh. | nein |
+| kh\_wadenheben\_sitzend | Seated Dumbbell Calf Raises | Waden | Waden | keine | 3 | KH + ERH/BANK/SCHRAEG | Last | 12 bis 20 Wdh. | nein |
 | hampelmann | Jumping Jacks | Kondition | Ganzkörper | Waden | 1 | keins | KG | 20 bis 50 Wdh. | ja |
 | high\_knees | High Knees | Kondition | Ganzkörper | Quadrizeps | 2 | keins | KG | 20 bis 50 Wdh. | ja |
 | mountain\_climbers | Climbers | Kondition | Bauch | Schultern | 3 | keins | KG | 20 bis 40 Wdh. | ja |
@@ -161,6 +236,16 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | sprung\_kniebeuge | Jump Squats | Kondition | Quadrizeps | Gesäß | 4 | keins | KG | 10 bis 20 Wdh. | ja |
 | burpees | Burpees | Kondition | Brust | Quadrizeps, Schultern | 5 | keins | KG | 8 bis 20 Wdh. | ja |
 | kh\_thruster | Dumbbell Thrusters | Kondition | Quadrizeps | Schultern, Gesäß, Trizeps | 5 | KH | Last | 8 bis 15 Wdh. | ja |
+| butt\_kicks | Butt Kicks | Kondition | Ganzkörper | keine | 1 | keins | KG | 20 bis 50 Wdh. | ja |
+| plank\_jacks | Plank Jacks | Kondition | Ganzkörper | Bauch | 2 | keins | KG | 16 bis 30 Wdh. | ja |
+| inchworms | Inchworms | Kondition | Ganzkörper | Schultern | 2 | keins | KG | 6 bis 12 Wdh. | ja |
+| squat\_thrusts | Squat Thrusts | Kondition | Ganzkörper | Quadrizeps | 3 | keins | KG | 8 bis 20 Wdh. | ja |
+| kb\_clean | Kettlebell Cleans | Kondition | Gesäß | Hintere Oberschenkel, Rücken | 4 | KB | Last | 8 bis 12 Wdh. | ja |
+| jumping\_lunges | Jumping Lunges | Kondition | Quadrizeps | Gesäß | 5 | keins | KG | 10 bis 20 Wdh. | ja |
+| kh\_snatch | Dumbbell Snatches | Kondition | Gesäß | Schultern, Hintere Oberschenkel | 5 | KH | Last | 8 bis 15 Wdh. | ja |
+| kh\_clean\_press | Dumbbell Clean & Press | Kondition | Schultern | Gesäß, Quadrizeps | 5 | KH | Last | 8 bis 12 Wdh. | ja |
+| tuck\_jumps | Tuck Jumps | Kondition | Quadrizeps | Waden | 6 | keins | KG | 8 bis 15 Wdh. | ja |
+| devil\_press | Devil Press | Kondition | Schultern | Brust, Gesäß | 6 | KH | Last | 6 bis 12 Wdh. | ja |
 
 ## Zirkel
 

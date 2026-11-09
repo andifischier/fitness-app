@@ -8,11 +8,11 @@ const kopie = () => structuredClone(katalogDatei) as unknown as typeof KATALOG;
 describe('Katalog', () => {
   it('lädt den mitgelieferten Katalog vollständig', () => {
     expect(KATALOG.schemaVersion).toBe(2);
-    expect(KATALOG.uebungen).toHaveLength(105);       // seit 01.11.2026 mit Band-Beincurls und 3 Zwischenstufen
+    expect(KATALOG.uebungen).toHaveLength(184);       // seit 09.11.2026 mit 79 bekannten Übungen mehr
     expect(KATALOG.utensilien).toHaveLength(16);      // Rucksack
     expect(KATALOG.zirkel).toHaveLength(5);
-    expect(new Set(KATALOG.uebungen.map((u) => u.muster)).size).toBe(14);   // Beinbeuger
-    expect(KATALOG.uebungen.filter((u) => u.anzahlGewichte !== undefined)).toHaveLength(33);
+    expect(new Set(KATALOG.uebungen.map((u) => u.muster)).size).toBe(15);   // Brust isoliert (09.11.2026)
+    expect(KATALOG.uebungen.filter((u) => u.anzahlGewichte !== undefined)).toHaveLength(59);
   });
 
   it('hat für jede Übung eine Kurzanleitung und ein eigenes festes Video', () => {
