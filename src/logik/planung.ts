@@ -1,7 +1,7 @@
 // Planungsmodul laut Spezifikation, Abschnitt „Planungslogik“. Rein und deterministisch: Die
 // aktuelle Zeit wird übergeben; der Zustand wird nur gelesen, nie verändert.
 import {
-  ABLEITUNG, BEWERTUNG, ERHOLUNGSWOCHE, EINHEIT, ERSATZ, FOKUS_GRUPPEN, KOERPERHAELFTE, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
+  ABLEITUNG, BEWERTUNG, ERHOLUNGSWOCHE, EINHEIT, ERGAENZUNG, ERSATZ, FOKUS_GRUPPEN, KOERPERHAELFTE, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
   KOMBI, PROGRESSION, TESTTAG, TRAININGSPAUSE, WOCHENZIEL, WORKOUT, ZEITBUDGET, ZIRKEL,
 } from '../konfiguration';
 import { isoWoche, plusTage, stundenZwischen, verbleibendeTage, wochenNummer, wochentag } from './datum';
@@ -708,7 +708,8 @@ function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Pla
     const h = hauptmuskel(u)!;
     const zuletzt = letzteJeMuskel.get(h);
     if (!zuletzt) return 0;
-    const andereMuster = kandidaten.some((k) => hauptmuskel(k.uebung) === h && k.uebung.muster !== u.muster);
+    const andereMuster = kandidaten.some((k) => hauptmuskel(k.uebung) === h && k.uebung.muster !== u.muster
+      && !ERGAENZUNG[k.uebung.muster]);
     return (zuletzt.id === u.id ? EINHEIT.abschlagLetzteEinheit : 0)
       + (zuletzt.muster === u.muster && andereMuster ? EINHEIT.abschlagGleichesMuster : 0);
   };
@@ -726,10 +727,16 @@ function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Pla
     return !gedeckelt.has(h) && bedarf[h] - dosis[h] >= EINHEIT.saetzeProUebung.min;
   };
   const dran = (k: Kandidat) => !zuerst.has(k.uebung.id) || benutzt.has(zuerst.get(k.uebung.id)!);
+  // Ergänzungsmuster (Entscheidung 09.11.2026): Flys erst, wenn schon eine Drückübung gewählt ist.
+  const ergaenzt = (k: Kandidat) => {
+    const basis = ERGAENZUNG[k.uebung.muster];
+    return !basis || gewaehlt.some((a) => a.k.uebung.muster === basis)
+      || !kandidaten.some((x) => x.uebung.muster === basis && !x.istErsatz);
+  };
   // Mehr Zeit (Entscheidung 09.11.2026): dann nur Übungen für Muskeln, die schon eine Übung haben.
   let nurMuskeln: Set<Muskel> | undefined;
   const uebungenFuer = (h: Muskel) => gewaehlt.filter((a) => hauptmuskel(a.k.uebung) === h).length;
-  const moeglich = (k: Kandidat) => !benutzt.has(k.uebung.id) && dran(k) && k.uebung.primaer.every((m) => erholt[m])
+  const moeglich = (k: Kandidat) => !benutzt.has(k.uebung.id) && dran(k) && ergaenzt(k) && k.uebung.primaer.every((m) => erholt[m])
     && (!nurMuskeln || nurMuskeln.has(hauptmuskel(k.uebung)!))
     && uebungenFuer(hauptmuskel(k.uebung)!) < EINHEIT.mehrZeit.maxUebungenJeMuskel
     && lohnt(k) && wert(k.uebung) > EINHEIT.minOffenerBedarf;

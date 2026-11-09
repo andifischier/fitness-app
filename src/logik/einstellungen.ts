@@ -1,6 +1,6 @@
 // Regeln für die Screens Einstellungen und Übungen: Orte und Equipment, eigene Übungen und
 // Utensilien, Favoriten, Ausschlüsse, Video-Links und Einschränkungen. Rein und deterministisch.
-import { BEWERTUNG, PROFIL, VOLUMENGRENZE, WOCHENZIEL } from '../konfiguration';
+import { BEWERTUNG, ERGAENZUNG, PROFIL, VOLUMENGRENZE, WOCHENZIEL } from '../konfiguration';
 import { alleUebungen, uebungMoeglich } from './equipment';
 import { hauptvarianten } from './planung';
 import { einstellungenVon } from './verlauf';
@@ -170,11 +170,12 @@ export function moeglicheUebungen(z: AppZustand, ort: Ort): Uebung[] {
   return alleUebungen(z).filter((u) => uebungMoeglich(ort, u));
 }
 
-// Muster, die am Ort weder eine Variante noch einen Ersatz haben (nur Equipment zählt).
+// Muster, die am Ort weder eine Variante noch einen Ersatz haben (nur Equipment zählt). Ergänzungsmuster
+// (Flys) fehlen nicht: Die Brust trainiert das Drücken (Annahme 09.11.2026).
 export function fehlendeMuster(z: AppZustand, ort: Ort): MusterId[] {
   const e: Einstellungen = { ...einstellungenVon(z), einschraenkungen: [], ausgeschlossen: [] };
   const ohneGespeicherte: AppZustand = { ...z, muster: [] };
-  return MUSTER_IDS.filter((m) => hauptvarianten(ohneGespeicherte, m, ort, '2000-01-01T00:00:00', e).length === 0);
+  return MUSTER_IDS.filter((m) => !ERGAENZUNG[m] && hauptvarianten(ohneGespeicherte, m, ort, '2000-01-01T00:00:00', e).length === 0);
 }
 
 // ---------- Löschen nur, solange nie genutzt (Entscheidung 20.10.2026) ----------

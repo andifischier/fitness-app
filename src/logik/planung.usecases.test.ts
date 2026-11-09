@@ -33,9 +33,11 @@ const FAELLE: { name: string; prognose: number; termine: Termin[]; stimmig: bool
 // offene Alternative): In UC5 mit vollem Katalog nimmt Klimmzug statt Rudern einen Platz, Schulterdrücken
 // verdrängt dann die Curls. Bizeps bekommt 5,5 von 12 Sätzen (46 %). Seit A und B strikt abwechseln
 // (Entscheidung 30.10.2026) gewinnen in UC5b bei Gleichstand die Curls gegen die fällige Trizepsübung:
-// Trizeps bekommt 5,5 von 12 Sätzen (46 %), Bizeps dafür 9,5.
+// Trizeps bekommt 5,5 von 12 Sätzen (46 %), Bizeps dafür 9,5. Seit den Flys (Entscheidung 09.11.2026) ist die
+// zweite Brustübung dort Flys statt Schrägbankdrücken: Brust bleibt bei 9, Trizeps arbeitet bei Flys nicht mit
+// und bekommt 4,5 von 12 (38 %).
 const mindestanteil = (fall: string, katalog: string, m: Muskel) =>
-  ((fall.startsWith('UC5 ') && m === 'Bizeps') || (fall.startsWith('UC5b') && m === 'Trizeps')) && katalog === 'voll' ? 0.45 : 0.5;
+  katalog !== 'voll' ? 0.5 : fall.startsWith('UC5 ') && m === 'Bizeps' ? 0.45 : fall.startsWith('UC5b') && m === 'Trizeps' ? 0.35 : 0.5;
 
 describe('Use Cases', () => {
   for (const katalog of ['test', 'voll'] as const) {

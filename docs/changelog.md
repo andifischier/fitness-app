@@ -530,3 +530,16 @@
 - **Warum:** Rückmeldung des Nutzers: Schritte von 1 und die genaue Reserve-Zahl sind zu fein; die
   starre Satzgrenze verhindert, an Tagen mit mehr Zeit einen Muskel richtig auszupowern; Wunsch nach
   Abwechslung mit leichterem Gewicht. Entscheidungen in `docs/entscheidungen.md`.
+
+## 09.11.2026: Übungskatalog um 79 bekannte Übungen erweitert
+- **Was:** `docs/katalog.json` und `docs/uebungskatalog.md` von 105 auf 184 Übungen erweitert, je mit
+  Stufe, Kurzanleitung und eingebettetem Video. Neu u. a. Crunches, Sit-ups, Bicycle Crunches, Leg
+  Raises, Bird Dog, Wall Sit, Forward und Lateral Lunges, Split Squats, Ausfallschritte mit Hanteln ohne
+  Gehen, Single-Leg Glute Bridges, Superman, Renegade Rows, Pullovers, Prone Y-T-W Raises, Jumping Lunges,
+  dazu Übungen für Kettlebell, Ringe und Mini-Bänder. Neue Bewegung „Brust isoliert“ (Flys) als
+  Ergänzung: nur in Einheiten mit einer Drückübung (`ERGAENZUNG` in `src/konfiguration.ts`, Planung in
+  `src/logik/planung.ts`). `NUR_OHNE`, `ABLEITUNG` und Sperren nach Körperregion ergänzt. Neue Tests in
+  `src/logik/katalogerweiterung.test.ts`; bestehende Tests an den größeren Katalog angepasst. Die
+  veralteten Zahlen in `docs/uebungskatalog.md` (101 Übungen, 88 Videos) korrigiert.
+- **Warum:** Prüfung des Katalogs auf Wunsch des Nutzers: Viele bekannte Übungen fehlten, darunter
+  „absolute must haves“ wie Crunches und Sit-ups. Entscheidungen in `docs/entscheidungen.md`.

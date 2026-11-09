@@ -586,6 +586,170 @@
    "einseitig": true
   },
   {
+   "id": "wand_liegestuetz",
+   "name": "Wall Pushups",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 1,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 10,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Wall+Pushups+richtige+Ausf%C3%BChrung",
+   "videoId": "wIPJvBQs7RA",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Hände schulterbreit auf Brusthöhe an die Wand, einen großen Schritt zurück.",
+    "Körper gerade halten, Brust zur Wand senken.",
+    "Kräftig wegdrücken, bis die Arme gestreckt sind."
+   ]
+  },
+  {
+   "id": "negative_liegestuetz",
+   "name": "Negative Pushups",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 5,
+    "bis": 10,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Negative+Pushups+richtige+Ausf%C3%BChrung",
+   "videoId": "dK0FbJvPCug",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Oben im Liegestütz starten, Körper gerade.",
+    "In 3 bis 5 Sekunden langsam bis knapp über den Boden senken.",
+    "Auf den Knien zurück nach oben, dann die nächste Wiederholung."
+   ]
+  },
+  {
+   "id": "weite_liegestuetz",
+   "name": "Wide Pushups",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 4,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Wide+Pushups+richtige+Ausf%C3%BChrung",
+   "videoId": "rr6eFNNDQdU",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Hände deutlich breiter als schulterbreit, Finger leicht nach außen.",
+    "Körper gerade, Brust bis knapp über den Boden senken.",
+    "Ellbogen nicht ganz zur Seite ausstellen, kräftig hochdrücken."
+   ]
+  },
+  {
+   "id": "kh_bankdruecken_einarmig",
+   "name": "One-Arm Dumbbell Bench Press",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 8,
+   "equipment": [
+    [
+     "KH"
+    ],
+    [
+     "BANK",
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=One-Arm+Dumbbell+Bench+Press+richtige+Ausf%C3%BChrung",
+   "videoId": "0L0VmmbjKCM",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Auf der Bank liegen, eine Hantel über der Brust, die freie Hand hält die Bank.",
+    "Hantel kontrolliert neben die Brust senken, Rumpf fest, Hüfte bleibt gerade.",
+    "Hochdrücken, alle Wiederholungen, dann die andere Seite."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "ringe_dips",
+   "name": "Ring Dips",
+   "muster": "hDruck",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [
+    "Trizeps",
+    "Schultern"
+   ],
+   "stufe": 9,
+   "equipment": [
+    [
+     "RINGE"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 4,
+    "bis": 10,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Ring+Dips+richtige+Ausf%C3%BChrung",
+   "videoId": "Kr5Uuuy5DAI",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf den Ringen stützen, Arme gestreckt, Ringe dicht am Körper.",
+    "Senken, bis die Schultern etwas unter den Ellbogen sind, Ringe bleiben eng.",
+    "Wieder hochdrücken, oben die Ringe leicht nach außen drehen."
+   ]
+  },
+  {
    "id": "band_schulterdruecken",
    "name": "Band Shoulder Press",
    "muster": "vDruck",
@@ -880,6 +1044,103 @@
     "Kopf kontrolliert Richtung Boden senken.",
     "Hochdrücken, bis die Arme gestreckt sind. Nur mit sicherem Handstand."
    ]
+  },
+  {
+   "id": "pike_erhoeht_haende",
+   "name": "Incline Pike Pushups",
+   "muster": "vDruck",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Trizeps"
+   ],
+   "stufe": 1,
+   "equipment": [
+    [
+     "ERH"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Incline+Pike+Pushups+richtige+Ausf%C3%BChrung",
+   "videoId": "HLjASz4wexo",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Hände auf eine Erhöhung, Füße am Boden, Hüfte hoch zu einem umgedrehten V.",
+    "Kopf zwischen den Händen nach unten führen, Ellbogen leicht nach hinten.",
+    "Zurück nach oben drücken, die Hüfte bleibt oben."
+   ]
+  },
+  {
+   "id": "wand_handstand",
+   "name": "Wall Handstand Hold",
+   "muster": "vDruck",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Trizeps"
+   ],
+   "stufe": 7,
+   "equipment": [],
+   "lasttyp": "Zeit",
+   "bereich": {
+    "von": 15,
+    "bis": 45,
+    "einheit": "Sek."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Wall+Handstand+Hold+richtige+Ausf%C3%BChrung",
+   "videoId": "4qxWPuq_Mls",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Hände schulterbreit etwa eine Handbreit vor der Wand, mit Schwung in den Handstand, Fersen an die Wand.",
+    "Arme gestreckt, Schultern zu den Ohren schieben, Bauch fest.",
+    "Ruhig atmen und halten, dann kontrolliert herunterkommen."
+   ]
+  },
+  {
+   "id": "kh_schulterdruecken_einarmig",
+   "name": "Single-Arm Dumbbell Shoulder Press",
+   "muster": "vDruck",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Trizeps"
+   ],
+   "stufe": 6,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Single-Arm+Dumbbell+Shoulder+Press+richtige+Ausf%C3%BChrung",
+   "videoId": "4INnuqPeyIQ",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Stehen, eine Hantel auf Schulterhöhe, Bauch und Po fest.",
+    "Senkrecht nach oben drücken, ohne zur Seite zu kippen.",
+    "Langsam zurück zur Schulter, alle Wiederholungen, dann die andere Seite."
+   ],
+   "einseitig": true
   },
   {
    "id": "band_rudern",
@@ -1204,6 +1465,78 @@
    ]
   },
   {
+   "id": "renegade_rows",
+   "name": "Renegade Rows",
+   "muster": "hZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps",
+    "Bauch"
+   ],
+   "stufe": 6,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Renegade+Rows+richtige+Ausf%C3%BChrung",
+   "videoId": "4qEIChzM4ZA",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Liegestützposition mit den Händen auf den Hanteln, Füße etwas breiter.",
+    "Eine Hantel zur Hüfte ziehen, die Hüfte bleibt waagerecht.",
+    "Ablegen, dann die andere Seite; beide Seiten zusammen sind eine Wiederholung."
+   ]
+  },
+  {
+   "id": "tischrudern_fuesse_erhoeht",
+   "name": "Feet-Elevated Table Rows",
+   "muster": "hZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps",
+    "Schultern"
+   ],
+   "stufe": 6,
+   "equipment": [
+    [
+     "TISCH"
+    ],
+    [
+     "ERH"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Feet-Elevated+Table+Rows+richtige+Ausf%C3%BChrung",
+   "videoId": "v5XDF1A-HlM",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Unter dem Tisch liegen, Tischkante greifen, Füße auf einer Erhöhung.",
+    "Körper gerade, Brust zur Tischkante ziehen.",
+    "Langsam ablassen, bis die Arme gestreckt sind."
+   ]
+  },
+  {
    "id": "scapula_pullups",
    "name": "Scapula Pullups",
    "muster": "vZug",
@@ -1442,6 +1775,141 @@
     "Hantel oder Kettlebell zwischen die Füße klemmen oder am Gürtel befestigen.",
     "Klimmzug wie gewohnt, Kinn über die Stange.",
     "Kontrolliert ablassen, das Gewicht pendelt nicht."
+   ]
+  },
+  {
+   "id": "dead_hang",
+   "name": "Dead Hang",
+   "muster": "vZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [],
+   "stufe": 1,
+   "equipment": [
+    [
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "Zeit",
+   "bereich": {
+    "von": 20,
+    "bis": 60,
+    "einheit": "Sek."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dead+Hang+richtige+Ausf%C3%BChrung",
+   "videoId": "0HBhuaD_S7M",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Stange schulterbreit greifen und mit gestreckten Armen hängen.",
+    "Schultern leicht nach unten ziehen, nicht ganz in die Ohren sinken.",
+    "Ruhig atmen und halten."
+   ]
+  },
+  {
+   "id": "flexed_arm_hang",
+   "name": "Flexed-Arm Hang",
+   "muster": "vZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps"
+   ],
+   "stufe": 2,
+   "equipment": [
+    [
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "Zeit",
+   "bereich": {
+    "von": 10,
+    "bis": 30,
+    "einheit": "Sek."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Flexed-Arm+Hang+richtige+Ausf%C3%BChrung",
+   "videoId": "egGBo-elaXc",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Mit einem Hocker oder Sprung in die obere Klimmzugposition, Kinn über der Stange.",
+    "Brust zur Stange, Ellbogen eng, Schultern nach unten.",
+    "Halten, so lange es sauber geht, dann langsam ablassen."
+   ]
+  },
+  {
+   "id": "archer_klimmzug",
+   "name": "Archer Pullups",
+   "muster": "vZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Bizeps"
+   ],
+   "stufe": 7,
+   "equipment": [
+    [
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 3,
+    "bis": 8,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Archer+Pullups+richtige+Ausf%C3%BChrung",
+   "videoId": "ziQjz1-DmX8",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Stange weit greifen.",
+    "Zu einer Hand hochziehen, der andere Arm bleibt fast gestreckt.",
+    "Langsam ablassen, abwechselnd die Seiten wechseln."
+   ]
+  },
+  {
+   "id": "kh_pullover",
+   "name": "Dumbbell Pullovers",
+   "muster": "vZug",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [
+    "Brust"
+   ],
+   "stufe": 4,
+   "equipment": [
+    [
+     "KH"
+    ],
+    [
+     "BANK",
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Pullovers+richtige+Ausf%C3%BChrung",
+   "videoId": "5lbvUCXfDU0",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Auf der Bank liegen, eine Hantel mit beiden Händen über der Brust, Arme leicht gebeugt.",
+    "Hantel im Bogen hinter den Kopf senken, bis die Seiten gut gedehnt sind.",
+    "Mit dem Rücken zurück über die Brust ziehen, Bauch fest."
    ]
   },
   {
@@ -1735,6 +2203,190 @@
    "einseitig": true
   },
   {
+   "id": "wall_sit",
+   "name": "Wall Sit",
+   "muster": "Knie",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "Zeit",
+   "bereich": {
+    "von": 30,
+    "bis": 60,
+    "einheit": "Sek."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Wall+Sit+richtige+Ausf%C3%BChrung",
+   "videoId": "JaZNYM3zAP0",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Rücken an die Wand, Füße etwa zwei Fußlängen davor.",
+    "Hinunterrutschen, bis die Oberschenkel waagerecht sind, Knie über den Füßen.",
+    "Rücken an der Wand lassen, ruhig atmen und halten."
+   ]
+  },
+  {
+   "id": "sumo_kniebeuge",
+   "name": "Sumo Squats",
+   "muster": "Knie",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Sumo+Squats+richtige+Ausf%C3%BChrung",
+   "videoId": "kjlfpqXnyL8",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Füße weit auseinander, Zehen nach außen.",
+    "Hüfte senken, Knie zeigen in Richtung der Zehen, Oberkörper aufrecht.",
+    "Über die Fersen hochdrücken, oben Po anspannen."
+   ]
+  },
+  {
+   "id": "cossack_squat",
+   "name": "Cossack Squats",
+   "muster": "Knie",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 5,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 6,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Cossack+Squats+richtige+Ausf%C3%BChrung",
+   "videoId": "tpczTeSkHz0",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Sehr breiter Stand, Zehen leicht nach außen.",
+    "Zu einer Seite tief absenken, das andere Bein bleibt gestreckt, Zehen zeigen nach oben.",
+    "Zurück in die Mitte, alle Wiederholungen, dann die andere Seite."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "sissy_squat",
+   "name": "Sissy Squats",
+   "muster": "Knie",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [],
+   "stufe": 7,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 6,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Sissy+Squats+richtige+Ausf%C3%BChrung",
+   "videoId": "AYN-U5nZieY",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Mit einer Hand irgendwo festhalten, auf die Fußballen gehen.",
+    "Knie nach vorn schieben und Oberkörper nach hinten lehnen, Hüfte bleibt gestreckt.",
+    "So tief wie sauber möglich, dann mit den Oberschenkeln zurück nach oben."
+   ]
+  },
+  {
+   "id": "kh_frontkniebeuge",
+   "name": "Dumbbell Front Squats",
+   "muster": "Knie",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Front+Squats+richtige+Ausf%C3%BChrung",
+   "videoId": "YF3FAHS2j1M",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Zwei Hanteln vorn auf den Schultern, Ellbogen nach vorn.",
+    "Aufrecht tief in die Hocke, Knie über den Füßen.",
+    "Über die ganze Fußsohle hochdrücken, Oberkörper bleibt aufrecht."
+   ]
+  },
+  {
+   "id": "kh_sumo_squat",
+   "name": "Dumbbell Sumo Squats",
+   "muster": "Knie",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 4,
+   "equipment": [
+    [
+     "KH",
+     "KB"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Sumo+Squats+richtige+Ausf%C3%BChrung",
+   "videoId": "pcY33kEoKZ4",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Breiter Stand, Zehen nach außen, eine Hantel hängt mit beiden Händen zwischen den Beinen.",
+    "Hüfte senken, Knie zeigen in Richtung der Zehen, Rücken gerade.",
+    "Über die Fersen hochdrücken, oben Po anspannen."
+   ]
+  },
+  {
    "id": "ausfallschritt_rueck",
    "name": "Reverse Lunges",
    "muster": "Einbein",
@@ -1977,6 +2629,232 @@
     "Auf einem Bein stehen, den anderen Fuß hinten mit der Hand fassen.",
     "Hinteres Knie langsam zum Boden senken.",
     "Über das Standbein hochdrücken."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "split_squat",
+   "name": "Split Squats",
+   "muster": "Einbein",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Split+Squats+richtige+Ausf%C3%BChrung",
+   "videoId": "la0pLPq-3A8",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Großer Schritt, die hintere Ferse ist angehoben, Oberkörper aufrecht.",
+    "Senkrecht absenken, bis das hintere Knie fast den Boden berührt.",
+    "Über das vordere Bein hochdrücken, alle Wiederholungen, dann Seite wechseln."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "ausfallschritt_vor",
+   "name": "Forward Lunges",
+   "muster": "Einbein",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 3,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Forward+Lunges+richtige+Ausf%C3%BChrung",
+   "videoId": "wrwwXE_x-pQ",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Aufrecht stehen, großer Schritt nach vorn.",
+    "Hinteres Knie Richtung Boden, vorderes Knie über dem Fuß.",
+    "Kräftig über die vordere Ferse zurück in den Stand drücken."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "seit_ausfallschritt",
+   "name": "Lateral Lunges",
+   "muster": "Einbein",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 3,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Lateral+Lunges+richtige+Ausf%C3%BChrung",
+   "videoId": "vwK7vZNQwUI",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Breiter Stand, Zehen zeigen nach vorn.",
+    "Hüfte zu einer Seite nach hinten schieben und das Knie beugen, das andere Bein bleibt gestreckt.",
+    "Über die Ferse zurück in die Mitte drücken."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "curtsy_lunge",
+   "name": "Curtsy Lunges",
+   "muster": "Einbein",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 3,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Curtsy+Lunges+richtige+Ausf%C3%BChrung",
+   "videoId": "1MgFup8A_0c",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Aufrecht stehen, ein Bein schräg hinter das andere setzen.",
+    "Beide Knie beugen, die Hüfte bleibt nach vorn ausgerichtet.",
+    "Über das vordere Bein zurück in den Stand drücken."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "kh_split_squat",
+   "name": "Dumbbell Split Squats",
+   "muster": "Einbein",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 4,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Split+Squats+richtige+Ausf%C3%BChrung",
+   "videoId": "SX7BtPh_pL0",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln seitlich halten, großer Schritt, die hintere Ferse ist angehoben.",
+    "Senkrecht absenken, bis das hintere Knie fast den Boden berührt.",
+    "Über das vordere Bein hochdrücken, alle Wiederholungen, dann Seite wechseln."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "kh_ausfallschritt_rueck",
+   "name": "Dumbbell Reverse Lunges",
+   "muster": "Einbein",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Reverse+Lunges+richtige+Ausf%C3%BChrung",
+   "videoId": "sjlsISvHyZs",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln seitlich halten, aufrecht stehen.",
+    "Großer Schritt nach hinten, hinteres Knie Richtung Boden.",
+    "Über die vordere Ferse zurück in den Stand drücken."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "kh_seit_ausfallschritt",
+   "name": "Dumbbell Lateral Lunges",
+   "muster": "Einbein",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH",
+     "KB"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Lateral+Lunges+richtige+Ausf%C3%BChrung",
+   "videoId": "eP-4bV7QHyE",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Eine Hantel mit beiden Händen vor der Brust, breiter Stand.",
+    "Hüfte zu einer Seite nach hinten schieben und das Knie beugen, das andere Bein bleibt gestreckt.",
+    "Über die Ferse zurück in die Mitte drücken."
    ],
    "einseitig": true
   },
@@ -2368,6 +3246,400 @@
    ]
   },
   {
+   "id": "superman",
+   "name": "Superman",
+   "muster": "Huefte",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [
+    "HintereOS"
+   ],
+   "stufe": 1,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Superman+richtige+Ausf%C3%BChrung",
+   "videoId": "J9zXkxUAfUA",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf dem Bauch liegen, Arme nach vorn gestreckt, Blick zum Boden.",
+    "Arme, Brust und Beine gleichzeitig leicht anheben, Po fest.",
+    "Kurz halten, langsam ablegen."
+   ]
+  },
+  {
+   "id": "donkey_kicks",
+   "name": "Donkey Kicks",
+   "muster": "Huefte",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [],
+   "stufe": 1,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Donkey+Kicks+richtige+Ausf%C3%BChrung",
+   "videoId": "0eIRm840mBQ",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Vierfüßlerstand, Hände unter den Schultern, Knie unter der Hüfte.",
+    "Ein Bein angewinkelt mit der Fußsohle zur Decke hochdrücken.",
+    "Kein Hohlkreuz, langsam zurück; alle Wiederholungen, dann Seite wechseln."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "hip_thrust",
+   "name": "Hip Thrusts",
+   "muster": "Huefte",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [
+    "HintereOS"
+   ],
+   "stufe": 2,
+   "equipment": [
+    [
+     "ERH",
+     "BANK",
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Hip+Thrusts+richtige+Ausf%C3%BChrung",
+   "videoId": "RR0oZhhUVWo",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Schulterblätter an die Kante einer Erhöhung, Füße hüftbreit am Boden.",
+    "Hüfte hochdrücken, bis der Körper von Knie bis Schulter gerade ist.",
+    "Oben Po anspannen, langsam ablassen."
+   ],
+   "anteile": {
+    "HintereOS": 0.25
+   }
+  },
+  {
+   "id": "rdl_einbeinig",
+   "name": "Single-Leg Romanian Deadlifts",
+   "muster": "Huefte",
+   "primaer": [
+    "HintereOS"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Single-Leg+Romanian+Deadlifts+richtige+Ausf%C3%BChrung",
+   "videoId": "gz9l8UA_KXs",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf einem Bein stehen, Knie leicht gebeugt.",
+    "Oberkörper nach vorn neigen, das freie Bein geht gerade nach hinten, Rücken gerade.",
+    "Über die Rückseite des Standbeins zurück in den Stand."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "glute_bridge_einbeinig",
+   "name": "Single-Leg Glute Bridges",
+   "muster": "Huefte",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [
+    "HintereOS"
+   ],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Single-Leg+Glute+Bridges+richtige+Ausf%C3%BChrung",
+   "videoId": "b1zTCyGJXCQ",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf dem Rücken liegen, ein Fuß nah am Po, das andere Bein gestreckt angehoben.",
+    "Hüfte über die Ferse hochdrücken, bis der Körper gerade ist.",
+    "Oben Po anspannen, langsam ablassen; dann Seite wechseln."
+   ],
+   "anteile": {
+    "HintereOS": 0.25
+   },
+   "einseitig": true
+  },
+  {
+   "id": "kh_glute_bridge",
+   "name": "Dumbbell Glute Bridges",
+   "muster": "Huefte",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [
+    "HintereOS"
+   ],
+   "stufe": 4,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Glute+Bridges+richtige+Ausf%C3%BChrung",
+   "videoId": "E6VLOEz7tWE",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Auf dem Rücken liegen, Füße nah am Po, eine Hantel quer auf der Hüfte.",
+    "Hüfte hochdrücken, bis der Körper von Knie bis Schulter gerade ist.",
+    "Oben Po anspannen, langsam ablassen."
+   ],
+   "anteile": {
+    "HintereOS": 0.25
+   }
+  },
+  {
+   "id": "kh_kreuzheben",
+   "name": "Dumbbell Deadlifts",
+   "muster": "Huefte",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [
+    "HintereOS",
+    "Ruecken"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Deadlifts+richtige+Ausf%C3%BChrung",
+   "videoId": "lJ3QwaXNJfw",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln vor den Schienbeinen, Hüfte nach hinten, Rücken gerade.",
+    "Aus den Beinen hochdrücken, die Hanteln bleiben nah am Körper.",
+    "Oben Po anspannen, kontrolliert zurück zum Boden."
+   ]
+  },
+  {
+   "id": "kh_swing",
+   "name": "Dumbbell Swings",
+   "muster": "Huefte",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [
+    "HintereOS"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Swings+richtige+Ausf%C3%BChrung",
+   "videoId": "wqUKvSouuFI",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Eine Hantel mit beiden Händen am Griffende, Füße schulterbreit.",
+    "Hüfte nach hinten schieben, die Hantel schwingt zwischen den Beinen durch.",
+    "Hüfte kräftig nach vorn strecken, die Hantel schwingt bis Brusthöhe."
+   ]
+  },
+  {
+   "id": "lh_rdl",
+   "name": "Barbell Romanian Deadlifts",
+   "muster": "Huefte",
+   "primaer": [
+    "HintereOS"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 6,
+   "equipment": [
+    [
+     "LH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 6,
+    "bis": 10,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Barbell+Romanian+Deadlifts+richtige+Ausf%C3%BChrung",
+   "videoId": "_oyxCn2iSjU",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Stange schulterbreit vor den Oberschenkeln, Knie leicht gebeugt.",
+    "Hüfte nach hinten schieben, die Stange gleitet an den Beinen entlang, Rücken gerade.",
+    "Wenn die Oberschenkelrückseite stark gedehnt ist, über die Hüfte zurück in den Stand."
+   ]
+  },
+  {
+   "id": "kb_kreuzheben",
+   "name": "Kettlebell Deadlifts",
+   "muster": "Huefte",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [
+    "HintereOS"
+   ],
+   "stufe": 3,
+   "equipment": [
+    [
+     "KB"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kettlebell+Deadlifts+richtige+Ausf%C3%BChrung",
+   "videoId": "hinonqqzatk",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Kettlebell zwischen den Füßen, Hüfte nach hinten, Rücken gerade.",
+    "Griff mit beiden Händen, aus den Beinen in den Stand drücken.",
+    "Oben Po anspannen, kontrolliert zurück zum Boden."
+   ]
+  },
+  {
+   "id": "clamshells",
+   "name": "Clamshells",
+   "muster": "Huefte",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [],
+   "stufe": 1,
+   "equipment": [
+    [
+     "MINI"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Clamshells+richtige+Ausf%C3%BChrung",
+   "videoId": "m_ZPapmqeNM",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Seitlich liegen, Mini-Band über den Knien, Knie und Hüfte gebeugt.",
+    "Fersen zusammenlassen und das obere Knie aufklappen, das Becken kippt nicht.",
+    "Langsam schließen; alle Wiederholungen, dann Seite wechseln."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "band_walks",
+   "name": "Lateral Band Walks",
+   "muster": "Huefte",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [],
+   "stufe": 2,
+   "equipment": [
+    [
+     "MINI"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 10,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Lateral+Band+Walks+richtige+Ausf%C3%BChrung",
+   "videoId": "42cYOwpwOIc",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Mini-Band über den Knien oder Knöcheln, leicht in die Hocke gehen.",
+    "Seitliche Schritte, die Füße kommen nie ganz zusammen, das Band bleibt gespannt.",
+    "Gleich viele Schritte nach rechts und links, Oberkörper ruhig."
+   ]
+  },
+  {
    "id": "nordic_curl",
    "name": "Nordic Curls",
    "muster": "Beinbeuger",
@@ -2393,6 +3665,36 @@
     "Körper gerade, so langsam wie möglich nach vorn sinken.",
     "Mit den Händen abfangen und abdrücken, so wenig wie nötig helfen."
    ]
+  },
+  {
+   "id": "sliding_leg_curl_einbeinig",
+   "name": "Single-Leg Sliding Leg Curls",
+   "muster": "Beinbeuger",
+   "primaer": [
+    "HintereOS"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 6,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 6,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Single-Leg+Sliding+Leg+Curls+richtige+Ausf%C3%BChrung",
+   "videoId": "dE5d39sErBU",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf dem Rücken liegen, eine Ferse auf einem Handtuch, das andere Bein angehoben.",
+    "Hüfte hoch, die Ferse langsam nach vorn wegschieben.",
+    "Ferse wieder zum Po ziehen, die Hüfte bleibt oben; dann Seite wechseln."
+   ],
+   "einseitig": true
   },
   {
    "id": "dead_bug",
@@ -2634,6 +3936,465 @@
    ]
   },
   {
+   "id": "crunches",
+   "name": "Crunches",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 1,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 15,
+    "bis": 25,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Crunches+richtige+Ausf%C3%BChrung",
+   "videoId": "MKmrqcoCZ-M",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf dem Rücken liegen, Knie gebeugt, Hände an den Schläfen.",
+    "Schultern vom Boden rollen, unterer Rücken bleibt liegen.",
+    "Kurz halten, langsam zurück, nicht am Kopf ziehen."
+   ]
+  },
+  {
+   "id": "bird_dog",
+   "name": "Bird Dog",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 1,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Bird+Dog+richtige+Ausf%C3%BChrung",
+   "videoId": "xEDnlOxeJH4",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Vierfüßlerstand, Rücken gerade.",
+    "Einen Arm und das gegenüberliegende Bein lang ausstrecken, das Becken bleibt ruhig.",
+    "Kurz halten, zurück, dann die andere Seite."
+   ]
+  },
+  {
+   "id": "heel_touches",
+   "name": "Heel Touches",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 1,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 20,
+    "bis": 40,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Heel+Touches+richtige+Ausf%C3%BChrung",
+   "videoId": "W5WUHZJw7lI",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf dem Rücken liegen, Knie gebeugt, Schultern leicht angehoben.",
+    "Abwechselnd mit der Hand zur Ferse derselben Seite tippen.",
+    "Schultern bleiben die ganze Zeit oben."
+   ]
+  },
+  {
+   "id": "situps",
+   "name": "Sit-ups",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 10,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Sit-ups+richtige+Ausf%C3%BChrung",
+   "videoId": "jDwoBqPH0jk",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf dem Rücken liegen, Knie gebeugt, Füße am Boden.",
+    "Oberkörper Wirbel für Wirbel bis zum Sitzen aufrollen.",
+    "Langsam wieder abrollen, ohne Schwung."
+   ]
+  },
+  {
+   "id": "reverse_crunches",
+   "name": "Reverse Crunches",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 10,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Reverse+Crunches+richtige+Ausf%C3%BChrung",
+   "videoId": "yH-oSzE5_g0",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf dem Rücken liegen, Beine angewinkelt angehoben, Arme neben dem Körper.",
+    "Becken einrollen und die Knie Richtung Brust ziehen.",
+    "Langsam ablassen, ohne mit den Beinen zu schwingen."
+   ]
+  },
+  {
+   "id": "bicycle_crunches",
+   "name": "Bicycle Crunches",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 16,
+    "bis": 30,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Bicycle+Crunches+richtige+Ausf%C3%BChrung",
+   "videoId": "eqg47ZuGZXQ",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf dem Rücken liegen, Hände an den Schläfen, Beine angehoben.",
+    "Ellbogen zum gegenüberliegenden Knie drehen, das andere Bein streckt sich.",
+    "Langsam und kontrolliert die Seiten wechseln."
+   ]
+  },
+  {
+   "id": "russian_twist",
+   "name": "Russian Twists",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 16,
+    "bis": 30,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Russian+Twists+richtige+Ausf%C3%BChrung",
+   "videoId": "wkD8rjkodUI",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Sitzen, Oberkörper leicht zurückgelehnt, Füße am Boden oder angehoben.",
+    "Oberkörper zu einer Seite drehen, Hände neben die Hüfte.",
+    "Zur anderen Seite drehen, Rücken bleibt gerade."
+   ]
+  },
+  {
+   "id": "beinheben_liegend",
+   "name": "Lying Leg Raises",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Lying+Leg+Raises+richtige+Ausf%C3%BChrung",
+   "videoId": "0tzBVqiDwSs",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf dem Rücken liegen, Hände unter dem Po, Beine gestreckt.",
+    "Beine gestreckt bis senkrecht anheben.",
+    "Langsam absenken, der untere Rücken bleibt am Boden."
+   ]
+  },
+  {
+   "id": "flutter_kicks",
+   "name": "Flutter Kicks",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [],
+   "lasttyp": "Zeit",
+   "bereich": {
+    "von": 20,
+    "bis": 45,
+    "einheit": "Sek."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Flutter+Kicks+richtige+Ausf%C3%BChrung",
+   "videoId": "ANVdMDaYRts",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf dem Rücken liegen, Hände unter dem Po, Beine gestreckt knapp über dem Boden.",
+    "Beine abwechselnd in kleinen, schnellen Bewegungen auf und ab.",
+    "Der untere Rücken bleibt am Boden."
+   ]
+  },
+  {
+   "id": "plank_shoulder_taps",
+   "name": "Plank Shoulder Taps",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [
+    "Schultern"
+   ],
+   "stufe": 3,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 16,
+    "bis": 30,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Plank+Shoulder+Taps+richtige+Ausf%C3%BChrung",
+   "videoId": "gKA5LBy7WAI",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Hoher Liegestütz, Füße etwas breiter, Körper gerade.",
+    "Mit einer Hand die gegenüberliegende Schulter antippen.",
+    "Abwechselnd, die Hüfte bleibt ruhig und kippt nicht."
+   ]
+  },
+  {
+   "id": "kh_crunches",
+   "name": "Weighted Crunches",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [
+    [
+     "KH",
+     "KB"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Weighted+Crunches+richtige+Ausf%C3%BChrung",
+   "videoId": "cbwLMF7oJGI",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Auf dem Rücken liegen, Knie gebeugt, eine Hantel mit beiden Händen auf der Brust.",
+    "Schultern vom Boden rollen, unterer Rücken bleibt liegen.",
+    "Kurz halten, langsam zurück."
+   ]
+  },
+  {
+   "id": "kh_woodchops",
+   "name": "Dumbbell Woodchops",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [
+    [
+     "KH",
+     "KB"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Woodchops+richtige+Ausf%C3%BChrung",
+   "videoId": "b65s5BtdOEc",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Eine Hantel mit beiden Händen neben der Hüfte, Füße schulterbreit.",
+    "Hantel diagonal nach oben über die andere Schulter führen, der Rumpf dreht.",
+    "Kontrolliert zurück; alle Wiederholungen, dann die andere Seite."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "v_ups",
+   "name": "V-Ups",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 5,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=V-Ups+richtige+Ausf%C3%BChrung",
+   "videoId": "t6OC23JDQLU",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf dem Rücken liegen, Arme über dem Kopf, Beine gestreckt.",
+    "Oberkörper und Beine gleichzeitig anheben, Hände zu den Füßen.",
+    "Langsam ablassen, ohne ganz abzulegen."
+   ]
+  },
+  {
+   "id": "hollow_rocks",
+   "name": "Hollow Rocks",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 5,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 10,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Hollow+Rocks+richtige+Ausf%C3%BChrung",
+   "videoId": "hbsljZvfp6E",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Hollow-Hold-Position: unterer Rücken am Boden, Arme und Beine gestreckt angehoben.",
+    "Den ganzen Körper wie eine Wippe vor und zurück schaukeln.",
+    "Die Form bleibt fest, nur der Körper rollt."
+   ]
+  },
+  {
+   "id": "turkish_get_up",
+   "name": "Turkish Get-ups",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [
+    "Schultern"
+   ],
+   "stufe": 6,
+   "equipment": [
+    [
+     "KB"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 3,
+    "bis": 6,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Turkish+Get-ups+richtige+Ausf%C3%BChrung",
+   "videoId": "0bWRPC49-KI",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Auf dem Rücken liegen, Kettlebell mit gestrecktem Arm über der Schulter, Blick zur Kettlebell.",
+    "Schritt für Schritt über Ellbogen, Hand und Knie in den Stand, der Arm bleibt senkrecht.",
+    "Langsam in umgekehrter Reihenfolge zurück; alle Wiederholungen, dann Seite wechseln."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "toes_to_bar",
+   "name": "Toes to Bar",
+   "muster": "Rumpf",
+   "primaer": [
+    "Bauch"
+   ],
+   "sekundaer": [],
+   "stufe": 8,
+   "equipment": [
+    [
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 5,
+    "bis": 10,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Toes+to+Bar+richtige+Ausf%C3%BChrung",
+   "videoId": "9ylNNouDE-4",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "An der Stange hängen, Arme gestreckt, Schultern aktiv.",
+    "Beine gestreckt anheben, bis die Füße die Stange berühren.",
+    "Langsam ablassen, ohne zu schwingen."
+   ]
+  },
+  {
    "id": "band_curls",
    "name": "Band Curls",
    "muster": "Bizeps",
@@ -2831,6 +4592,37 @@
     "Stange mit Untergriff schulterbreit, Ellbogen am Körper.",
     "Zur Brust beugen.",
     "Langsam ablassen, ohne Schwung."
+   ]
+  },
+  {
+   "id": "ringe_curls",
+   "name": "Ring Curls",
+   "muster": "Bizeps",
+   "primaer": [
+    "Bizeps"
+   ],
+   "sekundaer": [],
+   "stufe": 4,
+   "equipment": [
+    [
+     "RINGE"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Ring+Curls+richtige+Ausf%C3%BChrung",
+   "videoId": "qlsA272Cojw",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Ringe greifen, Handflächen nach oben, schräg nach hinten lehnen, Körper gerade.",
+    "Nur die Ellbogen beugen und die Hände zur Stirn ziehen.",
+    "Langsam strecken, die Ellbogen bleiben vorn."
    ]
   },
   {
@@ -3034,6 +4826,129 @@
    ]
   },
   {
+   "id": "band_trizeps_ueberkopf",
+   "name": "Band Overhead Triceps Extensions",
+   "muster": "Trizeps",
+   "primaer": [
+    "Trizeps"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [
+    [
+     "BAND"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Band+Overhead+Triceps+Extensions+richtige+Ausf%C3%BChrung",
+   "videoId": "rL60vVkUyzM",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Band unter einem Fuß oder hinter dem Rücken fixieren, Ende mit beiden Händen hinter dem Kopf.",
+    "Ellbogen zeigen nach oben, Arme nach oben strecken.",
+    "Langsam zurück, bis der Trizeps gut gedehnt ist."
+   ],
+   "vorrang": true
+  },
+  {
+   "id": "enge_liegestuetz",
+   "name": "Close-Grip Pushups",
+   "muster": "Trizeps",
+   "primaer": [
+    "Trizeps"
+   ],
+   "sekundaer": [
+    "Brust"
+   ],
+   "stufe": 4,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Close-Grip+Pushups+richtige+Ausf%C3%BChrung",
+   "videoId": "F1Lq9LnyvVc",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Hände schulterbreit oder enger, Finger nach vorn.",
+    "Senken, die Ellbogen bleiben dicht am Körper.",
+    "Kräftig hochdrücken, Körper bleibt gerade."
+   ]
+  },
+  {
+   "id": "tisch_trizepsstrecken",
+   "name": "Bodyweight Triceps Extensions",
+   "muster": "Trizeps",
+   "primaer": [
+    "Trizeps"
+   ],
+   "sekundaer": [],
+   "stufe": 4,
+   "equipment": [
+    [
+     "TISCH"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Bodyweight+Triceps+Extensions+richtige+Ausf%C3%BChrung",
+   "videoId": "I7AT4ZMOTrc",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Hände auf die Tischkante, Schritt zurück, Körper gerade in Schräglage.",
+    "Nur die Ellbogen beugen und die Stirn Richtung Tischkante senken.",
+    "Über die Arme zurück strecken, die Ellbogen bleiben eng."
+   ]
+  },
+  {
+   "id": "ringe_trizeps",
+   "name": "Ring Triceps Extensions",
+   "muster": "Trizeps",
+   "primaer": [
+    "Trizeps"
+   ],
+   "sekundaer": [],
+   "stufe": 5,
+   "equipment": [
+    [
+     "RINGE"
+    ]
+   ],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Ring+Triceps+Extensions+richtige+Ausf%C3%BChrung",
+   "videoId": "pm_iMTO2ysU",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Ringe vor dem Körper, schräg nach vorn lehnen, Körper gerade.",
+    "Nur die Ellbogen beugen, die Hände gehen Richtung Stirn.",
+    "Arme strecken und zurück in die Schräglage drücken."
+   ]
+  },
+  {
    "id": "band_pull_apart",
    "name": "Band Pull-Aparts",
    "muster": "Schulter",
@@ -3166,6 +5081,236 @@
    ]
   },
   {
+   "id": "prone_ytw",
+   "name": "Prone Y-T-W Raises",
+   "muster": "Schulter",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Ruecken"
+   ],
+   "stufe": 1,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Prone+Y-T-W+Raises+richtige+Ausf%C3%BChrung",
+   "videoId": "QdGTI4Lshg4",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Auf dem Bauch liegen, Stirn knapp über dem Boden, Daumen zeigen nach oben.",
+    "Arme nacheinander als Y, T und W anheben, Schulterblätter nach hinten unten ziehen.",
+    "Jede Form kurz halten; ein Durchgang Y, T, W ist eine Wiederholung."
+   ]
+  },
+  {
+   "id": "kh_shrugs",
+   "name": "Dumbbell Shrugs",
+   "muster": "Schulter",
+   "primaer": [
+    "Ruecken"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Shrugs+richtige+Ausf%C3%BChrung",
+   "videoId": "cJRVVxmytaM",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln seitlich halten, aufrecht stehen.",
+    "Schultern gerade nach oben zu den Ohren ziehen, nicht kreisen.",
+    "Kurz halten, langsam ablassen."
+   ]
+  },
+  {
+   "id": "kh_frontheben",
+   "name": "Dumbbell Front Raises",
+   "muster": "Schulter",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [],
+   "stufe": 4,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Front+Raises+richtige+Ausf%C3%BChrung",
+   "videoId": "-t7fuZ0KhDA",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln vor den Oberschenkeln, Arme leicht gebeugt.",
+    "Arme vorn bis Schulterhöhe heben, ohne Schwung.",
+    "Langsam ablassen."
+   ]
+  },
+  {
+   "id": "kh_upright_rows",
+   "name": "Dumbbell Upright Rows",
+   "muster": "Schulter",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Ruecken"
+   ],
+   "stufe": 4,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Upright+Rows+richtige+Ausf%C3%BChrung",
+   "videoId": "IhZLB48kluc",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln vor den Oberschenkeln, aufrecht stehen.",
+    "Ellbogen nach außen oben bis etwa Schulterhöhe ziehen, die Hanteln bleiben nah am Körper.",
+    "Langsam ablassen; nur so hoch, wie es in der Schulter angenehm ist."
+   ]
+  },
+  {
+   "id": "kh_flys",
+   "name": "Dumbbell Flys",
+   "muster": "BrustIso",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [],
+   "stufe": 4,
+   "equipment": [
+    [
+     "KH"
+    ],
+    [
+     "BANK",
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Flys+richtige+Ausf%C3%BChrung",
+   "videoId": "QENKPHhQVi4",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Auf der Bank liegen, Hanteln über der Brust, Arme leicht gebeugt.",
+    "Arme in einem weiten Bogen seitlich senken, bis die Brust gut gedehnt ist.",
+    "Im selben Bogen zurück nach oben, der Winkel im Ellbogen bleibt gleich."
+   ]
+  },
+  {
+   "id": "kh_boden_flys",
+   "name": "Dumbbell Floor Flys",
+   "muster": "BrustIso",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 10,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Floor+Flys+richtige+Ausf%C3%BChrung",
+   "videoId": "Z2plyYaToHQ",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Auf dem Boden liegen, Knie gebeugt, Hanteln über der Brust, Arme leicht gebeugt.",
+    "Arme seitlich im Bogen senken, bis die Oberarme den Boden berühren.",
+    "Im selben Bogen zurück nach oben, Brust anspannen."
+   ]
+  },
+  {
+   "id": "band_flys",
+   "name": "Band Chest Flys",
+   "muster": "BrustIso",
+   "primaer": [
+    "Brust"
+   ],
+   "sekundaer": [],
+   "stufe": 2,
+   "equipment": [
+    [
+     "BAND"
+    ],
+    [
+     "ANKER",
+     "STANGE"
+    ]
+   ],
+   "lasttyp": "Band",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Band+Chest+Flys+richtige+Ausf%C3%BChrung",
+   "videoId": "7l8HfDNXY6E",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Band auf Brusthöhe hinter dir befestigen, je ein Ende in einer Hand, Schritt nach vorn.",
+    "Arme leicht gebeugt in einem weiten Bogen vor der Brust zusammenführen.",
+    "Langsam zurück, bis die Brust gedehnt ist."
+   ]
+  },
+  {
    "id": "wadenheben",
    "name": "Calf Raises",
    "muster": "Waden",
@@ -3261,6 +5406,43 @@
     "Hantel in einer Hand, Fußballen auf der Stufe.",
     "Fersen hoch heben, oben kurz halten.",
     "Langsam tief absenken."
+   ]
+  },
+  {
+   "id": "kh_wadenheben_sitzend",
+   "name": "Seated Dumbbell Calf Raises",
+   "muster": "Waden",
+   "primaer": [
+    "Waden"
+   ],
+   "sekundaer": [],
+   "stufe": 3,
+   "equipment": [
+    [
+     "KH"
+    ],
+    [
+     "ERH",
+     "BANK",
+     "SCHRAEG"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 12,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": false,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Seated+Dumbbell+Calf+Raises+richtige+Ausf%C3%BChrung",
+   "videoId": "fFWpWJy8ybU",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Auf einer Bank oder einem Stuhl sitzen, Hanteln auf den Knien, Fußballen auf einer Stufe.",
+    "Fersen so hoch wie möglich heben.",
+    "Langsam tief absenken, bis die Wade gedehnt ist."
    ]
   },
   {
@@ -3499,6 +5681,312 @@
     "Hanteln auf Schulterhöhe, Kniebeuge.",
     "Aus der Kniebeuge hochdrücken und die Hanteln direkt über den Kopf drücken.",
     "Hanteln zurück auf die Schultern, nächste Kniebeuge."
+   ]
+  },
+  {
+   "id": "butt_kicks",
+   "name": "Butt Kicks",
+   "muster": "Kondition",
+   "primaer": [],
+   "sekundaer": [],
+   "stufe": 1,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 20,
+    "bis": 50,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Butt+Kicks+richtige+Ausf%C3%BChrung",
+   "videoId": "oMW59TKZvaI",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Locker auf der Stelle laufen.",
+    "Fersen abwechselnd zum Po ziehen.",
+    "Arme laufen mit, zügiges Tempo."
+   ]
+  },
+  {
+   "id": "plank_jacks",
+   "name": "Plank Jacks",
+   "muster": "Kondition",
+   "primaer": [],
+   "sekundaer": [
+    "Bauch"
+   ],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 16,
+    "bis": 30,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Plank+Jacks+richtige+Ausf%C3%BChrung",
+   "videoId": "N3WzhR974h0",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Hoher Liegestütz, Körper gerade.",
+    "Beine gleichzeitig nach außen und wieder zusammen springen.",
+    "Die Hüfte bleibt ruhig und auf Schulterhöhe."
+   ]
+  },
+  {
+   "id": "inchworms",
+   "name": "Inchworms",
+   "muster": "Kondition",
+   "primaer": [],
+   "sekundaer": [
+    "Schultern"
+   ],
+   "stufe": 2,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 6,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Inchworms+richtige+Ausf%C3%BChrung",
+   "videoId": "SCJ9qcNPEOQ",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Aus dem Stand vorbeugen und die Hände vor die Füße setzen.",
+    "Mit den Händen bis in den hohen Liegestütz vorlaufen.",
+    "Mit den Händen zurücklaufen und aufrichten."
+   ]
+  },
+  {
+   "id": "squat_thrusts",
+   "name": "Squat Thrusts",
+   "muster": "Kondition",
+   "primaer": [],
+   "sekundaer": [
+    "Quadrizeps"
+   ],
+   "stufe": 3,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Squat+Thrusts+richtige+Ausf%C3%BChrung",
+   "videoId": "Id-g0YHkuVo",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Aus dem Stand in die Hocke, Hände vor die Füße.",
+    "Beine nach hinten in den Liegestütz springen.",
+    "Zurück in die Hocke springen und aufrichten."
+   ]
+  },
+  {
+   "id": "kb_clean",
+   "name": "Kettlebell Cleans",
+   "muster": "Kondition",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [
+    "HintereOS",
+    "Ruecken"
+   ],
+   "stufe": 4,
+   "equipment": [
+    [
+     "KB"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Kettlebell+Cleans+richtige+Ausf%C3%BChrung",
+   "videoId": "C0B1SrcGAIA",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Kettlebell zwischen den Füßen, Hüfte nach hinten, Rücken gerade.",
+    "Mit Hüftstoß hochziehen, die Kettlebell rollt um das Handgelenk in die Position vor der Schulter.",
+    "Zurück durch die Beine schwingen; alle Wiederholungen, dann Seite wechseln."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "jumping_lunges",
+   "name": "Jumping Lunges",
+   "muster": "Kondition",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Gesaess"
+   ],
+   "stufe": 5,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 10,
+    "bis": 20,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Jumping+Lunges+richtige+Ausf%C3%BChrung",
+   "videoId": "FyxFYIV8wKU",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "In einen Ausfallschritt gehen, Oberkörper aufrecht.",
+    "Kraftvoll hochspringen und in der Luft die Beine wechseln.",
+    "Weich im Ausfallschritt landen und direkt weiter."
+   ]
+  },
+  {
+   "id": "kh_snatch",
+   "name": "Dumbbell Snatches",
+   "muster": "Kondition",
+   "primaer": [
+    "Gesaess"
+   ],
+   "sekundaer": [
+    "Schultern",
+    "HintereOS"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Snatches+richtige+Ausf%C3%BChrung",
+   "videoId": "0yd9443Y-fg",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 1,
+   "anleitung": [
+    "Hantel zwischen den Füßen, Hüfte nach hinten, Rücken gerade.",
+    "Mit Hüftstoß explosiv hochziehen und in einer Bewegung über den Kopf strecken.",
+    "Kontrolliert zurück; alle Wiederholungen, dann Seite wechseln."
+   ],
+   "einseitig": true
+  },
+  {
+   "id": "kh_clean_press",
+   "name": "Dumbbell Clean & Press",
+   "muster": "Kondition",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Gesaess",
+    "Quadrizeps"
+   ],
+   "stufe": 5,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 8,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Dumbbell+Clean+%26+Press+richtige+Ausf%C3%BChrung",
+   "videoId": "sZ4XMWn8bAU",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hanteln vor den Oberschenkeln, Hüfte leicht nach hinten.",
+    "Mit Hüftstoß auf die Schultern umsetzen, kurz in die Knie fangen.",
+    "Über den Kopf drücken, dann kontrolliert zurück zu den Oberschenkeln."
+   ]
+  },
+  {
+   "id": "tuck_jumps",
+   "name": "Tuck Jumps",
+   "muster": "Kondition",
+   "primaer": [
+    "Quadrizeps"
+   ],
+   "sekundaer": [
+    "Waden"
+   ],
+   "stufe": 6,
+   "equipment": [],
+   "lasttyp": "KG",
+   "bereich": {
+    "von": 8,
+    "bis": 15,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Tuck+Jumps+richtige+Ausf%C3%BChrung",
+   "videoId": "-bnJGikRGsM",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anleitung": [
+    "Schulterbreit stehen, Arme schwingen mit.",
+    "Kraftvoll hochspringen und die Knie zur Brust ziehen.",
+    "Weich landen und direkt weiterspringen."
+   ]
+  },
+  {
+   "id": "devil_press",
+   "name": "Devil Press",
+   "muster": "Kondition",
+   "primaer": [
+    "Schultern"
+   ],
+   "sekundaer": [
+    "Brust",
+    "Gesaess"
+   ],
+   "stufe": 6,
+   "equipment": [
+    [
+     "KH"
+    ]
+   ],
+   "lasttyp": "Last",
+   "bereich": {
+    "von": 6,
+    "bis": 12,
+    "einheit": "Wdh."
+   },
+   "zirkelGeeignet": true,
+   "youtubeUrl": "https://www.youtube.com/results?search_query=Devil+Press+richtige+Ausf%C3%BChrung",
+   "videoId": "Cwxmji-3k40",
+   "herkunft": "katalog",
+   "unterstuetzend": false,
+   "anzahlGewichte": 2,
+   "anleitung": [
+    "Hände auf den Hanteln, Liegestütz bis die Brust den Boden berührt.",
+    "Füße zu den Hanteln springen.",
+    "Hanteln in einem Schwung zwischen den Beinen nach oben über den Kopf bringen."
    ]
   }
  ],

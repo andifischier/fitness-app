@@ -19,7 +19,7 @@ describe('Beinbeuger und Anteile je Übung', () => {
   it('eigene Bewegung „Beinbeuger“ mit Sliding Leg Curls, Nordic Curls und Band-Beincurls', () => {
     const z = voll();
     const beinbeuger = z.katalog.uebungen.filter((u) => u.muster === 'Beinbeuger').map((u) => u.id).sort();
-    expect(beinbeuger).toEqual(['band_beincurl', 'nordic_curl', 'sliding_leg_curl']);
+    expect(beinbeuger).toEqual(['band_beincurl', 'nordic_curl', 'sliding_leg_curl', 'sliding_leg_curl_einbeinig']);
     expect(hauptvarianten(z, 'Beinbeuger', ort(), MO).length).toBeGreaterThan(0);
     // Eine Ganzkörper-Einheit mit offenem Bedarf plant eine Übung für die Kniebeugung ein.
     const e = plane(z);

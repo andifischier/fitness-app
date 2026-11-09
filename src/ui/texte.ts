@@ -17,14 +17,14 @@ export const MUSKEL_NAMEN: Record<Muskel, string> = {
 export const MUSTER_NAMEN: Record<MusterId, string> = {
   hDruck: 'Horizontales Drücken', vDruck: 'Vertikales Drücken', hZug: 'Horizontales Ziehen', vZug: 'Vertikales Ziehen',
   Knie: 'Kniedominant', Einbein: 'Einbeinig', Huefte: 'Hüftdominant', Beinbeuger: 'Beinbeuger', Rumpf: 'Rumpf und Bauch',
-  Bizeps: 'Bizeps', Trizeps: 'Trizeps', Schulter: 'Seitliche und hintere Schulter', Waden: 'Waden', Kondition: 'Kondition',
+  Bizeps: 'Bizeps', Trizeps: 'Trizeps', Schulter: 'Seitliche und hintere Schulter', BrustIso: 'Brust isoliert', Waden: 'Waden', Kondition: 'Kondition',
 };
 
 // Hinweis im Equipment-Bildschirm, wenn ein Muster entfällt („Für Ziehen fehlt Equipment“)
 export const MUSTER_FEHLT: Record<MusterId, string> = {
   hDruck: 'Drücken', vDruck: 'Drücken über Kopf', hZug: 'Rudern', vZug: 'Ziehen von oben',
   Knie: 'Kniebeugen', Einbein: 'einbeinige Übungen', Huefte: 'Hüftübungen', Beinbeuger: 'Beinbeuger', Rumpf: 'Bauch', Bizeps: 'Bizeps',
-  Trizeps: 'Trizeps', Schulter: 'Schultern', Waden: 'Waden', Kondition: 'Kondition',
+  Trizeps: 'Trizeps', Schulter: 'Schultern', BrustIso: 'Brust isoliert', Waden: 'Waden', Kondition: 'Kondition',
 };
 
 export const PRIORITAET_NAMEN: Record<Prioritaet, string> = {
