@@ -68,11 +68,11 @@ describe('Frage 2: Übung geht gar nicht', () => {
     const z = mitMuster('Knie', ['box_squat']);
     // Deutlich verfehlt (Untergrenze 8): Ziel = Geschafftes im letzten Satz
     expect(werteUebungAus(z, position('box_squat', 8, [5, 4, 4]), MO, 'zuhause').variante.zielWdh).toBe(4);
-    // Mehr als 2 unter dem Ziel: Ziel = letzter Satz, auch unter U − 1
-    expect(werteUebungAus(z, position('box_squat', 10, [10, 8, 5]), MO, 'zuhause').variante.zielWdh).toBe(5);
-    // Mit leichterer Variante bleibt die Grenze U − 1
+    // Mehr als 2 unter dem Ziel: Ziel = letzter Satz, auch unter U − 1 (als gerade Zahl, Entscheidung 09.11.2026)
+    expect(werteUebungAus(z, position('box_squat', 10, [10, 8, 5]), MO, 'zuhause').variante.zielWdh).toBe(4);
+    // Mit leichterer Variante bleibt die Grenze U − 1 (11, als gerade Zahl 10)
     const squats = mitMuster('Knie', ['kniebeuge']);
-    expect(werteUebungAus(squats, position('kniebeuge', 14, [14, 12, 6]), MO, 'zuhause').variante.zielWdh).toBe(11);
+    expect(werteUebungAus(squats, position('kniebeuge', 14, [14, 12, 6]), MO, 'zuhause').variante.zielWdh).toBe(10);
   });
 
   it('Box Squats sind die Startvariante unter 12 Squats im Testtag', () => {
@@ -114,16 +114,16 @@ describe('Frage 4: Ziel bei Körpergewicht und Band aus allen Sätzen', () => {
     expect(ziel([6, 8, 10], 'passend')).toBe(9);
   });
 
-  it('springt, wenn deutlich mehr geht; sonst +1; höchstens 2 über dem besten ersten Satz', () => {
+  it('springt, wenn deutlich mehr geht; sonst +2; höchstens 4 über dem besten ersten Satz; gerade Zahlen', () => {
     const z = voll();
     const aus = (zielWdh: number, wdh: number[], feedback: Feedback, best?: number) =>
       werteUebungAus({ ...z, varianten: best ? [{ uebungId: 'chinup', zielWdh, seitSteigerung: 5, schwerSerie: 0, bestErsterSatz: best }] : [] },
         position('chinup', zielWdh, wdh, { feedback }), MO, 'zuhause').variante.zielWdh;
-    expect(aus(5, [9, 8, 8, 7, 7], 'passend')).toBe(7);        // vorher: 6
-    expect(aus(5, [9, 8, 8, 7, 7], 'leicht')).toBe(9);
-    expect(aus(8, [8, 8, 8], 'passend')).toBe(9);
-    expect(aus(6, [10, 10, 10], 'leicht')).toBe(12);           // Schätzung 13, bester erster Satz + 2 = 12
-    expect(aus(6, [7, 7, 6], 'passend', 7)).toBe(7);
+    expect(aus(5, [9, 8, 8, 7, 7], 'passend')).toBe(6);        // Schätzung 7, als gerade Zahl 6
+    expect(aus(5, [9, 8, 8, 7, 7], 'leicht')).toBe(8);         // 5 + 4 = 9, als gerade Zahl 8
+    expect(aus(8, [8, 8, 8], 'passend')).toBe(10);
+    expect(aus(6, [10, 10, 10], 'leicht')).toBe(12);           // Schätzung 13, als gerade Zahl 12
+    expect(aus(6, [7, 7, 6], 'passend', 7)).toBe(8);
   });
 });
 

@@ -148,7 +148,10 @@ export const EINHEIT = {
   abschlagLetzteEinheit: 0.6,
   abschlagGleichesMuster: 0.6,    // gleiches Muster wie zuletzt für den Hauptmuskel (Klimmzug nach Rudern)
   maxUebungen: 6,                 // Übungen im Zeitbudget, Bauch und Waden kommen dazu
-  maxUebungenObendrauf: 10,       // bei längerer Wunschdauer mit Sätzen obendrauf (Entscheidung 31.10.2026)
+  // Mehr Zeit, fokussiert (Entscheidung 09.11.2026, ersetzt „Sätze obendrauf“ vom 31.10.2026): Bei längerer
+  // Wunschdauer bekommen nur die schon geplanten Muskeln mehr, bis zu so vielen Sätzen je Muskel und Einheit
+  // (auch über das Wochenziel), höchstens 3 Übungen je Muskel und 10 Übungen im Zeitbudget
+  mehrZeit: { maxSaetzeProMuskel: 16, maxUebungenJeMuskel: 3, maxUebungen: 10 },
   saetzeProUebung: { min: 2, max: 4, maxWenigEinheiten: 5, wenigBisPrognose: 2 },  // bei 1 bis 2 Einheiten bis 5 Sätze
   minOffenerBedarf: 0.25,
   maxSaetzeBauchWaden: 3,
@@ -162,6 +165,9 @@ export const EINHEIT = {
   armeZusatzMuster: ['Bizeps', 'Trizeps'] as readonly MusterId[],
   // Neue Übung (noch nie trainiert): beim ersten Mal höchstens so viele Sätze (Entscheidung 30.10.2026)
   maxSaetzeErstesMal: 3,
+  // Abwechslung (Entscheidung 09.11.2026): Jedes 3. Training einer Grundübung mit Gewicht ersetzt eine
+  // Körpergewichtsvariante desselben Musters die Hantelübung (z. B. Liegestütze statt Bankdrücken)
+  kgAbwechslungJedesMal: 3,
   ruhetagUnterSaetzen: 6,
   freiFuerZirkelAbSaetzen: 3,
   finisherMin: { von: 10, bis: 15 },
@@ -265,8 +271,11 @@ export const PROGRESSION = {
   zielReserveSchonend: 2,
   e1rmGlaettung: 0.5,
   e1rmTeiler: 30,
-  zielPlusPassend: 1,
-  zielPlusLeicht: 2,
+  // Steigerung in 2er-Schritten (Entscheidung 09.11.2026): +2 bei „passend“, +4 bei „zu leicht“; Ziele mit
+  // Wiederholungen sind gerade Zahlen (ungerade Werte werden abgerundet, z. B. 11 auf 10)
+  zielPlusPassend: 2,
+  zielPlusLeicht: 4,
+  wdhSchritt: 2,
   // „Zu leicht“ bei Last: sofort schwerer, wenn die Schätzung dort mindestens U − so viele zulässt
   // (Entscheidung 30.10.2026)
   leichtSchwererAbUnterU: 1,
@@ -284,7 +293,7 @@ export const PROGRESSION = {
   // das Ziel für den letzten Satz (Steigerung und Laststeigerung)
   ermuedungProSatz: 1,
   eingewoehnungEinheiten: 2,
-  kgMaxUeberBestem: 2,
+  kgMaxUeberBestem: 4,           // „zu leicht“ +4 darf über den besten ersten Satz hinaus (Entscheidung 09.11.2026)
   // Leichteste Möglichkeit am Ort (keine leichtere Variante, Last oder Band): Das Ziel darf unter den
   // Bereich sinken, aber nicht unter diese Werte (Entscheidung 30.10.2026)
   minZielLeichteste: { wdh: 1, sek: 5 },
@@ -327,13 +336,15 @@ export const LEISTUNG = {
 
 // Messsatz (Entscheidungen 01.11.2026, „sauberes Limit“): Der letzte Satz jeder Übung mit Wiederholungen
 // endet bei dieser Reserve (Grundübungen 2, sonst bis zur letzten sauberen Wiederholung); bei Ziel-Reserve
-// „2 bis 3“ eine mehr. Danach tippt der Nutzer die Reserve an (0 bis 5, 5 = „5+“).
+// „2 bis 3“ eine mehr. Danach tippt der Nutzer die Reserve grob an (Entscheidung 09.11.2026, ersetzt 0 bis 5+):
+// „Ging nichts mehr“, „Noch 1 bis 2“, „Noch 3 oder mehr“; gespeichert wird der Wert der Stufe.
 export const MESSSATZ = {
   reserveGrund: 2,
   reserveIsolation: 0,
   plusSchonend: 1,
-  reserveMax: 5,
-  leichtAbReserve: 4,             // so viel Reserve oder mehr: „zu leicht“
+  stufen: { nichts: 0, einsBisZwei: 1.5, dreiOderMehr: 4 },
+  reserveMax: 5,                  // größter gespeicherter Wert (ältere Einheiten: 0 bis 5)
+  leichtAbReserve: 3,             // so viel Reserve oder mehr: „zu leicht“ („Noch 3 oder mehr“)
 } as const;
 
 // Erholungswochen und Trainingspause

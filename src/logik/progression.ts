@@ -8,7 +8,7 @@ import { isoWoche, plusTage, stundenZwischen, wocheStart, wocheVerschoben } from
 import { alleUebungen, bandStufen, lastraster, uebungErlaubt } from './equipment';
 import {
   bereichFuer, dosisProMuskel, hauptvarianten, istErholungswoche, musterstufe, persoenlicheGrenze, startwerte,
-  obendraufVon, wochenziele,
+  wochenziele,
 } from './planung';
 import {
   BAND_STUFEN, MUSKELN, type AppZustand, type BandStufe, type Einheit, type Einstellungen, type Feedback, type MaxTest,
@@ -18,7 +18,7 @@ import {
 import {
   ausgeruht, e1rm, einheitZeit, einstellungenVon, ersterSatz, faelligerMaxTest, feedbackVon, fertigeEinheiten, kapazitaetswert,
   leistungswert, letzterWirksam, reserveFuer, seitRueckkehrTrainiert, sitzungen, sterneVon, trainingspause, uebungVon, wdhBei,
-  zielReserve, type Pause, type Sitzung,
+  wdhStufe, zielReserve, type Pause, type Sitzung,
 } from './verlauf';
 
 const begrenze = (x: number, min: number, max: number) => Math.min(max, Math.max(min, x));
@@ -112,7 +112,13 @@ function musterZustand(z: AppZustand, e: Einstellungen, muster: MusterId): Muste
 }
 
 // Ersetzt eine Hauptvariante durch die nächste Variante; die Musterstufe ändert sich dabei nicht.
-function wechsle(muster: MusterZustand, von: string, zu: string) {
+// Gilt auch für die Körpergewichts-Abwechslung (Entscheidung 09.11.2026): Sie folgt ihrer Variante, solange
+// die neue ohne Gewicht ist; sonst sucht die Planung beim nächsten Mal eine neue aus.
+function wechsle(muster: MusterZustand, von: string, zu: string, z?: AppZustand) {
+  if (muster.kgVariante === von) {
+    if (z && uebungVon(z, zu)?.lasttyp === 'KG') muster.kgVariante = zu;
+    else delete muster.kgVariante;
+  }
   const i = muster.hauptvarianten.indexOf(von);
   if (i < 0) return;
   muster.hauptvarianten[i] = zu;
@@ -166,7 +172,7 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
       const naechste = naechsteVariante(z, ort, u, jetzt, muster.hauptvarianten);
       if (naechste) {
         muster.stufe = Math.max(muster.stufe, naechste.stufe);
-        wechsle(muster, u.id, naechste.id);
+        wechsle(muster, u.id, naechste.id, z);
       }
     }
     return { variante: alt ?? v, muster };
@@ -211,7 +217,7 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
     }
     delete v.langsam;
     v.zielWdh = U;
-    wechsle(muster, u.id, naechste.id);
+    wechsle(muster, u.id, naechste.id, z);
   };
 
   if (u.lasttyp === 'Last' && last !== undefined) {
@@ -242,7 +248,7 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
           v.last = leichtereLast;
           v.zielWdh = U;
         } else if (leichter) {
-          wechsle(muster, u.id, leichter.id);
+          wechsle(muster, u.id, leichter.id, z);
           v.zielWdh = U;
         } else v.zielWdh = Math.max(minZiel, Math.min(U, letzter));
       } else if (hoeher !== null && ziel > O && letzter >= O) {
@@ -286,7 +292,7 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
         v.zielWdh = U;
       } else if (leichter) {
         delete v.langsam;
-        wechsle(muster, u.id, leichter.id);
+        wechsle(muster, u.id, leichter.id, z);
         v.zielWdh = U;
       } else v.zielWdh = Math.max(minZiel, Math.min(U, letzter));
     } else if (senken) v.zielWdh = gesenkt(!leichteresBand && !leichter);
@@ -308,6 +314,12 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
     v.zielWdh = Math.min(O, Math.max(ziel, Math.min(Math.max(ziel + plus, geschaetzt), deckel)));
   }
 
+  if (!inSek) {
+    // 2er-Schritte (Entscheidung 09.11.2026): Ziele sind gerade Zahlen. Ein geschafftes, noch ungerades Ziel
+    // aus der Zeit davor sinkt durch das Abrunden nicht.
+    const gerundet = wdhStufe(v.zielWdh);
+    v.zielWdh = !nichtGeschafft && !gesteigert && v.zielWdh >= ziel ? Math.max(gerundet, ziel) : gerundet;
+  }
   if (gesteigert) delete v.langsam;
   v.seitSteigerung = gesteigert ? 0 : Math.min(seit + 1, 99);
   // Musterstufe: schwerste Variante, die im Zielbereich mit „passend“ oder „zu leicht“ bewältigt wurde.
@@ -433,6 +445,12 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
       neu = { ...neu, maxTests: ersetze(neu.maxTests, test, (x) => x.id === test.id) };
       if (fertig.format === 'test') continue;
     }
+    // Abwechslung mit Körpergewicht (Entscheidung 09.11.2026): Diese Variante merkt sich das Muster, damit das
+    // nächste Mal dieselbe kommt bzw. die, zu der die Progression wechselt.
+    if (p.abwechslungFuer && u.lasttyp === 'KG') {
+      const mz = neu.muster.find((x) => x.muster === u.muster);
+      if (mz && mz.kgVariante !== u.id) neu = { ...neu, muster: ersetze(neu.muster, { ...mz, kgVariante: u.id }, (x) => x.muster === u.muster) };
+    }
     const ausgewertet = werteUebungAus(neu, p, jetzt, ort.id);
     let { variante } = ausgewertet;
     const { muster } = ausgewertet;
@@ -465,16 +483,12 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
   const leer = () => Object.fromEntries(MUSKELN.map((m) => [m, 0])) as Record<Muskel, number>;
   const erledigt = { ...(altWoche?.erledigt ?? leer()) };
   for (const m of MUSKELN) erledigt[m] += dosis[m];
-  // Sätze obendrauf (Entscheidung 31.10.2026): was über die geplante Basis hinaus erledigt wurde
-  const extra = obendraufVon(fertig, dosis);
-  const obendrauf = altWoche?.obendrauf || extra ? { ...(altWoche?.obendrauf ?? leer()) } : undefined;
-  if (obendrauf && extra) for (const m of MUSKELN) obendrauf[m] += extra[m];
   const woche: Woche = {
     id: wocheId, prognose, einheiten, erledigt,
     ziele: ort ? wochenziele(z, prognose, ort.id, start, altWoche?.erholungswoche) : (altWoche?.ziele ?? leer()),
     erholungswoche: altWoche?.erholungswoche ?? false, laengerAngenommen: altWoche?.laengerAngenommen ?? false,
     ...(altWoche?.tage ? { tage: altWoche.tage } : {}),
-    ...(obendrauf ? { obendrauf } : {}),
+    ...(altWoche?.obendrauf ? { obendrauf: altWoche.obendrauf } : {}),
   };
 
   // Zirkel-Bestzeit je Zirkel, Ort und Variantensatz

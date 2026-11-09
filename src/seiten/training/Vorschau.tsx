@@ -103,7 +103,7 @@ function Ansicht({ z, einheit }: { z: AppZustand; einheit: Einheit }) {
                     ? [vorgabeText(u, vorgaben[pi]), lastText(u, p)].filter(Boolean).join(' · ')
                     : detailText(u, p, lastAnzeige(z, u));
                   const merkmale = [
-                    p.istErsatz && 'Ersatz', p.getauschtVon && 'Getauscht', p.langsam && '3 Sek. absenken',
+                    p.istErsatz && 'Ersatz', p.getauschtVon && 'Getauscht', p.langsam && '3 Sek. absenken', p.abwechslungFuer && 'Abwechslung',
                   ].filter(Boolean);
                   return (
                     <li key={pi} className="py-2">

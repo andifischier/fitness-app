@@ -10,7 +10,7 @@ import type { AppZustand, BandStufe, Block, Einheit, Feedback, Position, SatzErg
 import { naechsteVariante } from './progression';
 import {
   ausgeruht, e1rm, einstellungenVon, feedbackAusMesssatz, feedbackVon, letzterSatz, fertigeEinheiten, leistungswert, messReserve, sitzungen,
-  uebungVon, wdhBei, zielReserve,
+  uebungVon, wdhBei, wdhStufe, zielReserve,
 } from './verlauf';
 
 // Ein Schritt ist ein Satz (bzw. eine Zirkel-Station in einer Runde).
@@ -162,7 +162,7 @@ export function satzVorgabe(z: AppZustand, einheit: Einheit, s: Schritt): SatzVo
     ? `${u && lastAnzeige(z, u) === 'vorschlag'
       ? `Vorschlag aus deinem Testtag für etwa ${bereich!.von} Wiederholungen; passt es nicht, ändere es.`
       : `Wähle ein Gewicht für etwa ${bereich!.von} Wiederholungen.`} Aufhören, wenn noch ${PROGRESSION.neueVarianteReserve} gingen.`
-    : `${mess !== undefined ? messText(mess) : reserveText(e.zielReserve, inSek)}${erholung ? ' Erholungswoche: Ziel und Messsatz mit 1 Wiederholung mehr Reserve.' : ''}${p.vorbelastet ? ` Der Muskel hat heute schon gearbeitet, darum ist das Ziel ${p.vorbelastet}${inSek ? ' Sek.' : ''} niedriger.` : ''}`;
+    : `${mess !== undefined ? messText(mess) : reserveText(e.zielReserve, inSek)}${p.abwechslungFuer ? ` Abwechslung: Körpergewicht statt ${uebungVon(z, p.abwechslungFuer)?.name ?? 'Hanteln'}.` : ''}${erholung ? ' Erholungswoche: Ziel und Messsatz mit 1 Wiederholung mehr Reserve.' : ''}${p.vorbelastet ? ` Der Muskel hat heute schon gearbeitet, darum ist das Ziel ${p.vorbelastet}${inSek ? ' Sek.' : ''} niedriger.` : ''}`;
   const gesenkt = !kalibrierung && s.satz > 1 && p.zielFolgesaetze !== undefined && p.zielFolgesaetze < p.zielWdh;
   const wert = kalibrierung ? bereich!.von : gesenkt ? p.zielFolgesaetze! : p.zielWdh;
   return { ...basis, art: 'ziel', wert, bereich, reserve, kalibrierung, zaehlen: true, gesenkt, ...(mess !== undefined ? { messReserve: mess } : {}) };
@@ -195,7 +195,7 @@ export function kalibriere(z: AppZustand, ortId: string, u: Uebung, last: number
   const schaetzung = e1rm(last, wdh, PROGRESSION.neueVarianteReserve);
   const r = zielReserve(e);
   const neu = [...raster].reverse().find((kg) => wdhBei(schaetzung, kg, r) >= U) ?? raster[0] ?? last;
-  return { last: neu, zielWdh: begrenze(wdhBei(schaetzung, neu, r), U - 1, O) };
+  return { last: neu, zielWdh: wdhStufe(begrenze(wdhBei(schaetzung, neu, r), U - 1, O)) };
 }
 
 // Last eines Satzes: die des vorherigen Satzes, wenn der Nutzer sie geändert hat (Entscheidung
@@ -247,7 +247,7 @@ export function trageSatzEin(z: AppZustand, einheit: Einheit, s: Schritt, wert: 
   // Messsatz: Reserve und Technik speichern; das Feedback der Übung ergibt sich daraus (Entscheidung
   // 01.11.2026, die drei Stufen am Ende entfallen hier).
   if (vorgabe.messReserve !== undefined && messung) {
-    p.reserve = Math.max(0, Math.min(MESSSATZ.reserveMax, Math.round(messung.reserve)));
+    p.reserve = Math.max(0, Math.min(MESSSATZ.reserveMax, messung.reserve));
     if (messung.technikUnsauber) p.technikUnsauber = true;
     else delete p.technikUnsauber;
     p.feedback = feedbackAusMesssatz(einstellungenVon(z), p);

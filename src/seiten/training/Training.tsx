@@ -405,21 +405,27 @@ function Satz({ z, einheit, schritt, u, farbe, onTauschen, onErledigt }: {
   );
 }
 
-// Messsatz (Entscheidungen 01.11.2026): Nach dem letzten Satz einer Übung tippt der Nutzer an, wie viele
-// saubere Wiederholungen noch gegangen wären, oder dass die Technik unsauber wurde. Erst dann geht es weiter.
+// Messsatz (Entscheidungen 01.11.2026): Nach dem letzten Satz einer Übung tippt der Nutzer an, wie viel
+// sauber noch gegangen wäre, oder dass die Technik unsauber wurde. Erst dann geht es weiter. Seit 09.11.2026
+// (Entscheidung) drei grobe Stufen statt 0 bis 5+, weil man die genaue Zahl im Satz nicht weiß.
+const RESERVE_STUFEN: { text: string; wert: number }[] = [
+  { text: 'Ging nichts mehr', wert: MESSSATZ.stufen.nichts },
+  { text: 'Noch 1 bis 2', wert: MESSSATZ.stufen.einsBisZwei },
+  { text: 'Noch 3 oder mehr', wert: MESSSATZ.stufen.dreiOderMehr },
+];
+
 function Reservewahl({ reserve, unsauber, onReserve, onUnsauber }: {
   reserve?: number; unsauber: boolean; onReserve: (r: number) => void; onUnsauber: () => void;
 }) {
-  const werte = Array.from({ length: MESSSATZ.reserveMax + 1 }, (_, i) => i);
   return (
     <section className="mt-5">
       <p className="text-gross font-bold">Wie viele saubere wären noch gegangen?</p>
-      <div role="radiogroup" aria-label="Wiederholungen in Reserve" className="mt-3 grid grid-cols-6 gap-2">
-        {werte.map((r) => (
-          <button key={r} type="button" role="radio" aria-checked={reserve === r} onClick={() => onReserve(r)}
-            className={`min-h-primaer rounded-xl text-gross ${reserve === r
+      <div role="radiogroup" aria-label="Wiederholungen in Reserve" className="mt-3 grid grid-cols-3 gap-2">
+        {RESERVE_STUFEN.map(({ text, wert }) => (
+          <button key={text} type="button" role="radio" aria-checked={reserve === wert} onClick={() => onReserve(wert)}
+            className={`min-h-primaer rounded-xl px-2 text-basis leading-tight ${reserve === wert
               ? 'border-2 border-akzent bg-akzent-hell font-extrabold text-akzent' : 'border border-rand bg-flaeche font-semibold'}`}>
-            {r === MESSSATZ.reserveMax ? `${r}+` : r}
+            {text}
           </button>
         ))}
       </div>

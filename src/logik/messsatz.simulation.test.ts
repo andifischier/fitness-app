@@ -5,6 +5,7 @@
 // (`schliesseEinheitAb`, `wochenabschluss`, `erholungswocheAngebot`) gemessen werden Fehlalarme,
 // Erkennung eines echten Einbruchs und Laststeigerungen.
 import { describe, expect, it } from 'vitest';
+import { MESSSATZ } from '../konfiguration';
 import { isoWoche, plusTage } from './datum';
 import { erholungswocheAngebot, schliesseEinheitAb, wochenabschluss } from './progression';
 import { MONTAG, ort, zustand } from './testhilfe';
@@ -59,11 +60,12 @@ function simuliere(seed: number, kraft: (woche: number) => number): Ergebnis {
         const moeglich = Math.floor(kapazitaet(k));
         saetze.push(moeglich - v.zielWdh >= 1 ? v.zielWdh : Math.max(0, moeglich - 1));
       }
-      // Messsatz: aufhören, wenn gefühlt noch 2 gingen; echt sind es 2 − bias (± 1 von Tag zu Tag).
+      // Messsatz: aufhören, wenn gefühlt noch 2 gingen; echt sind es 2 − bias (± 1 von Tag zu Tag). Angetippt
+      // wird die grobe Stufe „Noch 1 bis 2“ (Entscheidung 09.11.2026).
       const echteReserve = Math.max(0, 2 - bias + normal(zufall));
       saetze.push(Math.max(0, Math.floor(kapazitaet(SAETZE - 1) - echteReserve)));
       const p: Position = {
-        uebungId: UEBUNG, saetze: SAETZE, zielWdh: v.zielWdh, last, reserve: 2,
+        uebungId: UEBUNG, saetze: SAETZE, zielWdh: v.zielWdh, last, reserve: MESSSATZ.stufen.einsBisZwei,
         ergebnisse: saetze.map((wdh, i) => ({ nr: i + 1, wdh, last, zeit: jetzt })),
       };
       p.feedback = feedbackAusMesssatz(e, p);

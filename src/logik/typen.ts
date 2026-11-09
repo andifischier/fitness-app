@@ -105,7 +105,10 @@ export interface VarianteZustand {
   seitSteigerung: number; schwerSerie: number; zuletzt?: string;
   langsam?: boolean;                // 3 Sek. absenken (Zwischenstufe oder schwerste Last erreicht)
 }
-export interface MusterZustand { muster: MusterId; stufe: number; hauptvarianten: string[] } // letzter Test steht in maxTests
+export interface MusterZustand {
+  muster: MusterId; stufe: number; hauptvarianten: string[];   // letzter Test steht in maxTests
+  kgVariante?: string;              // Körpergewichtsvariante für die Abwechslung (Entscheidung 09.11.2026)
+}
 export interface MuskelZustand {
   muskel: Muskel; letzteBelastung?: string; letzteDosis: number; letzteSchwer: boolean;
   // `gleichWochen`: bewertete Wochen seit der letzten Änderung der Grenze (seit 01.11.2026).
@@ -118,8 +121,8 @@ export interface Woche {
   erholungswoche: boolean; laengerAngenommen: boolean;
   ausgewertet?: boolean;            // Wochenabschluss gelaufen
   tage?: number[];                  // gewählte Trainingstage (0 = Montag … 6 = Sonntag), sortiert
-  // Davon Sätze obendrauf (längere Wunschdauer, Entscheidung 31.10.2026): zählen für die Woche, aber
-  // nicht für die Planung der weiteren Einheiten
+  // Nur in älteren Daten (Sätze obendrauf, Entscheidung 31.10.2026); seit 09.11.2026 ohne Wirkung, weil
+  // alle Sätze für die Planung zählen. Bleibt erhalten, damit keine Nutzerdaten verloren gehen.
   obendrauf?: Record<Muskel, number>;
 }
 export interface Zyklus { nr: number; start: string; ende?: string; grund?: 'zeitablauf' | 'erholungswoche' }
@@ -133,9 +136,11 @@ export interface Position {
   langsam?: boolean;                // 3 Sek. absenken
   zielFolgesaetze?: number;         // im Training gesenktes Ziel der restlichen Sätze (Entscheidung 30.10.2026)
   vorbelastet?: number;             // um so viel gesenktes Ziel, weil der Hauptmuskel schon gearbeitet hat (Entscheidung 02.11.2026)
+  abwechslungFuer?: string;         // Körpergewicht statt dieser Hantelübung, jedes 3. Mal (Entscheidung 09.11.2026)
   ergebnisse: SatzErgebnis[]; feedback?: Feedback;
   // Messsatz (Entscheidungen 01.11.2026): Wiederholungen, die im letzten Satz noch sauber gegangen wären
-  // (5 = 5 oder mehr), und ob die Technik unsauber wurde. Daraus folgt `feedback`.
+  // (seit 09.11.2026 grobe Stufen 0, 1,5 und 4; ältere Daten 0 bis 5), und ob die Technik unsauber wurde.
+  // Daraus folgt `feedback`.
   reserve?: number; technikUnsauber?: boolean;
 }
 export interface Block {
@@ -151,8 +156,7 @@ export interface Einheit {
   bloecke: Block[]; gesamtbewertung?: 1 | 2 | 3 | 4 | 5; notiz?: string;
   name?: string;                    // Name des eigenen Workouts, aus dem die Einheit erstellt wurde
   vorher?: Vorstand;                // Stand vor dem Abschluss, damit Löschen ihn zurückholt (Entscheidung 29.10.2026)
-  // Geplante fraktionelle Sätze je Muskel ohne die Sätze obendrauf; nur bei längerer Wunschdauer
-  // (Entscheidung 31.10.2026). Was darüber hinaus erledigt wird, zählt in `Woche.obendrauf`.
+  // Nur in älteren Daten (Sätze obendrauf, Entscheidung 31.10.2026); seit 09.11.2026 ohne Wirkung.
   basisDosis?: Record<Muskel, number>;
 }
 // Varianten und Muster der Übungen einer Einheit, wie sie vor ihrem Abschluss waren; ohne `zustand`

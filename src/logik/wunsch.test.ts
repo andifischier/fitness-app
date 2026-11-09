@@ -1,9 +1,9 @@
 // Muskeln und Wunschdauer vor dem Start (Entscheidung 31.10.2026): Vorschlag der Muskeln, Auswahl und
-// Abwahl, nicht erholte Muskeln, Wunschdauer und Sätze obendrauf, die spätere Einheiten nicht kürzen.
+// Abwahl, nicht erholte Muskeln, Wunschdauer. Mehr Zeit geht seit 09.11.2026 (Entscheidung) fokussiert an
+// die geplanten Muskeln und zählt für die Woche.
 import { describe, expect, it } from 'vitest';
 import { EINHEIT, FOKUS_GRUPPEN, MUSTER_ART } from '../konfiguration';
-import { loescheEinheit } from './loeschen';
-import { dosisProMuskel, erledigtFuerPlanung, erstelleEinheit, muskelVorschlag, obendraufVon, type EinheitEingabe } from './planung';
+import { dosisProMuskel, erledigtFuerPlanung, erstelleEinheit, muskelVorschlag, type EinheitEingabe } from './planung';
 import { schliesseEinheitAb } from './progression';
 import { absolviere, eingespielt, ort, setzePrognose, zeitpunkt, zustand } from './testhilfe';
 import { MUSKELN, type AppZustand, type Einheit, type Muskel } from './typen';
@@ -74,21 +74,46 @@ describe('Muskeln vor dem Start', () => {
   });
 });
 
-describe('Wunschdauer und Sätze obendrauf', () => {
+describe('Wunschdauer: mehr Zeit fokussiert (Entscheidung 09.11.2026)', () => {
+  const jeMuskel = (z: AppZustand, e: Einheit) => {
+    const anzahl = new Map<Muskel, number>();
+    for (const p of e.bloecke.flatMap((b) => b.positionen)) {
+      const h = uebungVon(z, p.uebungId)!.primaer[0]!;
+      anzahl.set(h, (anzahl.get(h) ?? 0) + 1);
+    }
+    return anzahl;
+  };
+
   it('ohne Wunschdauer bleibt die Einheit kurz, mit 45 Min wird sie länger und bleibt in der Zeit', () => {
     const z = kleineWoche();
     const kurz = erstelleEinheit(z, eingabe(z));
     const lang = erstelleEinheit(z, eingabe(z, { dauerMin: 45 }));
-    expect(kurz.basisDosis).toBeUndefined();
     expect(saetze(lang)).toBeGreaterThan(saetze(kurz));
     expect(lang.geschaetzteDauerMin).toBeLessThanOrEqual(45);
     expect(lang.geschaetzteDauerMin).toBeGreaterThan(kurz.geschaetzteDauerMin);
-    expect(lang.basisDosis).toBeDefined();
-    // Höchstens 10 Sätze je Muskel (plus Nebenbeteiligung aus Bauch und Waden) und höchstens 10 Übungen im Zeitbudget
+    // Höchstens 16 Sätze je Muskel (plus Nebenbeteiligung aus Bauch und Waden), höchstens 10 Übungen im
+    // Zeitbudget und 3 je Muskel
     const dosis = dosisProMuskel(z, lang);
-    for (const m of MUSKELN) expect(dosis[m]).toBeLessThanOrEqual(EINHEIT.maxSaetzeProMuskel + 3);
+    for (const m of MUSKELN) expect(dosis[m]).toBeLessThanOrEqual(EINHEIT.mehrZeit.maxSaetzeProMuskel + 3);
     const imBudget = lang.bloecke.flatMap((b) => b.positionen).filter((p) => MUSTER_ART[uebungVon(z, p.uebungId)!.muster] !== 'zusatz');
-    expect(imBudget.length).toBeLessThanOrEqual(EINHEIT.maxUebungenObendrauf);
+    expect(imBudget.length).toBeLessThanOrEqual(EINHEIT.mehrZeit.maxUebungen);
+    for (const n of jeMuskel(z, lang).values()) expect(n).toBeLessThanOrEqual(EINHEIT.mehrZeit.maxUebungenJeMuskel);
+  });
+
+  it('mehr Zeit geht nur an die Muskeln, die ohnehin geplant sind, und vertieft sie', () => {
+    const z = setzePrognose(eingespielt(zustand({ orte: [ort()] })), zeitpunkt(0, 18), 3);
+    const basis = { jetzt, ortId: 'zuhause', prognose: 3, morgenWieder: true, laenger: false };
+    const normal = erstelleEinheit(z, basis);
+    const lang = erstelleEinheit(z, { ...basis, dauerMin: 60 });
+    const geplant = hauptmuskeln(z, normal);
+    expect([...hauptmuskeln(z, lang)].every((m) => geplant.has(m))).toBe(true);
+    expect(saetze(lang)).toBeGreaterThan(saetze(normal));
+    // Die gewählten Übungen bekommen zuerst mehr Sätze (bis 4) …
+    const saetzeVon = (e: Einheit) => new Map(e.bloecke.flatMap((b) => b.positionen).map((p) => [p.uebungId, p.saetze]));
+    for (const [id, n] of saetzeVon(normal)) expect(saetzeVon(lang).get(id)).toBeGreaterThanOrEqual(n);
+    expect([...saetzeVon(lang).values()].some((n) => n === EINHEIT.saetzeProUebung.max)).toBe(true);
+    // … dann kommen weitere Übungen für diese Muskeln dazu.
+    expect([...jeMuskel(z, lang).values()].some((n) => n >= 2)).toBe(true);
   });
 
   it('eine kürzere Wunschdauer kürzt die Einheit', () => {
@@ -97,16 +122,15 @@ describe('Wunschdauer und Sätze obendrauf', () => {
     const kurz = erstelleEinheit(z, eingabe(z, { prognose: 3, dauerMin: 20 }));
     expect(kurz.geschaetzteDauerMin).toBeLessThanOrEqual(20);
     expect(saetze(kurz)).toBeLessThan(saetze(normal));
-    expect(kurz.basisDosis).toBeUndefined();
   });
 
-  it('neue Übungen bleiben auch mit Sätzen obendrauf bei höchstens 3 Sätzen', () => {
+  it('neue Übungen bleiben auch mit mehr Zeit bei höchstens 3 Sätzen', () => {
     const z = setzePrognose(zustand({ orte: [ort()] }), zeitpunkt(0, 18), 3);
     const lang = erstelleEinheit(z, eingabe(z, { prognose: 3, dauerMin: 60 }));
     for (const p of lang.bloecke.flatMap((b) => b.positionen)) expect(p.saetze).toBeLessThanOrEqual(EINHEIT.maxSaetzeErstesMal);
   });
 
-  it('Sätze obendrauf zählen für die Woche, kürzen aber die nächste Einheit nicht', () => {
+  it('die zusätzlichen Sätze zählen für die Woche: die nächste Einheit plant für diese Muskeln weniger', () => {
     const z = kleineWoche();
     const lang = erstelleEinheit(z, eingabe(z, { dauerMin: 50 }));
     const normal = erstelleEinheit(z, eingabe(z));
@@ -114,23 +138,13 @@ describe('Wunschdauer und Sätze obendrauf', () => {
     const nachNormal = schliesseEinheitAb(z, alleSaetze(normal), zeitpunkt(2, 19));
     const wLang = nachLang.wochen.find((w) => w.id === lang.woche)!;
     const wNormal = nachNormal.wochen.find((w) => w.id === normal.woche)!;
-    // Die Woche zählt alle Sätze …
     const summe = (r: Record<Muskel, number>) => MUSKELN.reduce((s, m) => s + r[m], 0);
-    expect(summe(wLang.erledigt)).toBeGreaterThan(summe(wNormal.erledigt));
-    expect(wLang.obendrauf).toBeDefined();
-    // … für die Planung zählt nur die Basis, also so viel wie nach der normalen Einheit.
-    for (const m of MUSKELN) expect(erledigtFuerPlanung(wLang)[m]).toBeCloseTo(erledigtFuerPlanung(wNormal)[m], 5);
-    // Löschen nimmt die Sätze obendrauf wieder heraus.
-    const id = nachLang.einheiten.at(-1)!.id;
-    const geloescht = loescheEinheit(nachLang, id)!.wochen.find((w) => w.id === lang.woche)!;
-    for (const m of MUSKELN) expect(geloescht.obendrauf![m]).toBeCloseTo(0, 5);
-  });
-
-  it('bei Abbruch zählt nur, was über die Basis hinaus erledigt wurde', () => {
-    const z = kleineWoche();
-    const lang = erstelleEinheit(z, eingabe(z, { dauerMin: 50 }));
-    const nichts = { ...lang, status: 'abgebrochen' as const };
-    expect(MUSKELN.every((m) => obendraufVon(lang, dosisProMuskel(z, nichts))![m] === 0)).toBe(true);
+    expect(summe(erledigtFuerPlanung(wLang))).toBeGreaterThan(summe(erledigtFuerPlanung(wNormal)));
+    for (const m of MUSKELN) expect(erledigtFuerPlanung(wLang)[m]).toBeCloseTo(wLang.erledigt[m], 5);
+    const spaeter = zeitpunkt(5, 18);
+    const danachLang = dosisProMuskel(nachLang, erstelleEinheit(nachLang, { ...eingabe(nachLang), jetzt: spaeter }));
+    const danachNormal = dosisProMuskel(nachNormal, erstelleEinheit(nachNormal, { ...eingabe(nachNormal), jetzt: spaeter }));
+    expect(summe(danachLang)).toBeLessThan(summe(danachNormal));
   });
 });
 
