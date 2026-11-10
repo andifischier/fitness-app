@@ -118,7 +118,7 @@ export const varianteSchema = z.object({
 
 export const musterZustandSchema = z.object({
   muster: musterId, stufe: zahl.min(1).max(10), hauptvarianten: z.array(z.string()),   // halbe Stufen seit 01.11.2026
-  kgVariante: z.string().optional(),
+  kgVariante: z.string().optional(), kgVarianten: z.partialRecord(muskel, z.string()).optional(),
 });
 
 export const muskelZustandSchema = z.object({

@@ -179,10 +179,11 @@ export const EINHEIT = {
   // gearbeitet, liegt ihr Ziel so viele Wdh. tiefer (Halteübungen × PROGRESSION.sekProWdh Sek.)
   vorbelastungWeniger: 2,
   // Arme bei 1 bis 2 Einheiten (Entscheidung 01.11.2026): je eine Bizeps- und Trizepsübung mit 2 bis 3
-  // Sätzen zusätzlich zum Zeitbudget, wenn für den Muskel noch Bedarf offen ist
+  // Sätzen zusätzlich zum Zeitbudget, wenn für den Muskel noch Bedarf offen ist. Seit 10.11.2026 ebenso eine
+  // Übung für die hinteren Oberschenkel (Beincurls), Entscheidung nach dem Routine-Check
   armeZusatzBisPrognose: 2,
   armeZusatzSaetze: { min: 2, max: 3 },
-  armeZusatzMuster: ['Bizeps', 'Trizeps'] as readonly MusterId[],
+  armeZusatzMuster: ['Bizeps', 'Trizeps', 'Beinbeuger'] as readonly MusterId[],
   // Neue Übung (noch nie trainiert): beim ersten Mal höchstens so viele Sätze (Entscheidung 30.10.2026)
   maxSaetzeErstesMal: 3,
   // Abwechslung (Entscheidung 09.11.2026): Jedes 3. Training einer Grundübung mit Gewicht ersetzt eine
@@ -238,6 +239,11 @@ export const LASTTYP_RANG = { Last: 0, Band: 1, KG: 2, Zeit: 3 } as const;
 // der genannten Utensilien dort ist (Floor Press nur ohne Bank, sonst Bankdrücken mit vollem Bewegungsumfang).
 // Seit 09.11.2026 auch Boden-Flys und Glute Bridges mit Hantel (nur ohne Bank), Pullovers (nur ohne
 // Klimmzugstange, Entscheidung 09.11.2026) und Swings mit Kurzhantel (nur ohne Kettlebell).
+// Übungen nur als Lieblingsübung (Entscheidung 10.11.2026): Sie werden nie von selbst Hauptübung, auch nicht als
+// neue Übung bei Zyklusbeginn; als Favorit und per Tausch bleiben sie möglich. Shrugs stehen bei „Schulter“, trainieren
+// aber den Rücken und verdrängten sonst die Übungen für die seitliche und hintere Schulter.
+export const NUR_ALS_FAVORIT: readonly string[] = ['kh_shrugs'];
+
 export const NUR_OHNE: Record<string, readonly string[]> = {
   kh_bodendruecken: ['BANK', 'SCHRAEG'],
   kh_boden_flys: ['BANK', 'SCHRAEG'],

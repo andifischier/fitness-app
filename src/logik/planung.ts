@@ -1,7 +1,7 @@
 // Planungsmodul laut Spezifikation, Abschnitt „Planungslogik“. Rein und deterministisch: Die
 // aktuelle Zeit wird übergeben; der Zustand wird nur gelesen, nie verändert.
 import {
-  ABLEITUNG, BEWERTUNG, ERHOLUNGSWOCHE, EINHEIT, ERGAENZUNG, ERSATZ, FOKUS_GRUPPEN, KOERPERHAELFTE, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
+  ABLEITUNG, BEWERTUNG, NUR_ALS_FAVORIT, ERHOLUNGSWOCHE, EINHEIT, ERGAENZUNG, ERSATZ, FOKUS_GRUPPEN, KOERPERHAELFTE, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
   KOMBI, PROGRESSION, TESTTAG, TRAININGSPAUSE, WOCHENZIEL, WORKOUT, ZEITBUDGET, ZIRKEL,
 } from '../konfiguration';
 import { isoWoche, plusTage, stundenZwischen, verbleibendeTage, wochenNummer, wochentag } from './datum';
@@ -10,7 +10,7 @@ import {
 } from './equipment';
 import {
   BAND_STUFEN, MUSKELN, MUSTER_IDS, PRIORITAETEN, type AppZustand, type BandStufe, type Block, type EigenesWorkout, type Einheit,
-  type Einstellungen, type Muskel, type MusterId, type Ort, type Position, type Uebung, type Woche, type Zirkel,
+  type Einstellungen, type Muskel, type MusterId, type MusterZustand, type Ort, type Position, type Uebung, type Woche, type Zirkel,
 } from './typen';
 import {
   einheitZeit, einstellungenVon, faelligerMaxTest, fertigeEinheiten, istErholt, kapazitaetswert, letzteEinheitZeit, seitRueckkehrTrainiert,
@@ -250,7 +250,8 @@ export function hauptvarianten(z: AppZustand, muster: MusterId, ort: Ort, jetzt:
     if (gueltig.length > 0 && gueltig.every((u) => u)) {
       return ohneEinStern(z, e, gueltig as Uebung[], erlaubt).map((u) => ({ uebung: u, istErsatz: false }));
     }
-    const sortiert = rangiere(z, e, muster, erlaubt);
+    const automatisch = erlaubt.filter((u) => vonSelbstWaehlbar(e, u));
+    const sortiert = rangiere(z, e, muster, automatisch.length > 0 ? automatisch : erlaubt);
     const a = sortiert[0]!;
     // B höchstens 1 Stufe über der Musterstufe (Entscheidung 30.10.2026); sonst nur A. Bei Varianten
     // mit Gewicht regelt die Last die Schwierigkeit, die Grenze gilt dort nicht (wie in der Rangfolge).
@@ -276,13 +277,18 @@ export function hauptvarianten(z: AppZustand, muster: MusterId, ort: Ort, jetzt:
   return [];
 }
 
+// Übungen, die nur als Favorit von selbst kommen (Entscheidung 10.11.2026)
+export function vonSelbstWaehlbar(e: Einstellungen, u: Uebung): boolean {
+  return !NUR_ALS_FAVORIT.includes(u.id) || e.favoriten.includes(u.id);
+}
+
 // 1 Stern: Eine Hauptvariante wird durch die beste erlaubte Alternative desselben Musters mit
 // höchstens 1 Stufe Abstand und mindestens 2 Sternen ersetzt; gibt es keine, bleibt sie.
 export function ohneEinStern(z: AppZustand, e: Einstellungen, liste: Uebung[], erlaubt: Uebung[]): Uebung[] {
   const neu = [...liste];
   neu.forEach((u, i) => {
     if (sterneVon(e, u.id) !== 1) return;
-    const kandidaten = erlaubt.filter((v) => v.muster === u.muster && !neu.some((x) => x.id === v.id)
+    const kandidaten = erlaubt.filter((v) => v.muster === u.muster && !neu.some((x) => x.id === v.id) && vonSelbstWaehlbar(e, v)
       && Math.abs(v.stufe - u.stufe) <= BEWERTUNG.ersatzMaxStufen && sterneVon(e, v.id) >= BEWERTUNG.ersatzMinSterne);
     const ersatz = rangiere(z, e, u.muster, kandidaten)[0];
     if (ersatz) neu[i] = ersatz.u;
@@ -378,7 +384,10 @@ export function lastVorschlag(z: AppZustand, e: Einstellungen, ort: Ort, u: Uebu
 export function startwerte(z: AppZustand, e: Einstellungen, ort: Ort, u: Uebung): Startwerte {
   const bereich = bereichFuer(e, u, z);
   const v = z.varianten.find((x) => x.uebungId === u.id);
-  const werte: Startwerte = { zielWdh: v?.zielWdh ?? bereich.von };
+  // Erstes Ziel einer Übung: die Untergrenze, mit Wiederholungen auf die gerade Zahl darunter (Entscheidung
+  // 10.11.2026, z. B. 4 Klimmzüge bei Bereich 5 bis 12); Halteübungen bleiben bei der Untergrenze.
+  const erstesZiel = u.bereich.einheit === 'Sek.' ? bereich.von : wdhStufe(bereich.von);
+  const werte: Startwerte = { zielWdh: v?.zielWdh ?? erstesZiel };
 
   if (u.lasttyp === 'Last') {
     const raster = lastraster(ort, u);
@@ -516,21 +525,31 @@ export interface Kontext { z: AppZustand; e: Einstellungen; ort: Ort; jetzt: str
 
 // Abwechslung mit Körpergewicht (Entscheidung 09.11.2026): Ist die Hantelübung (Grundübung mit Gewicht) seit der
 // letzten Abwechslung für sie (bzw. seit Beginn) mindestens 2-mal trainiert worden, kommt beim 3. Mal statt ihrer
-// eine Körpergewichtsvariante desselben Musters. Welche: die gespeicherte des Musters (`MusterZustand.kgVariante`,
-// sie folgt der Progression), sonst die schwerste am Ort mögliche bis zur Musterstufe, ohne eine passende die
-// leichteste; Varianten mit 1 Stern zuletzt. Ohne Körpergewichtsvariante am Ort bleibt die Hantelübung.
+// eine Körpergewichtsvariante desselben Musters. Abgestuft (Entscheidung 10.11.2026): zuerst ein direkter Ersatz mit
+// demselben Hauptmuskel (z. B. einbeiniges Kreuzheben statt Rumänischem Kreuzheben), ohne einen solchen jede des
+// Musters. Welche: die für diesen Hauptmuskel gespeicherte (`MusterZustand.kgVarianten`, sie folgt der Progression),
+// sonst die schwerste am Ort mögliche bis zur Musterstufe, ohne eine passende die leichteste; Varianten mit 1 Stern
+// zuletzt. Ohne Körpergewichtsvariante am Ort bleibt die Hantelübung.
 export function kgAbwechslung(z: AppZustand, e: Einstellungen, ort: Ort, u: Uebung, jetzt: string): Uebung | undefined {
   if (u.lasttyp !== 'Last' || !istGrund(u)) return undefined;
   const letzte = fertigeEinheiten(z).filter((x) => einheitZeit(x) < jetzt && x.bloecke.some((b) =>
     b.positionen.some((p) => p.abwechslungFuer === u.id && p.ergebnisse.length > 0))).map(einheitZeit).at(-1) ?? '';
   const seither = sitzungen(z, u.id, jetzt).filter((x) => x.einheit.format !== 'test' && x.zeit > letzte).length;
   if (seither < EINHEIT.kgAbwechslungJedesMal - 1) return undefined;
-  return kgVariante(z, e, ort, u.muster, jetzt);
+  return kgVariante(z, e, ort, u.muster, hauptmuskel(u)!, jetzt);
 }
 
-export function kgVariante(z: AppZustand, e: Einstellungen, ort: Ort, muster: MusterId, jetzt: string): Uebung | undefined {
-  const erlaubt = alleUebungen(z).filter((v) => v.muster === muster && v.lasttyp === 'KG' && uebungErlaubt(e, ort, v, jetzt));
-  const gespeichert = z.muster.find((x) => x.muster === muster)?.kgVariante;
+// Gespeicherte Körpergewichtsvariante für die Hantelübungen mit diesem Hauptmuskel; ältere Daten hatten eine
+// je Muster (`kgVariante`).
+export function gespeicherteKgVariante(mz: MusterZustand | undefined, h: Muskel): string | undefined {
+  return mz?.kgVarianten?.[h] ?? mz?.kgVariante;
+}
+
+export function kgVariante(z: AppZustand, e: Einstellungen, ort: Ort, muster: MusterId, h: Muskel, jetzt: string): Uebung | undefined {
+  const moeglich = alleUebungen(z).filter((v) => v.muster === muster && v.lasttyp === 'KG' && uebungErlaubt(e, ort, v, jetzt));
+  const direkt = moeglich.filter((v) => hauptmuskel(v) === h);
+  const erlaubt = direkt.length > 0 ? direkt : moeglich;
+  const gespeichert = gespeicherteKgVariante(z.muster.find((x) => x.muster === muster), h);
   const bekannt = erlaubt.find((v) => v.id === gespeichert);
   if (bekannt) return bekannt;
   const stufe = musterstufe(z, e, muster);
@@ -835,6 +854,7 @@ function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Pla
 
   // Arme bei 1 bis 2 Einheiten (Entscheidung 01.11.2026): Ist für Bizeps oder Trizeps noch Bedarf offen und
   // hat er keine eigene Übung, kommt eine mit 2 bis 3 Sätzen zusätzlich zum Zeitbudget dazu (wie Bauch und Waden).
+  // Seit 10.11.2026 ebenso für die hinteren Oberschenkel (Muster Beinbeuger, z. B. Sliding Leg Curls).
   if (prognose <= EINHEIT.armeZusatzBisPrognose) {
     for (const muster of EINHEIT.armeZusatzMuster) {
       const k = faellige(z, hauptvarianten(z, muster, ort, jetzt, e));

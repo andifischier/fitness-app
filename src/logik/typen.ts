@@ -107,7 +107,9 @@ export interface VarianteZustand {
 }
 export interface MusterZustand {
   muster: MusterId; stufe: number; hauptvarianten: string[];   // letzter Test steht in maxTests
-  kgVariante?: string;              // Körpergewichtsvariante für die Abwechslung (Entscheidung 09.11.2026)
+  kgVariante?: string;              // Körpergewichtsvariante für die Abwechslung (Entscheidung 09.11.2026; nur noch in älteren Daten)
+  // Seit 10.11.2026 je Hauptmuskel der ersetzten Hantelübung (Entscheidung: direkter Ersatz zuerst)
+  kgVarianten?: Partial<Record<Muskel, string>>;
 }
 export interface MuskelZustand {
   muskel: Muskel; letzteBelastung?: string; letzteDosis: number; letzteSchwer: boolean;

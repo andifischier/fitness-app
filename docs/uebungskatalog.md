@@ -33,7 +33,7 @@ Gibt es auch keinen Ersatz, entfällt das Muster an diesem Ort (Hinweis im Equip
 
 **Nur ohne bestimmtes Utensil** (`NUR_OHNE` in der Konfiguration): Floor Press und Floor Flys sowie Glute Bridges mit Hantel nur ohne Bank und Schrägbank; Dumbbell Pullovers nur ohne Klimmzugstange (Entscheidung 09.11.2026), damit sie Klimmzüge nicht verdrängen; Swings mit Kurzhantel nur ohne Kettlebell.
 
-**Shrugs** (Entscheidung 09.11.2026): stehen bei „Schulter“, zählen aber für den Rücken. Sie kommen nicht automatisch als Hauptübung, sondern als Lieblingsübung oder beim Ausprobieren einer neuen Übung zu Zyklusbeginn.
+**Shrugs** (Entscheidung 09.11.2026): stehen bei „Schulter“, zählen aber für den Rücken. Sie kommen nicht automatisch als Hauptübung, nur als Lieblingsübung oder per Tausch (Entscheidung 10.11.2026; vorher auch beim Ausprobieren einer neuen Übung zu Zyklusbeginn, dann verdrängten sie für 6 Wochen die Reverse Flys).
 
 ## Utensilien
 
@@ -218,7 +218,7 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | kh\_seitheben | Dumbbell Lateral Raises | Schulter | Schultern | keine | 3 | KH | Last | 12 bis 20 Wdh. | nein |
 | kh\_reverse\_flys | Reverse Dumbbell Flys | Schulter | Schultern | Rücken | 3 | KH | Last | 12 bis 20 Wdh. | nein |
 | prone\_ytw | Prone Y-T-W Raises | Schulter | Schultern | Rücken | 1 | keins | KG | 8 bis 12 Wdh. | ja |
-| kh\_shrugs | Dumbbell Shrugs (nur auf Wunsch, Entscheidung 09.11.2026) | Schulter | Rücken | keine | 3 | KH | Last | 10 bis 15 Wdh. | nein |
+| kh\_shrugs | Dumbbell Shrugs (nur als Favorit, Entscheidungen 09.11. und 10.11.2026) | Schulter | Rücken | keine | 3 | KH | Last | 10 bis 15 Wdh. | nein |
 | kh\_frontheben | Dumbbell Front Raises | Schulter | Schultern | keine | 4 | KH | Last | 10 bis 15 Wdh. | nein |
 | kh\_upright\_rows | Dumbbell Upright Rows | Schulter | Schultern | Rücken | 4 | KH | Last | 10 bis 15 Wdh. | nein |
 | kh\_flys | Dumbbell Flys | BrustIso | Brust | keine | 4 | KH + BANK/SCHRAEG | Last | 10 bis 15 Wdh. | nein |

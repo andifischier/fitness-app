@@ -8,7 +8,7 @@ import { isoWoche, plusTage, stundenZwischen, wocheStart, wocheVerschoben } from
 import { alleUebungen, bandStufen, lastraster, uebungErlaubt } from './equipment';
 import {
   bereichFuer, dosisProMuskel, hauptvarianten, istErholungswoche, musterstufe, persoenlicheGrenze, startwerte,
-  wochenziele,
+  vonSelbstWaehlbar, wochenziele,
 } from './planung';
 import {
   BAND_STUFEN, MUSKELN, type AppZustand, type BandStufe, type Einheit, type Einstellungen, type Feedback, type MaxTest,
@@ -115,9 +115,15 @@ function musterZustand(z: AppZustand, e: Einstellungen, muster: MusterId): Muste
 // Gilt auch für die Körpergewichts-Abwechslung (Entscheidung 09.11.2026): Sie folgt ihrer Variante, solange
 // die neue ohne Gewicht ist; sonst sucht die Planung beim nächsten Mal eine neue aus.
 function wechsle(muster: MusterZustand, von: string, zu: string, z?: AppZustand) {
+  const ohneGewicht = z !== undefined && uebungVon(z, zu)?.lasttyp === 'KG';
   if (muster.kgVariante === von) {
-    if (z && uebungVon(z, zu)?.lasttyp === 'KG') muster.kgVariante = zu;
+    if (ohneGewicht) muster.kgVariante = zu;
     else delete muster.kgVariante;
+  }
+  if (muster.kgVarianten) {
+    const neu = { ...muster.kgVarianten };
+    for (const m of MUSKELN) if (neu[m] === von) { if (ohneGewicht) neu[m] = zu; else delete neu[m]; }
+    muster.kgVarianten = neu;
   }
   const i = muster.hauptvarianten.indexOf(von);
   if (i < 0) return;
@@ -446,10 +452,20 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
       if (fertig.format === 'test') continue;
     }
     // Abwechslung mit Körpergewicht (Entscheidung 09.11.2026): Diese Variante merkt sich das Muster, damit das
-    // nächste Mal dieselbe kommt bzw. die, zu der die Progression wechselt.
-    if (p.abwechslungFuer && u.lasttyp === 'KG') {
+    // nächste Mal dieselbe kommt bzw. die, zu der die Progression wechselt. Seit 10.11.2026 je Hauptmuskel der
+    // ersetzten Hantelübung; eine ältere Angabe je Muster geht dabei in die neue über.
+    const h = p.abwechslungFuer ? uebungVon(neu, p.abwechslungFuer)?.primaer[0] : undefined;
+    if (h && u.lasttyp === 'KG') {
       const mz = neu.muster.find((x) => x.muster === u.muster);
-      if (mz && mz.kgVariante !== u.id) neu = { ...neu, muster: ersetze(neu.muster, { ...mz, kgVariante: u.id }, (x) => x.muster === u.muster) };
+      if (mz && (mz.kgVarianten?.[h] !== u.id || mz.kgVariante !== undefined)) {
+        const { kgVariante: alt, ...rest } = mz;
+        const kgVarianten: Partial<Record<Muskel, string>> = { ...mz.kgVarianten };
+        // Die ältere Angabe bleibt für den Hauptmuskel ihrer Übung, solange er keine eigene hat.
+        const altMuskel = alt ? uebungVon(neu, alt)?.primaer[0] : undefined;
+        if (alt && altMuskel && kgVarianten[altMuskel] === undefined) kgVarianten[altMuskel] = alt;
+        kgVarianten[h] = u.id;
+        neu = { ...neu, muster: ersetze(neu.muster, { ...rest, kgVarianten }, (x) => x.muster === u.muster) };
+      }
     }
     const ausgewertet = werteUebungAus(neu, p, jetzt, ort.id);
     let { variante } = ausgewertet;
@@ -665,6 +681,7 @@ function tauscheNebenuebungen(z: AppZustand, laufend: Zyklus, jetzt: string): Mu
     const nurVorrang = u.vorrang === true && sterne(id) >= BEWERTUNG.neutral;
     const kandidaten = alleUebungen(z).filter((v) => v.muster === u.muster && v.stufe === u.stufe
       && !mz.hauptvarianten.includes(v.id) && !pause.has(v.id) && sterne(v.id) >= mindestens && uebungErlaubt(e, ort, v, jetzt)
+      && vonSelbstWaehlbar(e, v)
       && (!nurVorrang || v.vorrang === true))
       .sort((a, b) => Number(b.vorrang === true) - Number(a.vorrang === true) || sterne(b.id) - sterne(a.id)).map((v) => v.id);
     return [{ muster: mz.muster, id, kandidaten }];
