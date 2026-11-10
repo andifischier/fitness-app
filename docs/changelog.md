@@ -573,3 +573,14 @@
   danach eine Woche Pause hat. Simulation: Montag lang, Mittwoch und Freitag normal ergibt keine Ruhetag-Empfehlung
   mehr; bei dreimal 75 Min. je Woche kommen in 8 Wochen noch 3 bis 5 Ruhetag-Empfehlungen (vorher 11 bis 13 in
   12 Wochen).
+
+## 10.11.2026: Waden auf „sehr niedrig“ nur einmal pro Woche
+- **Was:** Neue Regel `WOCHENZIEL.einmalProWoche` (Konfiguration) und `einmalProWoche` in `planung.ts`: Waden auf
+  „sehr niedrig“ bekommen ihr ganzes Wochenziel in einem Training, danach bis Wochenende keine Wadenübung mehr, auch
+  keine Erhaltungssätze. Das Wochenziel ist dafür höchstens 3 Sätze. Neuer Test `waden.test.ts` (Simulation mit 2 bis 5
+  Trainings und allen Levels); zwei bestehende Tests erwarten nun Wadenziel 3 statt 4. Spezifikation, Entscheidungen
+  und Annahmen nachgeführt.
+- **Warum:** Rückmeldung des Nutzers: Waden kamen trotz „sehr niedrig“ gefühlt jedes zweite Training. Simulation
+  vorher: Waden in 2 von 3, 2 von 4 und 3 von 5 Trainings, teils mit einem einzelnen Satz; nach 1 Satz kamen
+  zudem 3 Erhaltungssätze (bei Einsteigern 4 statt 2 Sätzen je Woche). Jetzt: in jeder Woche genau ein Training mit
+  2 bis 3 Wadensätzen.

@@ -59,7 +59,7 @@ describe('Wochenziel und Prioritäten', () => {
     const standard = wochenziele(zustand(), 3, 'zuhause', MO);
     const z = zustand({ einstellungen: { prioritaeten: { ...zustand().einstellungen[0]!.prioritaeten, Waden: 'hoch', Brust: 'sehrNiedrig' } } });
     const geaendert = wochenziele(z, 3, 'zuhause', MO);
-    expect(standard.Waden).toBe(4);
+    expect(standard.Waden).toBe(3);
     expect(geaendert.Waden).toBe(12);
     expect(standard.Brust).toBe(12);
     expect(geaendert.Brust).toBeLessThanOrEqual(4);

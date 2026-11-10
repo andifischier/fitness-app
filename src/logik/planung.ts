@@ -164,7 +164,8 @@ export function wochenziele(z: AppZustand, prognose: number, ortId: string, jetz
   const ziele = leer();
   for (const m of MUSKELN) {
     const p = WOCHENZIEL.prioritaet[e.prioritaeten[m]];
-    ziele[m] = Math.round(faktor * Math.min(persoenlicheGrenze(z, e, m), p.obergrenze,
+    const deckel = einmalProWoche(e, m) ? WOCHENZIEL.einmalProWoche.maxSaetze : Infinity;
+    ziele[m] = Math.round(faktor * Math.min(persoenlicheGrenze(z, e, m), p.obergrenze, deckel,
       Math.max(p.untergrenze, (budget * gewicht(e, m)) / summe)));
   }
   const ort = z.orte.find((o) => o.id === ortId);
@@ -219,6 +220,22 @@ export function wochenDosis(dosis: ProMuskel): ProMuskel {
 }
 
 // Tage dieser Woche, an denen der Muskel schon gearbeitet hat (beendete Einheiten, ohne Testtag).
+// Einmal pro Woche (Entscheidung 10.11.2026): gilt für Waden auf „sehr niedrig“.
+export function einmalProWoche(e: Einstellungen, m: Muskel): boolean {
+  const r = WOCHENZIEL.einmalProWoche;
+  return r.muskeln.includes(m) && e.prioritaeten[m] === r.prioritaet;
+}
+
+// Tage dieser Woche mit einer eigenen Übung für den Muskel (Hauptmuskel, mindestens ein Satz; Zirkel und
+// Testtag zählen nicht).
+function tageMitEigenerUebung(z: AppZustand, wocheId: string, m: Muskel): number {
+  const tage = new Set(fertigeEinheiten(z).filter((x) => x.woche === wocheId && x.format !== 'test'
+    && x.bloecke.some((b) => b.typ !== 'zirkel' && b.positionen.some((p) =>
+      p.ergebnisse.length > 0 && uebungVon(z, p.uebungId)?.primaer.includes(m))))
+    .map((x) => einheitZeit(x).slice(0, 10)));
+  return tage.size;
+}
+
 function trainingstage(z: AppZustand, wocheId: string, m: Muskel): number {
   const tage = new Set(fertigeEinheiten(z).filter((x) => x.woche === wocheId && x.format !== 'test'
     && dosisProMuskel(z, x)[m] > 0).map((x) => einheitZeit(x).slice(0, 10)));
@@ -696,6 +713,11 @@ function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Pla
   const bedarf = leer();
   for (const m of MUSKELN) {
     const rest = Math.max(0, ziele[m] - erledigt[m]);
+    if (einmalProWoche(e, m)) {
+      // Der ganze Rest in einem Training; hatte der Muskel diese Woche schon seine Übung, nichts mehr.
+      bedarf[m] = wahl.has(m) && tageMitEigenerUebung(z, isoWoche(jetzt), m) === 0 ? Math.ceil(rest - 1e-9) : 0;
+      continue;
+    }
     const anteil = fokus === 'ganz' ? rest / n : rest / Math.max(1, Math.ceil(n / 2));
     bedarf[m] = wahl.has(m) ? Math.min(EINHEIT.maxSaetzeProMuskel, Math.ceil(anteil)) : 0;
     // Erhaltung (Entscheidung 10.11.2026): Ziel schon erreicht, aber erst an einem Tag trainiert, z. B. nach einem

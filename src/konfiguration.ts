@@ -160,6 +160,9 @@ export const WOCHENZIEL = {
   // damit unter der Obergrenze der Priorität bleibt. Nicht in der Erholungswoche.
   erhaltungSaetze: { min: 2, max: 3 },
   erhaltungBisTrainingstage: 1,
+  // Einmal pro Woche (Entscheidung 10.11.2026): Waden auf „sehr niedrig“ kommen höchstens in einem Training je
+  // Woche, dann mit dem ganzen Wochenziel; das Ziel ist dafür höchstens 3 Sätze. Keine Erhaltungssätze.
+  einmalProWoche: { muskeln: ['Waden'] as readonly Muskel[], prioritaet: 'sehrNiedrig' as Prioritaet, maxSaetze: 3 },
   prioritaet: {
     hoch: { gewicht: 1, untergrenze: 4, grenzeStart: 12, obergrenze: 20 },
     normal: { gewicht: 0.75, untergrenze: 4, grenzeStart: 10, obergrenze: 16 },

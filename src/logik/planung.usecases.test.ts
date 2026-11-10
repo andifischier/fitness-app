@@ -79,9 +79,10 @@ describe('Use Cases', () => {
     const z = eingespielt(zustand());
     const jetzt = zeitpunkt(0, 18);
     // Seit 01.11.2026 ohne Bauch und Waden in der Summe der Gewichte: Quadrizeps bei 2 Einheiten 10 statt 9.
-    expect(wochenziele(z, 2, 'zuhause', jetzt)).toMatchObject({ Brust: 12, Quadrizeps: 10, Bauch: 6, Waden: 4 });
-    expect(wochenziele(z, 3, 'zuhause', jetzt)).toMatchObject({ Brust: 12, Quadrizeps: 10, Bauch: 6, Waden: 4 });
-    expect(wochenziele(z, 5, 'zuhause', jetzt)).toMatchObject({ Brust: 12, Quadrizeps: 10, Bauch: 6, Waden: 4 });
+    // Waden auf „sehr niedrig“ seit 10.11.2026 einmal pro Woche mit höchstens 3 Sätzen (vorher 4).
+    expect(wochenziele(z, 2, 'zuhause', jetzt)).toMatchObject({ Brust: 12, Quadrizeps: 10, Bauch: 6, Waden: 3 });
+    expect(wochenziele(z, 3, 'zuhause', jetzt)).toMatchObject({ Brust: 12, Quadrizeps: 10, Bauch: 6, Waden: 3 });
+    expect(wochenziele(z, 5, 'zuhause', jetzt)).toMatchObject({ Brust: 12, Quadrizeps: 10, Bauch: 6, Waden: 3 });
   });
 });
 
