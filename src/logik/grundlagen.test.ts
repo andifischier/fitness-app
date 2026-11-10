@@ -101,7 +101,7 @@ describe('Abwechslung mit Körpergewicht', () => {
     // Hantelübung unverändert, die Körpergewichtsvariante hat einen eigenen Verlauf und ist gemerkt
     expect(nach.varianten.find((v) => v.uebungId === KH)).toMatchObject({ last: 16, zielWdh: 10 });
     expect(nach.varianten.some((v) => v.uebungId === p.uebungId)).toBe(true);
-    expect(nach.muster.find((m) => m.muster === 'hDruck')!.kgVariante).toBe(p.uebungId);
+    expect(nach.muster.find((m) => m.muster === 'hDruck')!.kgVarianten?.Brust).toBe(p.uebungId);
     expect(satzVorgabe(z, e, schritte(e).find((s) => e.bloecke[s.block]!.positionen[s.position] === p)!).reserve).toContain('Abwechslung');
   });
 });

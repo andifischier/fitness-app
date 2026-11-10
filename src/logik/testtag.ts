@@ -6,7 +6,7 @@ import { lastraster, uebungErlaubt, uebungMoeglich } from './equipment';
 import { aufwaermenFuer, bereichFuer, hauptvarianten } from './planung';
 import { schliesseEinheitAb } from './progression';
 import type { AppZustand, Block, Einheit, Einstellungen, MusterId, Ort, Position, Uebung, VarianteZustand } from './typen';
-import { e1rm, einstellungenVon, uebungVon, wdhBei, zielReserve } from './verlauf';
+import { e1rm, einstellungenVon, uebungVon, wdhBei, wdhStufe, zielReserve } from './verlauf';
 
 export type TestMuster = 'hDruck' | 'vZug' | 'Knie' | 'Rumpf';
 
@@ -117,7 +117,9 @@ export function startvariante(z: AppZustand, ort: Ort, muster: TestMuster, ergeb
 
 export function startziel(e: Einstellungen, u: Uebung, ergebnis: number): number {
   const { von, bis } = bereichFuer(e, u);
-  return begrenze(Math.round(ergebnis * TESTTAG.startzielAnteil + 1e-9), von, bis);
+  const ziel = begrenze(Math.round(ergebnis * TESTTAG.startzielAnteil + 1e-9), von, bis);
+  // Mit Wiederholungen auf die gerade Zahl darunter (Entscheidung 10.11.2026), Halteübungen wie bisher.
+  return u.bereich.einheit === 'Sek.' ? ziel : wdhStufe(ziel);
 }
 
 // Schreibt den Testtag fort: Max-Tests und Erholung wie jede Einheit (ohne Woche), dazu je

@@ -99,9 +99,10 @@ describe('Testtag', () => {
     expect(stufe('hDruck').stufe).toBe(uebung(z, 'liegestuetz_fuesse_erhoeht').stufe);
     expect(stufe('hDruck').hauptvarianten[0]).toBe('liegestuetz_fuesse_erhoeht');
     expect(stufe('hDruck').hauptvarianten).toHaveLength(2);
-    expect(ziel('liegestuetz_fuesse_erhoeht')).toBe(15);  // 70 % von 25 = 18, begrenzt auf 8 bis 15
+    // 70 % von 25 = 18, begrenzt auf 8 bis 15, auf die gerade Zahl darunter (Entscheidung 10.11.2026)
+    expect(ziel('liegestuetz_fuesse_erhoeht')).toBe(14);
     expect(stufe('vZug').hauptvarianten[0]).toBe('negative_klimmzuege');
-    expect(ziel('negative_klimmzuege')).toBe(3);          // 0 Wdh. ⇒ Untergrenze
+    expect(ziel('negative_klimmzuege')).toBe(2);          // 0 Wdh. ⇒ Untergrenze 3, gerade darunter
     expect(stufe('Knie').hauptvarianten[0]).toBe('goblet_squat');
     expect(ziel('goblet_squat')).toBe(12);
     expect(stufe('Rumpf').hauptvarianten[0]).toBe('plank');
@@ -123,8 +124,8 @@ describe('Testtag', () => {
     });
     const liste = testtagErgebnisse(schliesseTesttagAb(z, e, MO), e);
     expect(liste.map((t) => [t.test.id, t.ergebnis, t.inSek, t.haengenSek, t.start?.uebung.id, t.start?.zielWdh])).toEqual([
-      ['liegestuetz', 25, false, undefined, 'liegestuetz_fuesse_erhoeht', 15],
-      ['klimmzug', 0, false, 25, 'negative_klimmzuege', 3],
+      ['liegestuetz', 25, false, undefined, 'liegestuetz_fuesse_erhoeht', 14],
+      ['klimmzug', 0, false, 25, 'negative_klimmzuege', 2],
       ['kniebeuge', 35, false, undefined, 'goblet_squat', 12],
       ['plank', 45, true, undefined, 'plank', 32],
     ]);

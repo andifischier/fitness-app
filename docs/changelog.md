@@ -543,3 +543,33 @@
   veralteten Zahlen in `docs/uebungskatalog.md` (101 Übungen, 88 Videos) korrigiert.
 - **Warum:** Prüfung des Katalogs auf Wunsch des Nutzers: Viele bekannte Übungen fehlten, darunter
   „absolute must haves“ wie Crunches und Sit-ups. Entscheidungen in `docs/entscheidungen.md`.
+
+## 10.11.2026: Routine-Check nach den letzten Änderungen
+- **Was:**
+  - Geprüft: `npm test`, `npm run build`, eine 12-Wochen-Simulation mit vollem Katalog (6 Ausstattungen, 1 bis 5
+    Einheiten je Woche, Einsteiger und Fortgeschrittene, auch mit 75 Min. Wunschdauer) und ein Klick-Test der gebauten
+    App im Browser (Einrichtung, Vorschau, Aufwärmen, Max-Test, Kombi-Runden, Reserve-Knöpfe, Abschluss). Keine
+    Laufzeitfehler, keine Übung außerhalb des Orts, keine doppelten Übungen, Flys nur mit Drücken.
+  - Abwechslung mit Körpergewicht abgestuft: zuerst mit demselben Hauptmuskel wie die Hantelübung, sonst dasselbe
+    Muster; gemerkt je Hauptmuskel (`MusterZustand.kgVarianten`).
+  - Shrugs nur als Favorit, auch nicht mehr als neue Übung zu Zyklusbeginn (`NUR_ALS_FAVORIT`).
+  - Erstes Ziel einer neuen Übung und Startziel nach dem Testtag sind gerade Zahlen.
+  - Bei 1 bis 2 Einheiten je Woche kommt für die hinteren Oberschenkel eine Beincurl-Übung mit 2 bis 3 Sätzen dazu.
+  - Geändert: `planung.ts`, `progression.ts`, `testtag.ts`, `typen.ts`, `schemas.ts`, `konfiguration.ts`; neue Tests in
+    `routinecheck.test.ts`, angepasst `testtag.test.ts`, `grundlagen.test.ts`; Spezifikation und Übungskatalog nachgeführt.
+- **Warum:** In der Simulation trainierte die Abwechslung bei der Hüfte das Gesäß statt der hinteren Oberschenkel,
+  Shrugs verdrängten 6 Wochen lang die Reverse Flys, Startziele waren teils ungerade, und Einsteiger mit 2 Einheiten
+  erreichten für die hinteren Oberschenkel oft nur 2 bis 4 von 8 Sätzen (jetzt 7 bis 9). Entscheidungen in
+  `docs/entscheidungen.md`.
+
+## 10.11.2026: Viele Sätze an einem Tag ohne Wochenpause
+- **Was:** Abfrage der Kernpunkte des Trainingsplans. Intensität, mehr Zeit und Abwechslung bestätigt. Neu: Von den
+  Sätzen eines Muskels in einem Training zählen die ersten 6 voll, jeder weitere halb für die Woche (12 Sätze Brust
+  zählen 9). Ist das Wochenziel schon erreicht, der Muskel aber erst an einem Tag trainiert und wieder erholt, bekommt
+  er im nächsten Training 3 Erhaltungssätze, solange die Woche unter der Obergrenze bleibt. Geändert:
+  `konfiguration.ts` (`WOCHENZIEL`), `planung.ts` (`wochenDosis`, Bedarf), `progression.ts`, `loeschen.ts`; neue Tests
+  in `routinecheck.test.ts`; Spezifikation, Entscheidungen und Annahmen nachgeführt.
+- **Warum:** Rückmeldung des Nutzers: Ein Tag mit 12 Sätzen für einen Muskel soll möglich sein, ohne dass der Muskel
+  danach eine Woche Pause hat. Simulation: Montag lang, Mittwoch und Freitag normal ergibt keine Ruhetag-Empfehlung
+  mehr; bei dreimal 75 Min. je Woche kommen in 8 Wochen noch 3 bis 5 Ruhetag-Empfehlungen (vorher 11 bis 13 in
+  12 Wochen).
