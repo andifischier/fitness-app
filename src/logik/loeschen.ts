@@ -2,7 +2,7 @@
 // Woche, Max-Tests und Zirkel-Bestzeiten; Ziel, Gewicht und Variante jeder Übung gehen auf den Stand
 // davor zurück, solange danach nicht schon wieder mit ihr (bzw. ihrem Muster) trainiert wurde.
 import { MUSKELN, type AppZustand, type Einheit, type MuskelZustand, type Position, type VarianteZustand } from './typen';
-import { dosisProMuskel } from './planung';
+import { dosisProMuskel, wochenDosis } from './planung';
 import { einheitZeit, feedbackVon, fertigeEinheiten, uebungVon } from './verlauf';
 
 export function kannLoeschen(e: Einheit): boolean {
@@ -55,7 +55,7 @@ export function loescheEinheit(z: AppZustand, einheitId: string): AppZustand | u
   }
 
   // Woche: eine Einheit und ihre Sätze weniger.
-  const dosis = dosisProMuskel(z, e);
+  const dosis = wochenDosis(dosisProMuskel(z, e));   // so, wie sie für die Woche gezählt wurde
   const wochen = z.wochen.map((w) => {
     if (w.id !== e.woche) return w;
     const erledigt = { ...w.erledigt };

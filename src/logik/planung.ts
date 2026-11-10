@@ -209,6 +209,22 @@ export function dosisProMuskel(z: AppZustand, einheit: Einheit): ProMuskel {
   return dosis;
 }
 
+// Was eine Einheit für das Wochenziel zählt (Entscheidung 10.11.2026, abnehmender Nutzen): je Muskel die ersten
+// 6 fraktionellen Sätze voll, jeder weitere halb. Erholung und Satzzahlen der Einheit bleiben unberührt.
+export function wochenDosis(dosis: ProMuskel): ProMuskel {
+  const { vollBisSaetzeJeEinheit: voll, anteilDarueber: anteil } = WOCHENZIEL;
+  const neu = leer();
+  for (const m of MUSKELN) neu[m] = dosis[m] <= voll ? dosis[m] : voll + (dosis[m] - voll) * anteil;
+  return neu;
+}
+
+// Tage dieser Woche, an denen der Muskel schon gearbeitet hat (beendete Einheiten, ohne Testtag).
+function trainingstage(z: AppZustand, wocheId: string, m: Muskel): number {
+  const tage = new Set(fertigeEinheiten(z).filter((x) => x.woche === wocheId && x.format !== 'test'
+    && dosisProMuskel(z, x)[m] > 0).map((x) => einheitZeit(x).slice(0, 10)));
+  return tage.size;
+}
+
 // ---------- Hauptvarianten ----------
 
 export function musterstufe(z: AppZustand, e: Einstellungen, muster: MusterId): number {
@@ -682,6 +698,14 @@ function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Pla
     const rest = Math.max(0, ziele[m] - erledigt[m]);
     const anteil = fokus === 'ganz' ? rest / n : rest / Math.max(1, Math.ceil(n / 2));
     bedarf[m] = wahl.has(m) ? Math.min(EINHEIT.maxSaetzeProMuskel, Math.ceil(anteil)) : 0;
+    // Erhaltung (Entscheidung 10.11.2026): Ziel schon erreicht, aber erst an einem Tag trainiert, z. B. nach einem
+    // langen Training mit 12 Sätzen Brust: 2 bis 3 Sätze, solange die Woche unter der Obergrenze bleibt.
+    const { min: emin, max: emax } = WOCHENZIEL.erhaltungSaetze;
+    if (!wahl.has(m) || erholungswoche || ziele[m] <= 0 || bedarf[m] >= emin) continue;
+    const tage = trainingstage(z, isoWoche(jetzt), m);
+    if (tage < 1 || tage > WOCHENZIEL.erhaltungBisTrainingstage) continue;
+    const platz = Math.floor(WOCHENZIEL.prioritaet[e.prioritaeten[m]].obergrenze - erledigt[m] + 1e-9);
+    if (platz >= emin) bedarf[m] = Math.min(emax, platz);
   }
 
   // Schritt 6: Übungen gierig wählen aus den Hauptvarianten A und B aller Muster außer Rumpf und Waden

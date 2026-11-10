@@ -8,7 +8,7 @@ import { isoWoche, plusTage, stundenZwischen, wocheStart, wocheVerschoben } from
 import { alleUebungen, bandStufen, lastraster, uebungErlaubt } from './equipment';
 import {
   bereichFuer, dosisProMuskel, hauptvarianten, istErholungswoche, musterstufe, persoenlicheGrenze, startwerte,
-  vonSelbstWaehlbar, wochenziele,
+  vonSelbstWaehlbar, wochenDosis, wochenziele,
 } from './planung';
 import {
   BAND_STUFEN, MUSKELN, type AppZustand, type BandStufe, type Einheit, type Einstellungen, type Feedback, type MaxTest,
@@ -498,7 +498,9 @@ export function schliesseEinheitAb(z: AppZustand, einheit: Einheit, jetzt: strin
   const prognose = Math.min(6, Math.max(altWoche?.prognose ?? e.ueblicheEinheiten, einheiten));
   const leer = () => Object.fromEntries(MUSKELN.map((m) => [m, 0])) as Record<Muskel, number>;
   const erledigt = { ...(altWoche?.erledigt ?? leer()) };
-  for (const m of MUSKELN) erledigt[m] += dosis[m];
+  // Für die Woche zählt jeder Satz über 6 je Muskel nur halb (Entscheidung 10.11.2026).
+  const fuerWoche = wochenDosis(dosis);
+  for (const m of MUSKELN) erledigt[m] += fuerWoche[m];
   const woche: Woche = {
     id: wocheId, prognose, einheiten, erledigt,
     ziele: ort ? wochenziele(z, prognose, ort.id, start, altWoche?.erholungswoche) : (altWoche?.ziele ?? leer()),

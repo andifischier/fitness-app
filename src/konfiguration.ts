@@ -150,6 +150,16 @@ export const WOCHENZIEL = {
   // Muskeln, deren Übungen außerhalb des Zeitbudgets laufen: Sie zählen nicht in der Summe der Gewichte,
   // mit der das Wochenbudget verteilt wird (Entscheidung 01.11.2026)
   ausserhalbBudget: ['Bauch', 'Waden'] as readonly Muskel[],
+  // Abnehmender Nutzen (Entscheidung 10.11.2026): Von den fraktionellen Sätzen eines Muskels in einem Training
+  // zählen die ersten 6 voll für die Woche, jeder weitere nur halb (mehr bringt in einem Training wenig zusätzlich).
+  // Die Erholung rechnet weiter mit allen Sätzen.
+  vollBisSaetzeJeEinheit: 6,
+  anteilDarueber: 0.5,
+  // Erhaltung (Entscheidung 10.11.2026): Ist das Wochenziel eines Muskels schon erreicht, er aber erst an einem Tag
+  // dieser Woche trainiert worden und wieder erholt, bekommt er im nächsten Training 2 bis 3 Sätze, solange die Woche
+  // damit unter der Obergrenze der Priorität bleibt. Nicht in der Erholungswoche.
+  erhaltungSaetze: { min: 2, max: 3 },
+  erhaltungBisTrainingstage: 1,
   prioritaet: {
     hoch: { gewicht: 1, untergrenze: 4, grenzeStart: 12, obergrenze: 20 },
     normal: { gewicht: 0.75, untergrenze: 4, grenzeStart: 10, obergrenze: 16 },

@@ -1,14 +1,15 @@
 // Entscheidungen 10.11.2026 nach dem Routine-Check: Abwechslung mit Körpergewicht zuerst mit demselben
-// Hauptmuskel, Shrugs nur als Favorit, gerade Startziele, Beincurls bei 1 bis 2 Einheiten zusätzlich.
+// Hauptmuskel, Shrugs nur als Favorit, gerade Startziele, Beincurls bei 1 bis 2 Einheiten zusätzlich,
+// abnehmender Nutzen vieler Sätze in einem Training und Erhaltungssätze.
 import { describe, expect, it } from 'vitest';
-import { EINHEIT, NUR_ALS_FAVORIT, STANDARD_EINSTELLUNGEN } from '../konfiguration';
+import { EINHEIT, NUR_ALS_FAVORIT, STANDARD_EINSTELLUNGEN, WOCHENZIEL } from '../konfiguration';
 import { isoWoche } from './datum';
 import { wocheMitPrognose } from './heute';
-import { erstelleEinheit, hauptvarianten, kgVariante, startfragen, startwerte } from './planung';
+import { dosisProMuskel, erstelleEinheit, hauptvarianten, kgVariante, startfragen, startwerte, wochenDosis } from './planung';
 import { offeneWochenabschluesse, schliesseEinheitAb, wochenabschluss } from './progression';
 import { startziel } from './testtag';
 import { eingespielt, ort, setzePrognose, zeitpunkt, zustand } from './testhilfe';
-import type { AppZustand, Einheit, Einstellungen, Ort } from './typen';
+import { MUSKELN, type AppZustand, type Einheit, type Einstellungen, type Muskel, type Ort } from './typen';
 import { einstellungenVon, uebungVon } from './verlauf';
 
 const MO = zeitpunkt(0, 18);
@@ -178,5 +179,58 @@ describe('Beincurls bei 1 bis 2 Einheiten zusätzlich (Entscheidung 10.11.2026)'
       const woche = s.wochen.find((x) => x.id === isoWoche(zeitpunkt(w * 7, 12)))!;
       expect(woche.erledigt.HintereOS, `Woche ${w + 1}`).toBeGreaterThanOrEqual(0.75 * woche.ziele.HintereOS);
     }
+  });
+});
+
+describe('Viele Sätze an einem Tag: abnehmender Nutzen und Erhaltung (Entscheidung 10.11.2026)', () => {
+  const null10 = () => Object.fromEntries(MUSKELN.map((m) => [m, 0])) as Record<Muskel, number>;
+  // Mit Testtag vom Vortag, damit am Montag kein Max-Test fällig ist
+  const z0 = eingespielt(zustand({ katalog: 'voll', orte: [ort(['KH', 'BANK', 'SCHRAEG', 'STANGE', 'BAND', 'ANKER', 'TISCH', 'ERH'])],
+    einstellungen: { ...STANDARD_EINSTELLUNGEN } }));
+  const brust = (e: Einheit, z: AppZustand) => e.bloecke.flatMap((b) => b.positionen)
+    .filter((p) => !p.istMaxTest && uebungVon(z, p.uebungId)!.primaer[0] === 'Brust').reduce((s, p) => s + p.saetze, 0);
+  // Montag: langes Training nur für die Brust (Bankdrücken, Schrägbank, Flys)
+  const montag = () => {
+    const jetzt = zeitpunkt(0, 18);
+    const woche = wocheMitPrognose(z0, jetzt, 3, 'zuhause');
+    const z = { ...z0, wochen: [woche] };
+    const e = erstelleEinheit(z, { jetzt, ortId: 'zuhause', prognose: 3, morgenWieder: false, laenger: false, muskeln: ['Brust'], dauerMin: 60 });
+    return { z: schliesseEinheitAb(z, absolviert(z, e, jetzt), jetzt), e, zVorher: z };
+  };
+  const plane = (z: AppZustand, tag: number, extra: Partial<Parameters<typeof erstelleEinheit>[1]> = {}) =>
+    erstelleEinheit(z, { jetzt: zeitpunkt(tag, 18), ortId: 'zuhause', prognose: 3, morgenWieder: false, laenger: false, ...extra });
+
+  it('ab dem 7. Satz eines Muskels zählt jeder weitere nur halb für die Woche', () => {
+    const d = { ...null10(), Brust: 12, Trizeps: 6, Schultern: 3 };
+    expect(wochenDosis(d)).toMatchObject({ Brust: 9, Trizeps: 6, Schultern: 3 });
+    const { z, e, zVorher } = montag();
+    const echt = dosisProMuskel(zVorher, { ...e, status: 'abgeschlossen', bloecke: absolviert(zVorher, e, MO).bloecke });
+    expect(echt.Brust).toBeGreaterThanOrEqual(12);
+    expect(z.wochen[0]!.erledigt.Brust).toBeCloseTo(wochenDosis(echt).Brust);
+    expect(z.wochen[0]!.erledigt.Brust).toBeLessThan(echt.Brust);
+    // Die Erholung rechnet mit allen Sätzen.
+    expect(z.muskeln.find((m) => m.muskel === 'Brust')!.letzteDosis).toBe(echt.Brust);
+  });
+
+  it('nach dem vollen Montag bekommt die erholte Brust am Donnerstag 2 bis 3 Sätze statt einer Woche Pause', () => {
+    const { z, e } = montag();
+    expect(brust(e, z)).toBeGreaterThanOrEqual(z.wochen[0]!.ziele.Brust);   // mehr Sätze als das Wochenziel an einem Tag
+    expect(brust(plane(z, 2), z)).toBe(0);                     // Mittwoch: noch nicht erholt
+    const s = brust(plane(z, 3), z);                            // Donnerstag
+    expect(s).toBeGreaterThanOrEqual(WOCHENZIEL.erhaltungSaetze.min);
+    expect(s).toBeLessThanOrEqual(WOCHENZIEL.erhaltungSaetze.max + 1);   // gerundet je Übung, höchstens 1 mehr durch Mitarbeit
+  });
+
+  it('keine Erhaltung über der Obergrenze, in der Erholungswoche oder nach dem zweiten Trainingstag', () => {
+    const { z } = montag();
+    const voll16 = { ...z, wochen: z.wochen.map((w) => ({ ...w, erledigt: { ...w.erledigt, Brust: 15 } })) };
+    expect(brust(plane(voll16, 3), voll16)).toBe(0);
+    const erholung = { ...z, wochen: z.wochen.map((w) => ({ ...w, erholungswoche: true })) };
+    expect(brust(plane(erholung, 3), erholung)).toBe(0);
+    // Donnerstag mit Erhaltung trainiert: am Samstag nichts mehr für die Brust
+    const jetzt = zeitpunkt(3, 18);
+    const e = plane(z, 3);
+    const z2 = schliesseEinheitAb(z, absolviert(z, e, jetzt), jetzt);
+    expect(brust(plane(z2, 5), z2)).toBe(0);
   });
 });
