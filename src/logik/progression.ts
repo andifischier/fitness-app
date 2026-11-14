@@ -16,7 +16,7 @@ import {
   type VarianteZustand, type Vorstand, type Woche, type Zyklus,
 } from './typen';
 import {
-  ausgeruht, e1rm, einheitZeit, einstellungenVon, ersterSatz, faelligerMaxTest, feedbackVon, fertigeEinheiten, kapazitaetswert,
+  ausgeruht, bandVon, e1rm, leichtereVariante, einheitZeit, einstellungenVon, ersterSatz, faelligerMaxTest, feedbackVon, fertigeEinheiten, kapazitaetswert,
   leistungswert, letzterWirksam, reserveFuer, seitRueckkehrTrainiert, sitzungen, sterneVon, trainingspause, uebungVon, wdhBei,
   wdhStufe, zielReserve, type Pause, type Sitzung,
 } from './verlauf';
@@ -62,18 +62,6 @@ export function naechsteVariante(z: AppZustand, ort: Ort, u: Uebung, jetzt: stri
     .sort((a, b) => a.stufe - b.stufe || anderer(a) - anderer(b) || LASTTYP_RANG[a.lasttyp] - LASTTYP_RANG[b.lasttyp]
       || reihenfolge.indexOf(a.id) - reihenfolge.indexOf(b.id));
   return liste.find((v) => !ausser.includes(v.id)) ?? liste[0];
-}
-
-// Nächstleichtere Variante desselben Musters am Ort (höchste kleinere Stufe). Seit 30.10.2026
-// (Entscheidung) auch die andere Hauptvariante; bei gleicher Stufe gehen Varianten vor, die noch keine
-// Hauptvariante sind, dann derselbe Lasttyp.
-function leichtereVariante(z: AppZustand, ort: Ort, u: Uebung, jetzt: string, haupt: string[]): Uebung | undefined {
-  const e = einstellungenVon(z);
-  const anderer = (v: Uebung) => Number(v.lasttyp !== u.lasttyp);
-  const istHaupt = (v: Uebung) => Number(haupt.includes(v.id));
-  return alleUebungen(z)
-    .filter((v) => v.muster === u.muster && v.stufe < u.stufe && uebungErlaubt(e, ort, v, jetzt))
-    .sort((a, b) => b.stufe - a.stufe || istHaupt(a) - istHaupt(b) || anderer(a) - anderer(b))[0];
 }
 
 // Ziel bei Körpergewicht und Band aus allen Sätzen (Entscheidung 30.10.2026): Jeder Satz plus die
@@ -204,7 +192,7 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
   const minZiel = inSek ? PROGRESSION.minZielLeichteste.sek : PROGRESSION.minZielLeichteste.wdh;
   const gesenkt = (amEnde = false) => Math.min(ziel, Math.max(amEnde ? minZiel : U - 1, letzter));
   const last = p.ergebnisse[0]?.last ?? p.last;
-  const band = p.ergebnisse[0]?.bandStufe ?? p.bandStufe;
+  const band = bandVon(p);
   if (last !== undefined) v.last = last;
   if (band !== undefined) v.bandStufe = band;
   v.zielWdh = ziel;
@@ -563,7 +551,7 @@ function anstrengung(z: AppZustand, wocheId: string): number | undefined {
 // Bedingung, unter der eine Leistung gemessen wurde: Band und Tempo (Entscheidung 30.10.2026: langsames
 // Absenken oder ein anderes Band sind kein Leistungsabfall). Das Gewicht zählt seit 01.11.2026 nicht mehr:
 // Die Kraftschätzung rechnet es heraus, so bleibt der Verlauf über eine Laststeigerung hinweg vergleichbar.
-const bedingung = (s: Sitzung) => `${s.position.bandStufe ?? ''}|${s.position.langsam ? 1 : 0}`;
+const bedingung = (s: Sitzung) => `${bandVon(s.position) ?? ''}|${s.position.langsam ? 1 : 0}`;
 
 const median = (l: number[]) => {
   const x = [...l].sort((a, b) => a - b);
@@ -635,7 +623,7 @@ export const steigt = (t: Trend | undefined) => t !== undefined && t.aenderung >
 function schwerAusserhalbEingewoehnung(z: AppZustand, m: Muskel, wocheId: string): boolean {
   for (const u of alleUebungen(z).filter((x) => x.primaer.includes(m))) {
     const liste = sitzungen(z, u.id);
-    const stufe = (s: Sitzung) => s.position.last ?? (s.position.bandStufe ? BAND_STUFEN.indexOf(s.position.bandStufe) : 0);
+    const stufe = (s: Sitzung) => s.position.last ?? (bandVon(s.position) ? BAND_STUFEN.indexOf(bandVon(s.position)!) : 0);
     const gesteigert = (j: number) => j >= 1 && stufe(liste[j]!) !== stufe(liste[j - 1]!);
     for (let j = 0; j < liste.length; j++) {
       const s = liste[j]!;
@@ -864,7 +852,7 @@ export function neueRekorde(z: AppZustand, einheit: Einheit): Rekord[] {
       }
       const wert = leistungswert(e, u, p);
       const frueher = sitzungen(z, u.id).filter((s) => s.einheit.id !== einheit.id
-        && (u.lasttyp !== 'Band' || s.position.bandStufe === p.bandStufe));
+        && (u.lasttyp !== 'Band' || bandVon(s.position) === bandVon(p)));
       const bisher = frueher.map((s) => leistungswert(e, u, s.position)).filter((w): w is number => w !== undefined);
       if (wert === undefined || bisher.length === 0 || wert <= Math.max(...bisher) + 1e-9) continue;
       const art = u.lasttyp === 'Last' ? 'kraft' : u.lasttyp === 'Zeit' ? 'sekunden' : 'wiederholungen';

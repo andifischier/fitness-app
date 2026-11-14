@@ -34,8 +34,8 @@ export function AufwaermSchritte({ z, zeilen, nr, onNr, onFertig, hinweisEnde }:
           </div>
           {s.last && (
             <div>
-              <p className="text-basis text-gedaempft">{s.last.endsWith('Variante') ? 'Ausführung' : 'Gewicht'}</p>
-              <p className="text-gross leading-tight font-extrabold">{s.last}</p>
+              <p className="text-basis text-gedaempft">{s.last.endsWith('Variante') ? 'Ausführung' : s.last.startsWith('Band ') ? 'Band' : 'Gewicht'}</p>
+              <p className="text-gross leading-tight font-extrabold">{s.last.startsWith('Band ') ? s.last.slice(5) : s.last}</p>
             </div>
           )}
         </div>

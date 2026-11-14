@@ -4,9 +4,9 @@
 // Neustart der App am richtigen Satz fort.
 import { BEWERTUNG, ERHOLUNGSWOCHE, MESSSATZ, PLAYER, PROGRESSION } from '../konfiguration';
 import { stundenZwischen } from './datum';
-import { lastraster } from './equipment';
+import { bandStufen, lastraster } from './equipment';
 import { bereichFuer, istErholungswoche, lastAnzeige } from './planung';
-import type { AppZustand, BandStufe, Block, Einheit, Feedback, Position, SatzErgebnis, Uebung } from './typen';
+import { BAND_STUFEN, type AppZustand, type BandStufe, type Block, type Einheit, type Feedback, type Position, type SatzErgebnis, type Uebung } from './typen';
 import { naechsteVariante } from './progression';
 import {
   ausgeruht, e1rm, einstellungenVon, feedbackAusMesssatz, feedbackVon, letzterSatz, fertigeEinheiten, leistungswert, messReserve, sitzungen,
@@ -133,6 +133,9 @@ export interface SatzVorgabe {
   langsam: boolean;
   zaehlen: boolean;                   // Geschafftes eingeben, vorbelegt mit dem Ziel (Entscheidung 30.10.2026)
   gesenkt: boolean;                   // Ziel im Training gesenkt, weil ein Satz deutlich darunter blieb
+  // Vorbelegung des Geschafften: das Ziel, ab dem 2. Satz das im vorigen Satz Eingetragene (Entscheidung
+  // 14.11.2026: eine Anpassung gilt auch für die Folgesätze)
+  vorbelegung: number;
   // Messsatz (Entscheidungen 01.11.2026): letzter Satz einer Übung mit Wiederholungen; so viele saubere
   // wie möglich bis zu dieser Reserve, danach die Reserve antippen
   messReserve?: number;
@@ -148,12 +151,12 @@ export function satzVorgabe(z: AppZustand, einheit: Einheit, s: Schritt): SatzVo
   const u = uebungVon(z, p.uebungId);
   const inSek = u?.bereich.einheit === 'Sek.';
   const bereich = u ? bereichFuer(e, u, z) : undefined;
-  const werte = { last: satzLast(z, einheit, s), bandStufe: p.bandStufe };
+  const werte = { last: satzLast(z, einheit, s), bandStufe: satzBand(einheit, s) };
   const basis = { inSek, ...werte, kalibrierung: false, langsam: p.langsam === true, zaehlen: false, gesenkt: false };
   if (p.istMaxTest) {
-    return { ...basis, zaehlen: true, art: 'maxTest', wert: 0, reserve: inSek ? 'Nur so lange, wie die Haltung sauber bleibt.' : 'Ohne Pause, nur saubere Wiederholungen.' };
+    return { ...basis, zaehlen: true, art: 'maxTest', wert: 0, vorbelegung: 0, reserve: inSek ? 'Nur so lange, wie die Haltung sauber bleibt.' : 'Ohne Pause, nur saubere Wiederholungen.' };
   }
-  if (b.typ === 'zirkel') return { ...basis, art: 'station', wert: p.zielWdh, reserve: '' };
+  if (b.typ === 'zirkel') return { ...basis, art: 'station', wert: p.zielWdh, vorbelegung: p.zielWdh, reserve: '' };
   const kalibrierung = istKalibrierung(z, einheit, s);
   // Erholungswoche (Entscheidung 01.11.2026): der Messsatz endet 1 Wdh. früher.
   const erholung = istErholungswoche(z, einheit.erstelltAm);
@@ -165,7 +168,10 @@ export function satzVorgabe(z: AppZustand, einheit: Einheit, s: Schritt): SatzVo
     : `${mess !== undefined ? messText(mess) : reserveText(e.zielReserve, inSek)}${p.abwechslungFuer ? ` Abwechslung: Körpergewicht statt ${uebungVon(z, p.abwechslungFuer)?.name ?? 'Hanteln'}.` : ''}${erholung ? ' Erholungswoche: Ziel und Messsatz mit 1 Wiederholung mehr Reserve.' : ''}${p.vorbelastet ? ` Der Muskel hat heute schon gearbeitet, darum ist das Ziel ${p.vorbelastet}${inSek ? ' Sek.' : ''} niedriger.` : ''}`;
   const gesenkt = !kalibrierung && s.satz > 1 && p.zielFolgesaetze !== undefined && p.zielFolgesaetze < p.zielWdh;
   const wert = kalibrierung ? bereich!.von : gesenkt ? p.zielFolgesaetze! : p.zielWdh;
-  return { ...basis, art: 'ziel', wert, bereich, reserve, kalibrierung, zaehlen: true, gesenkt, ...(mess !== undefined ? { messReserve: mess } : {}) };
+  // Nach dem Kalibrierungssatz gilt das neu berechnete Ziel, nicht das Geschaffte.
+  const vorher = s.satz > 1 && !nachKalibrierung(z, einheit, s) ? p.ergebnisse[s.satz - 2] : undefined;
+  const vorbelegung = (inSek ? vorher?.sek : vorher?.wdh) ?? wert;
+  return { ...basis, art: 'ziel', wert, vorbelegung, bereich, reserve, kalibrierung, zaehlen: true, gesenkt, ...(mess !== undefined ? { messReserve: mess } : {}) };
 }
 
 // Messsatz: letzter Satz einer Übung mit Wiederholungen (nicht Halteübung, Max-Test oder Zirkel).
@@ -207,6 +213,23 @@ export function satzLast(z: AppZustand, einheit: Einheit, s: Schritt): number | 
   return vorher ?? p.last;
 }
 
+// Band eines Satzes (Entscheidung 14.11.2026): wie beim Gewicht das des vorigen Satzes, sonst das geplante.
+export function satzBand(einheit: Einheit, s: Schritt): BandStufe | undefined {
+  const p = positionVon(einheit, s);
+  return (s.satz > 1 ? p.ergebnisse[s.satz - 2]?.bandStufe : undefined) ?? p.bandStufe;
+}
+
+// Bänder am Ort zur Wahl, von leicht nach schwer zu trainieren; bei unterstützenden Übungen (Klimmzüge
+// mit Band) ist das stärkere Band das leichtere. Leer, wenn sich das Band nicht wählen lässt.
+export function bandAuswahl(z: AppZustand, einheit: Einheit, s: Schritt): BandStufe[] {
+  const p = positionVon(einheit, s);
+  const u = uebungVon(z, p.uebungId);
+  const ort = z.orte.find((o) => o.id === einheit.ortId);
+  if (!u || !ort || u.lasttyp !== 'Band' || p.bandStufe === undefined || p.istMaxTest || einheit.bloecke[s.block]!.typ === 'zirkel') return [];
+  const reihe = u.unterstuetzend ? [...BAND_STUFEN].reverse() : [...BAND_STUFEN];
+  return reihe.filter((b) => bandStufen(ort, u).includes(b));
+}
+
 // Lässt sich das Gewicht in diesem Satz wählen? Bei Last-Übungen außerhalb von Zirkel und Max-Test.
 export function lastWaehlbar(z: AppZustand, einheit: Einheit, s: Schritt): boolean {
   const p = positionVon(einheit, s);
@@ -219,7 +242,8 @@ export function lastWaehlbar(z: AppZustand, einheit: Einheit, s: Schritt): boole
 // deutlich unter seinem Ziel, ist das Geschaffte das Ziel der restlichen Sätze (Entscheidung 30.10.2026).
 export interface Messung { reserve: number; technikUnsauber: boolean }
 
-export function trageSatzEin(z: AppZustand, einheit: Einheit, s: Schritt, wert: number, jetzt: string, last?: number, messung?: Messung): Einheit {
+export function trageSatzEin(z: AppZustand, einheit: Einheit, s: Schritt, wert: number, jetzt: string, last?: number, messung?: Messung,
+  band?: BandStufe): Einheit {
   const neu = structuredClone(einheit);
   const p = positionVon(neu, s);
   const u = uebungVon(z, p.uebungId);
@@ -227,11 +251,12 @@ export function trageSatzEin(z: AppZustand, einheit: Einheit, s: Schritt, wert: 
   const kalibrierung = istKalibrierung(z, einheit, s);
   const vorgabe = satzVorgabe(z, einheit, s);
   const gewicht = last !== undefined && lastWaehlbar(z, einheit, s) ? last : satzLast(z, einheit, s);
+  const bandStufe = band !== undefined && bandAuswahl(z, einheit, s).includes(band) ? band : satzBand(einheit, s);
   const ergebnis: SatzErgebnis = {
     nr: p.ergebnisse.length + 1,
     ...(inSek ? { sek: wert } : { wdh: wert }),
     ...(gewicht !== undefined ? { last: gewicht } : {}),
-    ...(p.bandStufe ? { bandStufe: p.bandStufe } : {}),
+    ...(bandStufe ? { bandStufe } : {}),
     zeit: jetzt,
   };
   p.ergebnisse.push(ergebnis);

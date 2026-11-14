@@ -13,8 +13,8 @@ import {
   type Einstellungen, type Muskel, type MusterId, type MusterZustand, type Ort, type Position, type Uebung, type Woche, type Zirkel,
 } from './typen';
 import {
-  einheitZeit, einstellungenVon, faelligerMaxTest, fertigeEinheiten, istErholt, kapazitaetswert, letzteEinheitZeit, seitRueckkehrTrainiert,
-  sitzungen, sterneVon, trainingspause, uebungVon, wdhBei, wdhStufe, zielReserve, type Pause,
+  BAND_NAMEN, einheitZeit, einstellungenVon, faelligerMaxTest, fertigeEinheiten, istErholt, kapazitaetswert, letzteEinheitZeit, seitRueckkehrTrainiert,
+  leichtereVariante, sitzungen, sterneVon, trainingspause, uebungVon, wdhBei, wdhStufe, zielReserve, type Pause,
 } from './verlauf';
 import { workoutAmOrt } from './workouts';
 
@@ -662,7 +662,7 @@ function allgemeinFuer(z: AppZustand, muster: MusterId[]): string[] {
   return [...a.immer, ...a.oben.slice(0, 1), ...a.unten.slice(0, 1)];
 }
 
-export function aufwaermenFuer(z: AppZustand, ort: Ort, bloecke: Block[]): Einheit['aufwaermen'] {
+export function aufwaermenFuer(z: AppZustand, ort: Ort, bloecke: Block[], jetzt: string): Einheit['aufwaermen'] {
   const a = z.katalog.aufwaermen;
   const muster = musterNachSaetzen(z, bloecke.flatMap((b) => b.positionen));
   const zeilen = allgemeinFuer(z, muster).map((t) => ({ uebungId: '', vorgabe: t }));
@@ -672,20 +672,44 @@ export function aufwaermenFuer(z: AppZustand, ort: Ort, bloecke: Block[]): Einhe
     const u = uebungVon(z, p.uebungId);
     return u && istGrund(u) && !p.istMaxTest;
   });
-  if (erste) {
-    const u = uebungVon(z, erste.uebungId)!;
-    // Der Aufwärmsatz nennt die Übung; ohne bekannte Last (Kalibrierung folgt) „leichtes Gewicht“.
-    let vorgabe = `${a.aufwaermsatz.wdh} Wdh. ${u.name}: leichtere Variante`;
-    if (erste.last !== undefined && lastAnzeige(z, u) === 'waehlen') vorgabe = `${a.aufwaermsatz.wdh} Wdh. ${u.name}: leichtes Gewicht`;
-    else if (erste.last !== undefined) {
-      const raster = lastraster(ort, u);
-      const ziel = erste.last * a.aufwaermsatz.anteilLast;
-      const kg = [...raster].reverse().find((x) => x <= ziel) ?? raster[0] ?? ziel;
-      vorgabe = `${a.aufwaermsatz.wdh} Wdh. ${u.name}: ${kgText(kg)}`;
-    }
-    zeilen.push({ uebungId: erste.uebungId, vorgabe });
-  }
+  if (erste) zeilen.push(aufwaermsatz(z, ort, erste, jetzt));
   return zeilen;
+}
+
+// Aufwärmsatz der ersten Grundübung. Mit Gewicht: etwa 50 % der Last, ohne bekannte Last (Kalibrierung
+// folgt) „leichtes Gewicht“ (Entscheidung 21.10.2026). Ohne Gewicht nennt er seit 14.11.2026
+// (Entscheidung) etwas Konkretes statt „leichtere Variante“: bei Band-Übungen das nächstleichtere Band,
+// sonst die nächstleichtere Übung am Ort (bei gleicher Stufe derselbe Lasttyp) mit ihrem leichtesten Band; gibt es nichts Leichteres, dieselbe
+// Übung mit etwa halb so vielen Wiederholungen wie ihr Ziel.
+function aufwaermsatz(z: AppZustand, ort: Ort, erste: Position, jetzt: string): Einheit['aufwaermen'][number] {
+  const a = z.katalog.aufwaermen;
+  const u = uebungVon(z, erste.uebungId)!;
+  const zeile = (x: Uebung, text?: string, wdh = a.aufwaermsatz.wdh) =>
+    ({ uebungId: x.id, vorgabe: `${wdh} Wdh. ${x.name}${text ? `: ${text}` : ''}` });
+  if (erste.last !== undefined) {
+    if (lastAnzeige(z, u) === 'waehlen') return zeile(u, 'leichtes Gewicht');
+    const raster = lastraster(ort, u);
+    const ziel = erste.last * a.aufwaermsatz.anteilLast;
+    return zeile(u, kgText([...raster].reverse().find((x) => x <= ziel) ?? raster[0] ?? ziel));
+  }
+  const leichteresBand = (x: Uebung, ab?: BandStufe) => {
+    const reihe = x.unterstuetzend ? [...BAND_STUFEN] : [...BAND_STUFEN].reverse();
+    const vorhanden = reihe.filter((b) => bandStufen(ort, x).includes(b));
+    return ab === undefined ? vorhanden.at(-1) : vorhanden.find((b) => reihe.indexOf(b) > reihe.indexOf(ab));
+  };
+  const bandText = (b: BandStufe) => `Band ${BAND_NAMEN[b]}`;
+  if (u.lasttyp === 'Band' && erste.bandStufe) {
+    const band = leichteresBand(u, erste.bandStufe);
+    if (band) return zeile(u, bandText(band));
+  }
+  // Ohne Vorrang für Nebenvarianten: so nah wie möglich an der Übung, bei gleicher Stufe derselbe Lasttyp.
+  const leichter = leichtereVariante(z, ort, u, jetzt, []);
+  if (leichter) {
+    const band = leichter.lasttyp === 'Band' ? leichteresBand(leichter) : undefined;
+    return zeile(leichter, band ? bandText(band) : leichter.lasttyp === 'Last' ? 'leichtes Gewicht' : undefined);
+  }
+  return zeile(u, erste.bandStufe ? bandText(erste.bandStufe) : undefined,
+    Math.max(1, Math.round(erste.zielWdh * a.aufwaermsatz.anteilLast)));
 }
 
 function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Plan {
@@ -963,7 +987,7 @@ function plane(z: AppZustand, eing: EinheitEingabe, budgetVorgabe?: number): Pla
   const einheit: Einheit = setzeVorbelastung(z, {
     ...leereEinheit(eing, format),
     fokus,
-    aufwaermen: aufwaermenFuer(z, ort, bloecke),
+    aufwaermen: aufwaermenFuer(z, ort, bloecke, jetzt),
     bloecke,
   });
   einheit.geschaetzteDauerMin = geschaetzteDauer(z, einheit);
@@ -1128,7 +1152,7 @@ function zirkelEinheit(z: AppZustand, e: Einstellungen, ort: Ort, zirkel: Zirkel
     ? [{ typ: 'zirkel', positionen, pauseSek: 0, zirkelId: zirkel.id, runden: zirkel.runden }]
     : [];
   const minuten = Number.parseInt(/\d+/.exec(zirkel.dauerHinweis)?.[0] ?? '0', 10);
-  const aufwaermen = aufwaermenFuer(z, ort, bloecke).filter((a) => a.uebungId === '');
+  const aufwaermen = aufwaermenFuer(z, ort, bloecke, eing.jetzt).filter((a) => a.uebungId === '');
   return { ...leereEinheit(eing, 'zirkel'), aufwaermen, bloecke, geschaetzteDauerMin: ZEITBUDGET.aufwaermenMin + minuten };
 }
 
@@ -1150,7 +1174,7 @@ export function workoutEinheit(z: AppZustand, w: EigenesWorkout, eing: EinheitEi
       ? [{ typ: 'zirkel', positionen, pauseSek: 0, zirkelId: w.id, runden: w.runden }]
       : [];
     const minuten = Math.round((w.runden * positionen.length * WORKOUT.stationSek) / 60);
-    const aufwaermen = aufwaermenFuer(z, ort, bloecke).filter((a) => a.uebungId === '');
+    const aufwaermen = aufwaermenFuer(z, ort, bloecke, eing.jetzt).filter((a) => a.uebungId === '');
     return {
       ...leereEinheit(eing, 'zirkel'), name: w.name, aufwaermen, bloecke,
       geschaetzteDauerMin: positionen.length > 0 ? ZEITBUDGET.aufwaermenMin + minuten : 0,
@@ -1158,7 +1182,7 @@ export function workoutEinheit(z: AppZustand, w: EigenesWorkout, eing: EinheitEi
   }
   const liste: Auswahl[] = eintraege.map(({ eintrag, uebung }) => ({ k: { uebung, istErsatz: false }, saetze: eintrag.saetze }));
   const { bloecke, format } = bildeBloecke(c, liste, eing.klassisch === true);
-  const einheit: Einheit = setzeVorbelastung(z, { ...leereEinheit(eing, format), name: w.name, aufwaermen: aufwaermenFuer(z, ort, bloecke), bloecke });
+  const einheit: Einheit = setzeVorbelastung(z, { ...leereEinheit(eing, format), name: w.name, aufwaermen: aufwaermenFuer(z, ort, bloecke, eing.jetzt), bloecke });
   einheit.geschaetzteDauerMin = geschaetzteDauer(z, einheit);
   return einheit;
 }
@@ -1298,6 +1322,6 @@ export function tausche(z: AppZustand, einheit: Einheit, block: number, position
     ergebnisse: [],
   };
   neu.bloecke[block]!.positionen[position] = ersetzt;
-  if (neu.format !== 'zirkel' && neu.status === 'geplant') neu.aufwaermen = aufwaermenFuer(z, ort, neu.bloecke);
+  if (neu.format !== 'zirkel' && neu.status === 'geplant') neu.aufwaermen = aufwaermenFuer(z, ort, neu.bloecke, neu.erstelltAm);
   return setzeVorbelastung(z, neu);
 }

@@ -18,6 +18,8 @@ describe('Aufwärmen Schritt für Schritt (Entscheidung 29.10.2026)', () => {
   it('Aufwärmsatz mit Gewicht bzw. Hinweis', () => {
     expect(aufwaermSchritt('8 Wdh. Goblet Squat: 8 kg')).toEqual({ name: 'Goblet Squat', wdh: 8, last: '8 kg' });
     expect(aufwaermSchritt('8 Wdh. Liegestütz: leichtere Variante')).toEqual({ name: 'Liegestütz', wdh: 8, last: 'leichtere Variante' });
+    expect(aufwaermSchritt('8 Wdh. Band-Assisted Pullups: Band extra schwer'))
+      .toEqual({ name: 'Band-Assisted Pullups', wdh: 8, last: 'Band extra schwer' });
   });
 
   it('Zeile ohne Zahl bleibt nur Name', () => {

@@ -79,7 +79,7 @@ export function testtagEinheit(z: AppZustand, ortId: string, jetzt: string): Ein
     id: `einheit-${jetzt}`, woche: isoWoche(jetzt), erstelltAm: jetzt, status: 'geplant',
     ortId, fokus: 'ganz', format: 'test',
     geschaetzteDauerMin: ZEITBUDGET.aufwaermenMin + bloecke.length * TESTTAG.minutenProTest,
-    aufwaermen: ort ? aufwaermenFuer(z, ort, bloecke) : [],
+    aufwaermen: ort ? aufwaermenFuer(z, ort, bloecke, jetzt) : [],
     bloecke,
   };
 }

@@ -9,7 +9,7 @@ export interface AufwaermSchritt {
   wdh?: number;
   sek?: number;
   je?: string;      // „je Seite“, „je Bein“, „je Richtung“
-  last?: string;    // nur beim Aufwärmsatz: „8 kg“, „leichtes Gewicht“, „leichtere Variante“
+  last?: string;    // nur beim Aufwärmsatz: „8 kg“, „leichtes Gewicht“, „Band schwer“ (früher auch „leichtere Variante“)
 }
 
 export function aufwaermSchritt(zeile: string): AufwaermSchritt {
