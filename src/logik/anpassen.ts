@@ -30,7 +30,7 @@ function aufgeraeumt(z: AppZustand, einheit: Einheit): Einheit {
   const kombi = normal.filter((t) => t === 'supersatz').length;
   const format: Einheit['format'] = kombi === 0 ? 'klassisch' : kombi === normal.length ? 'supersatz' : 'mix';
   const ort = z.orte.find((o) => o.id === einheit.ortId);
-  const neu: Einheit = setzeVorbelastung(z, { ...einheit, bloecke, format, aufwaermen: ort ? aufwaermenFuer(z, ort, bloecke) : einheit.aufwaermen });
+  const neu: Einheit = setzeVorbelastung(z, { ...einheit, bloecke, format, aufwaermen: ort ? aufwaermenFuer(z, ort, bloecke, einheit.erstelltAm) : einheit.aufwaermen });
   neu.geschaetzteDauerMin = geschaetzteDauer(z, neu);
   return neu;
 }

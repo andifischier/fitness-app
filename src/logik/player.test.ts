@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { MESSSATZ } from '../konfiguration';
 import {
   aktuellerBlock, aktuellerSchritt, balkenAbschnitte, beende, bewerteAlle, letzterSatzAm, blockwechselNach, erledigteSaetze, feedbackVorschlag, fortschrittshinweis, istKalibrierung, kalibriere, letztesMal, offeneFeedbacks, pauseNach,
-  lastWaehlbar, satzVorgabe, schritte, setzeFeedback, starte, trageSatzEin,
+  bandAuswahl, lastWaehlbar, satzVorgabe, schritte, setzeFeedback, starte, trageSatzEin,
 } from './player';
 import { bereichFuer } from './planung';
 import { werteUebungAus } from './progression';
@@ -154,6 +154,74 @@ describe('Gewicht in jedem Satz (Entscheidung 21.10.2026)', () => {
     expect(p.ergebnisse.map((r) => r.wdh)).toEqual([9, 7, 7]);
     // Das ursprüngliche Ziel bleibt der Maßstab der Progression.
     expect(p.zielWdh).toBe(10);
+  });
+});
+
+describe('Folgesätze übernehmen Anpassungen (Entscheidung 14.11.2026)', () => {
+  const z = mitVarianten(zustand());
+  const jetzt = '2026-10-20T18:20:00';
+
+  it('belegt ab dem 2. Satz mit dem im vorigen Satz Eingetragenen vor, das Ziel bleibt', () => {
+    const e = einheit([{ typ: 'einzeln', pauseSek: 90, positionen: [pos('kh_bankdruecken', 3, { last: 16 })] }]);
+    const [s1, s2, s3] = schritte(e);
+    expect(satzVorgabe(z, e, s1!)).toMatchObject({ wert: 10, vorbelegung: 10 });
+    let x = trageSatzEin(z, e, s1!, 9, jetzt);
+    expect(satzVorgabe(z, x, s2!)).toMatchObject({ wert: 10, vorbelegung: 9 });
+    x = trageSatzEin(z, x, s2!, 11, jetzt);
+    expect(satzVorgabe(z, x, s3!)).toMatchObject({ wert: 10, vorbelegung: 11 });
+  });
+
+  it('gilt je Übung, auch im Wechsel einer Kombi, und für Halteübungen', () => {
+    const kombi = einheit([{ typ: 'supersatz', pauseSek: 75, positionen: [pos('kh_bankdruecken', 2, { last: 16 }), pos('plank', 2, { zielWdh: 30 })] }]);
+    const [a1, b1, a2, b2] = schritte(kombi);
+    let x = trageSatzEin(z, kombi, a1!, 8, jetzt);
+    x = trageSatzEin(z, x, b1!, 40, jetzt);
+    expect(satzVorgabe(z, x, a2!).vorbelegung).toBe(8);
+    expect(satzVorgabe(z, x, b2!)).toMatchObject({ wert: 30, vorbelegung: 40 });
+  });
+
+  it('nach dem Kalibrierungssatz gilt das berechnete Ziel', () => {
+    const e = einheit([{ typ: 'einzeln', pauseSek: 90, positionen: [pos('kh_bankdruecken', 3, { last: 2, zielWdh: 8 })] }]);
+    const z0 = zustand();
+    const nach = trageSatzEin(z0, e, schritte(e)[0]!, 15, jetzt, 10);
+    const v = satzVorgabe(z0, nach, schritte(nach)[1]!);
+    expect(v.vorbelegung).toBe(v.wert);
+  });
+});
+
+describe('Band in jedem Satz (Entscheidung 14.11.2026)', () => {
+  const z = zustand({ katalog: 'voll' });
+  const jetzt = '2026-10-20T18:20:00';
+  const e = einheit([{ typ: 'einzeln', pauseSek: 90, positionen: [pos('klimmzug_band', 3, { bandStufe: 'schwer', zielWdh: 8 })] }]);
+  const [s1, s2, s3] = schritte(e);
+
+  it('bietet die Bänder am Ort von leicht nach schwer zu trainieren an; mit Unterstützung ist das stärkere Band leichter', () => {
+    expect(bandAuswahl(z, e, s1!)).toEqual(['extraSchwer', 'schwer', 'mittel', 'leicht']);
+    const presse = einheit([{ typ: 'einzeln', pauseSek: 90, positionen: [pos('band_brustpresse', 2, { bandStufe: 'mittel' })] }]);
+    expect(bandAuswahl(z, presse, schritte(presse)[0]!)).toEqual(['leicht', 'mittel', 'schwer', 'extraSchwer']);
+    expect(bandAuswahl(z, MIX, schritte(MIX)[1]!)).toEqual([]);
+  });
+
+  it('speichert das gewählte Band und übernimmt es für die folgenden Sätze', () => {
+    let x = trageSatzEin(z, e, s1!, 8, jetzt, undefined, undefined, 'extraSchwer');
+    expect(x.bloecke[0]!.positionen[0]!.ergebnisse[0]).toMatchObject({ bandStufe: 'extraSchwer' });
+    expect(satzVorgabe(z, x, s2!)).toMatchObject({ bandStufe: 'extraSchwer' });
+    x = trageSatzEin(z, x, s2!, 8, jetzt);
+    expect(x.bloecke[0]!.positionen[0]!.ergebnisse[1]).toMatchObject({ bandStufe: 'extraSchwer' });
+    expect(satzVorgabe(z, x, s3!)).toMatchObject({ bandStufe: 'extraSchwer' });
+    expect(x.bloecke[0]!.positionen[0]!.bandStufe).toBe('schwer');   // geplantes Band bleibt
+  });
+
+  it('ein Band, das es am Ort nicht gibt, wird nicht übernommen', () => {
+    const nurZwei = { ...z, orte: [{ ...z.orte[0]!, equipment: z.orte[0]!.equipment.map((q) => (q.utensilId === 'BAND' ? { ...q, bandStufen: ['mittel', 'schwer'] as const } : q)) }] } as typeof z;
+    const x = trageSatzEin(nurZwei, e, s1!, 8, jetzt, undefined, undefined, 'leicht');
+    expect(x.bloecke[0]!.positionen[0]!.ergebnisse[0]).toMatchObject({ bandStufe: 'schwer' });
+  });
+
+  it('das Band des ersten Satzes gilt beim nächsten Mal weiter', () => {
+    const x = schritte(e).reduce((y, s) => trageSatzEin(z, y, s, 8, jetzt, undefined, undefined, s.satz === 1 ? 'extraSchwer' : undefined), e);
+    const p = { ...x.bloecke[0]!.positionen[0]!, feedback: 'passend' as const };
+    expect(werteUebungAus(z, p, jetzt, 'zuhause').variante.bandStufe).toBe('extraSchwer');
   });
 });
 

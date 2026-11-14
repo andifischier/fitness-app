@@ -584,3 +584,14 @@
   vorher: Waden in 2 von 3, 2 von 4 und 3 von 5 Trainings, teils mit einem einzelnen Satz; nach 1 Satz kamen
   zudem 3 Erhaltungssätze (bei Einsteigern 4 statt 2 Sätzen je Woche). Jetzt: in jeder Woche genau ein Training mit
   2 bis 3 Wadensätzen.
+
+## 14.11.2026: Aufwärmsatz konkret, Band im Satz wählbar, Wiederholungen bleiben
+- **Was:** Der Aufwärmsatz ohne Gewicht nennt die konkrete leichtere Übung bzw. das leichtere Band statt
+  „leichtere Variante“ (`aufwaermsatz` in `planung.ts`, `aufwaermenFuer` bekommt die Zeit). Im Satz lässt sich bei
+  Band-Übungen das Band mit −/+ ändern; es gilt für die Folgesätze und als Ausgangspunkt beim nächsten Mal
+  (`bandAuswahl`, `satzBand`, `bandVon`). Der Zähler „Geschafft“ ist ab dem 2. Satz mit dem zuvor Eingetragenen
+  vorbelegt (`SatzVorgabe.vorbelegung`). Neue Tests in `player.test.ts`, `planung.test.ts`, `aufwaermen.test.ts`.
+  Spezifikation, Entscheidungen und Annahmen nachgeführt.
+- **Warum:** Rückmeldung des Nutzers nach einem Training: „leichtere Variante“ bei Chinups war unklar, die
+  Bandstärke bei Klimmzügen mit Band ließ sich nicht anpassen, und angepasste Wiederholungen mussten in jedem Satz
+  neu eingestellt werden.

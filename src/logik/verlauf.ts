@@ -4,8 +4,16 @@ import { BEWERTUNG, ERHOLUNG, MAXTEST, MESSSATZ, MUSTER_ART, PROGRESSION, STANDA
 import { stundenZwischen } from './datum';
 import { alleUebungen, uebungErlaubt } from './equipment';
 import type {
-  AppZustand, Einheit, Einstellungen, Feedback, MuskelZustand, MusterId, Ort, Position, Sterne, Uebung,
+  AppZustand, BandStufe, Einheit, Einstellungen, Feedback, MuskelZustand, MusterId, Ort, Position, Sterne, Uebung,
 } from './typen';
+
+export const BAND_NAMEN: Record<BandStufe, string> = {
+  leicht: 'leicht', mittel: 'mittel', schwer: 'schwer', extraSchwer: 'extra schwer',
+};
+
+// Band, mit dem eine Position tatsächlich trainiert wurde: das des ersten Satzes (im Satz änderbar,
+// Entscheidung 14.11.2026), sonst das geplante.
+export const bandVon = (p: Position): BandStufe | undefined => p.ergebnisse[0]?.bandStufe ?? p.bandStufe;
 
 export function einstellungenVon(z: AppZustand): Einstellungen {
   return z.einstellungen[0] ?? STANDARD_EINSTELLUNGEN;
@@ -249,4 +257,16 @@ export function faelligerMaxTest(z: AppZustand, jetzt: string, ort: Ort, prognos
   faellig.sort((a, b) => (a.datum !== b.datum ? (a.datum < b.datum ? -1 : 1) : a.rang - b.rang));
   const erster = faellig[0];
   return erster ? { muster: erster.muster, uebungId: erster.uebungId } : null;
+}
+
+// Nächstleichtere Variante desselben Musters am Ort (höchste kleinere Stufe). Seit 30.10.2026
+// (Entscheidung) auch die andere Hauptvariante; bei gleicher Stufe gehen Varianten vor, die noch keine
+// Hauptvariante sind, dann derselbe Lasttyp.
+export function leichtereVariante(z: AppZustand, ort: Ort, u: Uebung, jetzt: string, haupt: string[]): Uebung | undefined {
+  const e = einstellungenVon(z);
+  const anderer = (v: Uebung) => Number(v.lasttyp !== u.lasttyp);
+  const istHaupt = (v: Uebung) => Number(haupt.includes(v.id));
+  return alleUebungen(z)
+    .filter((v) => v.muster === u.muster && v.stufe < u.stufe && uebungErlaubt(e, ort, v, jetzt))
+    .sort((a, b) => b.stufe - a.stufe || istHaupt(a) - istHaupt(b) || anderer(a) - anderer(b))[0];
 }

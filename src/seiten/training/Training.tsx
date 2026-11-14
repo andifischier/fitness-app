@@ -11,11 +11,11 @@ import { zirkelBestzeit, zirkelVorgaben } from '../../logik/heute';
 import { kannTauschen, lastAnzeige, mobilityZeilen, musterNachSaetzen, tausche } from '../../logik/planung';
 import {
   aktuellerBlock, aktuellerSchritt, balkenAbschnitte, beende, bewerteAlle, blockwechselNach, erledigteSaetze, fortschrittshinweis, letzterSatzAm, letztesMal,
-  offeneFeedbacks, pauseNach, positionVon, satzVorgabe, schritte, feedbackVorschlag, lastWaehlbar, starte, sternFragen, trageSatzEin,
+  offeneFeedbacks, pauseNach, positionVon, satzVorgabe, schritte, feedbackVorschlag, lastWaehlbar, bandAuswahl, starte, sternFragen, trageSatzEin,
   type Balkenschritt, type Messung, type SatzVorgabe, type Schritt, type Stelle,
 } from '../../logik/player';
 import { neueRekorde, vorschauNaechstesMal } from '../../logik/progression';
-import type { AppZustand, Einheit, Feedback, Sterne, Uebung } from '../../logik/typen';
+import type { AppZustand, BandStufe, Einheit, Feedback, Sterne, Uebung } from '../../logik/typen';
 import { uebungVon } from '../../logik/verlauf';
 import { Ablaufliste, Hinweis, Knopf, Laedt, Sternwahl } from '../../ui/bausteine';
 import { AufwaermSchritte } from '../../ui/aufwaermen';
@@ -97,10 +97,10 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
     }
   };
 
-  const erledigt = async (wert: number, last?: number, messung?: Messung) => {
+  const erledigt = async (wert: number, last?: number, messung?: Messung, band?: BandStufe) => {
     if (!schritt) return;
     bereiteTonVor();
-    const neu = trageSatzEin(z, einheit, schritt, wert, lokaleZeit(), last, messung);
+    const neu = trageSatzEin(z, einheit, schritt, wert, lokaleZeit(), last, messung, band);
     try {
       if (!(await speichereLaufendeEinheit(neu))) throw new Error('nicht gespeichert');
     } catch {
@@ -228,7 +228,7 @@ function Player({ z, start, onBeenden }: { z: AppZustand; start: Einheit; onBeen
         ? <Station key={`${index}-${u.id}`} z={z} einheit={einheit} schritt={schritt} u={u} letzte={index === liste.length - 1}
             onTauschen={onTauschen} onWeiter={() => void erledigt(positionVon(einheit, schritt).zielWdh)} />
         : <Satz key={`${index}-${u.id}`} z={z} einheit={einheit} schritt={schritt} u={u} farbe={farbe} onTauschen={onTauschen}
-            onErledigt={(w, l, m) => void erledigt(w, l, m)} />)}
+            onErledigt={(w, l, m, b) => void erledigt(w, l, m, b)} />)}
     </Rahmen>
   );
 }
@@ -358,12 +358,13 @@ function Kopf({ z, u, label, farbe = BLOCKFARBEN[0], onTauschen }: {
 
 function Satz({ z, einheit, schritt, u, farbe, onTauschen, onErledigt }: {
   z: AppZustand; einheit: Einheit; schritt: Schritt; u: Uebung; farbe: Blockfarbe; onTauschen?: () => void;
-  onErledigt: (wert: number, last?: number, messung?: Messung) => void;
+  onErledigt: (wert: number, last?: number, messung?: Messung, band?: BandStufe) => void;
 }) {
   const p = positionVon(einheit, schritt);
   const v = satzVorgabe(z, einheit, schritt);
-  const [wert, setWert] = useState(v.wert);
+  const [wert, setWert] = useState(v.vorbelegung);
   const [last, setLast] = useState(v.last);
+  const [band, setBand] = useState(v.bandStufe);
   const [reserve, setReserve] = useState<number>();
   const [unsauber, setUnsauber] = useState(false);
   const messsatz = v.messReserve !== undefined;
@@ -376,7 +377,8 @@ function Satz({ z, einheit, schritt, u, farbe, onTauschen, onErledigt }: {
     <div className="flex flex-1 flex-col">
       <Kopf z={z} u={u} label={kennzeichnung(einheit, schritt)} farbe={farbe} onTauschen={onTauschen} />
       {!p.istMaxTest && <Satzpunkte satz={schritt.satz} von={p.saetze} farbe={farbe} />}
-      <Vorgabekarte u={u} v={v} farbe={farbe} last={last} raster={lastWaehlbar(z, einheit, schritt) && ort ? lastraster(ort, u) : []} onLast={setLast} />
+      <Vorgabekarte u={u} v={v} farbe={farbe} last={last} raster={lastWaehlbar(z, einheit, schritt) && ort ? lastraster(ort, u) : []} onLast={setLast}
+        band={band} baender={bandAuswahl(z, einheit, schritt)} onBand={setBand} />
       {v.gesenkt && (
         <p className="mt-3 text-basis font-semibold">Ziel angepasst an deinen letzten Satz. Mach so viele, wie sauber gehen.</p>
       )}
@@ -397,7 +399,7 @@ function Satz({ z, einheit, schritt, u, farbe, onTauschen, onErledigt }: {
         ? <Fortschritt h={fortschritt} />
         : letztes && !p.istMaxTest && <p className="mt-3 text-center text-basis text-gedaempft">Letztes Mal: {letztesText(u, letztes)}</p>}
       <div className="mt-auto pt-8">
-        <Knopf deaktiviert={messsatz && !messung} onClick={() => onErledigt(wert, last, messung)}>
+        <Knopf deaktiviert={messsatz && !messung} onClick={() => onErledigt(wert, last, messung, band)}>
           {p.istMaxTest ? 'Test erledigt' : 'Satz erledigt'}
         </Knopf>
       </div>
@@ -452,16 +454,22 @@ function Satzpunkte({ satz, von, farbe }: { satz: number; von: number; farbe: Bl
 }
 
 // Ziel, Last und Hinweis zur Reserve. Bei Übungen mit Last lässt sich das Gewicht in
-// jedem Satz ändern (Entscheidung 21.10.2026); im Kalibrierungssatz wird es gewählt.
-function Vorgabekarte({ u, v, farbe, last, raster, onLast }: {
+// jedem Satz ändern (Entscheidung 21.10.2026); im Kalibrierungssatz wird es gewählt. Seit 14.11.2026
+// (Entscheidung) ebenso das Band, mit − leichter und + schwerer zu trainieren.
+function Vorgabekarte({ u, v, farbe, last, raster, onLast, band, baender, onBand }: {
   u: Uebung; v: SatzVorgabe; farbe: Blockfarbe; last?: number; raster: number[]; onLast: (kg: number) => void;
+  band?: BandStufe; baender: BandStufe[]; onBand: (b: BandStufe) => void;
 }) {
   const einheit = v.inSek ? 'Sekunden' : 'Wiederholungen';
-  const teile = lastTeile(u, { last, bandStufe: v.bandStufe });
+  const teile = lastTeile(u, { last, bandStufe: band });
+  const mitBand = band !== undefined && baender.length > 1;
+  const stufen: (number | BandStufe)[] = mitBand ? baender : raster;
+  const wahl = mitBand ? band : last;
+  const waehle = (i: number) => (mitBand ? onBand(baender[i]!) : onLast(raster[i]!));
   const links = v.art === 'maxTest'
     ? { titel: 'Max-Test', gross: v.inSek ? 'So lange' : 'So viele', klein: 'wie möglich' }
     : { titel: 'Ziel', gross: String(v.wert), klein: v.bereich ? `Bereich ${v.bereich.von} bis ${v.bereich.bis}${v.inSek ? ' Sek.' : ''}` : einheit };
-  const pos = last === undefined ? -1 : raster.indexOf(last);
+  const pos = wahl === undefined ? -1 : stufen.indexOf(wahl);
   return (
     <section className={`mt-5 rounded-karte border-2 bg-flaeche p-5 ${farbe.rand}`}>
       <div className="grid grid-cols-2 gap-4">
@@ -475,13 +483,13 @@ function Vorgabekarte({ u, v, farbe, last, raster, onLast }: {
             <p className="text-basis text-gedaempft">{v.kalibrierung ? 'Mit welchem Gewicht?' : teile.titel}</p>
             <p className="text-titel leading-tight font-extrabold">{teile.gross}</p>
             {teile.klein && <p className="text-basis text-gedaempft">{teile.klein}</p>}
-            {raster.length > 1 && (
+            {stufen.length > 1 && (
               <div className="mt-2 flex gap-2">
-                <button type="button" aria-label="Leichter" disabled={pos <= 0} onClick={() => onLast(raster[pos - 1]!)}
+                <button type="button" aria-label="Leichter" disabled={pos <= 0} onClick={() => waehle(pos - 1)}
                   className="flex size-touch items-center justify-center rounded-xl border border-rand text-akzent disabled:text-rand">
                   <span aria-hidden="true" className="text-screen font-bold">−</span>
                 </button>
-                <button type="button" aria-label="Schwerer" disabled={pos < 0 || pos >= raster.length - 1} onClick={() => onLast(raster[pos + 1]!)}
+                <button type="button" aria-label="Schwerer" disabled={pos < 0 || pos >= stufen.length - 1} onClick={() => waehle(pos + 1)}
                   className="flex size-touch items-center justify-center rounded-xl border border-rand text-akzent disabled:text-rand">
                   <Icon name="plus" groesse={20} />
                 </button>
@@ -557,7 +565,7 @@ function Pause({ z, einheit, schritt, farbe, ende, dauer, onAendern, onWeiter, o
   const naechstes = [
     p.istMaxTest ? 'Max-Test' : `Satz ${schritt.satz} von ${p.saetze}`,
     v.art === 'ziel' ? `Ziel ${v.wert}${v.inSek ? ' Sek.' : ''}` : undefined,
-    u ? lastText(u, { last: v.last, bandStufe: p.bandStufe }) : undefined,
+    u ? lastText(u, { last: v.last, bandStufe: v.bandStufe }) : undefined,
   ].filter(Boolean).join(' · ');
   return (
     <div className="flex flex-1 flex-col items-center">

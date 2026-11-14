@@ -5,7 +5,7 @@ import type { NaechstesMal, Rekord } from '../logik/progression';
 import type {
   AppZustand, BandStufe, Einheit, Einstellungen, Feedback, MusterId, Muskel, Position, Prioritaet, Uebung, Utensil,
 } from '../logik/typen';
-import { uebungVon } from '../logik/verlauf';
+import { BAND_NAMEN, uebungVon } from '../logik/verlauf';
 import { fokusNachInhalt } from '../logik/heute';
 import { zirkelName } from '../logik/workouts';
 
@@ -31,9 +31,7 @@ export const PRIORITAET_NAMEN: Record<Prioritaet, string> = {
   hoch: 'Hoch', normal: 'Normal', niedrig: 'Niedrig', sehrNiedrig: 'Sehr niedrig',
 };
 
-export const BAND_NAMEN: Record<BandStufe, string> = {
-  leicht: 'leicht', mittel: 'mittel', schwer: 'schwer', extraSchwer: 'extra schwer',
-};
+export { BAND_NAMEN } from '../logik/verlauf';
 
 export const LASTTYP_NAMEN: Record<Uebung['lasttyp'], string> = {
   KG: 'Körpergewicht', Band: 'Band', Last: 'Gewicht (kg)', Zeit: 'Halten (Sek.)',

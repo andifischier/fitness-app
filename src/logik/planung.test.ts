@@ -232,7 +232,7 @@ describe('Aufbau der Einheit', () => {
     const block = (...p: [string, number][]): Block => ({
       typ: 'einzeln', pauseSek: 90, positionen: p.map(([uebungId, saetze]) => ({ uebungId, saetze, zielWdh: 10, ergebnisse: [] })),
     });
-    const texte = (bloecke: Block[]) => aufwaermenFuer(z, o, bloecke).filter((a) => a.uebungId === '').map((a) => a.vorgabe);
+    const texte = (bloecke: Block[]) => aufwaermenFuer(z, o, bloecke, MO).filter((a) => a.uebungId === '').map((a) => a.vorgabe);
     const oben = texte([block(['liegestuetz', 3], ['kh_curls', 2])]);
     expect(oben.slice(0, 3)).toEqual(['50 Jumping Jacks', '10 Arm Circles je Richtung', '10 Backward Shoulder Circles']);
     expect(oben.join()).not.toContain('Kniebeugen');
@@ -242,6 +242,21 @@ describe('Aufbau der Einheit', () => {
     // Rumpf mit den meisten Sätzen zuerst; höchstens 3 Mobility-Zeilen
     const mobility = texte([block(['liegestuetz', 2], ['plank', 4], ['kniebeuge', 3], ['kh_rudern_einarmig', 1])]).slice(3);
     expect(mobility).toEqual(['8 Cat-Cow', '5 Lunges with Twist je Seite', '10 Wall Slides']);
+  });
+
+  it('Aufwärmsatz ohne Gewicht nennt eine konkrete Übung bzw. ein Band (Entscheidung 14.11.2026)', () => {
+    const z = zustand({ katalog: 'voll' });
+    const o = z.orte[0]!;
+    const satz = (uebungId: string, extra: Partial<Block['positionen'][number]> = {}) => aufwaermenFuer(z, o,
+      [{ typ: 'einzeln', pauseSek: 90, positionen: [{ uebungId, saetze: 3, zielWdh: 10, ergebnisse: [], ...extra }] }], MO).at(-1);
+    // Chinups: die nächstleichtere Übung am Ort, mit dem Band, das am meisten hilft
+    expect(satz('chinup')).toEqual({ uebungId: 'klimmzug_band', vorgabe: '8 Wdh. Band-Assisted Pullups: Band extra schwer' });
+    // Band-Übung: dieselbe Übung mit dem nächstleichteren Band
+    expect(satz('klimmzug_band', { bandStufe: 'mittel' })).toEqual({ uebungId: 'klimmzug_band', vorgabe: '8 Wdh. Band-Assisted Pullups: Band schwer' });
+    expect(satz('klimmzug', {})).toEqual({ uebungId: 'chinup', vorgabe: '8 Wdh. Chinups' });
+    // Nichts Leichteres am Ort: dieselbe Übung mit halb so vielen Wiederholungen wie ihr Ziel
+    expect(satz('knieliegestuetz')).toEqual({ uebungId: 'knieliegestuetz', vorgabe: '5 Wdh. Knee Pushups' });
+    for (const u of z.katalog.uebungen) expect(satz(u.id)?.vorgabe ?? '').not.toContain('leichtere Variante');
   });
 
   it('Einheit ist geplant, gehört zur Woche und hat Ziel und Last je Position', () => {
