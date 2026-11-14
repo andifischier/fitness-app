@@ -584,3 +584,11 @@
   vorher: Waden in 2 von 3, 2 von 4 und 3 von 5 Trainings, teils mit einem einzelnen Satz; nach 1 Satz kamen
   zudem 3 Erhaltungssätze (bei Einsteigern 4 statt 2 Sätzen je Woche). Jetzt: in jeder Woche genau ein Training mit
   2 bis 3 Wadensätzen.
+
+## 14.11.2026: Einseitige Übungen, beide Seiten in einem Satz
+- **Was:** Satzbildschirm (`src/seiten/training/Training.tsx`, Vorgabekarte): Bei Übungen mit `einseitig`
+  steht „Je Seite: beide Seiten direkt nacheinander, dann „Satz erledigt““ (nicht beim Max-Test).
+  Spezifikation und Entscheidungen nachgeführt.
+- **Warum:** Rückmeldung des Nutzers: Bei einer einbeinigen Übung kam zwischen den Seiten eine normale Pause.
+  Die Planung rechnet schon mit beiden Seiten je Satz (45 Sek. Zusatzzeit), der Bildschirm sagte das aber nicht,
+  sodass jede Seite wie ein eigener Satz wirkte. Keine Änderung an Logik oder Daten.

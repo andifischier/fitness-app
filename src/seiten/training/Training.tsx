@@ -462,6 +462,7 @@ function Vorgabekarte({ u, v, farbe, last, raster, onLast }: {
     ? { titel: 'Max-Test', gross: v.inSek ? 'So lange' : 'So viele', klein: 'wie möglich' }
     : { titel: 'Ziel', gross: String(v.wert), klein: v.bereich ? `Bereich ${v.bereich.von} bis ${v.bereich.bis}${v.inSek ? ' Sek.' : ''}` : einheit };
   const pos = last === undefined ? -1 : raster.indexOf(last);
+  const beideSeiten = u.einseitig === true && v.art !== 'maxTest';
   return (
     <section className={`mt-5 rounded-karte border-2 bg-flaeche p-5 ${farbe.rand}`}>
       <div className="grid grid-cols-2 gap-4">
@@ -490,8 +491,10 @@ function Vorgabekarte({ u, v, farbe, last, raster, onLast }: {
           </div>
         )}
       </div>
-      {(v.reserve || v.langsam) && (
+      {(v.reserve || v.langsam || beideSeiten) && (
         <p className="mt-4 border-t border-linie pt-4 text-basis">
+          {/* Einseitige Übungen (Entscheidung 14.11.2026): beide Seiten gehören in einen Satz, ohne Pause dazwischen. */}
+          {beideSeiten && <span className="block font-semibold">Je Seite: beide Seiten direkt nacheinander, dann „Satz erledigt“.</span>}
           {v.langsam && <span className="block font-semibold">{PROGRESSION.tempoAbsenkenSek} Sek. absenken.</span>}
           {v.reserve}
         </p>
