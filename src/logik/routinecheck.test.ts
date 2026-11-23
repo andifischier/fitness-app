@@ -17,7 +17,8 @@ const voll = (orte: Ort[] = [ort()], einstellungen: Partial<Einstellungen> = {})
   zustand({ katalog: 'voll', orte, einstellungen: { ...STANDARD_EINSTELLUNGEN, ...einstellungen }, maxTests: [] });
 const ids = (e: Einheit) => e.bloecke.flatMap((b) => b.positionen.map((p) => p.uebungId));
 
-// Alle geplanten Sätze mit dem Ziel geschafft, Messsatz „Noch 1 bis 2“.
+// Alle geplanten Sätze mit dem Ziel geschafft, Messsatz „Noch 1 bis 2“ mit 2 Wdh. über dem Ziel (seit
+// 23.11.2026 steigt das Ziel nur, wenn der letzte Satz Luft zeigt).
 function absolviert(z: AppZustand, e: Einheit, jetzt: string): Einheit {
   return {
     ...e, status: 'abgeschlossen', gestartetAm: jetzt, beendetAm: jetzt,
@@ -29,7 +30,7 @@ function absolviert(z: AppZustand, e: Einheit, jetzt: string): Einheit {
         return {
           ...p, ...(sek || p.istMaxTest || b.typ === 'zirkel' ? { feedback: 'passend' as const } : { reserve: 1.5 }),
           ergebnisse: Array.from({ length: n }, (_, i) => ({
-            nr: i + 1, ...(sek ? { sek: p.zielWdh } : { wdh: p.zielWdh }),
+            nr: i + 1, ...(sek ? { sek: p.zielWdh } : { wdh: p.zielWdh + (i === n - 1 && !p.istMaxTest && b.typ !== 'zirkel' ? 2 : 0) }),
             ...(p.last !== undefined ? { last: p.last } : {}), ...(p.bandStufe ? { bandStufe: p.bandStufe } : {}), zeit: jetzt,
           })),
         };

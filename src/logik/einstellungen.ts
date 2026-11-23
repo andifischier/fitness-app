@@ -175,7 +175,10 @@ export function moeglicheUebungen(z: AppZustand, ort: Ort): Uebung[] {
 export function fehlendeMuster(z: AppZustand, ort: Ort): MusterId[] {
   const e: Einstellungen = { ...einstellungenVon(z), einschraenkungen: [], ausgeschlossen: [] };
   const ohneGespeicherte: AppZustand = { ...z, muster: [] };
-  return MUSTER_IDS.filter((m) => !ERGAENZUNG[m] && hauptvarianten(ohneGespeicherte, m, ort, '2000-01-01T00:00:00', e).length === 0);
+  // Hat ein Muster nur Übungen „nur als Favorit“ (z. B. Rutsch-Beincurls), fehlt kein Equipment (Annahme 23.11.2026).
+  const nurFavorit = (m: MusterId) => alleUebungen(z).some((u) => u.muster === m && uebungMoeglich(ort, u));
+  return MUSTER_IDS.filter((m) => !ERGAENZUNG[m] && hauptvarianten(ohneGespeicherte, m, ort, '2000-01-01T00:00:00', e).length === 0
+    && !nurFavorit(m));
 }
 
 // ---------- Löschen nur, solange nie genutzt (Entscheidung 20.10.2026) ----------

@@ -120,11 +120,11 @@ describe('Auswertung wie ausgeruht', () => {
     const z = liegestuetzZustand();
     const p: Position = {
       uebungId: 'liegestuetz', saetze: 3, zielWdh: 12 - W, vorbelastet: W, feedback: 'passend',
-      ergebnisse: [12 - W, 12 - W, 12 - W].map((wdh, i) => ({ nr: i + 1, wdh, zeit: MO })),
+      ergebnisse: [14 - W, 14 - W, 14 - W].map((wdh, i) => ({ nr: i + 1, wdh, zeit: MO })),
     };
     const frisch: Position = { ...ausgeruht(p) };
     expect(frisch.zielWdh).toBe(12);
-    expect(frisch.ergebnisse.map((s) => s.wdh)).toEqual([12, 12, 12]);
+    expect(frisch.ergebnisse.map((s) => s.wdh)).toEqual([14, 14, 14]);
     expect(frisch.vorbelastet).toBeUndefined();
     const { variante } = werteUebungAus(z, p, MO, 'zuhause');
     expect(variante.zielWdh).toBe(werteUebungAus(z, frisch, MO, 'zuhause').variante.zielWdh);

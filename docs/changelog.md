@@ -595,3 +595,17 @@
 - **Warum:** Rückmeldung des Nutzers nach einem Training: „leichtere Variante“ bei Chinups war unklar, die
   Bandstärke bei Klimmzügen mit Band ließ sich nicht anpassen, und angepasste Wiederholungen mussten in jedem Satz
   neu eingestellt werden.
+
+## 23.11.2026: Abwechslung bei Bauch und Armen, Steigerung nur mit Luft, Band ohne Stange, Beine zusammengefasst
+- **Was:** Bauch, Bizeps und Trizeps wechseln zwischen bis zu 4 Übungen statt A und B; jedes Training kommt die,
+  die am längsten nicht dran war (`ROTATION`, `rotationsAuswahl`, `amLaengstenNicht` in `planung.ts`). Bei
+  Körpergewicht und Band steigt das Ziel nur so weit, wie der letzte Satz zeigt (kein festes +2 bzw. +4 mehr,
+  `progression.ts`). Die Klimmzugstange zählt im Katalog nicht mehr als Befestigung fürs Band; Rutsch-Beincurls
+  und Nordic Curls kommen nur noch als Favorit, ohne Türanker nimmt die Hüfte eine Kreuzheben-Übung dazu.
+  Fortschritt, Muskelwahl vor dem Start und Prioritäten zeigen „Beine“ statt der einzelnen Beinmuskeln. Neue
+  Tests in `rotation.test.ts` und `testrunde.test.ts`; betroffene Tests und Simulationen angepasst (der simulierte
+  Trainierende macht im Messsatz 2 Wdh. über dem Ziel). Spezifikation, Entscheidungen, Annahmen und
+  Übungskatalog nachgeführt.
+- **Warum:** Rückmeldung des Nutzers: wochenlang dieselben Bauch- und Armübungen, zu große Sprünge nach knapp
+  geschafften Klimmzügen, Band-Übungen mit Befestigung und Rutsch-Beincurls, obwohl es zu Hause beides nicht
+  gibt, und zu viele einzelne Beinmuskeln in der Anzeige.
