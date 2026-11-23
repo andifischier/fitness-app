@@ -31,7 +31,8 @@ describe('Frage 1: zweite Übung höchstens 1 Stufe schwerer', () => {
     const o = z.orte[0]!;
     // Close-Grip Pushups (Stufe 4, seit 09.11.2026) liegen nur 1 Stufe über der Musterstufe.
     const trizeps = hauptvarianten(z, 'Trizeps', o, MO).map((k) => k.uebung.id);
-    expect(trizeps).toEqual(['bank_dips', 'enge_liegestuetz']);
+    // Seit 23.11.2026 wechselnde Auswahl bis 4 Übungen, ohne Gewicht ebenso höchstens 1 Stufe darüber.
+    expect(trizeps).toEqual(['bank_dips', 'enge_liegestuetz', 'tisch_trizepsstrecken']);
     const vDruck = hauptvarianten(z, 'vDruck', o, MO).map((k) => k.uebung.id);
     // Incline Pike Pushups (Stufe 1, seit 09.11.2026) sind als leichtere Variante B erlaubt.
     expect(vDruck).toEqual(['pike_liegestuetz', 'pike_erhoeht_haende']);
@@ -122,16 +123,17 @@ describe('Frage 4: Ziel bei Körpergewicht und Band aus allen Sätzen', () => {
     expect(ziel([6, 8, 10], 'passend')).toBe(9);
   });
 
-  it('springt, wenn deutlich mehr geht; sonst +2; höchstens 4 über dem besten ersten Satz; gerade Zahlen', () => {
+  it('steigt nur, wenn der letzte Satz Luft zeigt (Entscheidung 23.11.2026); höchstens 4 über dem besten ersten Satz; gerade Zahlen', () => {
     const z = voll();
     const aus = (zielWdh: number, wdh: number[], feedback: Feedback, best?: number) =>
       werteUebungAus({ ...z, varianten: best ? [{ uebungId: 'chinup', zielWdh, seitSteigerung: 5, schwerSerie: 0, bestErsterSatz: best }] : [] },
         position('chinup', zielWdh, wdh, { feedback }), MO, 'zuhause').variante.zielWdh;
     expect(aus(5, [9, 8, 8, 7, 7], 'passend')).toBe(6);        // Schätzung 7, als gerade Zahl 6
     expect(aus(5, [9, 8, 8, 7, 7], 'leicht')).toBe(8);         // 5 + 4 = 9, als gerade Zahl 8
-    expect(aus(8, [8, 8, 8], 'passend')).toBe(10);
+    expect(aus(8, [8, 8, 8], 'passend')).toBe(8);          // Schätzung 9, als gerade Zahl 8: bleibt
     expect(aus(6, [10, 10, 10], 'leicht')).toBe(12);           // Schätzung 13, als gerade Zahl 12
-    expect(aus(6, [7, 7, 6], 'passend', 7)).toBe(8);
+    expect(aus(6, [7, 7, 6], 'passend', 7)).toBe(6);
+    expect(aus(6, [9, 9, 9], 'passend', 9)).toBe(10);         // Schätzung 10: deutlich Luft
   });
 });
 
@@ -206,5 +208,21 @@ describe('Anzeige-Korrekturen', () => {
   it('„0 von 1 Einheit“', () => {
     expect(einheitenText(0, 1)).toBe('0 von 1 Einheit');
     expect(einheitenText(1, 3)).toBe('1 von 3 Einheiten');
+  });
+});
+
+describe('Steigerung nur, wenn Luft da ist (Entscheidung 23.11.2026)', () => {
+  // Chinups 4 × 6, Messsatz am Ende mit angetippter Reserve
+  const aus = (letzter: number, reserve: number) => werteUebungAus(
+    { ...voll(), varianten: [{ uebungId: 'chinup', zielWdh: 6, seitSteigerung: 5, schwerSerie: 0, bestErsterSatz: 6 }] },
+    position('chinup', 6, [6, 6, 6, letzter], { reserve }), MO, 'zuhause').variante.zielWdh;
+  it('mit Mühe geschafft: das Ziel bleibt', () => {
+    expect(aus(6, 0)).toBe(6);       // „Ging nichts mehr“
+    expect(aus(6, 1.5)).toBe(6);     // „Noch 1 bis 2“
+    expect(aus(7, 1.5)).toBe(6);
+  });
+  it('mit Luft: das Ziel steigt', () => {
+    expect(aus(8, 1.5)).toBe(8);
+    expect(aus(7, 4)).toBe(10);      // „Noch 3 oder mehr“
   });
 });

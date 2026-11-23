@@ -64,7 +64,7 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | knieliegestuetz | Knee Pushups | hDruck | Brust | Trizeps, Schultern | 1 | keins | KG | 8 bis 15 Wdh. | ja |
 | liegestuetz\_erhoeht\_haende | Incline Pushups | hDruck | Brust | Trizeps, Schultern | 2 | ERH | KG | 8 bis 15 Wdh. | ja |
-| band\_brustpresse | Band Chest Press | hDruck | Brust | Trizeps, Schultern | 3 | BAND + ANKER/STANGE | Band | 10 bis 15 Wdh. | nein |
+| band\_brustpresse | Band Chest Press | hDruck | Brust | Trizeps, Schultern | 3 | BAND + ANKER | Band | 10 bis 15 Wdh. | nein |
 | liegestuetz | Pushups | hDruck | Brust | Trizeps, Schultern | 4 | keins | KG | 8 bis 15 Wdh. | ja |
 | liegestuetz\_pause | Pause Pushups (Zwischenstufe, 2 Sek. Pause unten) | hDruck | Brust | Trizeps, Schultern | 4,5 | keins | KG | 8 bis 15 Wdh. | ja |
 | kh\_bodendruecken | Dumbbell Floor Press (nur ohne Bank und Schrägbank, Entscheidung 30.10.2026) | hDruck | Brust | Trizeps, Schultern | 4 | KH | Last | 8 bis 12 Wdh. | nein |
@@ -97,7 +97,7 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | wand\_handstand | Wall Handstand Hold | vDruck | Schultern | Trizeps | 7 | keins | Zeit | 15 bis 45 Sek. | nein |
 | kh\_schulterdruecken\_einarmig | Single-Arm Dumbbell Shoulder Press | vDruck | Schultern | Trizeps | 6 | KH | Last | 8 bis 12 Wdh. | nein |
 | band\_rudern | Seated Band Rows | hZug | Rücken | Bizeps, Schultern | 3 | BAND | Band | 10 bis 15 Wdh. | nein |
-| band\_face\_pull | Band Face Pulls | hZug | Schultern | Rücken | 3 | BAND + ANKER/STANGE | Band | 12 bis 20 Wdh. | nein |
+| band\_face\_pull | Band Face Pulls | hZug | Schultern | Rücken | 3 | BAND + ANKER | Band | 12 bis 20 Wdh. | nein |
 | tischrudern | Table Rows | hZug | Rücken | Bizeps, Schultern | 4 | TISCH | KG | 8 bis 15 Wdh. | ja |
 | kh\_rudern\_einarmig | One-Arm Dumbbell Rows | hZug | Rücken | Bizeps, Schultern | 5 | KH + BANK/SCHRAEG/ERH | Last | 8 bis 12 Wdh. | nein |
 | kh\_rudern\_vorgebeugt | Bent-Over Dumbbell Rows | hZug | Rücken | Bizeps, Schultern | 5 | KH | Last | 8 bis 12 Wdh. | nein |
@@ -108,7 +108,7 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | renegade\_rows | Renegade Rows | hZug | Rücken | Bizeps, Bauch | 6 | KH | Last | 8 bis 12 Wdh. | nein |
 | tischrudern\_fuesse\_erhoeht | Feet-Elevated Table Rows | hZug | Rücken | Bizeps, Schultern | 6 | TISCH + ERH | KG | 8 bis 15 Wdh. | nein |
 | scapula\_pullups | Scapula Pullups | vZug | Rücken | keine | 1 | STANGE | KG | 8 bis 15 Wdh. | nein |
-| band\_latzug | Kneeling Band Lat Pulldowns | vZug | Rücken | Bizeps | 2 | BAND + ANKER/STANGE | Band | 10 bis 15 Wdh. | nein |
+| band\_latzug | Kneeling Band Lat Pulldowns | vZug | Rücken | Bizeps | 2 | BAND + ANKER | Band | 10 bis 15 Wdh. | nein |
 | negative\_klimmzuege | Negative Pullups | vZug | Rücken | Bizeps | 3 | STANGE | KG | 3 bis 6 Wdh. | nein |
 | klimmzug\_band | Band-Assisted Pullups | vZug | Rücken | Bizeps | 4 | STANGE + BAND | Band | 6 bis 12 Wdh. | nein |
 | chinup | Chinups | vZug | Rücken | Bizeps | 5 | STANGE | KG | 5 bis 12 Wdh. | nein |
@@ -149,9 +149,9 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | kh\_seit\_ausfallschritt | Dumbbell Lateral Lunges | Einbein | Quadrizeps | Gesäß | 5 | KH/KB | Last | 8 bis 12 Wdh. | nein |
 | glute\_bridge | Glute Bridges | Huefte | Gesäß | Hintere Oberschenkel (0,25) | 1 | keins | KG | 12 bis 20 Wdh. | ja |
 | mini\_glute\_bridge | Mini-Band Glute Bridges | Huefte | Gesäß | Hintere Oberschenkel (0,25) | 2 | MINI | Band | 12 bis 20 Wdh. | ja |
-| band\_pull\_through | Band Pull-Throughs | Huefte | Gesäß | Hintere Oberschenkel | 3 | BAND + ANKER/STANGE | Band | 12 bis 15 Wdh. | nein |
+| band\_pull\_through | Band Pull-Throughs | Huefte | Gesäß | Hintere Oberschenkel | 3 | BAND + ANKER | Band | 12 bis 15 Wdh. | nein |
 | hip\_thrust\_einbeinig | Single-Leg Hip Thrusts | Huefte | Gesäß | Hintere Oberschenkel (0,25) | 3 | ERH/BANK/SCHRAEG | KG | 8 bis 15 Wdh. | nein |
-| band\_beincurl | Band Lying Leg Curls | Beinbeuger | Hintere Oberschenkel | keine | 2 | BAND + ANKER/STANGE | Band | 12 bis 20 Wdh. | nein |
+| band\_beincurl | Band Lying Leg Curls | Beinbeuger | Hintere Oberschenkel | keine | 2 | BAND + ANKER | Band | 12 bis 20 Wdh. | nein |
 | sliding\_leg\_curl | Sliding Leg Curls | Beinbeuger | Hintere Oberschenkel | Gesäß | 4 | keins | KG | 8 bis 15 Wdh. | nein |
 | kh\_hip\_thrust | Dumbbell Hip Thrusts | Huefte | Gesäß | Hintere Oberschenkel (0,25) | 4 | KH + BANK/SCHRAEG | Last | 8 bis 15 Wdh. | nein |
 | kh\_rdl | Dumbbell Romanian Deadlifts | Huefte | Hintere Oberschenkel | Gesäß | 5 | KH | Last | 8 bis 12 Wdh. | nein |
@@ -175,7 +175,7 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | dead\_bug | Dead Bugs | Rumpf | Bauch | keine | 1 | keins | KG | 8 bis 12 Wdh. | ja |
 | plank | Plank | Rumpf | Bauch | keine | 2 | keins | Zeit | 20 bis 60 Sek. | ja |
 | seitstuetz | Side Plank | Rumpf | Bauch | keine | 2 | keins | Zeit | 20 bis 45 Sek. | ja |
-| band\_pallof | Band Pallof Press | Rumpf | Bauch | keine | 3 | BAND + ANKER/STANGE | Band | 10 bis 15 Wdh. | nein |
+| band\_pallof | Band Pallof Press | Rumpf | Bauch | keine | 3 | BAND + ANKER | Band | 10 bis 15 Wdh. | nein |
 | kh\_russian\_twist | Dumbbell Russian Twists | Rumpf | Bauch | keine | 3 | KH/KB | Last | 10 bis 20 Wdh. | ja |
 | hollow\_hold | Hollow Hold | Rumpf | Bauch | keine | 4 | keins | Zeit | 20 bis 45 Sek. | ja |
 | haengendes\_knieheben | Hanging Knee Raises | Rumpf | Bauch | keine | 5 | STANGE | KG | 8 bis 15 Wdh. | nein |
@@ -203,7 +203,7 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | schraegbank\_curls | Incline Dumbbell Curls | Bizeps | Bizeps | keine | 4 | KH + SCHRAEG | Last | 10 bis 15 Wdh. | nein |
 | lh\_curls | Barbell Curls | Bizeps | Bizeps | keine | 4 | LH | Last | 8 bis 12 Wdh. | nein |
 | ringe\_curls | Ring Curls | Bizeps | Bizeps | keine | 4 | RINGE | KG | 8 bis 15 Wdh. | nein |
-| band\_trizeps | Band Triceps Pushdowns | Trizeps | Trizeps | keine | 2 | BAND + ANKER/STANGE | Band | 12 bis 20 Wdh. | nein |
+| band\_trizeps | Band Triceps Pushdowns | Trizeps | Trizeps | keine | 2 | BAND + ANKER | Band | 12 bis 20 Wdh. | nein |
 | kh\_kickback | Dumbbell Kickbacks | Trizeps | Trizeps | keine | 2 | KH | Last | 12 bis 15 Wdh. | nein |
 | bank\_dips | Bench Dips | Trizeps | Trizeps | Brust | 3 | ERH/BANK/SCHRAEG | KG | 10 bis 20 Wdh. | ja |
 | kh\_trizeps\_ueberkopf | Overhead Dumbbell Triceps Extensions | Trizeps | Trizeps | keine | 3 | KH | Last | 10 bis 15 Wdh. | nein |
@@ -223,7 +223,7 @@ Der Nutzer kann eigene Utensilien anlegen (Name, ID) und sie eigenen Übungen zu
 | kh\_upright\_rows | Dumbbell Upright Rows | Schulter | Schultern | Rücken | 4 | KH | Last | 10 bis 15 Wdh. | nein |
 | kh\_flys | Dumbbell Flys | BrustIso | Brust | keine | 4 | KH + BANK/SCHRAEG | Last | 10 bis 15 Wdh. | nein |
 | kh\_boden\_flys | Dumbbell Floor Flys (nur ohne Bank und Schrägbank, Entscheidung 09.11.2026) | BrustIso | Brust | keine | 3 | KH | Last | 10 bis 15 Wdh. | nein |
-| band\_flys | Band Chest Flys | BrustIso | Brust | keine | 2 | BAND + ANKER/STANGE | Band | 12 bis 20 Wdh. | nein |
+| band\_flys | Band Chest Flys | BrustIso | Brust | keine | 2 | BAND + ANKER | Band | 12 bis 20 Wdh. | nein |
 | wadenheben | Calf Raises | Waden | Waden | keine | 1 | ERH | KG | 15 bis 25 Wdh. | ja |
 | wadenheben\_einbeinig | Single-Leg Calf Raises | Waden | Waden | keine | 3 | ERH | KG | 10 bis 20 Wdh. | nein |
 | kh\_wadenheben | Dumbbell Calf Raises | Waden | Waden | keine | 4 | KH + ERH | Last | 10 bis 20 Wdh. | nein |

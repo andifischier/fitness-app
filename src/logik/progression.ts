@@ -2,12 +2,12 @@
 // Max-Tests“. Rein und deterministisch: Die aktuelle Zeit wird übergeben; der Zustand wird nur
 // gelesen und als neuer Zustand zurückgegeben.
 import {
-  BEWERTUNG, EINHEIT, ERHOLUNGSWOCHE, LASTTYP_RANG, LEISTUNG, MUSTER_ART, PROGRESSION, TRAININGSPAUSE, VOLUMENGRENZE, WOCHENZIEL,
+  BEWERTUNG, EINHEIT, ERHOLUNGSWOCHE, LASTTYP_RANG, LEISTUNG, MUSTER_ART, PROGRESSION, ROTATION, TRAININGSPAUSE, VOLUMENGRENZE, WOCHENZIEL,
 } from '../konfiguration';
 import { isoWoche, plusTage, stundenZwischen, wocheStart, wocheVerschoben } from './datum';
 import { alleUebungen, bandStufen, lastraster, uebungErlaubt } from './equipment';
 import {
-  bereichFuer, dosisProMuskel, hauptvarianten, istErholungswoche, musterstufe, persoenlicheGrenze, startwerte,
+  bereichFuer, dosisProMuskel, hauptvarianten, istErholungswoche, istRotation, musterstufe, persoenlicheGrenze, startwerte,
   vonSelbstWaehlbar, wochenDosis, wochenziele,
 } from './planung';
 import {
@@ -300,12 +300,12 @@ export function werteUebungAus(z: AppZustand, position: Position, jetzt: string,
   } else if (u.lasttyp === 'Zeit') {
     v.zielWdh = Math.min(O, ziel + (fb === 'leicht' ? PROGRESSION.zeitPlusLeicht : PROGRESSION.zeitPlusPassend));
   } else {
-    // Körpergewicht und Band: +1 bzw. +2, oder mehr, wenn die Schätzung aus allen Sätzen deutlich mehr
-    // zulässt (Entscheidung 30.10.2026); höchstens 2 Wdh. über dem bisher besten ersten Satz.
-    const plus = fb === 'leicht' ? PROGRESSION.zielPlusLeicht : PROGRESSION.zielPlusPassend;
+    // Körpergewicht und Band (Entscheidung 23.11.2026, „nur wenn Luft da ist“; ersetzt „+2 bzw. +4“):
+    // Das Ziel steigt auf das, was der letzte Satz mit Ziel-Reserve zeigt (Messsatz, sonst Schätzung aus
+    // allen Sätzen), höchstens 4 Wdh. über dem bisher besten ersten Satz; nie tiefer als bisher.
     const deckel = v.bestErsterSatz + PROGRESSION.kgMaxUeberBestem;
     const geschaetzt = zielAusSaetzen(e, p, fb) ?? ziel;
-    v.zielWdh = Math.min(O, Math.max(ziel, Math.min(Math.max(ziel + plus, geschaetzt), deckel)));
+    v.zielWdh = Math.min(O, Math.max(ziel, Math.min(geschaetzt, deckel)));
   }
 
   if (!inSek) {
@@ -339,7 +339,9 @@ function legeHauptvariantenFest(z: AppZustand, einheit: Einheit, ort: Ort, start
     const alle = mz.hauptvarianten.map((id) => uebungVon(neu, id));
     if (mz.hauptvarianten.length > 0) {
       const einStern = mz.hauptvarianten.some((id) => sterneVon(e, id) === 1);
-      if (!einStern || !alle.every((v) => v && uebungErlaubt(e, ort, v, start))) continue;
+      // Wechselnde Auswahl (Entscheidung 23.11.2026): bisher gespeicherte A und B auffüllen
+      const auffuellen = istRotation(u.muster) && mz.hauptvarianten.length < ROTATION.anzahl;
+      if ((!einStern && !auffuellen) || !alle.every((v) => v && uebungErlaubt(e, ort, v, start))) continue;
     }
     const ids = hauptvarianten(neu, u.muster, ort, start).filter((k) => !k.istErsatz).map((k) => k.uebung.id);
     if (ids.length === 0 || ids.join() === mz.hauptvarianten.join()) continue;

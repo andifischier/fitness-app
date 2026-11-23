@@ -212,6 +212,15 @@ export const EINHEIT = {
   zyklusWochen: 6,
 } as const;
 
+// Wechselnde Auswahl (Entscheidung 23.11.2026): Bauch, Bizeps und Trizeps haben statt der Hauptvarianten A
+// und B bis zu `anzahl` Übungen; jedes Training kommt die, die am längsten nicht dran war. Gleichnamige
+// Übungen mit und ohne Gewicht (Russian Twists, Dumbbell Russian Twists) zählen dabei als eine.
+export const ROTATION = {
+  muster: ['Rumpf', 'Bizeps', 'Trizeps'] as readonly MusterId[],
+  anzahl: 4,
+  namensZusatz: ['Dumbbell', 'Weighted', 'Band', 'Barbell', 'Kettlebell'] as readonly string[],
+} as const;
+
 // Kombi-Runden: höchstens so viele Übungen je Runde (Pause nach der Runde = Supersatz-Pause)
 export const KOMBI = {
   maxUebungen: 3,
@@ -255,7 +264,9 @@ export const LASTTYP_RANG = { Last: 0, Band: 1, KG: 2, Zeit: 3 } as const;
 // Übungen nur als Lieblingsübung (Entscheidung 10.11.2026): Sie werden nie von selbst Hauptübung, auch nicht als
 // neue Übung bei Zyklusbeginn; als Favorit und per Tausch bleiben sie möglich. Shrugs stehen bei „Schulter“, trainieren
 // aber den Rücken und verdrängten sonst die Übungen für die seitliche und hintere Schulter.
-export const NUR_ALS_FAVORIT: readonly string[] = ['kh_shrugs'];
+// Seit 23.11.2026 auch Rutsch-Beincurls (zerkratzen den Boden) und Nordic Curls (brauchen eine Fußfixierung):
+// Ohne Türanker entfallen eigene Beincurls dann; die hinteren Oberschenkel arbeiten im Kreuzheben mit.
+export const NUR_ALS_FAVORIT: readonly string[] = ['kh_shrugs', 'sliding_leg_curl', 'sliding_leg_curl_einbeinig', 'nordic_curl'];
 
 export const NUR_OHNE: Record<string, readonly string[]> = {
   kh_bodendruecken: ['BANK', 'SCHRAEG'],

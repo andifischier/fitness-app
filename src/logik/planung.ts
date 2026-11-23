@@ -1,7 +1,7 @@
 // Planungsmodul laut Spezifikation, Abschnitt „Planungslogik“. Rein und deterministisch: Die
 // aktuelle Zeit wird übergeben; der Zustand wird nur gelesen, nie verändert.
 import {
-  ABLEITUNG, BEWERTUNG, NUR_ALS_FAVORIT, ERHOLUNGSWOCHE, EINHEIT, ERGAENZUNG, ERSATZ, FOKUS_GRUPPEN, KOERPERHAELFTE, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
+  ABLEITUNG, BEWERTUNG, NUR_ALS_FAVORIT, ROTATION, ERHOLUNGSWOCHE, EINHEIT, ERGAENZUNG, ERSATZ, FOKUS_GRUPPEN, KOERPERHAELFTE, LASTTYP_RANG, MAXTEST, MUSTER_ART, PROFIL,
   KOMBI, PROGRESSION, TESTTAG, TRAININGSPAUSE, WOCHENZIEL, WORKOUT, ZEITBUDGET, ZIRKEL,
 } from '../konfiguration';
 import { isoWoche, plusTage, stundenZwischen, verbleibendeTage, wochenNummer, wochentag } from './datum';
@@ -281,10 +281,15 @@ export function hauptvarianten(z: AppZustand, muster: MusterId, ort: Ort, jetzt:
     const gespeichert = z.muster.find((x) => x.muster === muster)?.hauptvarianten ?? [];
     const gueltig = gespeichert.map((id) => erlaubt.find((u) => u.id === id));
     if (gueltig.length > 0 && gueltig.every((u) => u)) {
-      return ohneEinStern(z, e, gueltig as Uebung[], erlaubt).map((u) => ({ uebung: u, istErsatz: false }));
+      const fest = ohneEinStern(z, e, gueltig as Uebung[], erlaubt);
+      return (istRotation(muster) ? rotationsAuswahl(z, e, muster, fest, erlaubt) : fest).map((u) => ({ uebung: u, istErsatz: false }));
     }
+    // Übungen „nur als Favorit“ kommen nie von selbst (Entscheidung 10.11.2026); hat das Muster sonst keine,
+    // entfällt es am Ort (Entscheidung 23.11.2026, z. B. Beincurls ohne Türanker).
     const automatisch = erlaubt.filter((u) => vonSelbstWaehlbar(e, u));
-    const sortiert = rangiere(z, e, muster, automatisch.length > 0 ? automatisch : erlaubt);
+    if (automatisch.length === 0) return [];
+    if (istRotation(muster)) return rotationsAuswahl(z, e, muster, [], erlaubt).map((u) => ({ uebung: u, istErsatz: false }));
+    const sortiert = rangiere(z, e, muster, automatisch);
     const a = sortiert[0]!;
     // B höchstens 1 Stufe über der Musterstufe (Entscheidung 30.10.2026); sonst nur A. Bei Varianten
     // mit Gewicht regelt die Last die Schwierigkeit, die Grenze gilt dort nicht (wie in der Rangfolge).
@@ -293,7 +298,11 @@ export function hauptvarianten(z: AppZustand, muster: MusterId, ort: Ort, jetzt:
     if (rest.length === 0) return [{ uebung: a.u, istErsatz: false }];
     // B: nächstbeste Variante, innerhalb derselben Stufe bevorzugt mit anderem Equipment.
     const gleichAuf = rest.filter((r) => [0, 1, 2, 3].every((i) => r.k[i] === rest[0]!.k[i]));
-    const b = gleichAuf.find((r) => equipmentSchluessel(r.u) !== equipmentSchluessel(a.u)) ?? rest[0]!;
+    // Ohne eigene Beincurls am Ort (Entscheidung 23.11.2026) ist B der Hüfte eine Übung für den anderen
+    // Hauptmuskel (z. B. Rumänisches Kreuzheben zu Hip Thrusts), damit die hinteren Oberschenkel mitkommen.
+    const andererMuskel = muster === 'Huefte' && hauptvarianten(z, 'Beinbeuger', ort, jetzt, e).length === 0
+      ? rest.find((r) => hauptmuskel(r.u) !== hauptmuskel(a.u)) : undefined;
+    const b = andererMuskel ?? gleichAuf.find((r) => equipmentSchluessel(r.u) !== equipmentSchluessel(a.u)) ?? rest[0]!;
     return [a.u, b.u].slice(0, EINHEIT.maxHauptvarianten).map((u) => ({ uebung: u, istErsatz: false }));
   }
   // Ersatz nur bei fehlendem Equipment, nicht bei Sperren oder Ausschlüssen.
@@ -308,6 +317,31 @@ export function hauptvarianten(z: AppZustand, muster: MusterId, ort: Ort, jetzt:
     }
   }
   return [];
+}
+
+export const istRotation = (muster: MusterId) => ROTATION.muster.includes(muster);
+
+// Name ohne Zusatz wie „Dumbbell“: Russian Twists und Dumbbell Russian Twists gelten als eine Übung.
+const grundname = (u: Uebung) => u.name.split(' ').filter((w) => !ROTATION.namensZusatz.includes(w)).join(' ').toLowerCase();
+
+// Wechselnde Auswahl (Entscheidung 23.11.2026): die gespeicherten Übungen, aufgefüllt nach der Rangfolge bis
+// `ROTATION.anzahl`; ohne Gewicht höchstens 1 Stufe über der Musterstufe (wie Variante B), keine mit 1 Stern
+// und keine zweite mit demselben Grundnamen. Höchstens die Hälfte mit Gewicht, solange es genug andere gibt
+// (sonst wären es beim Bauch nur Hantelübungen).
+function rotationsAuswahl(z: AppZustand, e: Einstellungen, muster: MusterId, fest: Uebung[], erlaubt: Uebung[]): Uebung[] {
+  const grenze = musterstufe(z, e, muster) + EINHEIT.bMaxUeberMusterstufe;
+  const auswahl = [...fest];
+  const rangfolge = rangiere(z, e, muster, erlaubt.filter((x) => vonSelbstWaehlbar(e, x))).map((r) => r.u);
+  for (const haelfte of [true, false]) {
+    for (const u of rangfolge) {
+      if (auswahl.length >= ROTATION.anzahl) break;
+      if (auswahl.some((x) => x.id === u.id || grundname(x) === grundname(u))) continue;
+      if (auswahl.length > 0 && (sterneVon(e, u.id) === 1 || (u.lasttyp !== 'Last' && u.stufe > grenze))) continue;
+      if (haelfte && u.lasttyp === 'Last' && auswahl.filter((x) => x.lasttyp === 'Last').length >= ROTATION.anzahl / 2) continue;
+      auswahl.push(u);
+    }
+  }
+  return auswahl;
 }
 
 // Übungen, die nur als Favorit von selbst kommen (Entscheidung 10.11.2026)
@@ -334,6 +368,7 @@ export function ohneEinStern(z: AppZustand, e: Einstellungen, liste: Uebung[], e
 // leichtere (Entscheidung 30.10.2026).
 // Ziel „Kraft“ (Entscheidung 01.11.2026): Bei Grundbewegungen kommt A zweimal, bevor B einmal dran ist.
 function faellige(z: AppZustand, kandidaten: Kandidat[]): Kandidat | undefined {
+  if (kandidaten[0] && istRotation(kandidaten[0].uebung.muster) && !kandidaten[0].istErsatz) return amLaengstenNicht(z, kandidaten);
   const [a, b] = kandidaten;
   if (!a || !b) return a;
   const e = einstellungenVon(z);
@@ -353,6 +388,22 @@ function faellige(z: AppZustand, kandidaten: Kandidat[]): Kandidat | undefined {
   if (sterne !== 0) return sterne > 0 ? b : a;
   const ohneGewicht = a.uebung.lasttyp !== 'Last' && b.uebung.lasttyp !== 'Last';
   return ohneGewicht && b.uebung.stufe < a.uebung.stufe ? b : a;
+}
+
+// Wechselnde Auswahl (Entscheidung 23.11.2026): die Übung, die am längsten nicht dran war (Max-Tests und
+// Zirkel zählen nicht); noch nie trainierte zuerst, bei Gleichstand die Reihenfolge der Auswahl.
+function amLaengstenNicht(z: AppZustand, kandidaten: Kandidat[]): Kandidat | undefined {
+  const zuletzt = new Map<string, number>();
+  fertigeEinheiten(z).forEach((einheit, i) => {
+    for (const p of einheit.bloecke.filter((bl) => bl.typ !== 'zirkel').flatMap((bl) => bl.positionen)) {
+      if (!p.istMaxTest && p.ergebnisse.length > 0) zuletzt.set(p.uebungId, i);
+    }
+  });
+  let beste: Kandidat | undefined;
+  for (const k of kandidaten) {
+    if (!beste || (zuletzt.get(k.uebung.id) ?? -1) < (zuletzt.get(beste.uebung.id) ?? -1)) beste = k;
+  }
+  return beste;
 }
 
 // Noch nie trainiert (kein Trainingsdatum der Variante; Testtag, Gewichtstest und Zirkel setzen keins):

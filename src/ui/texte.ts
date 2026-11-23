@@ -14,6 +14,16 @@ export const MUSKEL_NAMEN: Record<Muskel, string> = {
   Quadrizeps: 'Quadrizeps', Gesaess: 'Gesäß', HintereOS: 'Hintere Oberschenkel', Bauch: 'Bauch', Waden: 'Waden',
 };
 
+// Anzeige (Entscheidung 23.11.2026): Quadrizeps, Gesäß, hintere Oberschenkel und Waden erscheinen als ein
+// Bereich „Beine“; geplant wird weiter je Muskel. In den Prioritäten bleiben die Waden eine eigene Zeile, weil
+// sie standardmäßig weniger Sätze bekommen (Annahme 23.11.2026).
+export const BEINE: readonly Muskel[] = ['Quadrizeps', 'Gesaess', 'HintereOS', 'Waden'];
+export interface Bereich { name: string; muskeln: readonly Muskel[] }
+export const ANZEIGE_BEREICHE: readonly Bereich[] = [
+  ...(['Brust', 'Ruecken', 'Schultern', 'Bizeps', 'Trizeps'] as const).map((m) => ({ name: MUSKEL_NAMEN[m], muskeln: [m] })),
+  { name: 'Beine', muskeln: BEINE }, { name: 'Bauch', muskeln: ['Bauch'] },
+];
+
 export const MUSTER_NAMEN: Record<MusterId, string> = {
   hDruck: 'Horizontales Drücken', vDruck: 'Vertikales Drücken', hZug: 'Horizontales Ziehen', vZug: 'Vertikales Ziehen',
   Knie: 'Kniedominant', Einbein: 'Einbeinig', Huefte: 'Hüftdominant', Beinbeuger: 'Beinbeuger', Rumpf: 'Rumpf und Bauch',

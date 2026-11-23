@@ -18,7 +18,7 @@ import { MUSKELN, type AppZustand, type EigenesWorkout, type Muskel } from '../.
 import { workoutAmOrt, workoutBestzeit, workoutsVon } from '../../logik/workouts';
 import { Auswahl, Chip, Fehler, Hinweis, Karte, Knopf, Laedt, Stepper, TageWahl } from '../../ui/bausteine';
 import { Icon } from '../../ui/Icon';
-import { MUSKEL_NAMEN, zeitText } from '../../ui/texte';
+import { ANZEIGE_BEREICHE, zeitText } from '../../ui/texte';
 import { workoutText } from '../workouts/Workouts';
 import { useZustand } from '../../ui/useZustand';
 
@@ -272,13 +272,17 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
                 ? 'Vorausgewählt ist der Vorschlag. Nicht erholte Muskeln kannst du trotzdem wählen; dann steigt das Risiko einer Überlastung.'
                 : 'Vorausgewählt ist der Vorschlag. Tippe, um Muskeln dazuzunehmen oder wegzulassen, z. B. bei Muskelkater.'}>
               <div className="flex flex-wrap gap-2">
-                {MUSKELN.map((m) => {
-                  const an = gewaehlt.includes(m);
+                {ANZEIGE_BEREICHE.map((b) => {
+                  // „Beine“ steht für alle Beinmuskeln (Entscheidung 23.11.2026)
+                  const an = b.muskeln.some((m) => gewaehlt.includes(m));
+                  const nichtErholt = b.muskeln.every((m) => vorschlag.nichtErholt.includes(m));
                   return (
-                    <Chip key={m} aktiv={an}
-                      onClick={() => setMuskeln(an ? gewaehlt.filter((x) => x !== m) : MUSKELN.filter((x) => x === m || gewaehlt.includes(x)))}>
-                      {MUSKEL_NAMEN[m]}
-                      {vorschlag.nichtErholt.includes(m) && <span className="block text-hinweis font-normal text-gedaempft">nicht erholt</span>}
+                    <Chip key={b.name} aktiv={an}
+                      onClick={() => setMuskeln(an ? gewaehlt.filter((x) => !b.muskeln.includes(x))
+                        : MUSKELN.filter((x) => gewaehlt.includes(x)
+                          || (b.muskeln.includes(x) && (nichtErholt || !vorschlag.nichtErholt.includes(x)))))}>
+                      {b.name}
+                      {nichtErholt && <span className="block text-hinweis font-normal text-gedaempft">nicht erholt</span>}
                     </Chip>
                   );
                 })}
@@ -326,5 +330,5 @@ function Formular({ z, jetzt }: { z: AppZustand; jetzt: string }) {
 function muskelText(muskeln: readonly Muskel[]): string {
   if (muskeln.length === MUSKELN.length) return 'Ganzkörper';
   if (muskeln.length === 0) return 'Keine Muskeln gewählt';
-  return muskeln.map((m) => MUSKEL_NAMEN[m]).join(', ');
+  return ANZEIGE_BEREICHE.filter((b) => b.muskeln.some((m) => muskeln.includes(m))).map((b) => b.name).join(', ');
 }

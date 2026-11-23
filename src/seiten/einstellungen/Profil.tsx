@@ -3,7 +3,7 @@ import { aendereEinstellungen, speicherePrioritaeten } from '../../daten/speiche
 import { MUSKELN, PRIORITAETEN, type Einstellungen, type Muskel, type Prioritaet } from '../../logik/typen';
 import { Auswahl, Hinweis, Karte, Knopf, Laedt, Mehrfachauswahl, Schalter, Seite, Stepper } from '../../ui/bausteine';
 import {
-  LEVEL_NAMEN, MUSKEL_NAMEN, PRIORITAET_NAMEN, RESERVE_NAMEN, ZIEL_NAMEN, ZIRKEL_ANTEIL_NAMEN,
+  ANZEIGE_BEREICHE, LEVEL_NAMEN, MUSKEL_NAMEN, PRIORITAET_NAMEN, RESERVE_NAMEN, ZIEL_NAMEN, ZIRKEL_ANTEIL_NAMEN,
 } from '../../ui/texte';
 import { einstellungenAus, useZustand } from '../../ui/useZustand';
 
@@ -67,17 +67,23 @@ export function PrioritaetenSeite() {
 
 // Prioritäten je Muskel; auch im Onboarding genutzt.
 export function PrioritaetenListe({ e }: { e: Einstellungen }) {
-  const setzePrio = (m: Muskel, p: Prioritaet) => void speicherePrioritaeten({ ...e.prioritaeten, [m]: p });
+  const setzePrio = (ms: readonly Muskel[], p: Prioritaet) =>
+    void speicherePrioritaeten({ ...e.prioritaeten, ...Object.fromEntries(ms.map((m) => [m, p])) });
+  // Quadrizeps, Gesäß und hintere Oberschenkel als „Beine“ (Entscheidung 23.11.2026); die Waden bleiben
+  // eine eigene Zeile, weil sie standardmäßig weniger Sätze bekommen (Annahme 23.11.2026).
+  const zeilen: { name: string; muskeln: readonly Muskel[] }[] = ANZEIGE_BEREICHE.flatMap((b) => (b.name === 'Beine'
+    ? [{ ...b, muskeln: b.muskeln.filter((m) => m !== 'Waden') }, { name: MUSKEL_NAMEN.Waden, muskeln: ['Waden'] as const }]
+    : [b]));
   const standard = MUSKELN.every((m) => e.prioritaeten[m] === STANDARD_PRIORITAETEN[m]);
   return (
     <>
       <Karte>
         <div className="flex flex-col gap-5">
-          {MUSKELN.map((m) => (
-            <div key={m}>
-              <p className="mb-2 text-basis font-semibold">{MUSKEL_NAMEN[m]}</p>
+          {zeilen.map((z) => (
+            <div key={z.name}>
+              <p className="mb-2 text-basis font-semibold">{z.name}</p>
               <Auswahl
-                spalten={4} wert={e.prioritaeten[m]} onChange={(p) => setzePrio(m, p)}
+                spalten={4} wert={e.prioritaeten[z.muskeln[0]!]} onChange={(p) => setzePrio(z.muskeln, p)}
                 optionen={PRIORITAETEN.map((p) => ({ wert: p, text: PRIORITAET_NAMEN[p] }))}
               />
             </div>

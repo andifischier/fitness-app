@@ -211,7 +211,7 @@ describe('Progression ohne Last', () => {
   it('Körpergewicht: Ziel höchstens 4 über dem besten ersten Satz; ab O die nächste Variante', () => {
     const z = { ...voll(), varianten: [variante('liegestuetz', { zielWdh: 10, bestErsterSatz: 10 })],
       muster: [{ muster: 'hDruck' as const, stufe: 4, hauptvarianten: ['liegestuetz', 'kh_bankdruecken'] }] };
-    expect(werteUebungAus(z, position('liegestuetz', 10, [10, 10], { feedback: 'leicht' }), MO, 'zuhause').variante.zielWdh).toBe(14);
+    expect(werteUebungAus(z, position('liegestuetz', 10, [10, 10], { feedback: 'leicht' }), MO, 'zuhause').variante.zielWdh).toBe(12);   // Schätzung 13 (seit 23.11.2026 ohne festes +4)
     const gedeckelt = { ...z, varianten: [variante('liegestuetz', { zielWdh: 12, bestErsterSatz: 9 })] };
     expect(werteUebungAus(gedeckelt, position('liegestuetz', 12, [10], { feedback: 'leicht' }), MO, 'zuhause').variante.zielWdh).toBe(12);
     const oben = werteUebungAus(z, position('liegestuetz', 15, [15], { feedback: 'passend' }), MO, 'zuhause');

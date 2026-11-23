@@ -10,13 +10,13 @@ import {
   type MaxTestReihe, type Wochenvolumen,
 } from '../../logik/fortschritt';
 import { kannLoeschen } from '../../logik/loeschen';
-import { MUSKELN, type AppZustand, type Einheit } from '../../logik/typen';
+import { MUSKELN, type AppZustand, type Einheit, type Muskel } from '../../logik/typen';
 import { einheitZeit, uebungVon } from '../../logik/verlauf';
 import { zirkelName } from '../../logik/workouts';
 import { Chip, Hinweis, Karte, Knopf, Laedt, Seite } from '../../ui/bausteine';
 import { Icon } from '../../ui/Icon';
 import {
-  datumLang, datumText, einheitName, entlastungText, FEEDBACK_NAMEN, kwText, monatKurz, MUSKEL_NAMEN, saetzeText,
+  ANZEIGE_BEREICHE, type Bereich, datumLang, datumText, einheitName, entlastungText, FEEDBACK_NAMEN, kwText, monatKurz, saetzeText,
   saetzeZeile, seitStartText, zeitText,
 } from '../../ui/texte';
 import { useZustand } from '../../ui/useZustand';
@@ -48,20 +48,27 @@ function SaetzeProMuskel({ z, jetzt, volumen }: { z: AppZustand; jetzt: string; 
   const wochen = volumen?.wochen ?? [];
   const dieseWoche = wochen.find((w) => w.aktuell);
   const muskeln = volumen?.muskeln ?? MUSKELN.filter((m) => ziele[m] > 0);
+  // Beinmuskeln zusammen als „Beine“ (Entscheidung 23.11.2026)
+  const bereiche = ANZEIGE_BEREICHE.filter((b) => b.muskeln.some((m) => muskeln.includes(m)));
+  // Mehrere Muskeln: Schnitt je Muskel, damit die Zahl zu den übrigen Zeilen passt (Annahme 23.11.2026).
+  const summe = (werte: Record<Muskel, number> | undefined, b: Bereich) => {
+    const drin = b.muskeln.filter((m) => muskeln.includes(m));
+    return drin.length === 0 ? 0 : Math.round((drin.reduce((s, m) => s + (werte?.[m] ?? 0), 0) / drin.length) * 2) / 2;
+  };
   const verlauf = wochen.length > 1;               // eine Woche allein zeigt schon der obere Balken
   const spalten = { gridTemplateColumns: `repeat(${wochen.length}, minmax(0, 1fr))` };
   const entlastungen = wochen.filter((w) => w.entlastung);
   return (
     <Karte titel="Sätze pro Muskel" hinweis={verlauf ? 'Diese Woche erledigt von Ziel, darunter die letzten Wochen.' : 'Diese Woche erledigt von Ziel.'}>
       <ul>
-        {muskeln.map((m) => {
-          const ziel = ziele[m];
-          const ist = dieseWoche?.erledigt[m] ?? 0;
+        {bereiche.map((b) => {
+          const ziel = summe(ziele, b);
+          const ist = summe(dieseWoche?.erledigt, b);
           const massstab = Math.max(ziel, 1);
           return (
-            <li key={m} className="border-b border-linie py-3 first:pt-0 last:border-b-0 last:pb-0">
+            <li key={b.name} className="border-b border-linie py-3 first:pt-0 last:border-b-0 last:pb-0">
               <div className="flex items-center gap-4">
-                <span className="w-32 shrink-0 text-basis font-semibold">{MUSKEL_NAMEN[m]}</span>
+                <span className="w-32 shrink-0 text-basis font-semibold">{b.name}</span>
                 <span className="h-2 flex-1 rounded-full bg-linie">
                   <span className="block h-2 rounded-full bg-akzent" style={{ width: `${Math.min(100, (ist / massstab) * 100)}%` }} />
                 </span>
@@ -70,7 +77,7 @@ function SaetzeProMuskel({ z, jetzt, volumen }: { z: AppZustand; jetzt: string; 
               {verlauf && (
                 <div className="mt-2 grid items-end gap-2" style={spalten}>
                   {wochen.map((w) => {
-                    const wert = w.erledigt[m];
+                    const wert = summe(w.erledigt, b);
                     return (
                       <div key={w.woche} className="flex flex-col items-center gap-1">
                         <div className="flex h-8 w-full items-end" aria-hidden="true">
